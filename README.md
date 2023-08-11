@@ -1,4 +1,4 @@
-# kasir_frontend
+# FE_POS
 
 A new Flutter project.
 

@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.kasir_frontend">
+    package="com.example.fe_pos">
    <application
-        android:label="kasir_frontend"
+        android:label="fe_pos"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -1,6 +1,6 @@
 {
-    "name": "kasir_frontend",
-    "short_name": "kasir_frontend",
+    "name": "fe_pos",
+    "short_name": "fe_pos",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:kasir_frontend/pages/home.dart';
-import 'package:kasir_frontend/pages/loading.dart';
-import 'package:kasir_frontend/pages/report.dart';
+import 'package:fe_pos/pages/home.dart';
+import 'package:fe_pos/pages/loading.dart';
+import 'package:fe_pos/pages/report.dart';
 
 void main() {
   runApp(MaterialApp(initialRoute: '/', routes: {
