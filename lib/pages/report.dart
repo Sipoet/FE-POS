@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 
-class Report extends StatefulWidget {
-  const Report({super.key});
-
-  @override
-  State<Report> createState() => _ReportState();
-}
-
-class _ReportState extends State<Report> {
+class ReportPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Center(
+      child: ListView(
+        children: [
+          ElevatedButton(onPressed: () => {}, child: Text('penjualan per item'))
+        ],
+      ),
+    );
   }
 }
