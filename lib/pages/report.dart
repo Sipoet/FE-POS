@@ -1,14 +1,3 @@
-import 'package:flutter/material.dart';
+library report_page;
 
-class ReportPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: ListView(
-        children: [
-          ElevatedButton(onPressed: () => {}, child: Text('penjualan per item'))
-        ],
-      ),
-    );
-  }
-}
+export 'sales_percentage_report.dart';

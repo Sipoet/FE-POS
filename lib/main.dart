@@ -17,7 +17,7 @@ import 'package:provider/provider.dart';
 import 'package:fe_pos/pages/report.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => MyAppState(),
       child: MaterialApp(
-        title: 'Namer App',
+        title: 'Allegra POS',
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
@@ -81,34 +81,34 @@ class _MyHomePageState extends State<MyHomePage> {
     'report': {
       'icon': Icons.pages,
       'label': 'Report',
-      'page': Placeholder(),
+      'page': const Placeholder(),
       'parentTraces': [],
       'key': 'report',
       'children': {
-        'percentageSales': {
+        'salesPercentage': {
           'icon': Icons.pages,
           'label': 'Penjualan persentase per item',
-          'page': ReportPage(),
-          'key': 'percentageSales',
+          'page': SalesPercentageReportPage(),
+          'key': 'salesPercentage',
           'children': {}
         },
         'otherReport': {
           'icon': Icons.pageview,
           'label': 'report lain',
-          'page': Placeholder(),
+          'page': const Placeholder(),
           'key': 'otherReport',
           'children': {
             'otherReport1': {
               'icon': Icons.pageview,
               'label': 'report lain 1',
-              'page': Placeholder(),
+              'page': const Placeholder(),
               'key': 'otherReport1',
               'children': {}
             },
             'otherReport2': {
               'icon': Icons.pageview,
               'label': 'report lain 2',
-              'page': Placeholder(),
+              'page': const Placeholder(),
               'key': 'otherReport2',
               'children': {}
             }
@@ -119,25 +119,29 @@ class _MyHomePageState extends State<MyHomePage> {
     'purchase': {
       'icon': Icons.money,
       'label': 'Purchase',
-      'page': Placeholder(),
+      'page': const Placeholder(),
       'key': 'purchase',
       'children': {
         'purchase1': {
           'icon': Icons.pageview,
           'label': 'Purchase lain 1',
-          'page': Placeholder(),
+          'page': const Placeholder(),
           'key': 'purchase1',
           'children': {}
         },
         'purchase2': {
           'icon': Icons.pageview,
           'label': 'Purchase lain 2',
-          'page': Placeholder(),
+          'page': const Placeholder(),
           'key': 'purchase2',
           'children': {}
         }
       },
     },
+  };
+  Map pages = {
+    'report': Placeholder(),
+    'salesPercentage': SalesPercentageReportPage()
   };
   var destinations = {};
   List parentTraces = [];
@@ -145,7 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     var leadingWidgets = <Widget>[
       IconButton.filledTonal(
-        icon: Icon(Icons.home),
+        icon: const Icon(Icons.home),
         onPressed: () {
           setState(() {
             selectedIndex = 0;
@@ -158,22 +162,21 @@ class _MyHomePageState extends State<MyHomePage> {
     for (var trace in parentTraces) {
       destinations = destinations[trace]['children'];
     }
-    if (parentTraces.length > 0) {
-      leadingWidgets.add(SizedBox(width: 10));
+    if (parentTraces.isNotEmpty) {
+      leadingWidgets.add(const SizedBox(width: 10));
       leadingWidgets.add(ElevatedButton.icon(
-          label: Text('Back'),
+          label: const Text('Back'),
           onPressed: () {
             setState(() {
               selectedIndex = 0;
               parentTraces.removeLast();
             });
           },
-          icon: Icon(Icons.arrow_back)));
+          icon: const Icon(Icons.arrow_back)));
     }
     var arrDestination = [];
     destinations
         .forEach((label, destination) => arrDestination.add(destination));
-    print(arrDestination.toString());
     return LayoutBuilder(builder: (context, constraints) {
       return Scaffold(
         body: Row(
@@ -199,7 +202,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       selectedIndex = value;
                     } else {
                       parentTraces.add(destination['key']);
-                      selectedIndex = 0;
+                      // selectedIndex = 0;
                       destinations = destination['children'];
                     }
                   });
@@ -237,7 +240,7 @@ class GeneratorPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           BigCard(pair: pair),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -246,21 +249,21 @@ class GeneratorPage extends StatelessWidget {
                   appState.toggleFavorite();
                 },
                 icon: Icon(icon),
-                label: Text('Like'),
+                label: const Text('Like'),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               ElevatedButton(
                 onPressed: () {
                   appState.getNext();
                 },
-                child: Text('Next'),
+                child: const Text('Next'),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               ElevatedButton(
                 onPressed: () {
                   appState.resetFavorite();
                 },
-                child: Text('reset'),
+                child: const Text('reset'),
               ),
             ],
           ),
