@@ -1,30 +1,102 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:fe_pos/components/dropdown_remote_menu.dart';
-// import 'package:path_provider/path_provider.dart';
+// import 'package:fe_pos/components/dropdown_remote_menu.dart';
+// import 'package:fe_pos/components/server.dart';
+import 'package:fe_pos/components/dropdown_remote_connection.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:bs_flutter_selectbox/bs_flutter_selectbox.dart';
+// import 'dart:developer';
+// import 'package:path_provider/path_provider.dart';
+
+Server server = Server(host: 'localhost', port: 3000, jwt: '', session: '');
+List<BsSelectBoxOption> convertToOptions(List list) {
+  return list
+      .map(((row) => BsSelectBoxOption(
+          value: row['id'],
+          text: Text(row['name'].substring(
+              0, row['name'].length < 16 ? row['name'].length : 16)))))
+      .toList();
+}
 
 class SalesPercentageReportPage extends StatelessWidget {
-  // const SalesPercentageReportPage({super.key});
+  SalesPercentageReportPage({super.key});
   static const filterLabelStyle =
-      TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
-  final Server server =
-      Server(host: 'localhost', port: 3000, jwt: '', session: '');
+      TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
+  final BsSelectBox _brandSelectWidget = BsSelectBox(
+    searchable: true,
+    controller: BsSelectBoxController(
+      multiple: true,
+    ),
+    serverSide: (params) async {
+      DropdownRemoteConnection connection = DropdownRemoteConnection(server);
+      var list = await connection.getData('/brands',
+          query: params['searchValue'].toString());
+      return BsSelectBoxResponse(options: convertToOptions(list));
+    },
+  );
+  final BsSelectBox _supplierSelectWidget = BsSelectBox(
+    searchable: true,
+    controller: BsSelectBoxController(
+      multiple: true,
+    ),
+    serverSide: (params) async {
+      DropdownRemoteConnection connection = DropdownRemoteConnection(server);
+      var list = await connection.getData('/suppliers',
+          query: params['searchValue'].toString());
+      return BsSelectBoxResponse(options: convertToOptions(list));
+    },
+  );
+  final BsSelectBox _itemTypeSelectWidget = BsSelectBox(
+    controller: BsSelectBoxController(
+      multiple: true,
+    ),
+    serverSide: (params) async {
+      DropdownRemoteConnection connection = DropdownRemoteConnection(server);
+      var list = await connection.getData('/item_types',
+          query: params['searchValue'].toString());
+      return BsSelectBoxResponse(options: convertToOptions(list));
+    },
+  );
+
+  final BsSelectBox _itemSelectWidget = BsSelectBox(
+    controller: BsSelectBoxController(
+      multiple: true,
+    ),
+    serverSide: (params) async {
+      DropdownRemoteConnection connection = DropdownRemoteConnection(server);
+      var list = await connection.getData('/items',
+          query: params['searchValue'].toString());
+      return BsSelectBoxResponse(options: convertToOptions(list));
+    },
+  );
 
   void _downloadReport() async {
-    String _brand = _brandSelectWidget.dropdownValue;
-    String _supplier = _supplierSelectWidget.dropdownValue;
-    String _itemType = _itemTypeSelectWidget.dropdownValue;
-    log('supplier ${_supplier}, brand ${_brand}');
-
+    List brands = _brandSelectWidget.controller
+        .getSelectedAll()
+        .map((e) => e.getValue())
+        .toList();
+    List suppliers = _supplierSelectWidget.controller
+        .getSelectedAll()
+        .map((e) => e.getValue())
+        .toList();
+    List itemTypes = _itemTypeSelectWidget.controller
+        .getSelectedAll()
+        .map((e) => e.getValue())
+        .toList();
+    List items = _itemSelectWidget.controller
+        .getSelectedAll()
+        .map((e) => e.getValue())
+        .toList();
+    log('supplier $suppliers, brand $brands, item_types: $itemTypes, items: $items');
     server.get('/reports/item_sales_percentage', {
-      'suppliers[]': [_supplier],
-      'brands[]': [_brand],
-      'item_types[]': [_itemType]
-    }).then(_testResponse);
+      'suppliers[]': suppliers,
+      'brands[]': brands,
+      'item_types[]': itemTypes,
+      'items[]': items,
+    }).then(_downloadResponse);
   }
 
-  void _testResponse(response) async {
+  void _downloadResponse(response) async {
     String filename = response.headers['content-disposition'];
     filename = filename.substring(
         filename.indexOf('filename="') + 10, filename.indexOf('csv";') + 3);
@@ -46,34 +118,13 @@ class SalesPercentageReportPage extends StatelessWidget {
     }
   }
 
-  var _brandSelectWidget;
-  var _supplierSelectWidget;
-  var _itemTypeSelectWidget;
-
   @override
   Widget build(BuildContext context) {
-    _brandSelectWidget = DropdownRemoteMenu(
-      path: '/brands',
-      server: server,
-      dropdownValue: '',
-      width: 150,
-    );
-    _supplierSelectWidget = DropdownRemoteMenu(
-      path: '/suppliers',
-      server: server,
-      dropdownValue: '',
-      width: 150,
-    );
-    _itemTypeSelectWidget = DropdownRemoteMenu(
-      path: '/item_types',
-      server: server,
-      dropdownValue: '',
-      width: 150,
-    );
     return Center(
       child: Column(
         children: [
-          const Text('Filter'),
+          const Text('Filter',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -81,24 +132,37 @@ class SalesPercentageReportPage extends StatelessWidget {
               children: [
                 const Text('Merek :', style: filterLabelStyle),
                 const SizedBox(width: 10),
-                _brandSelectWidget,
-                const SizedBox(width: 10),
+                SizedBox(width: 200, child: _brandSelectWidget),
+                const SizedBox(
+                  width: 10,
+                  height: 10,
+                ),
                 const Text('Jenis/Departemen :', style: filterLabelStyle),
                 const SizedBox(width: 10),
-                _itemTypeSelectWidget,
-                const SizedBox(width: 10),
+                SizedBox(width: 200, child: _itemTypeSelectWidget),
+                const SizedBox(
+                  width: 10,
+                  height: 10,
+                ),
                 const Text('Supplier :', style: filterLabelStyle),
                 const SizedBox(width: 10),
-                _supplierSelectWidget
+                SizedBox(width: 200, child: _supplierSelectWidget),
+                const SizedBox(
+                  width: 10,
+                  height: 10,
+                ),
+                const Text('Item :', style: filterLabelStyle),
+                const SizedBox(width: 10),
+                SizedBox(width: 200, child: _itemSelectWidget),
               ],
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
           ElevatedButton(
-            child: Text('Download'),
             onPressed: _downloadReport,
+            child: const Text('Download'),
           )
         ],
       ),
