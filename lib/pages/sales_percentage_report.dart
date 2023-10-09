@@ -47,6 +47,7 @@ class SalesPercentageReportPage extends StatelessWidget {
     },
   );
   final BsSelectBox _itemTypeSelectWidget = BsSelectBox(
+    searchable: true,
     controller: BsSelectBoxController(
       multiple: true,
     ),
@@ -59,6 +60,7 @@ class SalesPercentageReportPage extends StatelessWidget {
   );
 
   final BsSelectBox _itemSelectWidget = BsSelectBox(
+    searchable: true,
     controller: BsSelectBoxController(
       multiple: true,
     ),
@@ -97,15 +99,18 @@ class SalesPercentageReportPage extends StatelessWidget {
   }
 
   void _downloadResponse(response) async {
-    String filename = response.headers['content-disposition'];
+    String? filename = response.headers['content-disposition'];
+    if (filename == null) {
+      return;
+    }
     filename = filename.substring(
-        filename.indexOf('filename="') + 10, filename.indexOf('csv";') + 3);
+        filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
     if (response.statusCode == 200) {
       String? outputFile = await FilePicker.platform.saveFile(
           dialogTitle: 'Please select an output file:',
           fileName: filename,
           type: FileType.custom,
-          allowedExtensions: ['csv']);
+          allowedExtensions: ['xlsx']);
       if (outputFile != null) {
         File file = File(outputFile);
         file.writeAsBytesSync(response.bodyBytes);
