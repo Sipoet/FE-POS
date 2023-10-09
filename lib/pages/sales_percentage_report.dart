@@ -8,7 +8,7 @@ import 'package:bs_flutter_selectbox/bs_flutter_selectbox.dart';
 // import 'dart:developer';
 // import 'package:path_provider/path_provider.dart';
 
-Server server = Server(host: 'localhost', port: 3000, jwt: '', session: '');
+Server server = Server(host: 'backend', port: 3000, jwt: '', session: '');
 List<BsSelectBoxOption> convertToOptions(List list) {
   return list
       .map(((row) => BsSelectBoxOption(
