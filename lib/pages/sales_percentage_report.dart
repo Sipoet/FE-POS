@@ -1,15 +1,16 @@
 import 'dart:io';
+import 'package:fe_pos/main.dart';
 import 'package:flutter/material.dart';
 // import 'package:fe_pos/components/dropdown_remote_menu.dart';
 // import 'package:fe_pos/components/server.dart';
 import 'package:fe_pos/components/dropdown_remote_connection.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:bs_flutter_selectbox/bs_flutter_selectbox.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 // import 'dart:developer';
-// import 'package:path_provider/path_provider.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 
-Server server =
-    Server(host: 'allegra-pos.net', port: 3000, jwt: '', session: '');
 List<BsSelectBoxOption> convertToOptions(List list) {
   return list
       .map(((row) => BsSelectBoxOption(
@@ -23,57 +24,12 @@ class SalesPercentageReportPage extends StatelessWidget {
   SalesPercentageReportPage({super.key});
   static const filterLabelStyle =
       TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
-  final BsSelectBox _brandSelectWidget = BsSelectBox(
-    searchable: true,
-    controller: BsSelectBoxController(
-      multiple: true,
-    ),
-    serverSide: (params) async {
-      DropdownRemoteConnection connection = DropdownRemoteConnection(server);
-      var list = await connection.getData('/brands',
-          query: params['searchValue'].toString());
-      return BsSelectBoxResponse(options: convertToOptions(list));
-    },
-  );
-  final BsSelectBox _supplierSelectWidget = BsSelectBox(
-    searchable: true,
-    controller: BsSelectBoxController(
-      multiple: true,
-    ),
-    serverSide: (params) async {
-      DropdownRemoteConnection connection = DropdownRemoteConnection(server);
-      var list = await connection.getData('/suppliers',
-          query: params['searchValue'].toString());
-      return BsSelectBoxResponse(options: convertToOptions(list));
-    },
-  );
-  final BsSelectBox _itemTypeSelectWidget = BsSelectBox(
-    searchable: true,
-    controller: BsSelectBoxController(
-      multiple: true,
-    ),
-    serverSide: (params) async {
-      DropdownRemoteConnection connection = DropdownRemoteConnection(server);
-      var list = await connection.getData('/item_types',
-          query: params['searchValue'].toString());
-      return BsSelectBoxResponse(options: convertToOptions(list));
-    },
-  );
+  var _brandSelectWidget,
+      _supplierSelectWidget,
+      _itemTypeSelectWidget,
+      _itemSelectWidget;
 
-  final BsSelectBox _itemSelectWidget = BsSelectBox(
-    searchable: true,
-    controller: BsSelectBoxController(
-      multiple: true,
-    ),
-    serverSide: (params) async {
-      DropdownRemoteConnection connection = DropdownRemoteConnection(server);
-      var list = await connection.getData('/items',
-          query: params['searchValue'].toString());
-      return BsSelectBoxResponse(options: convertToOptions(list));
-    },
-  );
-
-  void _downloadReport() async {
+  void _downloadReport(Server server) async {
     List brands = _brandSelectWidget.controller
         .getSelectedAll()
         .map((e) => e.getValue())
@@ -107,25 +63,90 @@ class SalesPercentageReportPage extends StatelessWidget {
     filename = filename.substring(
         filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
     if (response.statusCode == 200) {
-      String? outputFile = await FilePicker.platform.saveFile(
-          dialogTitle: 'Please select an output file:',
-          fileName: filename,
-          type: FileType.custom,
-          allowedExtensions: ['xlsx']);
-      if (outputFile != null) {
-        File file = File(outputFile);
-        file.writeAsBytesSync(response.bodyBytes);
-        log('filename: ${file.path}');
-      } else {
-        // User canceled the picker
-      }
+      _saveXlsxPick(filename, response.bodyBytes);
     } else {
       log("Response get ${response.body}");
     }
   }
 
+  void _saveXlsxPick(String filename, List<int> data) async {
+    String? outputFile;
+    if (Platform.isIOS || kIsWeb) {
+      Directory? dir = await getDownloadsDirectory();
+      outputFile = "${dir?.path}/$filename";
+    } else if (Platform.isAndroid) {
+      Directory? dir = await getExternalStorageDirectory();
+      outputFile = "${dir?.path}/$filename";
+    } else if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+      outputFile = await FilePicker.platform.saveFile(
+          dialogTitle: 'Please select an output file:',
+          fileName: filename,
+          type: FileType.custom,
+          allowedExtensions: ['xlsx']);
+    }
+
+    if (outputFile != null) {
+      File file = File(outputFile);
+      file.writeAsBytesSync(data);
+      log('filename: ${file.path}');
+    } else {
+      // User canceled the picker
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    var appState = context.read<MyAppState>();
+    Server server = appState.server;
+    BsSelectBox _brandSelectWidget = BsSelectBox(
+      searchable: true,
+      controller: BsSelectBoxController(
+        multiple: true,
+      ),
+      serverSide: (params) async {
+        DropdownRemoteConnection connection = DropdownRemoteConnection(server);
+        var list = await connection.getData('/brands',
+            query: params['searchValue'].toString());
+        return BsSelectBoxResponse(options: convertToOptions(list));
+      },
+    );
+    BsSelectBox _supplierSelectWidget = BsSelectBox(
+      searchable: true,
+      controller: BsSelectBoxController(
+        multiple: true,
+      ),
+      serverSide: (params) async {
+        DropdownRemoteConnection connection = DropdownRemoteConnection(server);
+        var list = await connection.getData('/suppliers',
+            query: params['searchValue'].toString());
+        return BsSelectBoxResponse(options: convertToOptions(list));
+      },
+    );
+    BsSelectBox _itemTypeSelectWidget = BsSelectBox(
+      searchable: true,
+      controller: BsSelectBoxController(
+        multiple: true,
+      ),
+      serverSide: (params) async {
+        DropdownRemoteConnection connection = DropdownRemoteConnection(server);
+        var list = await connection.getData('/item_types',
+            query: params['searchValue'].toString());
+        return BsSelectBoxResponse(options: convertToOptions(list));
+      },
+    );
+
+    BsSelectBox _itemSelectWidget = BsSelectBox(
+      searchable: true,
+      controller: BsSelectBoxController(
+        multiple: true,
+      ),
+      serverSide: (params) async {
+        DropdownRemoteConnection connection = DropdownRemoteConnection(server);
+        var list = await connection.getData('/items',
+            query: params['searchValue'].toString());
+        return BsSelectBoxResponse(options: convertToOptions(list));
+      },
+    );
     return Center(
       child: Column(
         children: [
@@ -167,7 +188,7 @@ class SalesPercentageReportPage extends StatelessWidget {
             height: 10,
           ),
           ElevatedButton(
-            onPressed: _downloadReport,
+            onPressed: () => {_downloadReport(server)},
             child: const Text('Download'),
           )
         ],
