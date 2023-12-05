@@ -7,8 +7,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/session_state.dart';
-import 'dart:html' as html;
-import 'dart:convert';
+import 'package:fe_pos/components/web_downloader.dart';
 
 List<BsSelectBoxOption> convertToOptions(List list) {
   return list
@@ -139,19 +138,12 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
     }
   }
 
-  void _saveXlsxPick(String filename, List<int> data) async {
+  void _saveXlsxPick(String filename, List<int> bytes) async {
     String? outputFile;
     if (kIsWeb) {
-      final _base64 = base64Encode(data);
-      // Create the link with the file
-      final anchor = html.AnchorElement(
-          href: 'data:application/octet-stream;base64,$_base64')
-        ..target = 'blank';
-      anchor.download = filename;
-      // trigger download
-      html.document.body?.append(anchor);
-      anchor.click();
-      anchor.remove();
+      var webDownloader = const WebDownloader();
+      webDownloader.download(filename, bytes);
+      return;
     } else if (Platform.isIOS) {
       Directory? dir = await getDownloadsDirectory();
       outputFile = "${dir?.path}/$filename";
@@ -168,7 +160,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
 
     if (outputFile != null) {
       File file = File(outputFile);
-      file.writeAsBytesSync(data);
+      file.writeAsBytesSync(bytes);
       log('filename: ${file.path}');
     } else {
       // User canceled the picker

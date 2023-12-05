@@ -11,7 +11,52 @@ class Loading extends StatefulWidget {
   State<Loading> createState() => _LoadingState();
 }
 
-class _LoadingState extends State<Loading> {
+class _LoadingState extends State<Loading> with TickerProviderStateMixin {
+  late AnimationController controller;
+
+  @override
+  void initState() {
+    controller = AnimationController(
+      /// [AnimationController]s can be created with `vsync: this` because of
+      /// [TickerProviderStateMixin].
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    )..addListener(() {
+        setState(() {});
+      });
+    controller.repeat(reverse: true);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    reroute();
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            Text(
+              'Loading',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            CircularProgressIndicator(
+              value: controller.value,
+              semanticsLabel: 'Circular progress indicator',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void reroute() async {
     SessionState sessionState = context.read<SessionState>();
     sessionState.fetchServerData().then((isLogin) => {
@@ -30,9 +75,9 @@ class _LoadingState extends State<Loading> {
         });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    reroute();
-    return const Placeholder();
-  }
+  // @override
+  // Widget build(BuildContext context) {
+  //   reroute();
+  //   return const Placeholder();
+  // }
 }
