@@ -1,7 +1,10 @@
+import 'package:fe_pos/pages/login.dart';
 import 'package:flutter/material.dart';
-import 'package:fe_pos/pages/generator.dart';
 import 'package:fe_pos/pages/report.dart';
 import 'package:fe_pos/pages/home.dart';
+import 'package:fe_pos/session_state.dart';
+import 'package:provider/provider.dart';
+import 'dart:convert';
 
 class FrameworkLayout extends StatefulWidget {
   const FrameworkLayout({super.key});
@@ -17,14 +20,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout> {
     'home': {
       'icon': Icons.home,
       'label': 'Home',
-      'page': Home(),
+      'page': const Home(),
       'children': {},
       'key': 'home'
     },
     'sales': {
       'icon': Icons.money,
       'label': 'Sales',
-      'page': Placeholder(),
+      'page': const Placeholder(),
       'children': {},
       'key': 'sales'
     },
@@ -38,7 +41,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout> {
         'salesPercentage': {
           'icon': Icons.pages,
           'label': 'Penjualan persentase per item',
-          'page': SalesPercentageReportPage(),
+          'page': const SalesPercentageReportPage(),
           'key': 'salesPercentage',
           'children': {}
         },
@@ -124,6 +127,13 @@ class _FrameworkLayoutState extends State<FrameworkLayout> {
                 leading: Row(
                   children: leadingWidgets,
                 ),
+                trailing: ElevatedButton.icon(
+                  label: const Text('Log Out'),
+                  icon: const Icon(Icons.power_settings_new),
+                  onPressed: () {
+                    _logout();
+                  },
+                ),
                 destinations: [
                   for (var destination in arrDestination)
                     NavigationRailDestination(
@@ -139,7 +149,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout> {
                       selectedIndex = value;
                     } else {
                       parentTraces.add(destination['key']);
-                      // selectedIndex = 0;
+                      selectedIndex = 0;
                       destinations = destination['children'];
                     }
                   });
@@ -156,5 +166,43 @@ class _FrameworkLayoutState extends State<FrameworkLayout> {
         ),
       );
     });
+  }
+
+  void _logout() {
+    SessionState sessionState = context.read<SessionState>();
+    var messenger = ScaffoldMessenger.of(context);
+    try {
+      sessionState.logout(onSuccess: (response) {
+        var body = jsonDecode(response.body);
+        messenger.showSnackBar(
+          SnackBar(
+              content: Text(
+            body['message'],
+            style: const TextStyle(color: Colors.green),
+          )),
+        );
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (BuildContext context) => const LoginPage()));
+      }, onFailed: (response) {
+        var body = jsonDecode(response.body);
+        messenger.showSnackBar(
+          SnackBar(
+              content: Text(
+            body['error'],
+            style: const TextStyle(color: Colors.red),
+          )),
+        );
+      });
+    } catch (error) {
+      messenger.showSnackBar(
+        SnackBar(
+            content: Text(
+          error.toString(),
+          style: const TextStyle(color: Colors.red),
+        )),
+      );
+    }
   }
 }

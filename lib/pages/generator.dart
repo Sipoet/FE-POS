@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 // class GeneratorPage extends StatelessWidget {
 //   @override
 //   Widget build(BuildContext context) {
-//     var appState = context.watch<MyAppState>();
+//     var appState = context.watch<SessionState>();
 //     var pair = appState.current;
 
 //     IconData icon;

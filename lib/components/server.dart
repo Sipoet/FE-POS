@@ -1,47 +1,65 @@
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class Server {
-  Server(
-      {required this.host,
-      required this.port,
-      required this.jwt,
-      required this.session});
+  Server({this.host = 'localhost', this.port = 3000, this.jwt = ''});
   String host;
   int port;
   String jwt;
-  String session;
 
-  Future post(String path, Map body) async {
-    var client = http.Client();
-    Uri url = _generateUrl(path, {});
-    try {
-      var response = await client.post(url, body: body);
-      return response;
-    } finally {
-      client.close();
+  String requestBodyByType(body, type) {
+    switch (type) {
+      case 'json':
+        return jsonEncode(body);
+      default:
+        return body.toString();
     }
   }
 
-  Future get(String path, Map<String, dynamic> queryParam) async {
-    var client = http.Client();
+  String responseBodyByType(body, type) {
+    switch (type) {
+      case 'json':
+        return jsonDecode(body);
+      default:
+        return body.toString();
+    }
+  }
+
+  Future post(String path, Map body, {String type = 'json'}) async {
+    Uri url = _generateUrl(path, {});
+    String requestBody = requestBodyByType(body, type);
+    return http.post(url, body: requestBody, headers: _generateHeaders(type));
+  }
+
+  Future get(String path, Map<String, dynamic> queryParam,
+      {String type = 'json'}) async {
     Uri url = _generateUrl(path, queryParam);
-    try {
-      var response = await http.get(url);
-      return response;
-    } finally {
-      client.close();
-    }
+    return http.get(url, headers: _generateHeaders(type));
   }
 
-  Future put(String path, Map body) async {
-    var client = http.Client();
+  Future put(String path, Map body, {String type = 'json'}) async {
     Uri url = _generateUrl(path, {});
-    try {
-      var response = await http.put(url, body: body);
-      return response;
-    } finally {
-      client.close();
-    }
+    String requestBody = requestBodyByType(body, type);
+    return http.put(url, body: requestBody, headers: _generateHeaders(type));
+  }
+
+  Future delete(String path, Map body, {String type = 'json'}) async {
+    Uri url = _generateUrl(path, {});
+    String requestBody = requestBodyByType(body, type);
+    return http.delete(url, body: requestBody, headers: _generateHeaders(type));
+  }
+
+  final Map _contentTypes = {
+    'json': 'application/json',
+    'text': 'application/text',
+    'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  };
+  Map<String, String> _generateHeaders(String type) {
+    return {
+      if (jwt.isNotEmpty) 'Authorization': jwt,
+      'Accept': 'application/json',
+      'Content-Type': _contentTypes[type]
+    };
   }
 
   Uri _generateUrl(String path, Map<String, dynamic> queryParams) {

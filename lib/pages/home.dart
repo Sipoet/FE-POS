@@ -40,11 +40,11 @@ class Home extends StatelessWidget {
 
   Widget _desktopHome() {
     List<Widget> menubar = [
-      Text('report',
+      const Text('report',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
       IconButton(
           onPressed: () {
-            print('clicked');
+            // print('clicked');
           },
           icon: const Icon(Icons.receipt))
     ];
@@ -53,15 +53,15 @@ class Home extends StatelessWidget {
       child: Row(
         children: [
           Column(children: menubar),
-          Text('Desktop 2', style: TextStyle(fontSize: 20))
+          const Text('Desktop 2', style: TextStyle(fontSize: 20))
         ],
       ),
     );
   }
 
   Widget _mobileHome() {
-    return Padding(
-      padding: const EdgeInsets.all(10),
+    return const Padding(
+      padding: EdgeInsets.all(10),
       child: Text('Mobile', style: TextStyle(fontSize: 20)),
     );
   }

@@ -1,24 +1,7 @@
-// import 'package:flutter/material.dart';
-// import 'package:fe_pos/pages/home.dart';
-// import 'package:fe_pos/pages/loading.dart';
-
-// void main() {
-//   runApp(MaterialApp(initialRoute: '/', routes: {
-//     // '/': (context) => const Loading(),
-//     '/': (context) => const Home(),
-//     '/home': (context) => const Home(),
-//     '/report': (context) => const Report(),
-//   }));
-// }
-
-// import 'dart:ffi';
-
+import 'package:fe_pos/pages/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import 'package:fe_pos/pages/login.dart';
-import 'package:fe_pos/components/framework_layout.dart';
-import 'package:fe_pos/components/server.dart';
+import 'package:fe_pos/session_state.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,61 +12,33 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var sessionState = SessionState();
+
     return ChangeNotifierProvider(
-      create: (context) => MyAppState(),
+      create: (context) => sessionState,
       child: MaterialApp(
         title: 'Allegra POS',
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
         ),
-        home: MyHomePage(),
+        home: const MyHomePage(),
       ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  bool isLoading = true;
   @override
   Widget build(BuildContext context) {
-    if (isLogin()) {
-      return FrameworkLayout();
-    } else {
-      return LoginPage();
-    }
+    return const Loading();
   }
-
-  bool isLogin() {
-    return true;
-  }
-}
-
-class MyAppState extends ChangeNotifier {
-  Server server =
-      // Server(host: 'allegra-pos.net', port: 3000, jwt: '', session: '');
-      Server(host: 'localhost', port: 3000, jwt: '', session: '');
-  // void getNext() {
-  //   current = WordPair.random();
-  //   notifyListeners();
-  // }
-
-  // var favorites = <WordPair>[];
-  // void toggleFavorite() {
-  //   if (favorites.contains(current)) {
-  //     favorites.remove(current);
-  //   } else {
-  //     favorites.add(current);
-  //   }
-  //   notifyListeners();
-  // }
-
-  // void resetFavorite() {
-  //   favorites.clear();
-  //   notifyListeners();
-  // }
 }
