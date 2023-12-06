@@ -24,6 +24,7 @@ class _LoadingState extends State<Loading> with TickerProviderStateMixin {
     )..addListener(() {
         setState(() {});
       });
+    reroute();
     controller.repeat(reverse: true);
     super.initState();
   }
@@ -36,22 +37,23 @@ class _LoadingState extends State<Loading> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    reroute();
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Text(
-              'Loading',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            CircularProgressIndicator(
-              value: controller.value,
-              semanticsLabel: 'Circular progress indicator',
-            ),
-          ],
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Text(
+                'Loading',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              CircularProgressIndicator(
+                value: controller.value,
+                semanticsLabel: 'Circular progress indicator',
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -60,6 +62,7 @@ class _LoadingState extends State<Loading> with TickerProviderStateMixin {
   void reroute() async {
     SessionState sessionState = context.read<SessionState>();
     sessionState.fetchServerData().then((isLogin) => {
+          controller.stop(),
           if (isLogin)
             {
               Navigator.pushReplacement(
@@ -74,10 +77,4 @@ class _LoadingState extends State<Loading> with TickerProviderStateMixin {
             }
         });
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   reroute();
-  //   return const Placeholder();
-  // }
 }
