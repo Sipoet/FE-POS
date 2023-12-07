@@ -28,25 +28,25 @@ class Server {
   Future post(String path, Map body, {String type = 'json'}) async {
     Uri url = _generateUrl(path, {});
     String requestBody = requestBodyByType(body, type);
-    return http.post(url, body: requestBody, headers: _generateHeaders(type));
+    return http.post(url, body: requestBody, headers: generateHeaders(type));
   }
 
   Future get(String path, Map<String, dynamic> queryParam,
       {String type = 'json'}) async {
     Uri url = _generateUrl(path, queryParam);
-    return http.get(url, headers: _generateHeaders(type));
+    return http.get(url, headers: generateHeaders(type));
   }
 
   Future put(String path, Map body, {String type = 'json'}) async {
     Uri url = _generateUrl(path, {});
     String requestBody = requestBodyByType(body, type);
-    return http.put(url, body: requestBody, headers: _generateHeaders(type));
+    return http.put(url, body: requestBody, headers: generateHeaders(type));
   }
 
   Future delete(String path, Map body, {String type = 'json'}) async {
     Uri url = _generateUrl(path, {});
     String requestBody = requestBodyByType(body, type);
-    return http.delete(url, body: requestBody, headers: _generateHeaders(type));
+    return http.delete(url, body: requestBody, headers: generateHeaders(type));
   }
 
   final Map _contentTypes = {
@@ -54,7 +54,7 @@ class Server {
     'text': 'application/text',
     'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   };
-  Map<String, String> _generateHeaders(String type) {
+  Map<String, String> generateHeaders(String type) {
     return {
       if (jwt.isNotEmpty) 'Authorization': jwt,
       'Accept': 'application/json',

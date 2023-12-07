@@ -1,7 +1,7 @@
 import 'dart:developer';
 import 'dart:convert';
-import 'package:fe_pos/components/server.dart';
-export 'package:fe_pos/components/server.dart';
+import 'package:fe_pos/model/server.dart';
+export 'package:fe_pos/model/server.dart';
 export 'dart:developer';
 
 class DropdownRemoteConnection {

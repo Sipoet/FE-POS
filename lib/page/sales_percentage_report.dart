@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:fe_pos/components/dropdown_remote_connection.dart';
+import 'package:fe_pos/widget/dropdown_remote_connection.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:bs_flutter_selectbox/bs_flutter_selectbox.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:fe_pos/session_state.dart';
-import 'package:fe_pos/components/web_downloader.dart';
+import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/widget/web_downloader.dart';
 import 'package:data_table_2/data_table_2.dart';
 
 List<BsSelectBoxOption> convertToOptions(List list) {
@@ -115,7 +115,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
     _requestReport().then(_downloadResponse);
   }
 
-  Future _requestReport() async {
+  Future _requestReport({int? page, int? per}) async {
     List brands = _brandSelectWidget.controller
         .getSelectedAll()
         .map((e) => e.getValue())
@@ -138,7 +138,9 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
       'brands[]': brands,
       'item_types[]': itemTypes,
       'items[]': items,
-      'report_type': _reportType
+      'report_type': _reportType,
+      'page': page.toString(),
+      'per': per.toString()
     });
   }
 
@@ -161,20 +163,24 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
 
   final Map _columnWidth = {
     'Nama Item': 300.0,
-    'Kode Item': 130.0,
+    'Kode Item': 140.0,
     'Persentase Laku Terjual': 210.0,
     'Harga Beli Rata-rata': 210.0
   };
+  double _tableWidth = 4000;
   void _displayDatatable(response) async {
     if (response.statusCode != 200) {
       return;
     }
     var data = jsonDecode(response.body);
+    var meta = data['meta'] ?? {'column_names': [], 'column_order': []};
     setState(() {
       _columns = [];
-      data['metadata']['columns'].forEach((columnName) {
-        double width =
-            _columnWidth[columnName] == null ? 200.0 : _columnWidth[columnName];
+      _tableWidth = 50.0;
+
+      meta['column_names'].forEach((columnName) {
+        double width = _columnWidth[columnName] ?? 195.0;
+        _tableWidth += width;
         _columns.add(DataColumn2(
           fixedWidth: width,
           label: Text(
@@ -185,10 +191,11 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
       });
       _rows = [];
       int numRow = 1;
+      List columnOrder = meta['column_order'];
       data['data'].forEach((row) {
-        List<DataCell> dataCells = row.map<DataCell>((cell) {
-          return DataCell(Text(
-            cell == null ? '' : cell.toString(),
+        List<DataCell> dataCells = columnOrder.map<DataCell>((key) {
+          return DataCell(SelectableText(
+            _decorateCell(row['attributes'][key]),
           ));
         }).toList();
         _rows.add(DataRow(
@@ -199,6 +206,33 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
       });
       _isDisplayTable = true;
     });
+  }
+
+  String _decorateCell(cell) {
+    if (cell is double) {
+      return _decorateNumber(cell);
+    } else {
+      return cell.toString();
+    }
+  }
+
+  _decorateNumber(number) {
+    var um = number.toString().split('.');
+    int strLength = um[0].length;
+    List components = [];
+    while (strLength >= 3) {
+      components.add(um[0].substring(strLength - 3, strLength));
+      components.add(',');
+      strLength -= 3;
+    }
+    if (strLength > 0) {
+      components.add(um[0].substring(0, strLength));
+    } else {
+      components.removeAt(0);
+    }
+    components = components.reversed.toList();
+    components.add(".${um[1]}");
+    return components.join();
   }
 
   void _saveXlsxPick(String filename, List<int> bytes) async {
@@ -234,7 +268,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     final padding = MediaQuery.of(context).padding;
-    double height = size.height - padding.top - padding.bottom - 305;
+    double height = size.height - padding.top - padding.bottom - 250;
     return Column(
       children: [
         const Text('Filter',
@@ -242,43 +276,26 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
         const SizedBox(height: 10),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Wrap(
+          child: Column(
             children: [
-              Container(
-                constraints: const BoxConstraints(maxWidth: 450),
-                child: Row(
-                  children: [
-                    const Text('Merek :', style: _filterLabelStyle),
-                    Container(
-                        constraints: const BoxConstraints(maxWidth: 300),
-                        child: _brandSelectWidget),
-                  ],
-                ),
+              Row(
+                children: [
+                  const Text('Merek :', style: _filterLabelStyle),
+                  SizedBox(width: 300, child: _brandSelectWidget),
+                ],
               ),
-              Container(
-                  constraints: const BoxConstraints(maxWidth: 450),
-                  child: Row(children: [
-                    const Text('Jenis/Departemen :', style: _filterLabelStyle),
-                    Container(
-                        constraints: const BoxConstraints(maxWidth: 300),
-                        child: _itemTypeSelectWidget),
-                  ])),
-              Container(
-                  constraints: const BoxConstraints(maxWidth: 450),
-                  child: Row(children: [
-                    const Text('Supplier :', style: _filterLabelStyle),
-                    Container(
-                        constraints: const BoxConstraints(maxWidth: 300),
-                        child: _supplierSelectWidget),
-                  ])),
-              Container(
-                  constraints: const BoxConstraints(maxWidth: 450),
-                  child: Row(children: [
-                    const Text('Item :', style: _filterLabelStyle),
-                    Container(
-                        constraints: const BoxConstraints(maxWidth: 300),
-                        child: _itemSelectWidget),
-                  ])),
+              Row(children: [
+                const Text('Jenis/Departemen :', style: _filterLabelStyle),
+                SizedBox(width: 300, child: _itemTypeSelectWidget),
+              ]),
+              Row(children: [
+                const Text('Supplier :', style: _filterLabelStyle),
+                SizedBox(width: 300, child: _supplierSelectWidget),
+              ]),
+              Row(children: [
+                const Text('Item :', style: _filterLabelStyle),
+                SizedBox(width: 300, child: _itemSelectWidget),
+              ]),
             ],
           ),
         ),
@@ -309,10 +326,12 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
                 Container(
                   constraints: BoxConstraints(maxHeight: height),
                   child: DataTable2(
-                    empty: Text('Data tidak ditemukan'),
+                    showBottomBorder: true,
+                    fixedLeftColumns: 1,
+                    empty: const Text('Data tidak ditemukan'),
                     columns: _columns,
                     rows: _rows,
-                    minWidth: 3600,
+                    minWidth: _tableWidth,
                     headingRowColor: MaterialStateProperty.resolveWith<Color?>(
                         (Set<MaterialState> states) {
                       return Theme.of(context)

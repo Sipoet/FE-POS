@@ -1,7 +1,7 @@
-import 'package:fe_pos/pages/loading.dart';
+import 'package:fe_pos/page/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fe_pos/session_state.dart';
+import 'package:fe_pos/model/session_state.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,12 +21,12 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
-          dividerTheme: DividerThemeData(
-              space: 10,
+          dividerTheme: const DividerThemeData(
+              space: 20,
               color: Colors.grey,
               thickness: 1,
-              indent: 5,
-              endIndent: 5),
+              indent: 10,
+              endIndent: 10),
         ),
         home: const MyHomePage(),
       ),

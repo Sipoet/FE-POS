@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:fe_pos/main.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fe_pos/session_state.dart';
+import 'package:fe_pos/model/session_state.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

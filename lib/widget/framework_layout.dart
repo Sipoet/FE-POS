@@ -1,8 +1,8 @@
-import 'package:fe_pos/pages/login.dart';
+import 'package:fe_pos/page/login.dart';
 import 'package:flutter/material.dart';
-import 'package:fe_pos/pages/report.dart';
-import 'package:fe_pos/pages/home.dart';
-import 'package:fe_pos/session_state.dart';
+import 'package:fe_pos/page/report.dart';
+import 'package:fe_pos/page/home.dart';
+import 'package:fe_pos/model/session_state.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 

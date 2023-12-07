@@ -1,13 +1,12 @@
 library dropdown_remote_multiple_menu;
 
 import 'package:flutter/material.dart';
-import 'package:fe_pos/components/server.dart';
-import 'package:fe_pos/components/dropdown_remote_connection.dart';
-export 'package:fe_pos/components/dropdown_remote_connection.dart';
-export 'package:fe_pos/components/server.dart';
+import 'package:fe_pos/widget/dropdown_remote_connection.dart';
+export 'package:fe_pos/widget/dropdown_remote_connection.dart';
+export 'package:fe_pos/model/server.dart';
 
 class DropdownRemoteMultipleMenu extends StatefulWidget {
-  DropdownRemoteMultipleMenu(
+  const DropdownRemoteMultipleMenu(
       {Key? key,
       required this.path,
       this.minCharSearch = 3,
@@ -81,25 +80,25 @@ class _DropdownRemoteMultipleMenuState
     return Column(
       children: [
         Container(
-          constraints: BoxConstraints(maxWidth: 200),
+          constraints: const BoxConstraints(maxWidth: 200),
           child: Wrap(
               children: widget.dropdownValue.map((value) {
             return Directionality(
               textDirection: TextDirection.rtl,
               child: ElevatedButton.icon(
-                icon: Icon(
+                icon: const Icon(
                   Icons.clear_rounded,
                   size: 18,
                 ),
                 label: Text(
                   value,
-                  style: TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 12),
                 ),
                 style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.black,
                     alignment: Alignment.centerRight,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    padding: EdgeInsets.symmetric(horizontal: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
                     shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(10)))),
                 onPressed: (() {
@@ -112,7 +111,7 @@ class _DropdownRemoteMultipleMenuState
           }).toList()),
         ),
         if (widget.dropdownValue.isNotEmpty)
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
         DropdownMenu<String>(

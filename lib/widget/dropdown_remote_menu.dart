@@ -1,10 +1,9 @@
 library dropdown_remote_menu;
 
 import 'package:flutter/material.dart';
-import 'package:fe_pos/components/server.dart';
-import 'package:fe_pos/components/dropdown_remote_connection.dart';
-export 'package:fe_pos/components/dropdown_remote_connection.dart';
-export 'package:fe_pos/components/server.dart';
+import 'package:fe_pos/widget/dropdown_remote_connection.dart';
+export 'package:fe_pos/widget/dropdown_remote_connection.dart';
+export 'package:fe_pos/model/server.dart';
 export 'dart:developer';
 export 'dart:convert';
 

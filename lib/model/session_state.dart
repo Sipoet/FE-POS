@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:fe_pos/components/server.dart';
-export 'package:fe_pos/components/server.dart';
+import 'package:fe_pos/model/server.dart';
+export 'package:fe_pos/model/server.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -19,12 +19,16 @@ class SessionState extends ChangeNotifier {
       server.port = sessionData['port'];
       server.jwt = sessionData['jwt'];
     }
-    return isLogin();
+    return await isLogin();
   }
   // Server(host: 'allegra-pos.net', port: 3000, jwt: '');
 
-  bool isLogin() {
-    return server.jwt.isNotEmpty;
+  Future<bool> isLogin() async {
+    if (server.jwt.isEmpty) {
+      return false;
+    }
+    var response = await server.get('', {});
+    return response.statusCode == 200;
   }
 
   Future login({
