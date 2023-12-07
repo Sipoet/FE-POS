@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
-import 'package:fe_pos/widget/web_downloader.dart';
+import 'package:fe_pos/tool/web_downloader.dart';
 import 'package:data_table_2/data_table_2.dart';
 
 List<BsSelectBoxOption> convertToOptions(List list) {
