@@ -11,15 +11,6 @@ import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/web_downloader.dart';
 import 'package:data_table_2/data_table_2.dart';
 
-List<BsSelectBoxOption> convertToOptions(List list) {
-  return list
-      .map(((row) => BsSelectBoxOption(
-          value: row['id'],
-          text: Text(row['name'].substring(
-              0, row['name'].length < 16 ? row['name'].length : 16)))))
-      .toList();
-}
-
 class SalesPercentageReportPage extends StatefulWidget {
   const SalesPercentageReportPage({super.key});
 
@@ -29,13 +20,17 @@ class SalesPercentageReportPage extends StatefulWidget {
 }
 
 class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
-  late BsSelectBox _brandSelectWidget;
+  final BsSelectBoxController _brandSelectWidget =
+      BsSelectBoxController(multiple: true, processing: true);
 
-  late BsSelectBox _supplierSelectWidget;
+  final BsSelectBoxController _supplierSelectWidget =
+      BsSelectBoxController(multiple: true, processing: true);
 
-  late BsSelectBox _itemTypeSelectWidget;
+  final BsSelectBoxController _itemTypeSelectWidget =
+      BsSelectBoxController(multiple: true, processing: true);
 
-  late BsSelectBox _itemSelectWidget;
+  final BsSelectBoxController _itemSelectWidget =
+      BsSelectBoxController(multiple: true, processing: true);
 
   static const TextStyle _filterLabelStyle =
       TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
@@ -47,62 +42,6 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   @override
   void initState() {
     super.initState();
-    var appState = context.read<SessionState>();
-    server = appState.server;
-    DropdownRemoteConnection connection = DropdownRemoteConnection(server);
-    _brandSelectWidget = BsSelectBox(
-      key: const ValueKey('brandSelect'),
-      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      searchable: true,
-      controller: BsSelectBoxController(
-        multiple: true,
-      ),
-      serverSide: (params) async {
-        var list = await connection.getData('/brands',
-            query: params['searchValue'].toString());
-        return BsSelectBoxResponse(options: convertToOptions(list));
-      },
-    );
-    _supplierSelectWidget = BsSelectBox(
-      key: const ValueKey('supplierSelect'),
-      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      searchable: true,
-      controller: BsSelectBoxController(
-        multiple: true,
-      ),
-      serverSide: (params) async {
-        var list = await connection.getData('/suppliers',
-            query: params['searchValue'].toString());
-        return BsSelectBoxResponse(options: convertToOptions(list));
-      },
-    );
-    _itemTypeSelectWidget = BsSelectBox(
-      key: const ValueKey('itemTypeSelect'),
-      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      searchable: true,
-      controller: BsSelectBoxController(
-        multiple: true,
-      ),
-      serverSide: (params) async {
-        var list = await connection.getData('/item_types',
-            query: params['searchValue'].toString());
-        return BsSelectBoxResponse(options: convertToOptions(list));
-      },
-    );
-
-    _itemSelectWidget = BsSelectBox(
-      key: const ValueKey('itemSelect'),
-      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      searchable: true,
-      controller: BsSelectBoxController(
-        multiple: true,
-      ),
-      serverSide: (params) async {
-        var list = await connection.getData('/items',
-            query: params['searchValue'].toString());
-        return BsSelectBoxResponse(options: convertToOptions(list));
-      },
-    );
   }
 
   void _displayReport() async {
@@ -116,22 +55,18 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   }
 
   Future _requestReport({int? page, int? per}) async {
-    List brands = _brandSelectWidget.controller
+    List brands =
+        _brandSelectWidget.getSelectedAll().map((e) => e.getValue()).toList();
+    List suppliers = _supplierSelectWidget
         .getSelectedAll()
         .map((e) => e.getValue())
         .toList();
-    List suppliers = _supplierSelectWidget.controller
+    List itemTypes = _itemTypeSelectWidget
         .getSelectedAll()
         .map((e) => e.getValue())
         .toList();
-    List itemTypes = _itemTypeSelectWidget.controller
-        .getSelectedAll()
-        .map((e) => e.getValue())
-        .toList();
-    List items = _itemSelectWidget.controller
-        .getSelectedAll()
-        .map((e) => e.getValue())
-        .toList();
+    List items =
+        _itemSelectWidget.getSelectedAll().map((e) => e.getValue()).toList();
     log('supplier $suppliers, brand $brands, item_types: $itemTypes, items: $items');
     return server.get('/reports/item_sales_percentage', {
       'suppliers[]': suppliers,
@@ -139,8 +74,8 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
       'item_types[]': itemTypes,
       'items[]': items,
       'report_type': _reportType,
-      'page': page.toString(),
-      'per': per.toString()
+      if (page != null) 'page': page.toString(),
+      if (per != null) 'per': per.toString()
     });
   }
 
@@ -192,6 +127,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
       _rows = [];
       int numRow = 1;
       List columnOrder = meta['column_order'];
+
       data['data'].forEach((row) {
         List<DataCell> dataCells = columnOrder.map<DataCell>((key) {
           return DataCell(SelectableText(
@@ -259,49 +195,140 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
       File file = File(outputFile);
       file.writeAsBytesSync(bytes);
       log('filename: ${file.path}');
-    } else {
-      // User canceled the picker
     }
+  }
+
+  List<BsSelectBoxOption> convertToOptions(List list) {
+    return list
+        .map(((row) => BsSelectBoxOption(
+            value: row['id'],
+            text: Text(row['name'].substring(
+                0, row['name'].length < 16 ? row['name'].length : 16)))))
+        .toList();
   }
 
   @override
   Widget build(BuildContext context) {
+    var appState = context.read<SessionState>();
+    server = appState.server;
+    DropdownRemoteConnection connection = DropdownRemoteConnection(server);
     Size size = MediaQuery.of(context).size;
     final padding = MediaQuery.of(context).padding;
-    double height = size.height - padding.top - padding.bottom - 250;
-    return Column(
-      children: [
-        const Text('Filter',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 10),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
+    double height = size.height - padding.top - padding.bottom - 280;
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Filter',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 10),
+          Wrap(
+            direction: Axis.horizontal,
             children: [
-              Row(
-                children: [
-                  const Text('Merek :', style: _filterLabelStyle),
-                  SizedBox(width: 300, child: _brandSelectWidget),
-                ],
+              SizedBox(
+                width: 310,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                          padding: EdgeInsets.only(left: 5, bottom: 5),
+                          child: Text('Merek', style: _filterLabelStyle)),
+                      SizedBox(
+                          width: 300,
+                          height: 55,
+                          child: BsSelectBox(
+                            key: const ValueKey('brandSelect'),
+                            searchable: true,
+                            controller: _brandSelectWidget,
+                            serverSide: (params) async {
+                              var list = await connection.getData('/brands',
+                                  query: params['searchValue'].toString());
+                              return BsSelectBoxResponse(
+                                  options: convertToOptions(list));
+                            },
+                          )),
+                    ]),
               ),
-              Row(children: [
-                const Text('Jenis/Departemen :', style: _filterLabelStyle),
-                SizedBox(width: 300, child: _itemTypeSelectWidget),
-              ]),
-              Row(children: [
-                const Text('Supplier :', style: _filterLabelStyle),
-                SizedBox(width: 300, child: _supplierSelectWidget),
-              ]),
-              Row(children: [
-                const Text('Item :', style: _filterLabelStyle),
-                SizedBox(width: 300, child: _itemSelectWidget),
-              ]),
+              SizedBox(
+                  width: 310,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(left: 5, bottom: 5),
+                          child: Text('Jenis/Departemen :',
+                              style: _filterLabelStyle),
+                        ),
+                        SizedBox(
+                            width: 300,
+                            height: 55,
+                            child: BsSelectBox(
+                              key: const ValueKey('itemTypeSelect'),
+                              searchable: true,
+                              controller: _itemTypeSelectWidget,
+                              serverSide: (params) async {
+                                var list = await connection.getData(
+                                    '/item_types',
+                                    query: params['searchValue'].toString());
+                                return BsSelectBoxResponse(
+                                    options: convertToOptions(list));
+                              },
+                            )),
+                      ])),
+              SizedBox(
+                  width: 310,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(left: 5, bottom: 5),
+                          child: Text('Supplier :', style: _filterLabelStyle),
+                        ),
+                        SizedBox(
+                            width: 300,
+                            child: BsSelectBox(
+                              key: const ValueKey('supplierSelect'),
+                              searchable: true,
+                              controller: _supplierSelectWidget,
+                              serverSide: (params) async {
+                                var list = await connection.getData(
+                                    '/suppliers',
+                                    query: params['searchValue'].toString());
+                                return BsSelectBoxResponse(
+                                    options: convertToOptions(list));
+                              },
+                            )),
+                      ])),
+              SizedBox(
+                  width: 310,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.only(left: 5, bottom: 5),
+                          child: Text('Item :', style: _filterLabelStyle),
+                        ),
+                        SizedBox(
+                            width: 300,
+                            child: BsSelectBox(
+                              key: const ValueKey('itemSelect'),
+                              searchable: true,
+                              controller: _itemSelectWidget,
+                              serverSide: (params) async {
+                                var list = await connection.getData('/items',
+                                    query: params['searchValue'].toString());
+                                return BsSelectBoxResponse(
+                                    options: convertToOptions(list));
+                              },
+                            )),
+                      ])),
             ],
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 50),
-          child: Row(
+          const SizedBox(
+            height: 10,
+          ),
+          Row(
             children: [
               ElevatedButton(
                 onPressed: () => {_displayReport()},
@@ -316,45 +343,38 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
               ),
             ],
           ),
-        ),
-        if (_isDisplayTable)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                const Divider(),
-                Container(
-                  constraints: BoxConstraints(maxHeight: height),
-                  child: DataTable2(
-                    showBottomBorder: true,
-                    fixedLeftColumns: 1,
-                    empty: const Text('Data tidak ditemukan'),
-                    columns: _columns,
-                    rows: _rows,
-                    minWidth: _tableWidth,
-                    headingRowColor: MaterialStateProperty.resolveWith<Color?>(
-                        (Set<MaterialState> states) {
-                      return Theme.of(context)
-                          .colorScheme
-                          .onBackground
-                          .withOpacity(0.08);
-                    }),
-                    dataRowColor: MaterialStateProperty.resolveWith<Color?>(
-                        (Set<MaterialState> states) {
-                      if (states.contains(MaterialState.selected)) {
-                        return Theme.of(context)
-                            .colorScheme
-                            .primary
-                            .withOpacity(0.08);
-                      }
-                      return null; // Use the default value.
-                    }),
-                  ),
-                ),
-              ],
+          if (_isDisplayTable) const Divider(),
+          if (_isDisplayTable)
+            Container(
+              constraints: BoxConstraints(maxHeight: height),
+              child: DataTable2(
+                showBottomBorder: true,
+                fixedLeftColumns: 1,
+                empty: const Text('Data tidak ditemukan'),
+                columns: _columns,
+                rows: _rows,
+                minWidth: _tableWidth,
+                headingRowColor: MaterialStateProperty.resolveWith<Color?>(
+                    (Set<MaterialState> states) {
+                  return Theme.of(context)
+                      .colorScheme
+                      .onBackground
+                      .withOpacity(0.08);
+                }),
+                dataRowColor: MaterialStateProperty.resolveWith<Color?>(
+                    (Set<MaterialState> states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withOpacity(0.08);
+                  }
+                  return null; // Use the default value.
+                }),
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
