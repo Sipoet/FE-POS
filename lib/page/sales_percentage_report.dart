@@ -35,12 +35,15 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   static const TextStyle _filterLabelStyle =
       TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
   late Server server;
+  int _sortColumnIndex = 0;
+  bool _sortAscending = true;
   String? _reportType;
   bool _isDisplayTable = false;
   List<DataColumn> _columns = [];
-  List<DataRow> _rows = [];
+  SalesPercentageDataSource dataSource = SalesPercentageDataSource();
   @override
   void initState() {
+    dataSource.setData([], 0, true);
     super.initState();
   }
 
@@ -98,9 +101,10 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
 
   final Map _columnWidth = {
     'Nama Item': 300.0,
-    'Kode Item': 140.0,
-    'Persentase Laku Terjual': 210.0,
-    'Harga Beli Rata-rata': 210.0
+    'Kode Item': 150.0,
+    'Jenis/Departemen': 230.0,
+    'Harga Beli Rata-rata': 230.0,
+    'Persentase Laku Terjual': 180.0,
   };
   double _tableWidth = 4000;
   void _displayDatatable(response) async {
@@ -109,66 +113,38 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
     }
     var data = jsonDecode(response.body);
     var meta = data['meta'] ?? {'column_names': [], 'column_order': []};
+    _columns = [];
     setState(() {
-      _columns = [];
-      _tableWidth = 50.0;
-
+      _tableWidth = 50;
       meta['column_names'].forEach((columnName) {
-        double width = _columnWidth[columnName] ?? 195.0;
+        double width = _columnWidth[columnName] ?? 215.0;
         _tableWidth += width;
         _columns.add(DataColumn2(
           fixedWidth: width,
+          onSort: ((columnIndex, ascending) {
+            setState(() {
+              _sortColumnIndex = columnIndex;
+              _sortAscending = ascending;
+            });
+            dataSource.sortData(_sortColumnIndex, _sortAscending);
+          }),
           label: Text(
             columnName,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ));
       });
-      _rows = [];
-      int numRow = 1;
       List columnOrder = meta['column_order'];
 
-      data['data'].forEach((row) {
-        List<DataCell> dataCells = columnOrder.map<DataCell>((key) {
-          return DataCell(SelectableText(
-            _decorateCell(row['attributes'][key]),
-          ));
-        }).toList();
-        _rows.add(DataRow(
-          selected: numRow.isEven,
-          cells: dataCells,
-        ));
-        numRow += 1;
-      });
+      var rawData = data['data'].map<List<Comparable<Object>>>((row) {
+        Map attributes = row['attributes'];
+        return columnOrder
+            .map<Comparable<Object>>((key) => attributes[key])
+            .toList();
+      }).toList();
+      dataSource.setData(rawData, _sortColumnIndex, _sortAscending);
       _isDisplayTable = true;
     });
-  }
-
-  String _decorateCell(cell) {
-    if (cell is double) {
-      return _decorateNumber(cell);
-    } else {
-      return cell.toString();
-    }
-  }
-
-  _decorateNumber(number) {
-    var um = number.toString().split('.');
-    int strLength = um[0].length;
-    List components = [];
-    while (strLength >= 3) {
-      components.add(um[0].substring(strLength - 3, strLength));
-      components.add(',');
-      strLength -= 3;
-    }
-    if (strLength > 0) {
-      components.add(um[0].substring(0, strLength));
-    } else {
-      components.removeAt(0);
-    }
-    components = components.reversed.toList();
-    components.add(".${um[1]}");
-    return components.join();
   }
 
   void _saveXlsxPick(String filename, List<int> bytes) async {
@@ -215,6 +191,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
     Size size = MediaQuery.of(context).size;
     final padding = MediaQuery.of(context).padding;
     double height = size.height - padding.top - padding.bottom - 280;
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -233,7 +210,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
                     children: [
                       const Padding(
                           padding: EdgeInsets.only(left: 5, bottom: 5),
-                          child: Text('Merek', style: _filterLabelStyle)),
+                          child: Text('Merek :', style: _filterLabelStyle)),
                       SizedBox(
                           width: 300,
                           height: 55,
@@ -347,29 +324,19 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
           if (_isDisplayTable)
             Container(
               constraints: BoxConstraints(maxHeight: height),
-              child: DataTable2(
-                showBottomBorder: true,
+              child: PaginatedDataTable2(
+                source: dataSource,
                 fixedLeftColumns: 1,
+                sortColumnIndex: _sortColumnIndex,
+                sortAscending: _sortAscending,
+                border: TableBorder.all(
+                    width: 1, color: colorScheme.onSecondary.withOpacity(0.3)),
                 empty: const Text('Data tidak ditemukan'),
                 columns: _columns,
-                rows: _rows,
                 minWidth: _tableWidth,
                 headingRowColor: MaterialStateProperty.resolveWith<Color?>(
                     (Set<MaterialState> states) {
-                  return Theme.of(context)
-                      .colorScheme
-                      .onBackground
-                      .withOpacity(0.08);
-                }),
-                dataRowColor: MaterialStateProperty.resolveWith<Color?>(
-                    (Set<MaterialState> states) {
-                  if (states.contains(MaterialState.selected)) {
-                    return Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withOpacity(0.08);
-                  }
-                  return null; // Use the default value.
+                  return colorScheme.onSecondaryContainer.withOpacity(0.08);
                 }),
               ),
             ),
@@ -377,4 +344,70 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
       ),
     );
   }
+}
+
+class SalesPercentageDataSource extends DataTableSource {
+  late List<List<Comparable<Object>>> sortedData;
+  void setData(List<List<Comparable<Object>>> rawData, int sortColumn,
+      bool sortAscending) {
+    sortedData = rawData.toList();
+    sortData(sortColumn, sortAscending);
+  }
+
+  void sortData(int sortColumn, bool sortAscending) {
+    sortedData.sort((List<Comparable<Object>> a, List<Comparable<Object>> b) {
+      final Comparable<Object> cellA = a[sortColumn];
+      final Comparable<Object> cellB = b[sortColumn];
+      return cellA.compareTo(cellB) * (sortAscending ? 1 : -1);
+    });
+    notifyListeners();
+  }
+
+  @override
+  int get rowCount => sortedData.length;
+
+  static DataCell _decorateCell(Object cell) {
+    if (cell is double || cell is int) {
+      String val = _formatNumber(cell);
+      return DataCell(
+          Align(alignment: Alignment.centerRight, child: SelectableText(val)));
+    } else {
+      return DataCell(SelectableText(cell.toString()));
+    }
+  }
+
+  static String _formatNumber(number) {
+    var um = number.toString().split('.');
+    int strLength = um[0].length;
+    List components = [];
+    while (strLength >= 3) {
+      components.add(um[0].substring(strLength - 3, strLength));
+      components.add(',');
+      strLength -= 3;
+    }
+    if (strLength > 0) {
+      components.add(um[0].substring(0, strLength));
+    } else {
+      components.removeAt(components.length - 1);
+    }
+    components = components.reversed.toList();
+    if (um.length == 2) components.add(".${um[1]}");
+    return components.join();
+  }
+
+  @override
+  DataRow? getRow(int index) {
+    return DataRow.byIndex(
+      index: index,
+      cells: sortedData[index]
+          .map<DataCell>((cell) => _decorateCell(cell))
+          .toList(),
+    );
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get selectedRowCount => 0;
 }
