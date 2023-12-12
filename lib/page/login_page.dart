@@ -39,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
                     labelText: 'Server',
                   ),
                   onSaved: (newValue) {
-                    _host = newValue.toString();
+                    _host = newValue.toString().trim();
                   },
                   validator: (value) {
                     if (value == null || value.toString().trim().isEmpty) {
@@ -54,11 +54,13 @@ class _LoginPageState extends State<LoginPage> {
                     labelText: 'Username',
                   ),
                   onSaved: (newValue) {
-                    _username = newValue.toString();
+                    _username = newValue.toString().trim();
                   },
                   validator: (value) {
                     if (value == null || value.toString().trim().isEmpty) {
                       return 'username belum diisi';
+                    } else if (value.toString().contains(' ')) {
+                      return 'username tidak boleh ada spasi';
                     }
                     return null;
                   },
@@ -71,11 +73,13 @@ class _LoginPageState extends State<LoginPage> {
                   obscureText: true,
                   enableSuggestions: false,
                   onSaved: (newValue) {
-                    _password = newValue.toString();
+                    _password = newValue.toString().trim();
                   },
                   validator: (value) {
                     if (value == null || value.toString().trim().isEmpty) {
-                      return 'username belum diisi';
+                      return 'password belum diisi';
+                    } else if (value.toString().contains(' ')) {
+                      return 'username tidak boleh ada spasi';
                     }
                     return null;
                   },

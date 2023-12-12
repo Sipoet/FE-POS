@@ -1,7 +1,8 @@
-import 'package:fe_pos/page/login.dart';
 import 'package:flutter/material.dart';
-import 'package:fe_pos/page/report.dart';
-import 'package:fe_pos/page/home.dart';
+import 'package:fe_pos/page/login_page.dart';
+import 'package:fe_pos/page/discount_page.dart';
+import 'package:fe_pos/page/report_page.dart';
+import 'package:fe_pos/page/home_page.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
@@ -20,7 +21,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout> {
     'home': {
       'icon': Icons.home,
       'label': 'Home',
-      'page': const Home(),
+      'page': const HomePage(),
       'children': {},
       'key': 'home'
     },
@@ -69,27 +70,18 @@ class _FrameworkLayoutState extends State<FrameworkLayout> {
         }
       }
     },
-    'purchase': {
-      'icon': Icons.money,
-      'label': 'Purchase',
-      'page': const Placeholder(),
+    'master': {
+      'icon': Icons.table_chart,
+      'label': 'Master Data',
       'key': 'purchase',
       'children': {
-        'purchase1': {
-          'icon': Icons.pageview,
-          'label': 'Purchase lain 1',
-          'page': const Placeholder(),
-          'key': 'purchase1',
-          'children': {}
-        },
-        'purchase2': {
-          'icon': Icons.pageview,
-          'label': 'Purchase lain 2',
-          'page': const Placeholder(),
-          'key': 'purchase2',
-          'children': {}
+        'discount': {
+          'icon': Icons.discount,
+          'label': 'Discount',
+          'key': 'children',
+          'page': const DiscountPage(),
         }
-      },
+      }
     },
   };
 

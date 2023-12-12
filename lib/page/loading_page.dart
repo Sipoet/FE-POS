@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/framework_layout.dart';
-import 'package:fe_pos/page/login.dart';
+import 'package:fe_pos/page/login_page.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
 
-class Loading extends StatefulWidget {
-  const Loading({super.key});
+class LoadingPage extends StatefulWidget {
+  const LoadingPage({super.key});
 
   @override
-  State<Loading> createState() => _LoadingState();
+  State<LoadingPage> createState() => _LoadingPageState();
 }
 
-class _LoadingState extends State<Loading> with TickerProviderStateMixin {
+class _LoadingPageState extends State<LoadingPage>
+    with TickerProviderStateMixin {
   late AnimationController controller;
 
   @override

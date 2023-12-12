@@ -1,4 +1,4 @@
-import 'package:fe_pos/page/loading.dart';
+import 'package:fe_pos/page/loading_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
@@ -45,6 +45,6 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isLoading = true;
   @override
   Widget build(BuildContext context) {
-    return const Loading();
+    return const LoadingPage();
   }
 }
