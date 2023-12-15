@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <AppInstaller xmlns="http://schemas.microsoft.com/appx/appinstaller/2018"
+    Uri="src/windows\fe_pos.appinstaller" Version="0.0.0.1">
+    <MainPackage Name="karyaSuksesSentosa.suite.allegraPos" Version="0.0.0.1"
+      Publisher="E=fransiskus.r.sianto@gmail.com, CN=allegra-pos.net, O=Karya Sukses Sentosa, L=Palu, S=Central Sulawesi, C=ID"
+      Uri="src/windows\versions\fe_pos_0.0.0.1.msix"
+      ProcessorArchitecture="x64" />
+    <UpdateSettings>
+      <OnLaunch HoursBetweenUpdateChecks="0" 
+        UpdateBlocksActivation="false" ShowPrompt="true" />
+            </UpdateSettings>
+  </AppInstaller>
