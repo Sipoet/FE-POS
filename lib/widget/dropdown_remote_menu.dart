@@ -8,20 +8,20 @@ export 'dart:developer';
 export 'dart:convert';
 
 class DropdownRemoteMenu extends StatefulWidget {
-  DropdownRemoteMenu(
+  const DropdownRemoteMenu(
       {Key? key,
       required this.path,
       this.minCharSearch = 3,
       required this.server,
       this.width = 0,
-      this.dropdownValue = ''})
+      required this.dropdownValue})
       : super(key: key);
 
   final String path;
   final int minCharSearch;
   final double width;
   final Server server;
-  String dropdownValue;
+  final String dropdownValue;
 
   @override
   State<DropdownRemoteMenu> createState() => _DropdownRemoteMenuState();
@@ -32,6 +32,7 @@ class _DropdownRemoteMenuState extends State<DropdownRemoteMenu> {
   var list = <DropdownMenuEntry<String>>[];
   final notFoundSign = const DropdownMenuEntry<String>(
       label: 'Data tidak Ditemukan', value: '', enabled: false);
+  late String dropdownValue;
 
   @override
   void initState() {
@@ -48,6 +49,7 @@ class _DropdownRemoteMenuState extends State<DropdownRemoteMenu> {
     Server server = widget.server;
     DropdownRemoteConnection connection = DropdownRemoteConnection(server);
     List rawlist = await connection.getData(widget.path, query: query);
+
     setState(() {
       if (rawlist.isEmpty) {
         list = [notFoundSign];
@@ -68,18 +70,19 @@ class _DropdownRemoteMenuState extends State<DropdownRemoteMenu> {
 
   @override
   Widget build(BuildContext context) {
+    dropdownValue = widget.dropdownValue;
     double? width = widget.width;
     if (widget.width == 0) {
       width = null;
     }
     if (_controller.text.isEmpty) {
-      widget.dropdownValue = '';
+      dropdownValue = '';
     }
     if (list.isEmpty && _controller.text.isEmpty) {
       _remoteRequestData('');
     }
     return DropdownMenu<String>(
-      initialSelection: widget.dropdownValue,
+      initialSelection: dropdownValue,
       width: width,
       menuHeight: 250,
       controller: _controller,
@@ -89,7 +92,7 @@ class _DropdownRemoteMenuState extends State<DropdownRemoteMenu> {
       onSelected: (String? value) {
         // This is called when the user selects an item.
         setState(() {
-          widget.dropdownValue = value!;
+          dropdownValue = value!;
         });
       },
       dropdownMenuEntries: list,

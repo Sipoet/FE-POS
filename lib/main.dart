@@ -4,21 +4,25 @@ import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const AllegraPos());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class AllegraPos extends StatelessWidget {
+  const AllegraPos({super.key});
 
   @override
   Widget build(BuildContext context) {
-    var sessionState = SessionState();
+    final SessionState sessionState = SessionState();
 
     return ChangeNotifierProvider(
       create: (context) => sessionState,
       child: MaterialApp(
         title: 'Allegra POS',
         theme: ThemeData(
+          snackBarTheme: const SnackBarThemeData(
+            behavior: SnackBarBehavior.floating,
+            showCloseIcon: true,
+          ),
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
           dividerTheme: const DividerThemeData(
@@ -28,23 +32,8 @@ class MyApp extends StatelessWidget {
               indent: 10,
               endIndent: 10),
         ),
-        home: const MyHomePage(),
+        home: const LoadingPage(),
       ),
     );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  bool isLoading = true;
-  @override
-  Widget build(BuildContext context) {
-    return const LoadingPage();
   }
 }

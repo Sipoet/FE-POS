@@ -40,19 +40,59 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   String? _reportType;
   bool _isDisplayTable = false;
   List<DataColumn> _columns = [];
+  List _columnOrder = [];
   SalesPercentageDataSource dataSource = SalesPercentageDataSource();
   @override
   void initState() {
+    SessionState sessionState = context.read<SessionState>();
+    server = sessionState.server;
     dataSource.setData([], 0, true);
+    _fetchTableColumn();
     super.initState();
   }
 
+  void _fetchTableColumn() async {
+    var response = await server.get('item_sales_percentage_reports/columns');
+    if (response.statusCode != 200) {
+      return;
+    }
+    Map responseBody = jsonDecode(response.body);
+    var data = responseBody['data'] ?? {'column_names': [], 'column_order': []};
+    _columnOrder = data['column_order'];
+    _columns = [];
+    setState(() {
+      _tableWidth = 50;
+      data['column_names'].forEach((columnName) {
+        double width = _columnWidth[columnName] ?? 215.0;
+        _tableWidth += width;
+        _columns.add(DataColumn2(
+          fixedWidth: width,
+          onSort: ((columnIndex, ascending) {
+            setState(() {
+              _sortColumnIndex = columnIndex;
+              _sortAscending = ascending;
+            });
+            dataSource.sortData(_sortColumnIndex, _sortAscending);
+          }),
+          label: Text(
+            columnName,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ));
+      });
+    });
+  }
+
   void _displayReport() async {
+    displayFlash(const Text('Dalam proses.'),
+        duration: const Duration(minutes: 5));
     _reportType = 'json';
     _requestReport().then(_displayDatatable);
   }
 
   void _downloadReport() async {
+    displayFlash(const Text('Dalam proses.'),
+        duration: const Duration(minutes: 5));
     _reportType = 'xlsx';
     _requestReport().then(_downloadResponse);
   }
@@ -71,7 +111,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
     List items =
         _itemSelectWidget.getSelectedAll().map((e) => e.getValue()).toList();
     log('supplier $suppliers, brand $brands, item_types: $itemTypes, items: $items');
-    return server.get('/reports/item_sales_percentage', {
+    return server.get('item_sales_percentage_reports', queryParam: {
       'suppliers[]': suppliers,
       'brands[]': brands,
       'item_types[]': itemTypes,
@@ -83,6 +123,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   }
 
   void _downloadResponse(response) async {
+    hideFlash();
     if (response.statusCode != 200) {
       return;
     }
@@ -108,37 +149,15 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   };
   double _tableWidth = 4000;
   void _displayDatatable(response) async {
+    hideFlash();
     if (response.statusCode != 200) {
       return;
     }
     var data = jsonDecode(response.body);
-    var meta = data['meta'] ?? {'column_names': [], 'column_order': []};
-    _columns = [];
     setState(() {
-      _tableWidth = 50;
-      meta['column_names'].forEach((columnName) {
-        double width = _columnWidth[columnName] ?? 215.0;
-        _tableWidth += width;
-        _columns.add(DataColumn2(
-          fixedWidth: width,
-          onSort: ((columnIndex, ascending) {
-            setState(() {
-              _sortColumnIndex = columnIndex;
-              _sortAscending = ascending;
-            });
-            dataSource.sortData(_sortColumnIndex, _sortAscending);
-          }),
-          label: Text(
-            columnName,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ));
-      });
-      List columnOrder = meta['column_order'];
-
       var rawData = data['data'].map<List<Comparable<Object>>>((row) {
         Map attributes = row['attributes'];
-        return columnOrder
+        return _columnOrder
             .map<Comparable<Object>>((key) => attributes[key])
             .toList();
       }).toList();
@@ -185,12 +204,10 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
 
   @override
   Widget build(BuildContext context) {
-    var appState = context.read<SessionState>();
-    server = appState.server;
     DropdownRemoteConnection connection = DropdownRemoteConnection(server);
-    Size size = MediaQuery.of(context).size;
-    final padding = MediaQuery.of(context).padding;
-    double height = size.height - padding.top - padding.bottom - 280;
+    // Size size = MediaQuery.of(context).size;
+    // final padding = MediaQuery.of(context).padding;
+    // double height = size.height - padding.top - padding.bottom - 280;
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -322,8 +339,8 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
           ),
           if (_isDisplayTable) const Divider(),
           if (_isDisplayTable)
-            Container(
-              constraints: BoxConstraints(maxHeight: height),
+            Expanded(
+              // constraints: BoxConstraints(maxHeight: height),
               child: PaginatedDataTable2(
                 source: dataSource,
                 fixedLeftColumns: 1,
@@ -343,6 +360,27 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
         ],
       ),
     );
+  }
+
+  void displayFlash(Widget content,
+      {Duration duration = const Duration(seconds: 5)}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: content,
+        behavior: SnackBarBehavior.floating,
+        showCloseIcon: true,
+        duration: duration,
+        dismissDirection: DismissDirection.up,
+        margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height - 60,
+            left: MediaQuery.of(context).size.width - 350,
+            right: 50),
+      ),
+    );
+  }
+
+  void hideFlash() {
+    ScaffoldMessenger.of(context).clearSnackBars();
   }
 }
 

@@ -15,186 +15,175 @@ class FrameworkLayout extends StatefulWidget {
 }
 
 class _FrameworkLayoutState extends State<FrameworkLayout> {
-  int selectedIndex = 0;
-  int level = 1;
-  Map menuTree = {
-    'home': {
+  List menuTree = [
+    {
       'icon': Icons.home,
       'label': 'Home',
       'page': const HomePage(),
-      'children': {},
+      'children': [],
       'key': 'home'
     },
-    'sales': {
+    {
       'icon': Icons.money,
       'label': 'Sales',
       'page': const Placeholder(),
-      'children': {},
+      'children': [],
       'key': 'sales'
     },
-    'report': {
+    {
       'icon': Icons.pages,
       'label': 'Report',
-      'page': const Placeholder(),
-      'parentTraces': [],
       'key': 'report',
-      'children': {
-        'salesPercentage': {
+      'children': [
+        {
           'icon': Icons.pages,
           'label': 'Penjualan persentase per item',
           'page': const SalesPercentageReportPage(),
           'key': 'salesPercentage',
-          'children': {}
+          'children': []
         },
-        'otherReport': {
+        {
           'icon': Icons.pageview,
           'label': 'report lain',
           'page': const Placeholder(),
           'key': 'otherReport',
-          'children': {
-            'otherReport1': {
+          'children': [
+            {
               'icon': Icons.pageview,
               'label': 'report lain 1',
               'page': const Placeholder(),
               'key': 'otherReport1',
-              'children': {}
+              'children': []
             },
-            'otherReport2': {
+            {
               'icon': Icons.pageview,
               'label': 'report lain 2',
               'page': const Placeholder(),
               'key': 'otherReport2',
-              'children': {}
+              'children': []
             }
-          }
+          ]
         }
-      }
+      ]
     },
-    'master': {
+    {
       'icon': Icons.table_chart,
       'label': 'Master Data',
-      'key': 'purchase',
-      'children': {
-        'discount': {
+      'key': 'master',
+      'controller': MaterialStatesController(),
+      'children': [
+        {
           'icon': Icons.discount,
           'label': 'Discount',
-          'key': 'children',
+          'key': 'discount',
           'page': const DiscountPage(),
+          'children': []
         }
-      }
+      ]
     },
-  };
-
-  var destinations = {};
-  List parentTraces = [];
+  ];
+  Widget activePage = const HomePage();
   @override
   Widget build(BuildContext context) {
-    destinations = menuTree;
-    for (var trace in parentTraces) {
-      destinations = destinations[trace]['children'];
-    }
-    List<Widget> leadingWidgets = <Widget>[];
-    if (parentTraces.isNotEmpty) {
-      leadingWidgets.add(const SizedBox(width: 10));
-      leadingWidgets.add(ElevatedButton.icon(
-          label: const Text('Back'),
-          onPressed: () {
-            setState(() {
-              selectedIndex = 0;
-              parentTraces.removeLast();
-            });
-          },
-          icon: const Icon(Icons.arrow_back)));
-    }
-    var arrDestination = [];
-    destinations
-        .forEach((label, destination) => arrDestination.add(destination));
+    var sessionState = context.watch<SessionState>();
+    double width = MediaQuery.of(context).size.width - 10;
     return LayoutBuilder(builder: (context, constraints) {
       return Scaffold(
-        body: Row(
-          children: [
-            SafeArea(
-              child: NavigationRail(
-                extended: constraints.maxWidth >= 600,
-                leading: Row(
-                  children: leadingWidgets,
-                ),
-                trailing: ElevatedButton.icon(
-                  label: const Text('Log Out'),
-                  icon: const Icon(Icons.power_settings_new),
-                  onPressed: () {
-                    _logout();
-                  },
-                ),
-                destinations: [
-                  for (var destination in arrDestination)
-                    NavigationRailDestination(
-                      icon: Icon(destination['icon']),
-                      label: Text(destination['label']),
-                    )
-                ],
-                selectedIndex: selectedIndex,
-                onDestinationSelected: (value) {
-                  setState(() {
-                    var destination = arrDestination[value];
-                    if (destination['children'].isEmpty) {
-                      selectedIndex = value;
-                    } else {
-                      parentTraces.add(destination['key']);
-                      selectedIndex = 0;
-                      destinations = destination['children'];
-                    }
-                  });
-                },
-              ),
-            ),
-            Expanded(
-              child: Container(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                child: arrDestination[selectedIndex]['page'],
-              ),
+        appBar: AppBar(
+          title: Text(
+            sessionState.pageTitle,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          actions: [
+            Container(
+              constraints: BoxConstraints(maxWidth: width),
+              child: MenuBar(
+                  children: decorateMenu(menuTree) +
+                      [
+                        MenuItemButton(
+                          leadingIcon: const Icon(Icons.power_settings_new),
+                          onPressed: () {
+                            _logout();
+                          },
+                          child: const Text('Log Out'),
+                        ),
+                      ]),
             ),
           ],
+        ),
+        body: Expanded(
+          child: Container(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            child: activePage,
+          ),
         ),
       );
     });
   }
 
+  List<Widget> decorateMenu(List destinations) {
+    var sessionState = context.watch<SessionState>();
+    return [
+      for (var destination in destinations)
+        if (destination['children'].isEmpty)
+          MenuItemButton(
+              leadingIcon: Icon(destination['icon']),
+              child: Text(destination['label']),
+              onPressed: () {
+                setState(() {
+                  activePage = destination['page'];
+                  sessionState.pageTitle = destination['label'];
+                });
+              })
+        else
+          SubmenuButton(
+            leadingIcon: Icon(destination['icon']),
+            menuChildren: decorateMenu(destination['children']),
+            child: Text(destination['label']),
+          )
+    ];
+  }
+
   void _logout() {
     SessionState sessionState = context.read<SessionState>();
-    var messenger = ScaffoldMessenger.of(context);
     try {
       sessionState.logout(onSuccess: (response) {
         var body = jsonDecode(response.body);
-        messenger.showSnackBar(
-          SnackBar(
-              content: Text(
-            body['message'],
-            style: const TextStyle(color: Colors.green),
-          )),
-        );
+        displayFlash(Text(
+          body['message'],
+          style: const TextStyle(color: Colors.green),
+        ));
+
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
                 builder: (BuildContext context) => const LoginPage()));
       }, onFailed: (response) {
         var body = jsonDecode(response.body);
-        messenger.showSnackBar(
-          SnackBar(
-              content: Text(
-            body['error'],
-            style: const TextStyle(color: Colors.red),
-          )),
-        );
+        displayFlash(Text(
+          body['error'],
+          style: const TextStyle(color: Colors.red),
+        ));
       });
     } catch (error) {
-      messenger.showSnackBar(
-        SnackBar(
-            content: Text(
-          error.toString(),
-          style: const TextStyle(color: Colors.red),
-        )),
-      );
+      displayFlash(Text(
+        error.toString(),
+        style: const TextStyle(color: Colors.red),
+      ));
     }
+  }
+
+  void displayFlash(Widget content) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Center(child: content),
+        behavior: SnackBarBehavior.floating,
+        dismissDirection: DismissDirection.up,
+        margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height - 60,
+            left: 50,
+            right: 50),
+      ),
+    );
   }
 }

@@ -9,7 +9,7 @@ class DropdownRemoteConnection {
   final Server server;
   Future<List> getData(String path, {String query = ''}) async {
     try {
-      var response = await server.get(path, {'query': query});
+      var response = await server.get(path, queryParam: {'query': query});
       if (response.statusCode == 200) {
         Map responseBody = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
         List list = responseBody['data'];

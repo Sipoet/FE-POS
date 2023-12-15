@@ -1,11 +1,11 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class Server {
-  Server({this.host = 'localhost', this.port = 3000, this.jwt = ''});
   String host;
-  int port;
   String jwt;
+  // late IOClient http;
+  Server({this.host = 'allegra-pos.net', this.jwt = ''});
 
   String requestBodyByType(body, type) {
     switch (type) {
@@ -25,25 +25,27 @@ class Server {
     }
   }
 
-  Future post(String path, Map body, {String type = 'json'}) async {
+  Future post(String path, {Map body = const {}, String type = 'json'}) async {
     Uri url = _generateUrl(path, {});
     String requestBody = requestBodyByType(body, type);
     return http.post(url, body: requestBody, headers: generateHeaders(type));
   }
 
-  Future get(String path, Map<String, dynamic> queryParam,
-      {String type = 'json'}) async {
+  Future get(String path,
+      {Map<String, dynamic> queryParam = const {},
+      String type = 'json'}) async {
     Uri url = _generateUrl(path, queryParam);
     return http.get(url, headers: generateHeaders(type));
   }
 
-  Future put(String path, Map body, {String type = 'json'}) async {
+  Future put(String path, {Map body = const {}, String type = 'json'}) async {
     Uri url = _generateUrl(path, {});
     String requestBody = requestBodyByType(body, type);
     return http.put(url, body: requestBody, headers: generateHeaders(type));
   }
 
-  Future delete(String path, Map body, {String type = 'json'}) async {
+  Future delete(String path,
+      {Map body = const {}, String type = 'json'}) async {
     Uri url = _generateUrl(path, {});
     String requestBody = requestBodyByType(body, type);
     return http.delete(url, body: requestBody, headers: generateHeaders(type));
@@ -64,10 +66,9 @@ class Server {
 
   Uri _generateUrl(String path, Map<String, dynamic> queryParams) {
     return Uri(
-        scheme: 'http',
+        scheme: 'https',
         host: host,
-        port: port,
-        path: path,
+        path: "api/$path",
         queryParameters: queryParams);
   }
 }

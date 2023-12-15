@@ -1,8 +1,9 @@
 import 'dart:convert';
-import 'package:fe_pos/main.dart';
+import 'package:fe_pos/widget/framework_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -32,22 +33,23 @@ class _LoginPageState extends State<LoginPage> {
             key: _formKey,
             child: Column(
               children: [
-                TextFormField(
-                  initialValue: sessionState.server.host,
-                  decoration: const InputDecoration(
-                    icon: Icon(Icons.screen_search_desktop),
-                    labelText: 'Server',
+                if (!kIsWeb)
+                  TextFormField(
+                    initialValue: sessionState.server.host,
+                    decoration: const InputDecoration(
+                      icon: Icon(Icons.screen_search_desktop),
+                      labelText: 'Server',
+                    ),
+                    onSaved: (newValue) {
+                      _host = newValue.toString().trim();
+                    },
+                    validator: (value) {
+                      if (value == null || value.toString().trim().isEmpty) {
+                        return 'server belum diisi';
+                      }
+                      return null;
+                    },
                   ),
-                  onSaved: (newValue) {
-                    _host = newValue.toString().trim();
-                  },
-                  validator: (value) {
-                    if (value == null || value.toString().trim().isEmpty) {
-                      return 'server belum diisi';
-                    }
-                    return null;
-                  },
-                ),
                 TextFormField(
                   decoration: const InputDecoration(
                     icon: Icon(Icons.person),
@@ -93,9 +95,7 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: () {
                         // Validate returns true if the form is valid, or false otherwise.
                         if (_formKey.currentState!.validate()) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Loading')),
-                          );
+                          displayFlash(const Text('Loading'));
                           _submit(sessionState, ScaffoldMessenger.of(context));
                         }
                       },
@@ -120,41 +120,46 @@ class _LoginPageState extends State<LoginPage> {
             messenger.clearSnackBars();
             _redirectToHomePage();
             var body = jsonDecode(response.body);
-            messenger.showSnackBar(
-              SnackBar(
-                  content: Text(
-                body['message'],
-                style: const TextStyle(color: Colors.green),
-              )),
-            );
+            displayFlash(Text(
+              body['message'],
+              style: const TextStyle(color: Colors.green),
+            ));
           },
           onFailed: (response) {
             messenger.clearSnackBars();
             var body = jsonDecode(response.body);
-            messenger.showSnackBar(
-              SnackBar(
-                  content: Text(
-                body['error'],
-                style: const TextStyle(color: Colors.red),
-              )),
-            );
+            displayFlash(Text(
+              body['error'],
+              style: const TextStyle(color: Colors.red),
+            ));
           });
     } catch (error) {
-      messenger.showSnackBar(
-        SnackBar(
-            content: Text(
-          error.toString(),
-          style: const TextStyle(color: Colors.red),
-        )),
-      );
+      displayFlash(Text(
+        error.toString(),
+        style: const TextStyle(color: Colors.red),
+      ));
     }
+  }
+
+  void displayFlash(Widget content) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Center(child: content),
+        behavior: SnackBarBehavior.floating,
+        dismissDirection: DismissDirection.up,
+        margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height - 60,
+            left: 50,
+            right: 50),
+      ),
+    );
   }
 
   void _redirectToHomePage() {
     Navigator.pushReplacement<void, void>(
         context,
         MaterialPageRoute<void>(
-          builder: (BuildContext context) => const MyHomePage(),
+          builder: (BuildContext context) => const FrameworkLayout(),
         ));
   }
 }
