@@ -102,8 +102,6 @@ msix_config:
   msix_version: 0.0.0.1
   logo_path: assets/logo-allegra.ico
   capabilities: internetClient
-  certificate_path: assets/certs/CERTIFICATE.pfx
-  certificate_password: ''
   app_installer: #<-- app installer configuration
     publish_folder_path: "src/windows"
     hours_between_update_checks: 0
