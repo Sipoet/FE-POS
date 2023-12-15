@@ -7,7 +7,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        if (constraints.maxWidth > 800) {
+        if (constraints.maxWidth > 680.0) {
           return _desktopHome();
         }
         return _mobileHome();
@@ -37,7 +37,7 @@ class HomePage extends StatelessWidget {
 
   Widget _desktopHome() {
     List<Widget> menubar = [
-      const Text('report',
+      const Text('Desktop',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
       IconButton(
           onPressed: () {

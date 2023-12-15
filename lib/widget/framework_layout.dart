@@ -4,6 +4,7 @@ import 'package:fe_pos/page/discount_page.dart';
 import 'package:fe_pos/page/report_page.dart';
 import 'package:fe_pos/page/home_page.dart';
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/model/menu.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 
@@ -15,81 +16,71 @@ class FrameworkLayout extends StatefulWidget {
 }
 
 class _FrameworkLayoutState extends State<FrameworkLayout> {
-  List menuTree = [
-    {
-      'icon': Icons.home,
-      'isClosed': true,
-      'label': 'Home',
-      'page': const HomePage(),
-      'children': [],
-      'key': 'home'
-    },
-    {
-      'icon': Icons.money,
-      'isClosed': true,
-      'label': 'Sales',
-      'page': const Placeholder(),
-      'children': [],
-      'key': 'sales'
-    },
-    {
-      'icon': Icons.pages,
-      'isClosed': true,
-      'label': 'Report',
-      'key': 'report',
-      'children': [
-        {
-          'icon': Icons.pages,
-          'isClosed': true,
-          'label': 'Penjualan persentase per item',
-          'page': const SalesPercentageReportPage(),
-          'key': 'salesPercentage',
-          'children': []
-        },
-        {
-          'icon': Icons.pageview,
-          'isClosed': true,
-          'label': 'report lain',
-          'page': const Placeholder(),
-          'key': 'otherReport',
-          'children': [
-            {
-              'icon': Icons.pageview,
-              'isClosed': true,
-              'label': 'report lain 1',
-              'page': const Placeholder(),
-              'key': 'otherReport1',
-              'children': []
-            },
-            {
-              'icon': Icons.pageview,
-              'isClosed': true,
-              'label': 'report lain 2',
-              'page': const Placeholder(),
-              'key': 'otherReport2',
-              'children': []
-            }
-          ]
-        }
-      ]
-    },
-    {
-      'icon': Icons.table_chart,
-      'isClosed': true,
-      'label': 'Master Data',
-      'key': 'master',
-      'controller': MaterialStatesController(),
-      'children': [
-        {
-          'icon': Icons.discount,
-          'isClosed': true,
-          'label': 'Discount',
-          'key': 'discount',
-          'page': const DiscountPage(),
-          'children': []
-        }
-      ]
-    },
+  List<Menu> menuTree = <Menu>[
+    Menu(
+        icon: Icons.home,
+        isClosed: true,
+        label: 'Home',
+        page: () => const HomePage(),
+        key: 'home'),
+    Menu(
+        icon: Icons.money,
+        isClosed: true,
+        label: 'Sales',
+        page: () => const Placeholder(),
+        key: 'sales'),
+    Menu(
+        icon: Icons.pages,
+        isClosed: true,
+        label: 'Report',
+        key: 'report',
+        page: () => const Placeholder(),
+        children: [
+          Menu(
+            icon: Icons.pages,
+            isClosed: true,
+            label: 'Penjualan persentase per item',
+            page: () => const SalesPercentageReportPage(),
+            key: 'salesPercentage',
+          ),
+          Menu(
+              icon: Icons.pageview,
+              isClosed: true,
+              label: 'report lain',
+              page: () => const Placeholder(),
+              key: 'otherReport',
+              children: [
+                Menu(
+                  icon: Icons.pageview,
+                  isClosed: true,
+                  label: 'report lain 1',
+                  page: () => const Placeholder(),
+                  key: 'otherReport1',
+                ),
+                Menu(
+                    icon: Icons.pageview,
+                    isClosed: true,
+                    label: 'report lain 2',
+                    page: () => const Placeholder(),
+                    key: 'otherReport2',
+                    children: [])
+              ])
+        ]),
+    Menu(
+        icon: Icons.table_chart,
+        isClosed: true,
+        label: 'Master Data',
+        key: 'master',
+        page: () => const Placeholder(),
+        children: [
+          Menu(
+              icon: Icons.discount,
+              isClosed: true,
+              label: 'Discount',
+              key: 'discount',
+              page: () => const DiscountPage(),
+              children: [])
+        ]),
   ];
 
   @override
@@ -151,7 +142,7 @@ class DesktopLayout extends StatefulWidget {
   const DesktopLayout(
       {super.key, required this.menuTree, required this.logout});
 
-  final List menuTree;
+  final List<Menu> menuTree;
   final Function logout;
 
   @override
@@ -162,10 +153,10 @@ class _DesktopLayoutState extends State<DesktopLayout> {
   Widget _activePage = const HomePage();
 
   String pageTitle = 'Home';
-
+  List<Widget> tabs = [];
   @override
   Widget build(BuildContext context) {
-    var menus = decorateMenu(widget.menuTree);
+    var menus = decorateMenus(widget.menuTree);
     menus.add(
       MenuItemButton(
         leadingIcon: const Icon(Icons.power_settings_new),
@@ -183,33 +174,41 @@ class _DesktopLayoutState extends State<DesktopLayout> {
         ),
         actions: menus,
       ),
-      body: Expanded(
-        child: Container(
-          color: Theme.of(context).colorScheme.primaryContainer,
-          child: _activePage,
-        ),
+      body: bodyWidget(),
+    );
+  }
+
+  Widget bodyWidget() {
+    return Container(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: Column(
+        children: [tabWidget(), _activePage],
       ),
     );
   }
 
-  List<Widget> decorateMenu(List destinations) {
-    return destinations.map<Widget>((destination) {
-      if (destination['children'] == null || destination['children'].isEmpty) {
+  Widget tabWidget() {
+    return TabBar(tabs: tabs);
+  }
+
+  List<Widget> decorateMenus(List<Menu> fromMenus) {
+    return fromMenus.map<Widget>((menu) {
+      if (menu.children.isEmpty) {
         return MenuItemButton(
-          leadingIcon: Icon(destination['icon']),
+          leadingIcon: Icon(menu.icon),
           onPressed: () {
             setState(() {
-              _activePage = destination['page'];
-              pageTitle = destination['label'];
+              _activePage = menu.page();
+              pageTitle = menu.label;
             });
           },
-          child: Text(destination['label']),
+          child: Text(menu.label),
         );
       } else {
         return SubmenuButton(
-          leadingIcon: Icon(destination['icon']),
-          menuChildren: decorateMenu(destination['children']),
-          child: Text(destination['label']),
+          leadingIcon: Icon(menu.icon),
+          menuChildren: decorateMenus(menu.children),
+          child: Text(menu.label),
         );
       }
     }).toList();
@@ -219,7 +218,7 @@ class _DesktopLayoutState extends State<DesktopLayout> {
 class MobileLayout extends StatefulWidget {
   const MobileLayout({super.key, required this.menuTree, required this.logout});
 
-  final List menuTree;
+  final List<Menu> menuTree;
   final Function logout;
 
   @override
@@ -250,7 +249,6 @@ class _MobileLayoutState extends State<MobileLayout> {
 
   @override
   Widget build(BuildContext context) {
-    print("build ${_menus.length.toString()}");
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -263,58 +261,50 @@ class _MobileLayoutState extends State<MobileLayout> {
         itemBuilder: (context, index) => _menus[index],
         itemCount: _menus.length,
       )),
-      body: Expanded(
-        child: Container(
-          color: Theme.of(context).colorScheme.primaryContainer,
-          child: _activePage,
-        ),
+      body: Container(
+        color: Theme.of(context).colorScheme.primaryContainer,
+        child: _activePage,
       ),
     );
   }
 
-  Widget decorateMenu(destination) {
-    if (destination['children'] == null || destination['children'].isEmpty) {
+  Widget decorateMenu(Menu menu) {
+    if (menu.children.isEmpty) {
       return ListTile(
-        key: ValueKey(destination['key']),
-        leading: Icon(destination['icon']),
+        key: ValueKey(menu.key),
+        leading: Icon(menu.icon),
         onTap: () {
           setState(() {
-            _activePage = destination['page'];
-            pageTitle = destination['label'];
+            _activePage = menu.page();
+            pageTitle = menu.label;
           });
         },
-        title: Text(destination['label']),
+        title: Text(menu.label),
       );
     } else {
       return ListTile(
-        key: ValueKey(destination['key']),
-        leading: Icon(destination['icon']),
-        title: Text(destination['label']),
+        key: ValueKey(menu.key),
+        leading: Icon(menu.icon),
+        title: Text(menu.label),
         onTap: () {
           setState(() {
-            destination['isClosed'] = destination['isClosed'] ?? true;
-            destination['isClosed'] = !destination['isClosed'];
+            menu.isClosed = !menu.isClosed;
             int index = _menus.indexWhere((tile) {
-              return tile.key == ValueKey(destination['key']);
+              return tile.key == ValueKey(menu.key);
             });
-            if (destination['isClosed']) {
-              int childrenCount = destination['children'].length;
+            if (menu.isClosed) {
+              int childrenCount = menu.children.length;
               _menus.removeRange(index + 1, index + childrenCount + 1);
             } else {
-              print("before add ${_menus.length.toString()}");
-
-              _menus.insertAll(
-                  index + 1,
-                  destination['children'].map<Widget>((childMenu) {
-                    return decorateMenu(childMenu);
-                  }));
-              print("add ${_menus.length.toString()}");
+              _menus.insertAll(index + 1,
+                  menu.children.map<Widget>((childMenu) {
+                return decorateMenu(childMenu);
+              }));
             }
           });
         },
-        trailing: Icon(destination['isClosed']
-            ? Icons.arrow_drop_down
-            : Icons.arrow_drop_up),
+        trailing:
+            Icon(menu.isClosed ? Icons.arrow_drop_down : Icons.arrow_drop_up),
       );
     }
   }

@@ -80,7 +80,6 @@ class _DiscountPageState extends State<DiscountPage> {
     }
     List discounts = await fetchDiscounts();
     hideFlash();
-    // hideFlash();
     setState(() {
       var rawData = discounts.map<List<Comparable<Object>>>((row) {
         Map attributes = row['attributes'];
@@ -116,7 +115,6 @@ class _DiscountPageState extends State<DiscountPage> {
   void editForm() {}
   @override
   Widget build(BuildContext context) {
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
     _source.editForm = editForm;
     return Padding(
       padding: const EdgeInsets.all(8.0),
