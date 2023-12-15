@@ -83,33 +83,28 @@ class _FrameworkLayoutState extends State<FrameworkLayout> {
     },
   ];
   Widget activePage = const HomePage();
+  String pageTitle = 'Home';
   @override
   Widget build(BuildContext context) {
-    var sessionState = context.watch<SessionState>();
     double width = MediaQuery.of(context).size.width - 10;
     return LayoutBuilder(builder: (context, constraints) {
+      var menus = decorateMenu(menuTree);
+      menus.add(
+        MenuItemButton(
+          leadingIcon: const Icon(Icons.power_settings_new),
+          onPressed: () {
+            _logout();
+          },
+          child: const Text('Log Out'),
+        ),
+      );
       return Scaffold(
         appBar: AppBar(
           title: Text(
-            sessionState.pageTitle,
+            pageTitle,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          actions: [
-            Container(
-              constraints: BoxConstraints(maxWidth: width),
-              child: MenuBar(
-                  children: decorateMenu(menuTree) +
-                      [
-                        MenuItemButton(
-                          leadingIcon: const Icon(Icons.power_settings_new),
-                          onPressed: () {
-                            _logout();
-                          },
-                          child: const Text('Log Out'),
-                        ),
-                      ]),
-            ),
-          ],
+          actions: menus,
         ),
         body: Expanded(
           child: Container(
@@ -122,26 +117,26 @@ class _FrameworkLayoutState extends State<FrameworkLayout> {
   }
 
   List<Widget> decorateMenu(List destinations) {
-    var sessionState = context.watch<SessionState>();
-    return [
-      for (var destination in destinations)
-        if (destination['children'].isEmpty)
-          MenuItemButton(
-              leadingIcon: Icon(destination['icon']),
-              child: Text(destination['label']),
-              onPressed: () {
-                setState(() {
-                  activePage = destination['page'];
-                  sessionState.pageTitle = destination['label'];
-                });
-              })
-        else
-          SubmenuButton(
-            leadingIcon: Icon(destination['icon']),
-            menuChildren: decorateMenu(destination['children']),
-            child: Text(destination['label']),
-          )
-    ];
+    return destinations.map<Widget>((destination) {
+      if (destination['children'] == null || destination['children'].isEmpty) {
+        return MenuItemButton(
+          leadingIcon: Icon(destination['icon']),
+          onPressed: () {
+            setState(() {
+              activePage = destination['page'];
+              pageTitle = destination['label'];
+            });
+          },
+          child: Text(destination['label']),
+        );
+      } else {
+        return SubmenuButton(
+          leadingIcon: Icon(destination['icon']),
+          menuChildren: decorateMenu(destination['children']),
+          child: Text(destination['label']),
+        );
+      }
+    }).toList();
   }
 
   void _logout() {

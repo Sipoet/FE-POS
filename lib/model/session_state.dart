@@ -8,7 +8,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SessionState extends ChangeNotifier {
   Server server = Server();
-  String pageTitle = 'Home';
 
   final _storage = const FlutterSecureStorage();
 
