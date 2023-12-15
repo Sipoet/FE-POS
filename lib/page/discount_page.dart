@@ -173,12 +173,12 @@ class _DiscountPageState extends State<DiscountPage> {
                 sortAscending: _sortAscending,
                 fixedLeftColumns: 1,
                 border: TableBorder.all(
-                    width: 1, color: colorScheme.onSecondary.withOpacity(0.3)),
+                    width: 1, color: Colors.black45.withOpacity(0.3)),
                 sortArrowAlwaysVisible: false,
                 empty: const Text('Data tidak ditemukan'),
                 headingRowColor: MaterialStateProperty.resolveWith<Color?>(
                     (Set<MaterialState> states) {
-                  return colorScheme.onSecondaryContainer.withOpacity(0.08);
+                  return Colors.blueAccent.withOpacity(0.2);
                 }),
               ),
             ),

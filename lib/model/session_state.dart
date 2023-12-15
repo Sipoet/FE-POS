@@ -12,13 +12,18 @@ class SessionState extends ChangeNotifier {
   final _storage = const FlutterSecureStorage();
 
   Future fetchServerData() async {
-    String? sessionString = await _storage.read(key: 'server');
-    if (sessionString != null) {
-      var sessionData = jsonDecode(sessionString);
-      server.host = sessionData['host'];
-      server.host = 'allegra-pos.net';
-      server.jwt = sessionData['jwt'];
+    try {
+      String? sessionString = await _storage.read(key: 'server');
+      if (sessionString != null) {
+        var sessionData = jsonDecode(sessionString);
+        server.host = sessionData['host'];
+        server.host = 'allegra-pos.net';
+        server.jwt = sessionData['jwt'];
+      }
+    } catch (e) {
+      // unknown error
     }
+
     return await isLogin();
   }
 
