@@ -21,47 +21,51 @@ class _FrameworkLayoutState extends State<FrameworkLayout> {
         icon: Icons.home,
         isClosed: true,
         label: 'Home',
-        page: () => const HomePage(),
+        page: const HomePage(),
         key: 'home'),
     Menu(
         icon: Icons.money,
         isClosed: true,
         label: 'Sales',
-        page: () => const Placeholder(),
+        page: const Placeholder(
+          child: Text('sales'),
+        ),
         key: 'sales'),
     Menu(
         icon: Icons.pages,
         isClosed: true,
         label: 'Report',
         key: 'report',
-        page: () => const Placeholder(),
         children: [
           Menu(
             icon: Icons.pages,
             isClosed: true,
             label: 'Penjualan persentase per item',
-            page: () => const SalesPercentageReportPage(),
+            page: const SalesPercentageReportPage(),
             key: 'salesPercentage',
           ),
           Menu(
               icon: Icons.pageview,
               isClosed: true,
               label: 'report lain',
-              page: () => const Placeholder(),
               key: 'otherReport',
               children: [
                 Menu(
                   icon: Icons.pageview,
                   isClosed: true,
                   label: 'report lain 1',
-                  page: () => const Placeholder(),
+                  page: const Placeholder(
+                    child: Text('report lain 1'),
+                  ),
                   key: 'otherReport1',
                 ),
                 Menu(
                     icon: Icons.pageview,
                     isClosed: true,
                     label: 'report lain 2',
-                    page: () => const Placeholder(),
+                    page: const Placeholder(
+                      child: Text('report lain 2'),
+                    ),
                     key: 'otherReport2',
                     children: [])
               ])
@@ -71,14 +75,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout> {
         isClosed: true,
         label: 'Master Data',
         key: 'master',
-        page: () => const Placeholder(),
+        page: const Placeholder(),
         children: [
           Menu(
               icon: Icons.discount,
               isClosed: true,
               label: 'Discount',
               key: 'discount',
-              page: () => const DiscountPage(),
+              page: const DiscountPage(),
               children: [])
         ]),
   ];
@@ -124,7 +128,8 @@ class _FrameworkLayoutState extends State<FrameworkLayout> {
   }
 
   void displayFlash(Widget content) {
-    ScaffoldMessenger.of(context).showSnackBar(
+    var messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(
       SnackBar(
         content: Center(child: content),
         behavior: SnackBarBehavior.floating,
@@ -135,6 +140,21 @@ class _FrameworkLayoutState extends State<FrameworkLayout> {
             right: 50),
       ),
     );
+    // messenger.showMaterialBanner(
+    //         const MaterialBanner(
+    //           padding: EdgeInsets.all(20),
+    //           content: Text('Hello, I am a Material Banner'),
+    //           leading: Icon(Icons.agriculture_outlined),
+    //           backgroundColor: Colors.green,
+    //           actions: <Widget>[
+    //             TextButton(
+    //               onPressed: (null){
+    //                 messenger.clearMaterialBanners();
+    //               },
+    //               child: Text('DISMISS'),
+    //             ),
+    //           ],
+    //         ));
   }
 }
 
@@ -149,11 +169,33 @@ class DesktopLayout extends StatefulWidget {
   State<DesktopLayout> createState() => _DesktopLayoutState();
 }
 
-class _DesktopLayoutState extends State<DesktopLayout> {
-  Widget _activePage = const HomePage();
-
+class _DesktopLayoutState extends State<DesktopLayout>
+    with TickerProviderStateMixin {
   String pageTitle = 'Home';
-  List<Widget> tabs = [];
+  List<Widget> tabs = List.filled(99, const SizedBox(), growable: true);
+
+  List<Widget> tabViews = List.filled(99, const SizedBox(), growable: true);
+  late TabController _controller;
+  int _emptyTabIndex = 0;
+  @override
+  void initState() {
+    _controller = TabController(
+      vsync: this,
+      length: 99,
+      initialIndex: _emptyTabIndex,
+    );
+    addTab(const Text('Home'), const HomePage());
+    super.initState();
+  }
+
+  void addTab(Widget tab, Widget tabview) {
+    _emptyTabIndex += 1;
+    tabViews.replaceRange(_emptyTabIndex, _emptyTabIndex + 1, [tabview]);
+    tabs.replaceRange(_emptyTabIndex, _emptyTabIndex + 1, [tab]);
+
+    _controller.animateTo(_emptyTabIndex);
+  }
+
   @override
   Widget build(BuildContext context) {
     var menus = decorateMenus(widget.menuTree);
@@ -173,6 +215,11 @@ class _DesktopLayoutState extends State<DesktopLayout> {
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         actions: menus,
+        bottom: TabBar(
+          isScrollable: true,
+          controller: _controller,
+          tabs: tabs,
+        ),
       ),
       body: bodyWidget(),
     );
@@ -181,14 +228,16 @@ class _DesktopLayoutState extends State<DesktopLayout> {
   Widget bodyWidget() {
     return Container(
       color: Theme.of(context).colorScheme.primaryContainer,
-      child: Column(
-        children: [tabWidget(), _activePage],
-      ),
+      child: tabWidget(),
     );
   }
 
   Widget tabWidget() {
-    return TabBar(tabs: tabs);
+    return TabBarView(
+      controller: _controller,
+      children: tabViews,
+    );
+    // return TabBar(tabs: tabs);
   }
 
   List<Widget> decorateMenus(List<Menu> fromMenus) {
@@ -198,8 +247,7 @@ class _DesktopLayoutState extends State<DesktopLayout> {
           leadingIcon: Icon(menu.icon),
           onPressed: () {
             setState(() {
-              _activePage = menu.page();
-              pageTitle = menu.label;
+              addTab(Text(menu.label), menu.page);
             });
           },
           child: Text(menu.label),
@@ -275,7 +323,7 @@ class _MobileLayoutState extends State<MobileLayout> {
         leading: Icon(menu.icon),
         onTap: () {
           setState(() {
-            _activePage = menu.page();
+            _activePage = menu.page;
             pageTitle = menu.label;
           });
         },

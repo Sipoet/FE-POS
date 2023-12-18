@@ -6,12 +6,12 @@ class Menu {
   String label;
   String key;
   List<Menu> children;
-  Widget Function() page;
+  Widget page;
   Menu(
       {required this.icon,
       this.isClosed = true,
       required this.label,
       required this.key,
       this.children = const <Menu>[],
-      required this.page});
+      this.page = const Placeholder()});
 }
