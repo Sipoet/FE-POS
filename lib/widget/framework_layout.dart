@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/flash.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/page/login_page.dart';
 import 'package:fe_pos/page/discount_page.dart';
@@ -6,7 +7,7 @@ import 'package:fe_pos/page/home_page.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/model/menu.dart';
 import 'package:provider/provider.dart';
-import 'dart:convert';
+import 'package:fe_pos/tool/tab_manager.dart';
 
 class FrameworkLayout extends StatefulWidget {
   const FrameworkLayout({super.key});
@@ -15,7 +16,8 @@ class FrameworkLayout extends StatefulWidget {
   State<FrameworkLayout> createState() => _FrameworkLayoutState();
 }
 
-class _FrameworkLayoutState extends State<FrameworkLayout> {
+class _FrameworkLayoutState extends State<FrameworkLayout>
+    with TickerProviderStateMixin {
   List<Menu> menuTree = <Menu>[
     Menu(
         icon: Icons.home,
@@ -86,75 +88,64 @@ class _FrameworkLayoutState extends State<FrameworkLayout> {
               children: [])
         ]),
   ];
+  late TabManager tabManager;
+  late Flash flash;
+  @override
+  void initState() {
+    flash = Flash(context);
+    tabManager = TabManager(this);
+    tabManager.addTab('Home', const HomePage());
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      if (constraints.maxWidth < 680.0) {
-        return MobileLayout(menuTree: menuTree, logout: _logout);
-      } else {
-        return DesktopLayout(menuTree: menuTree, logout: _logout);
-      }
-    });
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider<TabManager>(create: (_) => tabManager),
+        ],
+        child: LayoutBuilder(builder: (context, constraints) {
+          if (constraints.maxWidth < 800.0) {
+            return MobileLayout(menuTree: menuTree, logout: _logout);
+          } else {
+            return DesktopLayout(menuTree: menuTree, logout: _logout);
+          }
+        }));
   }
 
   void _logout() {
     SessionState sessionState = context.read<SessionState>();
     try {
-      sessionState.logout(onSuccess: (response) {
-        var body = jsonDecode(response.body);
-        displayFlash(Text(
-          body['message'],
-          style: const TextStyle(color: Colors.green),
-        ));
+      sessionState.logout(
+          context: context,
+          onSuccess: (response) {
+            var body = response.data;
+            flash.show(
+                Text(
+                  body['message'],
+                ),
+                MessageType.success);
 
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (BuildContext context) => const LoginPage()));
-      }, onFailed: (response) {
-        var body = jsonDecode(response.body);
-        displayFlash(Text(
-          body['error'],
-          style: const TextStyle(color: Colors.red),
-        ));
-      });
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (BuildContext context) => const LoginPage()));
+          },
+          onFailed: (response) {
+            var body = response.data;
+            flash.show(
+                Text(
+                  body['error'],
+                ),
+                MessageType.failed);
+          });
     } catch (error) {
-      displayFlash(Text(
-        error.toString(),
-        style: const TextStyle(color: Colors.red),
-      ));
+      flash.show(
+          Text(
+            error.toString(),
+          ),
+          MessageType.failed);
     }
-  }
-
-  void displayFlash(Widget content) {
-    var messenger = ScaffoldMessenger.of(context);
-    messenger.showSnackBar(
-      SnackBar(
-        content: Center(child: content),
-        behavior: SnackBarBehavior.floating,
-        dismissDirection: DismissDirection.up,
-        margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).size.height - 60,
-            left: 50,
-            right: 50),
-      ),
-    );
-    // messenger.showMaterialBanner(
-    //         const MaterialBanner(
-    //           padding: EdgeInsets.all(20),
-    //           content: Text('Hello, I am a Material Banner'),
-    //           leading: Icon(Icons.agriculture_outlined),
-    //           backgroundColor: Colors.green,
-    //           actions: <Widget>[
-    //             TextButton(
-    //               onPressed: (null){
-    //                 messenger.clearMaterialBanners();
-    //               },
-    //               child: Text('DISMISS'),
-    //             ),
-    //           ],
-    //         ));
   }
 }
 
@@ -172,32 +163,10 @@ class DesktopLayout extends StatefulWidget {
 class _DesktopLayoutState extends State<DesktopLayout>
     with TickerProviderStateMixin {
   String pageTitle = 'Home';
-  List<Widget> tabs = List.filled(99, const SizedBox(), growable: true);
-
-  List<Widget> tabViews = List.filled(99, const SizedBox(), growable: true);
-  late TabController _controller;
-  int _emptyTabIndex = 0;
-  @override
-  void initState() {
-    _controller = TabController(
-      vsync: this,
-      length: 99,
-      initialIndex: _emptyTabIndex,
-    );
-    addTab(const Text('Home'), const HomePage());
-    super.initState();
-  }
-
-  void addTab(Widget tab, Widget tabview) {
-    _emptyTabIndex += 1;
-    tabViews.replaceRange(_emptyTabIndex, _emptyTabIndex + 1, [tabview]);
-    tabs.replaceRange(_emptyTabIndex, _emptyTabIndex + 1, [tab]);
-
-    _controller.animateTo(_emptyTabIndex);
-  }
 
   @override
   Widget build(BuildContext context) {
+    var tabManager = context.read<TabManager>();
     var menus = decorateMenus(widget.menuTree);
     menus.add(
       MenuItemButton(
@@ -208,20 +177,40 @@ class _DesktopLayoutState extends State<DesktopLayout>
         child: const Text('Log Out'),
       ),
     );
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          pageTitle,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<TabManager>(create: (_) => tabManager),
+      ],
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            pageTitle,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          actions: menus,
+          bottom: TabBar(
+            isScrollable: true,
+            controller: tabManager.controller,
+            tabs: tabManager.tabs
+                .map<Widget>((header) => Row(
+                      children: [
+                        Text(
+                          header,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        if (header.isNotEmpty)
+                          IconButton(
+                              onPressed: () => setState(() {
+                                    tabManager.removeTab(header);
+                                  }),
+                              icon: const Icon(Icons.close))
+                      ],
+                    ))
+                .toList(),
+          ),
         ),
-        actions: menus,
-        bottom: TabBar(
-          isScrollable: true,
-          controller: _controller,
-          tabs: tabs,
-        ),
+        body: bodyWidget(),
       ),
-      body: bodyWidget(),
     );
   }
 
@@ -233,21 +222,23 @@ class _DesktopLayoutState extends State<DesktopLayout>
   }
 
   Widget tabWidget() {
+    var tabManager = context.read<TabManager>();
     return TabBarView(
-      controller: _controller,
-      children: tabViews,
+      controller: tabManager.controller,
+      children: tabManager.tabViews,
     );
     // return TabBar(tabs: tabs);
   }
 
   List<Widget> decorateMenus(List<Menu> fromMenus) {
+    var tabManager = context.watch<TabManager>();
     return fromMenus.map<Widget>((menu) {
       if (menu.children.isEmpty) {
         return MenuItemButton(
           leadingIcon: Icon(menu.icon),
           onPressed: () {
             setState(() {
-              addTab(Text(menu.label), menu.page);
+              tabManager.addTab(menu.label, menu.page);
             });
           },
           child: Text(menu.label),

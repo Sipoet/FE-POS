@@ -47,7 +47,8 @@ class _DropdownRemoteMenuState extends State<DropdownRemoteMenu> {
 
   void _remoteRequestData(String query) async {
     Server server = widget.server;
-    DropdownRemoteConnection connection = DropdownRemoteConnection(server);
+    DropdownRemoteConnection connection =
+        DropdownRemoteConnection(server, context);
     List rawlist = await connection.getData(widget.path, query: query);
 
     setState(() {

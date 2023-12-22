@@ -17,7 +17,6 @@ class SessionState extends ChangeNotifier {
       if (sessionString != null) {
         var sessionData = jsonDecode(sessionString);
         server.host = sessionData['host'];
-        server.host = 'allegra-pos.net';
         server.jwt = sessionData['jwt'];
       }
     } catch (e) {
@@ -45,34 +44,42 @@ class SessionState extends ChangeNotifier {
     required String host,
     required Function onSuccess,
     required Function onFailed,
-  }) {
+    required BuildContext context,
+  }) async {
     String jwtBefore = server.jwt;
     server.jwt = '';
     if (host.isNotEmpty) server.host = host;
     return server.post('login', body: {
       'user': {'username': username, 'password': password}
-    }).then((response) => {
-          if (response.statusCode == 200)
-            {
-              server.jwt = response.headers['authorization'],
-              saveSession(),
-              onSuccess(response)
-            }
-          else
-            {server.jwt = jwtBefore, onFailed(response)}
-        });
+    }).then(
+        (response) => {
+              if (response.statusCode == 200)
+                {
+                  server.jwt = response.headers.value('Authorization'),
+                  saveSession(),
+                  onSuccess(response)
+                }
+              else
+                {server.jwt = jwtBefore, onFailed(response)}
+            },
+        onError: (error, stackTrace) =>
+            server.defaultResponse(context: context, error: error));
   }
 
   Future logout({
     required Function onSuccess,
     required Function onFailed,
+    required BuildContext context,
   }) {
-    return server.delete('logout').then((response) => {
-          if (response.statusCode == 200)
-            {server.jwt = '', saveSession(), onSuccess(response)}
-          else
-            {onFailed(response)}
-        });
+    return server.delete('logout').then(
+        (response) => {
+              if (response.statusCode == 200)
+                {server.jwt = '', saveSession(), onSuccess(response)}
+              else
+                {onFailed(response)}
+            },
+        onError: (error, stackTrace) =>
+            server.defaultResponse(context: context, error: error));
   }
 
   Future<String> sessionPath() async {

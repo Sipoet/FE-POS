@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'dart:io';
+import 'package:fe_pos/tool/flash.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/dropdown_remote_connection.dart';
 import 'package:file_picker/file_picker.dart';
@@ -42,9 +42,11 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   List<DataColumn> _columns = [];
   List _columnOrder = [];
   SalesPercentageDataSource dataSource = SalesPercentageDataSource();
+  late Flash flash;
   @override
   void initState() {
     SessionState sessionState = context.read<SessionState>();
+    flash = Flash(context);
     server = sessionState.server;
     dataSource.setData([], 0, true);
     _fetchTableColumn();
@@ -56,7 +58,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
     if (response.statusCode != 200) {
       return;
     }
-    Map responseBody = jsonDecode(response.body);
+    Map responseBody = response.data;
     var data = responseBody['data'] ?? {'column_names': [], 'column_order': []};
     _columnOrder = data['column_order'];
     _columns = [];
@@ -84,17 +86,25 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   }
 
   void _displayReport() async {
-    displayFlash(const Text('Dalam proses.'),
-        duration: const Duration(minutes: 5));
+    flash.show(
+      const Text('Dalam proses.'),
+      MessageType.info,
+    );
     _reportType = 'json';
-    _requestReport().then(_displayDatatable);
+    _requestReport().then(_displayDatatable,
+        onError: ((error, stackTrace) =>
+            server.defaultResponse(context: context, error: error)));
   }
 
   void _downloadReport() async {
-    displayFlash(const Text('Dalam proses.'),
-        duration: const Duration(minutes: 5));
+    flash.show(
+      const Text('Dalam proses.'),
+      MessageType.info,
+    );
     _reportType = 'xlsx';
-    _requestReport().then(_downloadResponse);
+    _requestReport().then(_downloadResponse,
+        onError: ((error, stackTrace) =>
+            server.defaultResponse(context: context, error: error)));
   }
 
   Future _requestReport({int? page, int? per}) async {
@@ -123,7 +133,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   }
 
   void _downloadResponse(response) async {
-    hideFlash();
+    flash.hide();
     if (response.statusCode != 200) {
       return;
     }
@@ -134,9 +144,9 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
     filename = filename.substring(
         filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
     if (response.statusCode == 200) {
-      _saveXlsxPick(filename, response.bodyBytes);
+      _saveXlsxPick(filename, response.data);
     } else {
-      log("Response get ${response.body}");
+      flash.show(const Text('gagal simpan ke excel'), MessageType.failed);
     }
   }
 
@@ -149,11 +159,11 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   };
   double _tableWidth = 4000;
   void _displayDatatable(response) async {
-    hideFlash();
+    flash.hide();
     if (response.statusCode != 200) {
       return;
     }
-    var data = jsonDecode(response.body);
+    var data = response.data;
     setState(() {
       var rawData = data['data'].map<List<Comparable<Object>>>((row) {
         Map attributes = row['attributes'];
@@ -204,7 +214,8 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
 
   @override
   Widget build(BuildContext context) {
-    DropdownRemoteConnection connection = DropdownRemoteConnection(server);
+    DropdownRemoteConnection connection =
+        DropdownRemoteConnection(server, context);
     // Size size = MediaQuery.of(context).size;
     // final padding = MediaQuery.of(context).padding;
     // double height = size.height - padding.top - padding.bottom - 280;
@@ -340,7 +351,6 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
           if (_isDisplayTable) const Divider(),
           if (_isDisplayTable)
             Expanded(
-              // constraints: BoxConstraints(maxHeight: height),
               child: PaginatedDataTable2(
                 source: dataSource,
                 fixedLeftColumns: 1,
@@ -360,27 +370,6 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
         ],
       ),
     );
-  }
-
-  void displayFlash(Widget content,
-      {Duration duration = const Duration(seconds: 5)}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: content,
-        behavior: SnackBarBehavior.floating,
-        showCloseIcon: true,
-        duration: duration,
-        dismissDirection: DismissDirection.up,
-        margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).size.height - 60,
-            left: MediaQuery.of(context).size.width - 350,
-            right: 50),
-      ),
-    );
-  }
-
-  void hideFlash() {
-    ScaffoldMessenger.of(context).clearSnackBars();
   }
 }
 

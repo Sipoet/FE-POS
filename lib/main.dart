@@ -2,6 +2,7 @@ import 'package:fe_pos/page/loading_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/tool/setting.dart';
 
 void main() {
   runApp(const AllegraPos());
@@ -12,10 +13,11 @@ class AllegraPos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final SessionState sessionState = SessionState();
-
-    return ChangeNotifierProvider(
-      create: (context) => sessionState,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<SessionState>(create: (_) => SessionState()),
+        ChangeNotifierProvider<Setting>(create: (_) => Setting()),
+      ],
       child: MaterialApp(
         title: 'Allegra POS',
         theme: ThemeData(

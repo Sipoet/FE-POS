@@ -46,7 +46,8 @@ class _DropdownRemoteMultipleMenuState
 
   void _remoteRequestData(String query) async {
     Server server = widget.server;
-    DropdownRemoteConnection connection = DropdownRemoteConnection(server);
+    DropdownRemoteConnection connection =
+        DropdownRemoteConnection(server, context);
     List rawlist = await connection.getData(widget.path, query: query);
     setState(() {
       if (rawlist.isEmpty) {

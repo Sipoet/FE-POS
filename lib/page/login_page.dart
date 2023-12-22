@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/widget/framework_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +17,14 @@ class _LoginPageState extends State<LoginPage> {
   String _host = '';
   String _username = '';
   String _password = '';
+  late Flash flash;
+
+  @override
+  void initState() {
+    flash = Flash(context);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     SessionState sessionState = context.read<SessionState>();
@@ -26,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
       body: Center(
           child: Container(
-        alignment: Alignment.centerLeft,
+        alignment: Alignment.topLeft,
         width: 300,
         padding: const EdgeInsets.all(8.0),
         child: Form(
@@ -95,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: () {
                         // Validate returns true if the form is valid, or false otherwise.
                         if (_formKey.currentState!.validate()) {
-                          displayFlash(const Text('Loading'));
+                          flash.show(const Text('Loading'), MessageType.info);
                           _submit(sessionState, ScaffoldMessenger.of(context));
                         }
                       },
@@ -114,45 +122,35 @@ class _LoginPageState extends State<LoginPage> {
     try {
       sessionState.login(
           host: _host,
+          context: context,
           username: _username,
           password: _password,
           onSuccess: (response) {
             messenger.clearSnackBars();
             _redirectToHomePage();
-            var body = jsonDecode(response.body);
-            displayFlash(Text(
-              body['message'],
-              style: const TextStyle(color: Colors.green),
-            ));
+            var body = response.data;
+            flash.show(
+                Text(
+                  body['message'],
+                ),
+                MessageType.success);
           },
           onFailed: (response) {
             messenger.clearSnackBars();
-            var body = jsonDecode(response.body);
-            displayFlash(Text(
-              body['error'],
-              style: const TextStyle(color: Colors.red),
-            ));
+            var body = response.data;
+            flash.show(
+                Text(
+                  body['error'],
+                ),
+                MessageType.failed);
           });
     } catch (error) {
-      displayFlash(Text(
-        error.toString(),
-        style: const TextStyle(color: Colors.red),
-      ));
+      flash.show(
+          Text(
+            error.toString(),
+          ),
+          MessageType.failed);
     }
-  }
-
-  void displayFlash(Widget content) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Center(child: content),
-        behavior: SnackBarBehavior.floating,
-        dismissDirection: DismissDirection.up,
-        margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).size.height - 60,
-            left: 50,
-            right: 50),
-      ),
-    );
   }
 
   void _redirectToHomePage() {
