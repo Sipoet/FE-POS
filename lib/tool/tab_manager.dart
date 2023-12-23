@@ -33,11 +33,20 @@ class TabManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  void changeTabHeader(Widget tabView, String label) {
+    int index = tabViews.indexOf(tabView);
+    if (index >= 0) {
+      tabs[index] = label;
+      notifyListeners();
+    }
+  }
+
   void removeTab(header) {
+    int index = tabs.indexOf(header);
     tabs.remove(header);
     tabs.add('');
     _activeIndex -= 1;
-    controller.animateTo(0);
+    controller.animateTo(index < 1 ? 0 : index - 1);
     notifyListeners();
   }
 }

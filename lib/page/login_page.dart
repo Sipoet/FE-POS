@@ -104,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                         // Validate returns true if the form is valid, or false otherwise.
                         if (_formKey.currentState!.validate()) {
                           flash.show(const Text('Loading'), MessageType.info);
-                          _submit(sessionState, ScaffoldMessenger.of(context));
+                          _submit(sessionState);
                         }
                       },
                       child: const Text('Submit'),
@@ -117,7 +117,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _submit(sessionState, messenger) async {
+  void _submit(sessionState) async {
     _formKey.currentState?.save();
     try {
       sessionState.login(
@@ -126,7 +126,7 @@ class _LoginPageState extends State<LoginPage> {
           username: _username,
           password: _password,
           onSuccess: (response) {
-            messenger.clearSnackBars();
+            flash.hide();
             _redirectToHomePage();
             var body = response.data;
             flash.show(
@@ -136,7 +136,7 @@ class _LoginPageState extends State<LoginPage> {
                 MessageType.success);
           },
           onFailed: (response) {
-            messenger.clearSnackBars();
+            flash.hide();
             var body = response.data;
             flash.show(
                 Text(

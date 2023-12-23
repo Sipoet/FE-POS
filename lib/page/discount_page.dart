@@ -1,9 +1,12 @@
-import 'dart:convert';
+import 'package:fe_pos/model/discount.dart';
+import 'package:fe_pos/page/discount_form_page.dart';
+import 'package:fe_pos/tool/datatable.dart';
+import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:data_table_2/data_table_2.dart';
-import 'package:intl/intl.dart';
 
 class DiscountPage extends StatefulWidget {
   const DiscountPage({super.key});
@@ -22,11 +25,18 @@ class _DiscountPageState extends State<DiscountPage> {
   bool _sortAscending = true;
   bool _isDisplayTable = false;
   String _searchText = '';
+  late Flash flash;
   @override
   void initState() {
     _sessionState = context.read<SessionState>();
+    flash = Flash(context);
     refreshTable();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   Future<void> _fetchTableColumn() async {
@@ -36,7 +46,7 @@ class _DiscountPageState extends State<DiscountPage> {
     if (response.statusCode != 200) {
       return;
     }
-    Map responseBody = jsonDecode(response.body);
+    Map responseBody = response.data;
     var data = responseBody['data'] ?? {'column_names': [], 'column_order': []};
     _columnOrder =
         data['column_order'].map<String>((e) => e.toString()).toList();
@@ -53,7 +63,7 @@ class _DiscountPageState extends State<DiscountPage> {
               _sortColumnIndex = columnIndex;
               _sortAscending = ascending;
             });
-            _source.sortData(_sortColumnIndex, _sortAscending);
+            _source.sortData(_columnOrder[_sortColumnIndex], _sortAscending);
           }),
           label: Text(
             columnName,
@@ -75,47 +85,98 @@ class _DiscountPageState extends State<DiscountPage> {
     if (_columns.isEmpty) {
       await _fetchTableColumn();
     } else {
-      displayFlash(const Text("Sedang proses."),
-          duration: const Duration(minutes: 5));
+      flash.show(const Text("Sedang proses."), MessageType.info);
     }
-    List discounts = await fetchDiscounts();
-    hideFlash();
+    List<Discount> discounts = await fetchDiscounts();
+    flash.hide();
     setState(() {
-      var rawData = discounts.map<List<Comparable<Object>>>((row) {
-        Map attributes = row['attributes'];
-        return _columnOrder
-            .map<Comparable<Object>>((key) => attributes[key] ?? '')
-            .toList();
-      }).toList();
-      _source.setData(rawData, _sortColumnIndex, _sortAscending);
+      _source.setData(
+          discounts, _columnOrder[_sortColumnIndex], _sortAscending);
       _isDisplayTable = true;
     });
   }
 
-  Future<List> fetchDiscounts() async {
+  Future<List<Discount>> fetchDiscounts() async {
     var server = _sessionState.server;
-    var response =
-        await server.get('discounts', queryParam: {'search_text': _searchText});
-    try {
-      if (response.statusCode != 200) {
-        throw 'error: ${response.body.toString()}';
-      }
-      Map responseBody = jsonDecode(response.body);
-      if (responseBody['data'] is List) {
-        return responseBody['data'];
-      } else {
-        throw 'error: invalid data type ${response.body.toString()}';
-      }
-    } catch (e) {
-      return [];
+
+    // try {
+    var response = await server
+        .get('discounts', queryParam: {'search_text': _searchText}).onError(
+            (error, stackTrace) => server.defaultResponse(
+                context: context, error: error, valueWhenError: []));
+    if (response.statusCode != 200) {
+      throw 'error: ${response.data.toString()}';
     }
+    Map responseBody = response.data;
+    if (responseBody['data'] is List) {
+      return responseBody['data']
+          .map<Discount>((json) => Discount.fromJson(json))
+          .toList();
+    } else {
+      throw 'error: invalid data type ${response.data.toString()}';
+    }
+    // } catch (e) {
+    //   flash.show(Text(e.toString()), MessageType.failed);
+    //   return [];
+    // }
   }
 
-  void addForm() {}
-  void editForm() {}
+  void addForm() {
+    Discount discount = Discount(
+        discount1: 0.0,
+        discount2: 0.0,
+        discount3: 0.0,
+        discount4: 0.0,
+        startTime: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
+        endTime: DateTime.now().copyWith(hour: 23, minute: 59, second: 59));
+    var tabManager = context.read<TabManager>();
+    setState(() {
+      tabManager.addTab('New Discount',
+          DiscountFormPage(key: ObjectKey(discount), discount: discount));
+    });
+  }
+
+  void editForm(Discount discount) {
+    var tabManager = context.read<TabManager>();
+    setState(() {
+      tabManager.addTab('Edit Discount ${discount.code}',
+          DiscountFormPage(key: ObjectKey(discount), discount: discount));
+    });
+  }
+
+  void deleteRecord(discount) {
+    _sessionState.server.delete("discounts/${discount.code}").then((response) {
+      if (response.statusCode == 200) {
+        flash.showBanner(
+            messageType: MessageType.success,
+            description: response.data?['message']);
+        refreshTable();
+      } else if (response.statusCode == 409) {
+        var data = response.data;
+        flash.showBanner(
+            title: data['message'],
+            description: data['errors'].join('\n'),
+            messageType: MessageType.failed);
+      }
+    }, onError: (error, stack) {
+      _sessionState.server.defaultResponse(context: context, error: error);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    _source.editForm = editForm;
+    _source.actionButtons = (discount) => [
+          IconButton(
+              onPressed: () {
+                editForm(discount);
+              },
+              icon: const Icon(Icons.edit)),
+          IconButton(
+              onPressed: () {
+                deleteRecord(discount);
+              },
+              icon: const Icon(Icons.delete))
+        ];
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -184,34 +245,14 @@ class _DiscountPageState extends State<DiscountPage> {
       ),
     );
   }
-
-  void displayFlash(Widget content,
-      {Duration duration = const Duration(seconds: 5)}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: content,
-        duration: duration,
-        dismissDirection: DismissDirection.up,
-        margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).size.height - 80,
-            left: MediaQuery.of(context).size.width - 350,
-            right: 50),
-      ),
-    );
-  }
-
-  void hideFlash() {
-    ScaffoldMessenger.of(context).clearSnackBars();
-  }
 }
 
-class DiscountDatatableSource extends DataTableSource {
-  late List<List<Comparable<Object>>> sortedData;
+class DiscountDatatableSource extends DataTableSource with Datatable {
+  late List<Discount> sortedData;
   late List<String> keys;
-  late Function editForm;
-  void setData(List<List<Comparable<Object>>> rawData, int sortColumn,
-      bool sortAscending) {
-    sortedData = rawData.toList();
+  late Function actionButtons;
+  void setData(List<Discount> rawData, String sortColumn, bool sortAscending) {
+    sortedData = rawData;
     sortData(sortColumn, sortAscending);
   }
 
@@ -219,10 +260,10 @@ class DiscountDatatableSource extends DataTableSource {
     this.keys = keys;
   }
 
-  void sortData(int sortColumn, bool sortAscending) {
-    sortedData.sort((List<Comparable<Object>> a, List<Comparable<Object>> b) {
-      final Comparable<Object> cellA = a[sortColumn];
-      final Comparable<Object> cellB = b[sortColumn];
+  void sortData(String sortColumn, bool sortAscending) {
+    sortedData.sort((Discount a, Discount b) {
+      final Comparable<Object> cellA = a.toMap()[sortColumn] ?? '';
+      final Comparable<Object> cellB = b.toMap()[sortColumn] ?? '';
       return cellA.compareTo(cellB) * (sortAscending ? 1 : -1);
     });
     notifyListeners();
@@ -231,54 +272,23 @@ class DiscountDatatableSource extends DataTableSource {
   @override
   int get rowCount => sortedData.length;
 
-  static DataCell _decorateCell(String key, Object cell) {
-    if (['start_time', 'end_time'].contains(key)) {
-      String val = _formatDate(cell);
-      return DataCell(SelectableText(val));
-    } else if (cell is double || cell is int) {
-      String val = _formatNumber(cell);
-      return DataCell(
-          Align(alignment: Alignment.centerRight, child: SelectableText(val)));
-    } else {
-      return DataCell(SelectableText(cell.toString()));
-    }
-  }
-
-  static String _formatDate(cell) {
-    if (cell == null) return '';
-    DateTime date = DateTime.parse(cell.toString());
-    var formated = DateFormat('d/M/y H:m');
-    return formated.format(date.toLocal());
-  }
-
-  static String _formatNumber(number) {
-    var formated = NumberFormat(",##0.##", "en_US");
-    return formated.format(number);
+  List<DataCell> decorateDiscount(discount) {
+    var jsonData = discount.toMap();
+    return keys.map<DataCell>((key) => decorateValue(jsonData[key])).toList() +
+        [
+          DataCell(Row(
+            children: actionButtons(discount),
+          ))
+        ];
   }
 
   @override
   DataRow? getRow(int index) {
-    int indexCol = 0;
+    Discount discount = sortedData[index];
     return DataRow.byIndex(
       index: index,
-      cells: sortedData[index]
-              .map<DataCell>((value) => _decorateCell(keys[indexCol++], value))
-              .toList() +
-          [_actionButton(index)],
+      cells: decorateDiscount(discount),
     );
-  }
-
-  DataCell _actionButton(index) {
-    return DataCell(Row(
-      children: [
-        ElevatedButton.icon(
-            onPressed: () {
-              editForm(sortedData[index]);
-            },
-            icon: const Icon(Icons.edit),
-            label: const Text('edit'))
-      ],
-    ));
   }
 
   @override

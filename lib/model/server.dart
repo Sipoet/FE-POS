@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:dio/io.dart';
 import 'package:dio/dio.dart';
@@ -13,7 +13,11 @@ class Server {
   late Dio dio;
 
   Server({this.host = '192.168.1.88', this.jwt = ''}) {
-    dio = Dio();
+    dio = Dio(BaseOptions(
+      validateStatus: (status) {
+        return [200, 409].contains(status);
+      },
+    ));
     if (kIsWeb) {
       return;
     }
@@ -35,6 +39,13 @@ class Server {
         if (response?.statusCode == 401) {
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => const LoginPage()));
+        } else if (response?.statusCode == 500) {
+          Flash flash = Flash(context);
+          flash.showBanner(
+              title: 'Gagal',
+              description: 'Terjadi kesalahan server. hubungi IT support',
+              messageType: MessageType.failed);
+          log(response.data.toString(), time: DateTime.now());
         }
         break;
       case DioExceptionType.connectionTimeout:
@@ -44,7 +55,7 @@ class Server {
         flash.show(const Text('koneksi terputus'), MessageType.failed);
         break;
     }
-
+    log(error.toString(), time: DateTime.now());
     if (valueWhenError == null) {
       return response ?? error;
     } else {
@@ -52,29 +63,10 @@ class Server {
     }
   }
 
-  String requestBodyByType(body, type) {
-    switch (type) {
-      case 'json':
-        return jsonEncode(body);
-      default:
-        return body.toString();
-    }
-  }
-
-  String responseBodyByType(body, type) {
-    switch (type) {
-      case 'json':
-        return jsonDecode(body);
-      default:
-        return body.toString();
-    }
-  }
-
   Future post(String path, {Map body = const {}, String type = 'json'}) async {
     Uri url = _generateUrl(path, {});
-    String requestBody = requestBodyByType(body, type);
     return dio.postUri(url,
-        data: requestBody, options: Options(headers: generateHeaders(type)));
+        data: body, options: Options(headers: generateHeaders(type)));
   }
 
   Future get(String path,
@@ -86,17 +78,15 @@ class Server {
 
   Future put(String path, {Map body = const {}, String type = 'json'}) async {
     Uri url = _generateUrl(path, {});
-    String requestBody = requestBodyByType(body, type);
     return dio.putUri(url,
-        data: requestBody, options: Options(headers: generateHeaders(type)));
+        data: body, options: Options(headers: generateHeaders(type)));
   }
 
   Future delete(String path,
       {Map body = const {}, String type = 'json'}) async {
     Uri url = _generateUrl(path, {});
-    String requestBody = requestBodyByType(body, type);
     return dio.deleteUri(url,
-        data: requestBody, options: Options(headers: generateHeaders(type)));
+        data: body, options: Options(headers: generateHeaders(type)));
   }
 
   final Map _contentTypes = {

@@ -9,34 +9,7 @@ class Flash extends ChangeNotifier {
   void show(Widget content, MessageType messageType) {
     hide();
     var messenger = ScaffoldMessenger.of(context);
-    // messenger.showSnackBar(
-    //   SnackBar(
-    //     content: Center(child: content),
-    //     behavior: SnackBarBehavior.floating,
-    //     dismissDirection: DismissDirection.up,
-    //     margin: EdgeInsets.only(
-    //         bottom: MediaQuery.of(context).size.height - 60,
-    //         left: 50,
-    //         right: 50),
-    //   ),
-    // );
-    MaterialColor color;
-    switch (messageType) {
-      case MessageType.warning:
-        color = Colors.yellow;
-        break;
-      case MessageType.failed:
-        color = Colors.red;
-        break;
-      case MessageType.info:
-        color = Colors.blue;
-        break;
-      case MessageType.success:
-        color = Colors.green;
-        break;
-      default:
-        color = Colors.blue;
-    }
+    MaterialColor color = colorBasedMessageType(messageType);
 
     messenger.showMaterialBanner(MaterialBanner(
       padding: const EdgeInsets.all(20),
@@ -51,6 +24,55 @@ class Flash extends ChangeNotifier {
         ),
       ],
     ));
+  }
+
+  void showBanner(
+      {String title = '',
+      String description = '',
+      required MessageType messageType}) {
+    hide();
+    var messenger = ScaffoldMessenger.of(context);
+    MaterialColor color = colorBasedMessageType(messageType);
+
+    messenger.showMaterialBanner(MaterialBanner(
+      padding: const EdgeInsets.all(20),
+      content: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            Text(description)
+          ],
+        ),
+      ),
+      backgroundColor: color,
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            messenger.clearMaterialBanners();
+          },
+          child: const Text('DISMISS'),
+        ),
+      ],
+    ));
+  }
+
+  MaterialColor colorBasedMessageType(MessageType messageType) {
+    switch (messageType) {
+      case MessageType.warning:
+        return Colors.yellow;
+      case MessageType.failed:
+        return Colors.red;
+      case MessageType.success:
+        return Colors.green;
+      case MessageType.info:
+      default:
+        return Colors.blue;
+    }
   }
 
   void hide() {

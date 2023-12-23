@@ -235,6 +235,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
                 width: 310,
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       const Padding(
                           padding: EdgeInsets.only(left: 5, bottom: 5),
