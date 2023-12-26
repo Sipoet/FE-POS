@@ -31,7 +31,7 @@ class Discount {
         id: int.parse(json['id']),
         code: attributes['code']?.trim(),
         itemCode: attributes['item_code'],
-        itemType: attributes['item_type'],
+        itemType: attributes['item_type_name'],
         supplierCode: attributes['supplier_code'],
         brandName: attributes['brand_name'],
         discount1: attributes['discount1'],
@@ -45,7 +45,7 @@ class Discount {
   Map<String, dynamic> toMap() => {
         'code': code.trim(),
         'item_code': itemCode,
-        'item_type': itemType,
+        'item_type_name': itemType,
         'brand_name': brandName,
         'supplier_code': supplierCode,
         'discount1': discount1,
@@ -56,17 +56,10 @@ class Discount {
         'end_time': endTime,
       };
 
-  Map<String, dynamic> toJson() => {
-        'code': code.trim(),
-        'item_code': itemCode,
-        'item_type': itemType,
-        'brand_name': brandName,
-        'supplier_code': supplierCode,
-        'discount1': discount1,
-        'discount2': discount2,
-        'discount3': discount3,
-        'discount4': discount4,
-        'start_time': startTime.toIso8601String(),
-        'end_time': endTime.toIso8601String(),
-      };
+  Map<String, dynamic> toJson() {
+    var json = toMap();
+    json['start_time'] = startTime.toIso8601String();
+    json['end_time'] = endTime.toIso8601String();
+    return json;
+  }
 }

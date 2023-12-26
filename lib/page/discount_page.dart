@@ -25,6 +25,7 @@ class _DiscountPageState extends State<DiscountPage> {
   bool _sortAscending = true;
   bool _isDisplayTable = false;
   String _searchText = '';
+  List<Discount> discounts = [];
   late Flash flash;
   @override
   void initState() {
@@ -71,13 +72,13 @@ class _DiscountPageState extends State<DiscountPage> {
           ),
         ));
       });
-      _tableWidth += 150.0;
+      _tableWidth += 250.0;
       _columns.add(const DataColumn2(
           label: Text(
             'Action',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          fixedWidth: 150.0));
+          fixedWidth: 250.0));
     });
   }
 
@@ -87,38 +88,52 @@ class _DiscountPageState extends State<DiscountPage> {
     } else {
       flash.show(const Text("Sedang proses."), MessageType.info);
     }
-    List<Discount> discounts = await fetchDiscounts();
-    flash.hide();
+    discounts = []; // clear table row
     setState(() {
-      _source.setData(
-          discounts, _columnOrder[_sortColumnIndex], _sortAscending);
-      _isDisplayTable = true;
+      _isDisplayTable = false;
     });
+    fetchDiscounts(page: 1);
   }
 
-  Future<List<Discount>> fetchDiscounts() async {
+  void fetchDiscounts({int page = 1}) {
     var server = _sessionState.server;
-
-    // try {
-    var response = await server
-        .get('discounts', queryParam: {'search_text': _searchText}).onError(
-            (error, stackTrace) => server.defaultResponse(
-                context: context, error: error, valueWhenError: []));
-    if (response.statusCode != 200) {
-      throw 'error: ${response.data.toString()}';
+    String orderKey = _columnOrder[_sortColumnIndex];
+    try {
+      server.get('discounts', queryParam: {
+        'search_text': _searchText,
+        'page': page.toString(),
+        'per': '100',
+        'order_key': orderKey,
+        'is_order_asc': _sortAscending.toString(),
+      }).then((response) {
+        if (response.statusCode != 200) {
+          throw 'error: ${response.data.toString()}';
+        }
+        Map responseBody = response.data;
+        if (responseBody['data'] is! List) {
+          throw 'error: invalid data type ${response.data.toString()}';
+        }
+        discounts.addAll(responseBody['data']
+            .map<Discount>((json) => Discount.fromJson(json))
+            .toList());
+        setState(() {
+          _source.setData(discounts, orderKey, _sortAscending);
+          _isDisplayTable = true;
+        });
+        flash.hide();
+        int totalPages = responseBody['meta']?['total_pages'];
+        if (page < totalPages.toInt()) {
+          fetchDiscounts(page: page + 1);
+        }
+      },
+          onError: (error, stackTrace) => server.defaultResponse(
+              context: context, error: error, valueWhenError: []));
+    } catch (e, trace) {
+      flash.showBanner(
+          title: e.toString(),
+          description: trace.toString(),
+          messageType: MessageType.failed);
     }
-    Map responseBody = response.data;
-    if (responseBody['data'] is List) {
-      return responseBody['data']
-          .map<Discount>((json) => Discount.fromJson(json))
-          .toList();
-    } else {
-      throw 'error: invalid data type ${response.data.toString()}';
-    }
-    // } catch (e) {
-    //   flash.show(Text(e.toString()), MessageType.failed);
-    //   return [];
-    // }
   }
 
   void addForm() {
@@ -163,6 +178,30 @@ class _DiscountPageState extends State<DiscountPage> {
     });
   }
 
+  void refreshPromotion(Discount discount) {
+    var server = _sessionState.server;
+    server.post('discounts/${discount.code}/refresh_promotion').then((value) {
+      flash.showBanner(
+          title: 'Refresh akan diproses',
+          description: 'diskon ${discount.code} akan diproses',
+          messageType: MessageType.info);
+    }, onError: (error, stack) {
+      server.defaultResponse(context: context, error: error);
+    });
+  }
+
+  void refreshAllPromotion() {
+    var server = _sessionState.server;
+    server.post('discounts/refresh_all_promotion').then((value) {
+      flash.showBanner(
+          title: 'Refresh akan diproses',
+          description: 'Semua diskon akan diproses',
+          messageType: MessageType.info);
+    }, onError: (error, stack) {
+      server.defaultResponse(context: context, error: error);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     _source.actionButtons = (discount) => [
@@ -170,12 +209,20 @@ class _DiscountPageState extends State<DiscountPage> {
               onPressed: () {
                 editForm(discount);
               },
+              tooltip: 'Edit diskon',
               icon: const Icon(Icons.edit)),
           IconButton(
               onPressed: () {
                 deleteRecord(discount);
               },
-              icon: const Icon(Icons.delete))
+              tooltip: 'Hapus diskon',
+              icon: const Icon(Icons.delete)),
+          IconButton(
+              onPressed: () {
+                refreshPromotion(discount);
+              },
+              tooltip: 'Refresh item promotion',
+              icon: const Icon(Icons.refresh)),
         ];
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -186,6 +233,16 @@ class _DiscountPageState extends State<DiscountPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _searchText = '';
+                    });
+                    refreshTable();
+                  },
+                  tooltip: 'Reset Table',
+                  icon: const Icon(Icons.refresh),
+                ),
                 SizedBox(
                   width: 150,
                   child: TextField(
@@ -205,20 +262,16 @@ class _DiscountPageState extends State<DiscountPage> {
                     },
                   ),
                 ),
-                IconButton(
-                  onPressed: () {
-                    refreshTable();
-                  },
-                  tooltip: 'Refresh Table',
-                  icon: const Icon(Icons.refresh),
-                ),
-                IconButton(
-                  onPressed: () {
-                    addForm();
-                  },
-                  tooltip: 'Refresh Table',
-                  icon: const Icon(Icons.add),
-                ),
+                SubmenuButton(menuChildren: [
+                  MenuItemButton(
+                    child: const Text('Tambah Diskon'),
+                    onPressed: () => addForm(),
+                  ),
+                  MenuItemButton(
+                    child: const Text('Refresh all promotion'),
+                    onPressed: () => refreshAllPromotion(),
+                  )
+                ], child: const Icon(Icons.table_rows_rounded))
               ],
             ),
           ),

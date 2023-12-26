@@ -45,7 +45,7 @@ class Flash extends ChangeNotifier {
               title,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            Text(description)
+            Flexible(child: Text(description))
           ],
         ),
       ),

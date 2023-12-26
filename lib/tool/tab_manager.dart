@@ -45,8 +45,14 @@ class TabManager extends ChangeNotifier {
     int index = tabs.indexOf(header);
     tabs.remove(header);
     tabs.add('');
+    tabViews.removeAt(index);
+    tabViews.add(const SizedBox());
     _activeIndex -= 1;
-    controller.animateTo(index < 1 ? 0 : index - 1);
+    if (controller.index == index) {
+      controller.animateTo(index < 1 ? 0 : index - 1);
+    } else {
+      controller.animateTo(controller.previousIndex);
+    }
     notifyListeners();
   }
 }

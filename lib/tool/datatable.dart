@@ -6,7 +6,7 @@ mixin Datatable {
 
   DataCell decorateValue(cell) {
     if (cell == null) {
-      return const DataCell(Text(''));
+      return const DataCell(Text('-'));
     } else if (cell is DateTime) {
       String val = _formatDate(cell);
       return DataCell(SelectableText(val));
@@ -19,11 +19,9 @@ mixin Datatable {
     }
   }
 
-  static String _formatDate(cell) {
-    if (cell == null) return '';
-    DateTime date = DateTime.parse(cell.toString());
-    var formated = DateFormat('d/M/y H:m');
-    return formated.format(date.toLocal());
+  static String _formatDate(DateTime cell) {
+    var formated = DateFormat('dd/MM/y HH:mm');
+    return formated.format(cell.toUtc());
   }
 
   static String _formatNumber(number) {

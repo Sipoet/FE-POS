@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:dio/io.dart';
 import 'package:dio/dio.dart';
+export 'package:dio/dio.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -12,13 +13,17 @@ class Server {
   String jwt;
   late Dio dio;
 
-  Server({this.host = '192.168.1.88', this.jwt = ''}) {
+  Server({this.host = '192.168.1.11', this.jwt = ''}) {
     dio = Dio(BaseOptions(
       validateStatus: (status) {
-        return [200, 409].contains(status);
+        if (status is int && status <= 302 && status >= 200) {
+          return true;
+        }
+        return [409].contains(status);
       },
     ));
     if (kIsWeb) {
+      host = '';
       return;
     }
     dio.httpClientAdapter = IOHttpClientAdapter(
@@ -33,6 +38,7 @@ class Server {
 
   dynamic defaultResponse(
       {required BuildContext context, required var error, var valueWhenError}) {
+    if (error.runtimeType.toString() == '_TypeError') throw error;
     var response = error.response;
     switch (error.type) {
       case DioExceptionType.badResponse:

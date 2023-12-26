@@ -28,7 +28,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
     Menu(
         icon: Icons.money,
         isClosed: true,
-        label: 'Sales',
+        label: 'Penjualan',
         page: const Placeholder(
           child: Text('sales'),
         ),
@@ -36,7 +36,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
     Menu(
         icon: Icons.pages,
         isClosed: true,
-        label: 'Report',
+        label: 'Laporan',
         key: 'report',
         children: [
           Menu(
@@ -82,7 +82,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           Menu(
               icon: Icons.discount,
               isClosed: true,
-              label: 'Discount',
+              label: 'Diskon',
               key: 'discount',
               page: const DiscountPage(),
               children: [])

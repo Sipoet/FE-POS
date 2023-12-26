@@ -221,7 +221,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
     // double height = size.height - padding.top - padding.bottom - 280;
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(10.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -231,8 +231,10 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
           Wrap(
             direction: Axis.horizontal,
             children: [
-              SizedBox(
-                width: 310,
+              Container(
+                padding: const EdgeInsets.only(right: 10),
+                constraints:
+                    const BoxConstraints(maxHeight: 100, maxWidth: 320),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -240,25 +242,26 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
                       const Padding(
                           padding: EdgeInsets.only(left: 5, bottom: 5),
                           child: Text('Merek :', style: _filterLabelStyle)),
-                      SizedBox(
-                          width: 300,
-                          height: 55,
+                      Flexible(
                           child: BsSelectBox(
-                            key: const ValueKey('brandSelect'),
-                            searchable: true,
-                            controller: _brandSelectWidget,
-                            serverSide: (params) async {
-                              var list = await connection.getData('/brands',
-                                  query: params['searchValue'].toString());
-                              return BsSelectBoxResponse(
-                                  options: convertToOptions(list));
-                            },
-                          )),
+                        key: const ValueKey('brandSelect'),
+                        searchable: true,
+                        controller: _brandSelectWidget,
+                        serverSide: (params) async {
+                          var list = await connection.getData('/brands',
+                              query: params['searchValue'].toString());
+                          return BsSelectBoxResponse(
+                              options: convertToOptions(list));
+                        },
+                      )),
                     ]),
               ),
-              SizedBox(
-                  width: 310,
+              Container(
+                  padding: const EdgeInsets.only(right: 10),
+                  constraints:
+                      const BoxConstraints(maxHeight: 100, maxWidth: 320),
                   child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Padding(
@@ -266,68 +269,68 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
                           child: Text('Jenis/Departemen :',
                               style: _filterLabelStyle),
                         ),
-                        SizedBox(
-                            width: 300,
-                            height: 55,
+                        Flexible(
                             child: BsSelectBox(
-                              key: const ValueKey('itemTypeSelect'),
-                              searchable: true,
-                              controller: _itemTypeSelectWidget,
-                              serverSide: (params) async {
-                                var list = await connection.getData(
-                                    '/item_types',
-                                    query: params['searchValue'].toString());
-                                return BsSelectBoxResponse(
-                                    options: convertToOptions(list));
-                              },
-                            )),
+                          key: const ValueKey('itemTypeSelect'),
+                          searchable: true,
+                          controller: _itemTypeSelectWidget,
+                          serverSide: (params) async {
+                            var list = await connection.getData('/item_types',
+                                query: params['searchValue'].toString());
+                            return BsSelectBoxResponse(
+                                options: convertToOptions(list));
+                          },
+                        )),
                       ])),
-              SizedBox(
-                  width: 310,
+              Container(
+                  padding: const EdgeInsets.only(right: 10),
+                  constraints:
+                      const BoxConstraints(maxHeight: 100, maxWidth: 320),
                   child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Padding(
                           padding: EdgeInsets.only(left: 5, bottom: 5),
                           child: Text('Supplier :', style: _filterLabelStyle),
                         ),
-                        SizedBox(
-                            width: 300,
+                        Flexible(
                             child: BsSelectBox(
-                              key: const ValueKey('supplierSelect'),
-                              searchable: true,
-                              controller: _supplierSelectWidget,
-                              serverSide: (params) async {
-                                var list = await connection.getData(
-                                    '/suppliers',
-                                    query: params['searchValue'].toString());
-                                return BsSelectBoxResponse(
-                                    options: convertToOptions(list));
-                              },
-                            )),
+                          key: const ValueKey('supplierSelect'),
+                          searchable: true,
+                          controller: _supplierSelectWidget,
+                          serverSide: (params) async {
+                            var list = await connection.getData('/suppliers',
+                                query: params['searchValue'].toString());
+                            return BsSelectBoxResponse(
+                                options: convertToOptions(list));
+                          },
+                        )),
                       ])),
-              SizedBox(
-                  width: 310,
+              Container(
+                  padding: const EdgeInsets.only(right: 10),
+                  constraints:
+                      const BoxConstraints(maxHeight: 100, maxWidth: 320),
                   child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Padding(
                           padding: EdgeInsets.only(left: 5, bottom: 5),
                           child: Text('Item :', style: _filterLabelStyle),
                         ),
-                        SizedBox(
-                            width: 300,
+                        Flexible(
                             child: BsSelectBox(
-                              key: const ValueKey('itemSelect'),
-                              searchable: true,
-                              controller: _itemSelectWidget,
-                              serverSide: (params) async {
-                                var list = await connection.getData('/items',
-                                    query: params['searchValue'].toString());
-                                return BsSelectBoxResponse(
-                                    options: convertToOptions(list));
-                              },
-                            )),
+                          key: const ValueKey('itemSelect'),
+                          searchable: true,
+                          controller: _itemSelectWidget,
+                          serverSide: (params) async {
+                            var list = await connection.getData('/items',
+                                query: params['searchValue'].toString());
+                            return BsSelectBoxResponse(
+                                options: convertToOptions(list));
+                          },
+                        )),
                       ])),
             ],
           ),

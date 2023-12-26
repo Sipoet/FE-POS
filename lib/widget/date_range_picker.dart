@@ -2,7 +2,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 
 class DateRangePicker extends StatefulWidget {
-  DateRangePicker(
+  const DateRangePicker(
       {super.key,
       required this.label,
       required this.startDate,
@@ -10,17 +10,17 @@ class DateRangePicker extends StatefulWidget {
       this.onChanged,
       this.format = 'dd/MM/y HH:mm'});
   final Widget label;
-  late DateTime startDate;
-  late DateTime endDate;
-  late final String format;
-  Function? onChanged;
+  final DateTime startDate;
+  final DateTime endDate;
+  final String format;
+  final Function? onChanged;
   @override
   State<DateRangePicker> createState() => _DateRangePickerState();
 }
 
 class _DateRangePickerState extends State<DateRangePicker> {
   late final TextEditingController _controller;
-
+  late DateTimeRange _dateRange;
   @override
   void initState() {
     _controller = TextEditingController(text: _daterangeFormat());
@@ -43,7 +43,7 @@ class _DateRangePickerState extends State<DateRangePicker> {
       controller: _controller,
       onTap: () async {
         DateTimeRange? pickedDateRange = await showDateRangePicker(
-          initialEntryMode: DatePickerEntryMode.input,
+          initialEntryMode: DatePickerEntryMode.calendarOnly,
           context: context,
           firstDate: DateTime(DateTime.now().year - 5),
           lastDate: DateTime(DateTime.now().year + 100),
@@ -54,13 +54,14 @@ class _DateRangePickerState extends State<DateRangePicker> {
           return;
         }
         setState(() {
-          widget.startDate = pickedDateRange.start;
-          widget.endDate =
-              pickedDateRange.end.copyWith(hour: 23, minute: 59, second: 59);
+          _dateRange = DateTimeRange(
+              start: pickedDateRange.start,
+              end: pickedDateRange.end
+                  .copyWith(hour: 23, minute: 59, second: 59));
+
           _controller.text = _daterangeFormat();
           if (widget.onChanged is Function) {
-            widget.onChanged!.call(
-                DateTimeRange(start: widget.startDate, end: widget.endDate));
+            widget.onChanged!.call(_dateRange);
           }
         });
       },

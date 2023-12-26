@@ -61,9 +61,13 @@ class SessionState extends ChangeNotifier {
                 }
               else
                 {server.jwt = jwtBefore, onFailed(response)}
-            },
-        onError: (error, stackTrace) =>
-            server.defaultResponse(context: context, error: error));
+            }, onError: (error, stackTrace) {
+      if (error.type == DioExceptionType.badResponse) {
+        onFailed(error.response);
+      } else {
+        server.defaultResponse(context: context, error: error);
+      }
+    });
   }
 
   Future logout({
