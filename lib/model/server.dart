@@ -7,30 +7,39 @@ import 'package:fe_pos/tool/flash.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:fe_pos/page/login_page.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class Server {
   String host;
   String jwt;
-  late Dio dio;
+  Dio dio = Dio(BaseOptions(
+    connectTimeout: const Duration(seconds: 3),
+    validateStatus: (status) {
+      if (status is int && status <= 308 && status >= 200) {
+        return true;
+      }
+      return [409].contains(status);
+    },
+  ));
 
   Server({this.host = '192.168.1.11', this.jwt = ''}) {
-    dio = Dio(BaseOptions(
-      validateStatus: (status) {
-        if (status is int && status <= 302 && status >= 200) {
-          return true;
-        }
-        return [409].contains(status);
-      },
-    ));
     if (kIsWeb) {
       host = Uri.base.host;
-      return;
     }
+  }
+
+  Future setCert() async {
+    if (kIsWeb) return;
+    var certificate = await rootBundle.load('assets/certs/192.168.1.11.pem');
+
     dio.httpClientAdapter = IOHttpClientAdapter(
       createHttpClient: () {
         final SecurityContext context = SecurityContext.defaultContext;
-        context.setTrustedCertificates('assets/certs/192.168.1.11.pem');
+        context.setTrustedCertificatesBytes(certificate.buffer.asUint8List(),
+            password: 'allegrakss123456789');
         final HttpClient client = HttpClient(context: context);
+        client.badCertificateCallback =
+            (X509Certificate cert, String host, int port) => true;
         return client;
       },
     );
@@ -58,7 +67,10 @@ class Server {
       case DioExceptionType.connectionError:
       case DioExceptionType.sendTimeout:
         Flash flash = Flash(context);
-        flash.show(const Text('koneksi terputus'), MessageType.failed);
+        flash.showBanner(
+            title: 'koneksi terputus',
+            description: error.toString(),
+            messageType: MessageType.failed);
         break;
     }
     log(error.toString(), time: DateTime.now());

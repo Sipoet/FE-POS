@@ -61,26 +61,7 @@ class _LoadingPageState extends State<LoadingPage>
     );
   }
 
-  Future<void> fetchSetting() async {
-    await _fetchTableColumn();
-  }
-
-  Future<void> _fetchTableColumn() async {
-    var server = context.read<SessionState>().server;
-
-    var response = await server.get('discounts/columns');
-    if (response.statusCode != 200) {
-      return;
-    }
-    Map responseBody = response.data;
-    var data = responseBody['data'] ?? {'column_names': [], 'column_order': []};
-    setting
-      ..discountColumnOrder =
-          data['column_order'].map<String>((e) => e.toString()).toList()
-      ..discountColumns = data['column_names'];
-  }
-
-  void reroute() async {
+  void reroute() {
     SessionState sessionState = context.read<SessionState>();
     sessionState.fetchServerData().then((isLogin) => {
           controller.stop(),

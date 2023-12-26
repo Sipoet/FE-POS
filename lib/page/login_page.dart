@@ -40,6 +40,7 @@ class _LoginPageState extends State<LoginPage> {
         child: Form(
             key: _formKey,
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 if (!kIsWeb)
                   TextFormField(
@@ -137,10 +138,14 @@ class _LoginPageState extends State<LoginPage> {
           },
           onFailed: (response) {
             flash.hide();
-            var body = response.data;
+            if (response.statusCode == 308) {
+              flash.show(Text('status 308'), MessageType.warning);
+              return;
+            }
+            String body = response?.data?['error'] ?? '';
             flash.show(
                 Text(
-                  body['error'],
+                  body,
                 ),
                 MessageType.failed);
           });

@@ -19,6 +19,7 @@ class SessionState extends ChangeNotifier {
         server.host = sessionData['host'];
         server.jwt = sessionData['jwt'];
       }
+      await server.setCert();
     } catch (e) {
       // unknown error
     }
@@ -51,17 +52,17 @@ class SessionState extends ChangeNotifier {
     if (host.isNotEmpty) server.host = host;
     return server.post('login', body: {
       'user': {'username': username, 'password': password}
-    }).then(
-        (response) => {
-              if (response.statusCode == 200)
-                {
-                  server.jwt = response.headers.value('Authorization'),
-                  saveSession(),
-                  onSuccess(response)
-                }
-              else
-                {server.jwt = jwtBefore, onFailed(response)}
-            }, onError: (error, stackTrace) {
+    }).then((response) {
+      if (response.statusCode == 200) {
+        server.jwt = response.headers.value('Authorization');
+        saveSession();
+        onSuccess(response);
+      } else {
+        server.jwt = jwtBefore;
+        onFailed(response);
+      }
+    }, onError: (error, stackTrace) {
+      print(error);
       if (error.type == DioExceptionType.badResponse) {
         onFailed(error.response);
       } else {
