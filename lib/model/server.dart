@@ -23,7 +23,7 @@ class Server {
       },
     ));
     if (kIsWeb) {
-      host = '';
+      host = Uri.base.host;
       return;
     }
     dio.httpClientAdapter = IOHttpClientAdapter(
