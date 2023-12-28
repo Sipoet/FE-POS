@@ -2,7 +2,7 @@
     package="com.example.fe_pos">
     <uses-permission android:name="android.permission.INTERNET" />
    <application
-        android:label="fe_pos"
+        android:label="Allegra POS"
         android:name="${applicationName}"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher">

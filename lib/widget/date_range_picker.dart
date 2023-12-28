@@ -43,6 +43,7 @@ class _DateRangePickerState extends State<DateRangePicker> {
       controller: _controller,
       onTap: () async {
         DateTimeRange? pickedDateRange = await showDateRangePicker(
+          barrierColor: colorScheme.outline,
           initialEntryMode: DatePickerEntryMode.calendarOnly,
           context: context,
           firstDate: DateTime(DateTime.now().year - 5),
