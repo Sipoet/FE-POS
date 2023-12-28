@@ -64,19 +64,13 @@ class Server {
         }
         break;
       case DioExceptionType.connectionError:
-        Flash flash = Flash(context);
-        flash.showBanner(
-            title: 'koneksi terputus',
-            description:
-                'Pastikan sudah nyalakan VPN atau berada di satu network dengan server',
-            messageType: MessageType.failed);
-        break;
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
         Flash flash = Flash(context);
         flash.showBanner(
             title: 'koneksi terputus',
-            description: error.toString(),
+            description:
+                'Pastikan sudah nyalakan VPN atau berada di satu network dengan server',
             messageType: MessageType.failed);
         break;
     }

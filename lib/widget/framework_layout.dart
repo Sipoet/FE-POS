@@ -193,7 +193,8 @@ class _DesktopLayoutState extends State<DesktopLayout>
             controller: tabManager.controller,
             onTap: (index) {
               var controller = tabManager.controller;
-              if (controller.indexIsChanging && tabManager.emptyIndex < index) {
+              if (controller.indexIsChanging &&
+                  tabManager.emptyIndex <= index) {
                 controller.index = controller.previousIndex;
               } else {
                 return;
