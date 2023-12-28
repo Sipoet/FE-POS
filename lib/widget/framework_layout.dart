@@ -324,6 +324,7 @@ class _MobileLayoutState extends State<MobileLayout> {
         onTap: () {
           setState(() {
             _activePage = menu.page;
+            pageTitle = menu.label;
           });
         },
         title: Text(menu.label),

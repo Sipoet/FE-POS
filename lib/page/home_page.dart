@@ -221,7 +221,7 @@ class _SalesTodayReportState extends State<SalesTodayReport>
                 semanticsLabel: 'Dalam proses data',
               ),
             ),
-          const Divider(),
+          if (!controller.isAnimating) const Divider(),
           if (!controller.isAnimating)
             Table(
               columnWidths: const {

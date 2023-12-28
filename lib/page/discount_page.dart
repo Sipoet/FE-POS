@@ -204,6 +204,9 @@ class _DiscountPageState extends State<DiscountPage> {
 
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+    final padding = MediaQuery.of(context).padding;
+    double height = size.height - padding.top - padding.bottom - 80;
     _source.actionButtons = (discount) => [
           IconButton(
               onPressed: () {
@@ -224,77 +227,81 @@ class _DiscountPageState extends State<DiscountPage> {
               tooltip: 'Refresh item promotion',
               icon: const Icon(Icons.refresh)),
         ];
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 10, bottom: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _searchText = '';
-                    });
-                    refreshTable();
-                  },
-                  tooltip: 'Reset Table',
-                  icon: const Icon(Icons.refresh),
-                ),
-                SizedBox(
-                  width: 150,
-                  child: TextField(
-                    decoration: const InputDecoration(hintText: 'Search Text'),
-                    onChanged: (value) {
-                      String container = _searchText;
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 10, bottom: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    onPressed: () {
                       setState(() {
-                        if (value.length >= 3) {
-                          _searchText = value;
-                        } else {
-                          _searchText = '';
-                        }
+                        _searchText = '';
                       });
-                      if (container != _searchText) {
-                        refreshTable();
-                      }
+                      refreshTable();
                     },
+                    tooltip: 'Reset Table',
+                    icon: const Icon(Icons.refresh),
                   ),
-                ),
-                SubmenuButton(menuChildren: [
-                  MenuItemButton(
-                    child: const Text('Tambah Diskon'),
-                    onPressed: () => addForm(),
+                  SizedBox(
+                    width: 150,
+                    child: TextField(
+                      decoration:
+                          const InputDecoration(hintText: 'Search Text'),
+                      onChanged: (value) {
+                        String container = _searchText;
+                        setState(() {
+                          if (value.length >= 3) {
+                            _searchText = value;
+                          } else {
+                            _searchText = '';
+                          }
+                        });
+                        if (container != _searchText) {
+                          refreshTable();
+                        }
+                      },
+                    ),
                   ),
-                  MenuItemButton(
-                    child: const Text('Refresh all promotion'),
-                    onPressed: () => refreshAllPromotion(),
-                  )
-                ], child: const Icon(Icons.table_rows_rounded))
-              ],
-            ),
-          ),
-          if (_isDisplayTable)
-            Expanded(
-              child: PaginatedDataTable2(
-                columns: _columns,
-                source: _source,
-                minWidth: _tableWidth,
-                sortColumnIndex: _sortColumnIndex,
-                sortAscending: _sortAscending,
-                fixedLeftColumns: 1,
-                border: TableBorder.all(
-                    width: 1, color: Colors.black45.withOpacity(0.3)),
-                sortArrowAlwaysVisible: false,
-                empty: const Text('Data tidak ditemukan'),
-                headingRowColor: MaterialStateProperty.resolveWith<Color?>(
-                    (Set<MaterialState> states) {
-                  return Colors.blueAccent.withOpacity(0.2);
-                }),
+                  SubmenuButton(menuChildren: [
+                    MenuItemButton(
+                      child: const Text('Tambah Diskon'),
+                      onPressed: () => addForm(),
+                    ),
+                    MenuItemButton(
+                      child: const Text('Refresh all promotion'),
+                      onPressed: () => refreshAllPromotion(),
+                    )
+                  ], child: const Icon(Icons.table_rows_rounded))
+                ],
               ),
             ),
-        ],
+            if (_isDisplayTable)
+              SizedBox(
+                height: height,
+                child: PaginatedDataTable2(
+                  columns: _columns,
+                  source: _source,
+                  minWidth: _tableWidth,
+                  sortColumnIndex: _sortColumnIndex,
+                  sortAscending: _sortAscending,
+                  fixedLeftColumns: 1,
+                  border: TableBorder.all(
+                      width: 1, color: Colors.black45.withOpacity(0.3)),
+                  sortArrowAlwaysVisible: false,
+                  empty: const Text('Data tidak ditemukan'),
+                  headingRowColor: MaterialStateProperty.resolveWith<Color?>(
+                      (Set<MaterialState> states) {
+                    return Colors.blueAccent.withOpacity(0.2);
+                  }),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

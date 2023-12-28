@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:fe_pos/tool/datatable.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/dropdown_remote_connection.dart';
@@ -216,168 +217,172 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   Widget build(BuildContext context) {
     DropdownRemoteConnection connection =
         DropdownRemoteConnection(server, context);
-    // Size size = MediaQuery.of(context).size;
-    // final padding = MediaQuery.of(context).padding;
-    // double height = size.height - padding.top - padding.bottom - 280;
+    Size size = MediaQuery.of(context).size;
+    final padding = MediaQuery.of(context).padding;
+    double height = size.height - padding.top - padding.bottom - 80;
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Filter',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 10),
-          Wrap(
-            direction: Axis.horizontal,
-            children: [
-              Container(
-                padding: const EdgeInsets.only(right: 10),
-                constraints:
-                    const BoxConstraints(maxHeight: 100, maxWidth: 320),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Padding(
-                          padding: EdgeInsets.only(left: 5, bottom: 5),
-                          child: Text('Merek :', style: _filterLabelStyle)),
-                      Flexible(
-                          child: BsSelectBox(
-                        key: const ValueKey('brandSelect'),
-                        searchable: true,
-                        controller: _brandSelectWidget,
-                        serverSide: (params) async {
-                          var list = await connection.getData('/brands',
-                              query: params['searchValue'].toString());
-                          return BsSelectBoxResponse(
-                              options: convertToOptions(list));
-                        },
-                      )),
-                    ]),
-              ),
-              Container(
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Filter',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Wrap(
+              direction: Axis.horizontal,
+              children: [
+                Container(
                   padding: const EdgeInsets.only(right: 10),
                   constraints:
                       const BoxConstraints(maxHeight: 100, maxWidth: 320),
                   child: Column(
-                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         const Padding(
-                          padding: EdgeInsets.only(left: 5, bottom: 5),
-                          child: Text('Jenis/Departemen :',
-                              style: _filterLabelStyle),
-                        ),
+                            padding: EdgeInsets.only(left: 5, bottom: 5),
+                            child: Text('Merek :', style: _filterLabelStyle)),
                         Flexible(
                             child: BsSelectBox(
-                          key: const ValueKey('itemTypeSelect'),
+                          key: const ValueKey('brandSelect'),
                           searchable: true,
-                          controller: _itemTypeSelectWidget,
+                          controller: _brandSelectWidget,
                           serverSide: (params) async {
-                            var list = await connection.getData('/item_types',
+                            var list = await connection.getData('/brands',
                                 query: params['searchValue'].toString());
                             return BsSelectBoxResponse(
                                 options: convertToOptions(list));
                           },
                         )),
-                      ])),
-              Container(
-                  padding: const EdgeInsets.only(right: 10),
-                  constraints:
-                      const BoxConstraints(maxHeight: 100, maxWidth: 320),
-                  child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(left: 5, bottom: 5),
-                          child: Text('Supplier :', style: _filterLabelStyle),
-                        ),
-                        Flexible(
-                            child: BsSelectBox(
-                          key: const ValueKey('supplierSelect'),
-                          searchable: true,
-                          controller: _supplierSelectWidget,
-                          serverSide: (params) async {
-                            var list = await connection.getData('/suppliers',
-                                query: params['searchValue'].toString());
-                            return BsSelectBoxResponse(
-                                options: convertToOptions(list));
-                          },
-                        )),
-                      ])),
-              Container(
-                  padding: const EdgeInsets.only(right: 10),
-                  constraints:
-                      const BoxConstraints(maxHeight: 100, maxWidth: 320),
-                  child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(left: 5, bottom: 5),
-                          child: Text('Item :', style: _filterLabelStyle),
-                        ),
-                        Flexible(
-                            child: BsSelectBox(
-                          key: const ValueKey('itemSelect'),
-                          searchable: true,
-                          controller: _itemSelectWidget,
-                          serverSide: (params) async {
-                            var list = await connection.getData('/items',
-                                query: params['searchValue'].toString());
-                            return BsSelectBoxResponse(
-                                options: convertToOptions(list));
-                          },
-                        )),
-                      ])),
-            ],
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Row(
-            children: [
-              ElevatedButton(
-                onPressed: () => {_displayReport()},
-                child: const Text('Tampilkan'),
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-              ElevatedButton(
-                onPressed: () => {_downloadReport()},
-                child: const Text('Download'),
-              ),
-            ],
-          ),
-          if (_isDisplayTable) const Divider(),
-          if (_isDisplayTable)
-            Expanded(
-              child: PaginatedDataTable2(
-                source: dataSource,
-                fixedLeftColumns: 1,
-                sortColumnIndex: _sortColumnIndex,
-                sortAscending: _sortAscending,
-                border: TableBorder.all(
-                    width: 1, color: colorScheme.onSecondary.withOpacity(0.3)),
-                empty: const Text('Data tidak ditemukan'),
-                columns: _columns,
-                minWidth: _tableWidth,
-                headingRowColor: MaterialStateProperty.resolveWith<Color?>(
-                    (Set<MaterialState> states) {
-                  return colorScheme.onSecondaryContainer.withOpacity(0.08);
-                }),
-              ),
+                      ]),
+                ),
+                Container(
+                    padding: const EdgeInsets.only(right: 10),
+                    constraints:
+                        const BoxConstraints(maxHeight: 100, maxWidth: 320),
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(left: 5, bottom: 5),
+                            child: Text('Jenis/Departemen :',
+                                style: _filterLabelStyle),
+                          ),
+                          Flexible(
+                              child: BsSelectBox(
+                            key: const ValueKey('itemTypeSelect'),
+                            searchable: true,
+                            controller: _itemTypeSelectWidget,
+                            serverSide: (params) async {
+                              var list = await connection.getData('/item_types',
+                                  query: params['searchValue'].toString());
+                              return BsSelectBoxResponse(
+                                  options: convertToOptions(list));
+                            },
+                          )),
+                        ])),
+                Container(
+                    padding: const EdgeInsets.only(right: 10),
+                    constraints:
+                        const BoxConstraints(maxHeight: 100, maxWidth: 320),
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(left: 5, bottom: 5),
+                            child: Text('Supplier :', style: _filterLabelStyle),
+                          ),
+                          Flexible(
+                              child: BsSelectBox(
+                            key: const ValueKey('supplierSelect'),
+                            searchable: true,
+                            controller: _supplierSelectWidget,
+                            serverSide: (params) async {
+                              var list = await connection.getData('/suppliers',
+                                  query: params['searchValue'].toString());
+                              return BsSelectBoxResponse(
+                                  options: convertToOptions(list));
+                            },
+                          )),
+                        ])),
+                Container(
+                    padding: const EdgeInsets.only(right: 10),
+                    constraints:
+                        const BoxConstraints(maxHeight: 100, maxWidth: 320),
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(left: 5, bottom: 5),
+                            child: Text('Item :', style: _filterLabelStyle),
+                          ),
+                          Flexible(
+                              child: BsSelectBox(
+                            key: const ValueKey('itemSelect'),
+                            searchable: true,
+                            controller: _itemSelectWidget,
+                            serverSide: (params) async {
+                              var list = await connection.getData('/items',
+                                  query: params['searchValue'].toString());
+                              return BsSelectBoxResponse(
+                                  options: convertToOptions(list));
+                            },
+                          )),
+                        ])),
+              ],
             ),
-        ],
+            const SizedBox(
+              height: 10,
+            ),
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: () => {_displayReport()},
+                  child: const Text('Tampilkan'),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                ElevatedButton(
+                  onPressed: () => {_downloadReport()},
+                  child: const Text('Download'),
+                ),
+              ],
+            ),
+            if (_isDisplayTable) const Divider(),
+            if (_isDisplayTable)
+              SizedBox(
+                height: height,
+                child: PaginatedDataTable2(
+                  source: dataSource,
+                  fixedLeftColumns: 1,
+                  sortColumnIndex: _sortColumnIndex,
+                  sortAscending: _sortAscending,
+                  border: TableBorder.all(
+                      width: 1,
+                      color: colorScheme.onSecondary.withOpacity(0.3)),
+                  empty: const Text('Data tidak ditemukan'),
+                  columns: _columns,
+                  minWidth: _tableWidth,
+                  headingRowColor: MaterialStateProperty.resolveWith<Color?>(
+                      (Set<MaterialState> states) {
+                    return colorScheme.onSecondaryContainer.withOpacity(0.08);
+                  }),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class SalesPercentageDataSource extends DataTableSource {
+class SalesPercentageDataSource extends DataTableSource with Datatable {
   late List<List<Comparable<Object>>> sortedData;
   void setData(List<List<Comparable<Object>>> rawData, int sortColumn,
       bool sortAscending) {
@@ -397,41 +402,12 @@ class SalesPercentageDataSource extends DataTableSource {
   @override
   int get rowCount => sortedData.length;
 
-  static DataCell _decorateCell(Object cell) {
-    if (cell is double || cell is int) {
-      String val = _formatNumber(cell);
-      return DataCell(
-          Align(alignment: Alignment.centerRight, child: SelectableText(val)));
-    } else {
-      return DataCell(SelectableText(cell.toString()));
-    }
-  }
-
-  static String _formatNumber(number) {
-    var um = number.toString().split('.');
-    int strLength = um[0].length;
-    List components = [];
-    while (strLength >= 3) {
-      components.add(um[0].substring(strLength - 3, strLength));
-      components.add(',');
-      strLength -= 3;
-    }
-    if (strLength > 0) {
-      components.add(um[0].substring(0, strLength));
-    } else {
-      components.removeAt(components.length - 1);
-    }
-    components = components.reversed.toList();
-    if (um.length == 2) components.add(".${um[1]}");
-    return components.join();
-  }
-
   @override
   DataRow? getRow(int index) {
     return DataRow.byIndex(
       index: index,
       cells: sortedData[index]
-          .map<DataCell>((cell) => _decorateCell(cell))
+          .map<DataCell>((cell) => decorateValue(cell))
           .toList(),
     );
   }
