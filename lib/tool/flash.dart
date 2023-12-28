@@ -9,8 +9,7 @@ class Flash extends ChangeNotifier {
   void show(Widget content, MessageType messageType) {
     hide();
     var messenger = ScaffoldMessenger.of(context);
-    MaterialColor color = colorBasedMessageType(messageType);
-
+    MaterialColor color = _colorBasedMessageType(messageType);
     messenger.showMaterialBanner(MaterialBanner(
       padding: const EdgeInsets.all(20),
       content: content,
@@ -32,7 +31,7 @@ class Flash extends ChangeNotifier {
       required MessageType messageType}) {
     hide();
     var messenger = ScaffoldMessenger.of(context);
-    MaterialColor color = colorBasedMessageType(messageType);
+    MaterialColor color = _colorBasedMessageType(messageType);
 
     messenger.showMaterialBanner(MaterialBanner(
       padding: const EdgeInsets.all(20),
@@ -61,7 +60,7 @@ class Flash extends ChangeNotifier {
     ));
   }
 
-  MaterialColor colorBasedMessageType(MessageType messageType) {
+  MaterialColor _colorBasedMessageType(MessageType messageType) {
     switch (messageType) {
       case MessageType.warning:
         return Colors.yellow;

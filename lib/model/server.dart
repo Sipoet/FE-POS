@@ -63,8 +63,15 @@ class Server {
           log(response.data.toString(), time: DateTime.now());
         }
         break;
-      case DioExceptionType.connectionTimeout:
       case DioExceptionType.connectionError:
+        Flash flash = Flash(context);
+        flash.showBanner(
+            title: 'koneksi terputus',
+            description:
+                'Pastikan sudah nyalakan VPN atau berada di satu network dengan server',
+            messageType: MessageType.failed);
+        break;
+      case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
         Flash flash = Flash(context);
         flash.showBanner(

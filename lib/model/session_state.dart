@@ -62,7 +62,6 @@ class SessionState extends ChangeNotifier {
         onFailed(response);
       }
     }, onError: (error, stackTrace) {
-      print(error);
       if (error.type == DioExceptionType.badResponse) {
         onFailed(error.response);
       } else {

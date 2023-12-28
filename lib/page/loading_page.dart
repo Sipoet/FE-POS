@@ -2,7 +2,7 @@ import 'package:fe_pos/tool/setting.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/page/login_page.dart';
 import 'package:fe_pos/widget/framework_layout.dart';
-
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
 
@@ -62,6 +62,7 @@ class _LoadingPageState extends State<LoadingPage>
   }
 
   void reroute() {
+    initializeDateFormatting('id_ID', null);
     SessionState sessionState = context.read<SessionState>();
     sessionState.fetchServerData().then((isLogin) => {
           controller.stop(),

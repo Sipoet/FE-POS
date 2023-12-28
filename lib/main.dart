@@ -25,8 +25,12 @@ class AllegraPos extends StatelessWidget {
             behavior: SnackBarBehavior.floating,
             showCloseIcon: true,
           ),
+          textTheme: Theme.of(context).textTheme.apply(
+                fontSizeFactor: 1.1,
+                fontSizeDelta: 2.0,
+              ),
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
           dividerTheme: const DividerThemeData(
               space: 20,
               color: Colors.grey,

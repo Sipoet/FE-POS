@@ -25,14 +25,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
         label: 'Home',
         page: const HomePage(),
         key: 'home'),
-    Menu(
-        icon: Icons.money,
-        isClosed: true,
-        label: 'Penjualan',
-        page: const Placeholder(
-          child: Text('sales'),
-        ),
-        key: 'sales'),
+    // Menu(
+    //     icon: Icons.money,
+    //     isClosed: true,
+    //     label: 'Penjualan',
+    //     page: const Placeholder(
+    //       child: Text('sales'),
+    //     ),
+    //     key: 'sales'),
     Menu(
         icon: Icons.pages,
         isClosed: true,
@@ -46,31 +46,31 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             page: const SalesPercentageReportPage(),
             key: 'salesPercentage',
           ),
-          Menu(
-              icon: Icons.pageview,
-              isClosed: true,
-              label: 'report lain',
-              key: 'otherReport',
-              children: [
-                Menu(
-                  icon: Icons.pageview,
-                  isClosed: true,
-                  label: 'report lain 1',
-                  page: const Placeholder(
-                    child: Text('report lain 1'),
-                  ),
-                  key: 'otherReport1',
-                ),
-                Menu(
-                    icon: Icons.pageview,
-                    isClosed: true,
-                    label: 'report lain 2',
-                    page: const Placeholder(
-                      child: Text('report lain 2'),
-                    ),
-                    key: 'otherReport2',
-                    children: [])
-              ])
+          // Menu(
+          //     icon: Icons.pageview,
+          //     isClosed: true,
+          //     label: 'report lain',
+          //     key: 'otherReport',
+          //     children: [
+          //       Menu(
+          //         icon: Icons.pageview,
+          //         isClosed: true,
+          //         label: 'report lain 1',
+          //         page: const Placeholder(
+          //           child: Text('report lain 1'),
+          //         ),
+          //         key: 'otherReport1',
+          //       ),
+          //       Menu(
+          //           icon: Icons.pageview,
+          //           isClosed: true,
+          //           label: 'report lain 2',
+          //           page: const Placeholder(
+          //             child: Text('report lain 2'),
+          //           ),
+          //           key: 'otherReport2',
+          //           children: [])
+          //     ])
         ]),
     Menu(
         icon: Icons.table_chart,
@@ -191,6 +191,14 @@ class _DesktopLayoutState extends State<DesktopLayout>
           bottom: TabBar(
             isScrollable: true,
             controller: tabManager.controller,
+            onTap: (index) {
+              var controller = tabManager.controller;
+              if (controller.indexIsChanging && tabManager.emptyIndex < index) {
+                controller.index = controller.previousIndex;
+              } else {
+                return;
+              }
+            },
             tabs: tabManager.tabs
                 .map<Widget>((header) => Row(
                       children: [
@@ -216,7 +224,7 @@ class _DesktopLayoutState extends State<DesktopLayout>
 
   Widget bodyWidget() {
     return Container(
-      color: Theme.of(context).colorScheme.primaryContainer,
+      color: Theme.of(context).colorScheme.background,
       child: tabWidget(),
     );
   }
@@ -301,7 +309,7 @@ class _MobileLayoutState extends State<MobileLayout> {
         itemCount: _menus.length,
       )),
       body: Container(
-        color: Theme.of(context).colorScheme.primaryContainer,
+        color: Theme.of(context).colorScheme.background,
         child: _activePage,
       ),
     );

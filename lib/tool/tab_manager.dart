@@ -6,23 +6,23 @@ class TabManager extends ChangeNotifier {
       List<Widget>.filled(99, const SizedBox(), growable: true);
   late TabController controller;
 
-  int _activeIndex = 0;
+  int emptyIndex = 0;
   TabManager(TickerProvider obj) {
     controller = TabController(
       vsync: obj,
       length: 99,
-      initialIndex: _activeIndex,
+      initialIndex: emptyIndex,
     );
   }
 
   void addTab(String header, Widget tabview) {
     int index = tabs.indexOf(header);
     if (index == -1) {
-      tabViews[_activeIndex] = tabview;
-      tabs[_activeIndex] = header;
-      _activeIndex += 1;
+      tabViews[emptyIndex] = tabview;
+      tabs[emptyIndex] = header;
+      emptyIndex += 1;
       notifyListeners();
-      goTo(_activeIndex - 1);
+      goTo(emptyIndex - 1);
     } else {
       goTo(index);
     }
@@ -47,7 +47,7 @@ class TabManager extends ChangeNotifier {
     tabs.add('');
     tabViews.removeAt(index);
     tabViews.add(const SizedBox());
-    _activeIndex -= 1;
+    emptyIndex -= 1;
     if (controller.index == index) {
       controller.animateTo(index < 1 ? 0 : index - 1);
     } else {

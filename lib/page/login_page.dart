@@ -90,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
                     if (value == null || value.toString().trim().isEmpty) {
                       return 'password belum diisi';
                     } else if (value.toString().contains(' ')) {
-                      return 'username tidak boleh ada spasi';
+                      return 'password tidak boleh ada spasi';
                     }
                     return null;
                   },
@@ -139,7 +139,7 @@ class _LoginPageState extends State<LoginPage> {
           onFailed: (response) {
             flash.hide();
             if (response.statusCode == 308) {
-              flash.show(Text('status 308'), MessageType.warning);
+              flash.show(const Text('status 308'), MessageType.warning);
               return;
             }
             String body = response?.data?['error'] ?? '';
