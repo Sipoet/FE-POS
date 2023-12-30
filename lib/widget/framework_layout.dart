@@ -105,7 +105,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           ChangeNotifierProvider<TabManager>(create: (_) => tabManager),
         ],
         child: LayoutBuilder(builder: (context, constraints) {
-          if (constraints.maxWidth < 800.0) {
+          if (constraints.maxWidth < 800.0 || constraints.maxHeight < 600.0) {
             return MobileLayout(menuTree: menuTree, logout: _logout);
           } else {
             return DesktopLayout(menuTree: menuTree, logout: _logout);
@@ -120,11 +120,10 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           context: context,
           onSuccess: (response) {
             var body = response.data;
-            flash.show(
-                Text(
-                  body['message'],
-                ),
-                MessageType.success);
+            flash.showBanner(
+              title: body['message'],
+              messageType: MessageType.success,
+            );
 
             Navigator.pushReplacement(
                 context,
@@ -162,8 +161,7 @@ class DesktopLayout extends StatefulWidget {
 
 class _DesktopLayoutState extends State<DesktopLayout>
     with TickerProviderStateMixin {
-  String pageTitle = 'Home';
-
+  final List<String> disableClosedTabs = ['Home'];
   @override
   Widget build(BuildContext context) {
     var tabManager = context.read<TabManager>();
@@ -183,9 +181,9 @@ class _DesktopLayoutState extends State<DesktopLayout>
       ],
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            pageTitle,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          title: const Text(
+            'Allegra POS',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           actions: menus,
           bottom: TabBar(
@@ -207,7 +205,8 @@ class _DesktopLayoutState extends State<DesktopLayout>
                           header,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        if (header.isNotEmpty)
+                        if (header.isNotEmpty &&
+                            !disableClosedTabs.contains(header))
                           IconButton(
                               onPressed: () => setState(() {
                                     tabManager.removeTab(header);
@@ -275,8 +274,7 @@ class MobileLayout extends StatefulWidget {
 
 class _MobileLayoutState extends State<MobileLayout> {
   List<Widget> _menus = [];
-  Widget _activePage = const HomePage();
-  String pageTitle = 'Home';
+  final List<String> disableClosedTabs = ['Home'];
 
   @override
   void initState() {
@@ -297,11 +295,41 @@ class _MobileLayoutState extends State<MobileLayout> {
 
   @override
   Widget build(BuildContext context) {
+    var tabManager = context.read<TabManager>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          pageTitle,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        title: const Text(
+          'Allegra POS',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        bottom: TabBar(
+          isScrollable: true,
+          controller: tabManager.controller,
+          onTap: (index) {
+            var controller = tabManager.controller;
+            if (controller.indexIsChanging && tabManager.emptyIndex <= index) {
+              controller.index = controller.previousIndex;
+            } else {
+              return;
+            }
+          },
+          tabs: tabManager.tabs
+              .map<Widget>((header) => Row(
+                    children: [
+                      Text(
+                        header,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      if (header.isNotEmpty &&
+                          !disableClosedTabs.contains(header))
+                        IconButton(
+                            onPressed: () => setState(() {
+                                  tabManager.removeTab(header);
+                                }),
+                            icon: const Icon(Icons.close))
+                    ],
+                  ))
+              .toList(),
         ),
       ),
       drawer: Drawer(
@@ -309,9 +337,9 @@ class _MobileLayoutState extends State<MobileLayout> {
         itemBuilder: (context, index) => _menus[index],
         itemCount: _menus.length,
       )),
-      body: Container(
-        color: Theme.of(context).colorScheme.background,
-        child: _activePage,
+      body: TabBarView(
+        controller: tabManager.controller,
+        children: tabManager.tabViews,
       ),
     );
   }
@@ -323,8 +351,9 @@ class _MobileLayoutState extends State<MobileLayout> {
         leading: Icon(menu.icon),
         onTap: () {
           setState(() {
-            _activePage = menu.page;
-            pageTitle = menu.label;
+            Navigator.pop(context);
+            var tabManager = context.read<TabManager>();
+            tabManager.addTab(menu.label, menu.page);
           });
         },
         title: Text(menu.label),
