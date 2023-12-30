@@ -21,7 +21,10 @@ class Flash extends ChangeNotifier {
           onPressed: () {
             hide();
           },
-          child: const Text('DISMISS'),
+          child: const Text(
+            'DISMISS',
+            selectionColor: Colors.black,
+          ),
         ),
       ],
     ));
