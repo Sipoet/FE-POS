@@ -127,6 +127,7 @@ class _SalesTodayReportState extends State<SalesTodayReport>
     final padding = MediaQuery.of(context).padding;
     double width = size.width - padding.left - padding.right - 50;
     double headerLabelWidth = width - 40;
+
     return Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,7 +154,6 @@ class _SalesTodayReportState extends State<SalesTodayReport>
             ],
           ),
           DropdownMenu(
-            width: 160,
             textStyle:
                 TextStyle(fontSize: 18, color: colorScheme.onPrimaryContainer),
             inputDecorationTheme: const InputDecorationTheme(

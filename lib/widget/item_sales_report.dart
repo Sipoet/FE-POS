@@ -165,11 +165,17 @@ class _ItemSalesTodayReportState extends State<ItemSalesTodayReport>
                 icon: const Icon(Icons.refresh_rounded))
           ],
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          runAlignment: WrapAlignment.spaceAround,
+          spacing: 10,
+          runSpacing: 10,
           children: [
+            SizedBox(
+              width: width,
+              height: 2,
+            ),
             DropdownMenu(
-              width: 160,
               textStyle: TextStyle(
                   fontSize: 18, color: colorScheme.onPrimaryContainer),
               inputDecorationTheme: const InputDecorationTheme(
