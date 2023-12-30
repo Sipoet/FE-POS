@@ -20,13 +20,20 @@ class AllegraPos extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Allegra POS',
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(1.5)),
+            child: child ?? const Text('no material'),
+          );
+        },
         theme: ThemeData(
           snackBarTheme: const SnackBarThemeData(
             behavior: SnackBarBehavior.floating,
             showCloseIcon: true,
           ),
           textTheme: Theme.of(context).textTheme.apply(
-                fontSizeFactor: 1.1,
+                fontSizeFactor: 1,
                 fontSizeDelta: 2.0,
               ),
           useMaterial3: true,

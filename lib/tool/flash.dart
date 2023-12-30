@@ -4,25 +4,32 @@ enum MessageType { success, failed, info, warning }
 
 class Flash extends ChangeNotifier {
   BuildContext context;
+  ScaffoldMessengerState? messenger;
 
   Flash(this.context);
   void show(Widget content, MessageType messageType) {
     hide();
-    var messenger = ScaffoldMessenger.of(context);
+    messenger = ScaffoldMessenger.of(context);
     MaterialColor color = _colorBasedMessageType(messageType);
-    messenger.showMaterialBanner(MaterialBanner(
+    messenger?.showMaterialBanner(MaterialBanner(
+      elevation: 1,
       padding: const EdgeInsets.all(20),
       content: content,
       backgroundColor: color,
       actions: <Widget>[
         TextButton(
           onPressed: () {
-            messenger.clearMaterialBanners();
+            hide();
           },
           child: const Text('DISMISS'),
         ),
       ],
     ));
+    if (messageType == MessageType.success) {
+      Future.delayed(const Duration(seconds: 3), () {
+        hide();
+      });
+    }
   }
 
   void showBanner(
@@ -30,10 +37,11 @@ class Flash extends ChangeNotifier {
       String description = '',
       required MessageType messageType}) {
     hide();
-    var messenger = ScaffoldMessenger.of(context);
+    messenger = ScaffoldMessenger.of(context);
     MaterialColor color = _colorBasedMessageType(messageType);
 
-    messenger.showMaterialBanner(MaterialBanner(
+    messenger?.showMaterialBanner(MaterialBanner(
+      elevation: 1,
       padding: const EdgeInsets.all(20),
       content: Center(
         child: Column(
@@ -52,12 +60,17 @@ class Flash extends ChangeNotifier {
       actions: <Widget>[
         TextButton(
           onPressed: () {
-            messenger.clearMaterialBanners();
+            messenger?.clearMaterialBanners();
           },
           child: const Text('DISMISS'),
         ),
       ],
     ));
+    if (messageType == MessageType.success) {
+      Future.delayed(const Duration(seconds: 3), () {
+        hide();
+      });
+    }
   }
 
   MaterialColor _colorBasedMessageType(MessageType messageType) {
@@ -75,6 +88,7 @@ class Flash extends ChangeNotifier {
   }
 
   void hide() {
-    ScaffoldMessenger.of(context).clearMaterialBanners();
+    messenger = messenger ?? ScaffoldMessenger.of(context);
+    messenger?.clearMaterialBanners();
   }
 }

@@ -130,11 +130,8 @@ class _LoginPageState extends State<LoginPage> {
             flash.hide();
             _redirectToHomePage();
             var body = response.data;
-            flash.show(
-                Text(
-                  body['message'],
-                ),
-                MessageType.success);
+            flash.showBanner(
+                title: body['message'], messageType: MessageType.success);
           },
           onFailed: (response) {
             flash.hide();

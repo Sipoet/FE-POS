@@ -26,6 +26,7 @@ class _DiscountPageState extends State<DiscountPage> {
   bool _isDisplayTable = false;
   String _searchText = '';
   List<Discount> discounts = [];
+  Future? requestController;
   late Flash flash;
   @override
   void initState() {
@@ -37,6 +38,10 @@ class _DiscountPageState extends State<DiscountPage> {
 
   @override
   void dispose() {
+    if (requestController != null) {
+      requestController?.ignore();
+    }
+
     super.dispose();
   }
 
@@ -92,14 +97,14 @@ class _DiscountPageState extends State<DiscountPage> {
     setState(() {
       _isDisplayTable = false;
     });
-    fetchDiscounts(page: 1);
+    requestController = fetchDiscounts(page: 1);
   }
 
-  void fetchDiscounts({int page = 1}) {
+  Future fetchDiscounts({int page = 1}) {
     var server = _sessionState.server;
     String orderKey = _columnOrder[_sortColumnIndex];
     try {
-      server.get('discounts', queryParam: {
+      return server.get('discounts', queryParam: {
         'search_text': _searchText,
         'page': page.toString(),
         'per': '100',
@@ -123,7 +128,9 @@ class _DiscountPageState extends State<DiscountPage> {
         flash.hide();
         int totalPages = responseBody['meta']?['total_pages'];
         if (page < totalPages.toInt()) {
-          fetchDiscounts(page: page + 1);
+          requestController = fetchDiscounts(page: page + 1);
+        } else {
+          requestController = null;
         }
       },
           onError: (error, stackTrace) => server.defaultResponse(
@@ -133,6 +140,7 @@ class _DiscountPageState extends State<DiscountPage> {
           title: e.toString(),
           description: trace.toString(),
           messageType: MessageType.failed);
+      return Future(() => null);
     }
   }
 

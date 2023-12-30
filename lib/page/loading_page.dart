@@ -26,8 +26,8 @@ class _LoadingPageState extends State<LoadingPage>
         setState(() {});
       });
     setting = context.read<Setting>();
-    reroute();
     controller.repeat(reverse: true);
+    reroute();
     super.initState();
   }
 

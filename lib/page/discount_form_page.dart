@@ -323,6 +323,7 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                         'Tanggal Aktif',
                         style: labelStyle,
                       ),
+                      icon: const Icon(Icons.calendar_today_outlined),
                       onChanged: ((DateTimeRange range) {
                         discount.startTime = range.start;
                         discount.endTime = range.end;
