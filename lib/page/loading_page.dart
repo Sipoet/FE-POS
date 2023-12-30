@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fe_pos/tool/setting.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/page/login_page.dart';
@@ -29,23 +31,24 @@ class _LoadingPageState extends State<LoadingPage>
       });
     setting = context.read<Setting>();
     controller.repeat(reverse: true);
-    checkPermission();
-
+    checkPermission().then((_) {
+      reroute();
+    });
     super.initState();
   }
 
-  void checkPermission() async {
-    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-    if (androidInfo.version.sdkInt >= 30) {
-      reroute();
-      return;
+  Future<void> checkPermission() async {
+    if (Platform.isAndroid) {
+      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      if (androidInfo.version.sdkInt >= 30) {
+        return;
+      }
+      var status = await Permission.storage.status;
+      if (status.isDenied) {
+        await Permission.storage.request().isGranted;
+      }
     }
-    var status = await Permission.storage.status;
-    if (status.isDenied) {
-      await Permission.storage.request().isGranted;
-    }
-    reroute();
   }
 
   @override
