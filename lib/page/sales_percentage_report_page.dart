@@ -189,7 +189,10 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
       Directory? dir = await getDownloadsDirectory();
       outputFile = "${dir?.path}/$filename";
     } else if (Platform.isAndroid) {
-      Directory? dir = await getExternalStorageDirectory();
+      Directory? dir = Directory('/storage/emulated/0/Download');
+      if (!dir.existsSync()) {
+        dir = await getExternalStorageDirectory();
+      }
       outputFile = "${dir?.path}/$filename";
     } else if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
       outputFile = await FilePicker.platform.saveFile(
@@ -202,7 +205,10 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
     if (outputFile != null) {
       File file = File(outputFile);
       file.writeAsBytesSync(bytes);
-      log('filename: ${file.path}');
+      flash.showBanner(
+          messageType: MessageType.success,
+          title: 'Sukses download',
+          description: 'sukses disimpan di ${file.path}');
     }
   }
 

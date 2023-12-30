@@ -42,7 +42,8 @@ dependencies:
   universal_html: ^2.2.4
   data_table_2: ^2.5.9
   intl: ^0.19.0
-
+  permission_handler: ^11.1.0
+  device_info_plus: ^9.1.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

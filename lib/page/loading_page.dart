@@ -5,6 +5,8 @@ import 'package:fe_pos/widget/framework_layout.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class LoadingPage extends StatefulWidget {
   const LoadingPage({super.key});
@@ -27,8 +29,23 @@ class _LoadingPageState extends State<LoadingPage>
       });
     setting = context.read<Setting>();
     controller.repeat(reverse: true);
-    reroute();
+    checkPermission();
+
     super.initState();
+  }
+
+  void checkPermission() async {
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    if (androidInfo.version.sdkInt >= 30) {
+      reroute();
+      return;
+    }
+    var status = await Permission.storage.status;
+    if (status.isDenied) {
+      await Permission.storage.request().isGranted;
+    }
+    reroute();
   }
 
   @override
