@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:fe_pos/tool/datatable.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:flutter/material.dart';
@@ -138,14 +139,15 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
     if (response.statusCode != 200) {
       return;
     }
-    String? filename = response.headers['content-disposition'];
-    if (filename == null) {
+    String filename = response.headers.value('content-disposition') ?? '';
+    if (filename.isEmpty) {
       return;
     }
     filename = filename.substring(
         filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
     if (response.statusCode == 200) {
-      _saveXlsxPick(filename, response.data);
+      List<int> bytes = utf8.encode(response.data);
+      _saveXlsxPick(filename, bytes);
     } else {
       flash.show(const Text('gagal simpan ke excel'), MessageType.failed);
     }
