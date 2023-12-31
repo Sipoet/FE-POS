@@ -92,7 +92,7 @@ class _ItemSalesTodayReportState extends State<ItemSalesTodayReport>
     controller.forward();
     var sessionState = context.read<SessionState>();
     requestController = sessionState.server
-        .get('item_sales/today_report', queryParam: {
+        .get('item_sales/transaction_report', queryParam: {
       'group_key': widget.groupKey,
       'limit': limit,
       'start_time': startTime.toIso8601String(),

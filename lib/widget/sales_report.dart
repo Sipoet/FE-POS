@@ -54,7 +54,7 @@ class _SalesTodayReportState extends State<SalesTodayReport>
     controller.reset();
     controller.forward();
     var sessionState = context.read<SessionState>();
-    requestController = sessionState.server.get('sales/today_report',
+    requestController = sessionState.server.get('sales/transaction_report',
         queryParam: {
           'start_time': startTime.toIso8601String(),
           'end_time': endTime.toIso8601String()
