@@ -21,6 +21,7 @@ class AllegraPos extends StatelessWidget {
       child: MaterialApp(
         title: 'Allegra POS',
         theme: ThemeData(
+          fontFamily: 'Lato',
           textTheme: Theme.of(context).textTheme.apply(
               fontSizeFactor: 1.1, fontSizeDelta: 2.0, fontFamily: 'Lato'),
           useMaterial3: true,
