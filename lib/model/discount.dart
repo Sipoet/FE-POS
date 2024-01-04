@@ -1,4 +1,6 @@
-class Discount {
+import 'package:fe_pos/model/model.dart';
+
+class Discount extends Model {
   String? itemCode;
   String? itemType;
   String? brandName;
@@ -25,6 +27,7 @@ class Discount {
       required this.startTime,
       required this.endTime});
 
+  @override
   factory Discount.fromJson(Map<String, dynamic> json) {
     var attributes = json['attributes'];
     return Discount(
@@ -42,6 +45,7 @@ class Discount {
         endTime: DateTime.parse(attributes['end_time']));
   }
 
+  @override
   Map<String, dynamic> toMap() => {
         'code': code.trim(),
         'item_code': itemCode,
@@ -56,6 +60,7 @@ class Discount {
         'end_time': endTime,
       };
 
+  @override
   Map<String, dynamic> toJson() {
     var json = toMap();
     json['start_time'] = startTime.toIso8601String();

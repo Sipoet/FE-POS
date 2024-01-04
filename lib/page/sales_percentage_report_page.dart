@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:fe_pos/tool/datatable.dart';
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/model/item_sales_percentage_report.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/dropdown_remote_connection.dart';
 import 'package:file_picker/file_picker.dart';
@@ -42,15 +43,16 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   String? _reportType;
   bool _isDisplayTable = false;
   List<DataColumn> _columns = [];
-  List _columnOrder = [];
+  List<String> _columnOrder = [];
   SalesPercentageDataSource dataSource = SalesPercentageDataSource();
   late Flash flash;
+
   @override
   void initState() {
     SessionState sessionState = context.read<SessionState>();
     flash = Flash(context);
     server = sessionState.server;
-    dataSource.setData([], 0, true);
+    dataSource.setData([], 'item_code', true);
     _fetchTableColumn();
     super.initState();
   }
@@ -62,7 +64,9 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
     }
     Map responseBody = response.data;
     var data = responseBody['data'] ?? {'column_names': [], 'column_order': []};
-    _columnOrder = data['column_order'];
+    _columnOrder =
+        data['column_order'].map<String>((row) => row.toString()).toList();
+    dataSource.setKeys(_columnOrder);
     _columns = [];
     setState(() {
       _tableWidth = 50;
@@ -76,7 +80,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
               _sortColumnIndex = columnIndex;
               _sortAscending = ascending;
             });
-            dataSource.sortData(_sortColumnIndex, _sortAscending);
+            dataSource.sortData(_columnOrder[_sortColumnIndex], _sortAscending);
           }),
           label: Text(
             columnName,
@@ -168,13 +172,11 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
     }
     var data = response.data;
     setState(() {
-      var rawData = data['data'].map<List<Comparable<Object>>>((row) {
-        Map attributes = row['attributes'];
-        return _columnOrder
-            .map<Comparable<Object>>((key) => attributes[key])
-            .toList();
+      var rawData = data['data'].map<ItemSalesPercentageReport>((row) {
+        return ItemSalesPercentageReport.fromJson(row);
       }).toList();
-      dataSource.setData(rawData, _sortColumnIndex, _sortAscending);
+      dataSource.setData(
+          rawData, _columnOrder[_sortColumnIndex], _sortAscending);
       _isDisplayTable = true;
     });
   }
@@ -390,39 +392,4 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   }
 }
 
-class SalesPercentageDataSource extends DataTableSource with Datatable {
-  late List<List<Comparable<Object>>> sortedData;
-  void setData(List<List<Comparable<Object>>> rawData, int sortColumn,
-      bool sortAscending) {
-    sortedData = rawData.toList();
-    sortData(sortColumn, sortAscending);
-  }
-
-  void sortData(int sortColumn, bool sortAscending) {
-    sortedData.sort((List<Comparable<Object>> a, List<Comparable<Object>> b) {
-      final Comparable<Object> cellA = a[sortColumn];
-      final Comparable<Object> cellB = b[sortColumn];
-      return cellA.compareTo(cellB) * (sortAscending ? 1 : -1);
-    });
-    notifyListeners();
-  }
-
-  @override
-  int get rowCount => sortedData.length;
-
-  @override
-  DataRow? getRow(int index) {
-    return DataRow.byIndex(
-      index: index,
-      cells: sortedData[index]
-          .map<DataCell>((cell) => decorateValue(cell))
-          .toList(),
-    );
-  }
-
-  @override
-  bool get isRowCountApproximate => false;
-
-  @override
-  int get selectedRowCount => 0;
-}
+class SalesPercentageDataSource extends Datatable {}

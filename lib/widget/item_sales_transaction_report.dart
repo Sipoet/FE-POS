@@ -1,33 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fe_pos/widget/date_range_picker.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/tool/transaction_report_controller.dart';
+export 'package:fe_pos/tool/transaction_report_controller.dart';
 
-class ItemSalesTodayReport extends StatefulWidget {
+class ItemSalesTransactionReport extends StatefulWidget {
+  final TransactionReportController? controller;
   final String groupKey;
   final String limit;
   final String label;
-  const ItemSalesTodayReport({
-    super.key,
-    required this.label,
-    required this.groupKey,
-    required this.limit,
-  });
+  const ItemSalesTransactionReport(
+      {super.key,
+      required this.label,
+      required this.groupKey,
+      required this.limit,
+      this.controller});
 
   @override
-  State<ItemSalesTodayReport> createState() => _ItemSalesTodayReportState();
+  State<ItemSalesTransactionReport> createState() =>
+      _ItemSalesTransactionReportState();
 }
 
-class _ItemSalesTodayReportState extends State<ItemSalesTodayReport>
+class _ItemSalesTransactionReportState extends State<ItemSalesTransactionReport>
     with TickerProviderStateMixin {
   List results = [];
   late final Setting setting;
-  bool _isCustom = false;
   late AnimationController controller;
-  DateTime startTime = DateTime.now().copyWith(hour: 0, minute: 0, second: 0);
-  DateTime endTime = DateTime.now()
-      .copyWith(hour: 23, minute: 59, second: 59, millisecond: 999);
+  DateTimeRange _dateRange = DateTimeRange(
+      start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
+      end: DateTime.now()
+          .copyWith(hour: 23, minute: 59, second: 59, millisecond: 999));
+
   late String limit;
   late Future requestController;
   @override
@@ -49,6 +53,13 @@ class _ItemSalesTodayReportState extends State<ItemSalesTodayReport>
       });
     limit = widget.limit;
     setting = context.read<Setting>();
+    _dateRange = widget.controller?.range ?? _dateRange;
+    widget.controller?.addListener(() {
+      setState(() {
+        _dateRange = widget.controller?.range ?? _dateRange;
+        refreshReport();
+      });
+    });
     refreshReport();
     super.initState();
   }
@@ -60,33 +71,6 @@ class _ItemSalesTodayReportState extends State<ItemSalesTodayReport>
     super.dispose();
   }
 
-  void arrangeDate(String rangeType) {
-    startTime = DateTime.now().copyWith(hour: 0, minute: 0, second: 0);
-    endTime = DateTime.now()
-        .copyWith(hour: 23, minute: 59, second: 59, millisecond: 999);
-    switch (rangeType) {
-      case 'yesterday':
-        startTime = startTime.subtract(const Duration(days: 1));
-        endTime = endTime.subtract(const Duration(days: 1));
-        break;
-      case 'week':
-        startTime = startTime.subtract(const Duration(days: 7));
-        break;
-      case 'month':
-        startTime = startTime.copyWith(day: 1);
-        endTime = endTime
-            .copyWith(day: 4)
-            .add(const Duration(days: 28))
-            .copyWith(day: 1)
-            .subtract(const Duration(days: 1));
-        break;
-      case 'year':
-        startTime = startTime.copyWith(month: 1, day: 1);
-        endTime = endTime.copyWith(month: 12, day: 31);
-    }
-    _isCustom = rangeType == 'custom';
-  }
-
   void refreshReport() {
     controller.reset();
     controller.forward();
@@ -95,8 +79,8 @@ class _ItemSalesTodayReportState extends State<ItemSalesTodayReport>
         .get('item_sales/transaction_report', queryParam: {
       'group_key': widget.groupKey,
       'limit': limit,
-      'start_time': startTime.toIso8601String(),
-      'end_time': endTime.toIso8601String(),
+      'start_time': _dateRange.start.toIso8601String(),
+      'end_time': _dateRange.end.toIso8601String(),
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
@@ -120,10 +104,6 @@ class _ItemSalesTodayReportState extends State<ItemSalesTodayReport>
       default:
         return '';
     }
-  }
-
-  String _rangeFormat() {
-    return "${setting.dateTimeFormat(startTime)} - ${setting.dateTimeFormat(endTime)}";
   }
 
   @override
@@ -165,122 +145,44 @@ class _ItemSalesTodayReportState extends State<ItemSalesTodayReport>
                 icon: const Icon(Icons.refresh_rounded))
           ],
         ),
-        Wrap(
-          alignment: WrapAlignment.spaceBetween,
-          runAlignment: WrapAlignment.spaceAround,
-          spacing: 10,
-          runSpacing: 10,
-          children: [
-            SizedBox(
-              width: width,
-              height: 2,
+        DropdownMenu(
+          width: 100,
+          textStyle:
+              TextStyle(fontSize: 18, color: colorScheme.onPrimaryContainer),
+          inputDecorationTheme: const InputDecorationTheme(
+              filled: true,
+              fillColor: Color.fromARGB(255, 221, 219, 219),
+              contentPadding: EdgeInsets.only(left: 10, right: 0),
+              border: OutlineInputBorder()),
+          enableSearch: false,
+          initialSelection: limit,
+          dropdownMenuEntries: const [
+            DropdownMenuEntry(
+              value: '5',
+              label: '5',
             ),
-            DropdownMenu(
-              textStyle: TextStyle(
-                  fontSize: 18, color: colorScheme.onPrimaryContainer),
-              inputDecorationTheme: const InputDecorationTheme(
-                  filled: true,
-                  fillColor: Color.fromARGB(255, 221, 219, 219),
-                  contentPadding: EdgeInsets.only(left: 10, right: 0),
-                  border: OutlineInputBorder()),
-              enableSearch: false,
-              initialSelection: 'day',
-              dropdownMenuEntries: const [
-                DropdownMenuEntry(
-                  value: 'day',
-                  label: 'Hari ini',
-                ),
-                DropdownMenuEntry(
-                  value: 'yesterday',
-                  label: 'Kemarin',
-                ),
-                DropdownMenuEntry(
-                  value: 'week',
-                  label: 'Minggu ini',
-                ),
-                DropdownMenuEntry(
-                  value: 'month',
-                  label: 'Bulan ini',
-                ),
-                DropdownMenuEntry(
-                  value: 'year',
-                  label: 'Tahun ini',
-                ),
-                DropdownMenuEntry(
-                  value: 'custom',
-                  label: 'Custom',
-                ),
-              ],
-              onSelected: ((value) => setState(() {
-                    arrangeDate(value ?? '');
-                    refreshReport();
-                  })),
+            DropdownMenuEntry(
+              value: '10',
+              label: '10',
             ),
-            DropdownMenu(
-              width: 100,
-              textStyle: TextStyle(
-                  fontSize: 18, color: colorScheme.onPrimaryContainer),
-              inputDecorationTheme: const InputDecorationTheme(
-                  filled: true,
-                  fillColor: Color.fromARGB(255, 221, 219, 219),
-                  contentPadding: EdgeInsets.only(left: 10, right: 0),
-                  border: OutlineInputBorder()),
-              enableSearch: false,
-              initialSelection: limit,
-              dropdownMenuEntries: const [
-                DropdownMenuEntry(
-                  value: '5',
-                  label: '5',
-                ),
-                DropdownMenuEntry(
-                  value: '10',
-                  label: '10',
-                ),
-                DropdownMenuEntry(
-                  value: '20',
-                  label: '20',
-                ),
-                DropdownMenuEntry(
-                  value: '50',
-                  label: '50',
-                ),
-                DropdownMenuEntry(
-                  value: '100',
-                  label: '100',
-                ),
-              ],
-              onSelected: ((value) => setState(() {
-                    limit = value ?? '5';
-                    refreshReport();
-                  })),
+            DropdownMenuEntry(
+              value: '20',
+              label: '20',
+            ),
+            DropdownMenuEntry(
+              value: '50',
+              label: '50',
+            ),
+            DropdownMenuEntry(
+              value: '100',
+              label: '100',
             ),
           ],
-        ),
-        const SizedBox(
-          height: 10,
-        ),
-        if (_isCustom)
-          DateRangePicker(
-            textStyle:
-                const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
-            startDate: startTime,
-            endDate: endTime,
-            onChanged: (DateTimeRange range) {
-              setState(() {
-                startTime = range.start;
-                endTime = range.end;
+          onSelected: ((value) => setState(() {
+                limit = value ?? '5';
                 refreshReport();
-              });
-            },
-          ),
-        if (!_isCustom)
-          Padding(
-            padding: const EdgeInsets.only(top: 20),
-            child: Text(
-              _rangeFormat(),
-              style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 16),
-            ),
-          ),
+              })),
+        ),
         const SizedBox(
           height: 10,
         ),

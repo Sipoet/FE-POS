@@ -298,10 +298,10 @@ class _MobileLayoutState extends State<MobileLayout> {
     var tabManager = context.read<TabManager>();
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Allegra POS',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
+        // title: const Text(
+        //   'Allegra POS',
+        //   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        // ),
         bottom: TabBar(
           isScrollable: true,
           controller: tabManager.controller,

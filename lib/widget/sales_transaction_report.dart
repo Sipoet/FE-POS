@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fe_pos/widget/date_range_picker.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/tool/transaction_report_controller.dart';
+export 'package:fe_pos/tool/transaction_report_controller.dart';
 
-class SalesTodayReport extends StatefulWidget {
-  const SalesTodayReport({super.key});
-
+class SalesTransactionReport extends StatefulWidget {
+  const SalesTransactionReport({super.key, this.controller});
+  final TransactionReportController? controller;
   @override
-  State<SalesTodayReport> createState() => _SalesTodayReportState();
+  State<SalesTransactionReport> createState() => _SalesTransactionReportState();
 }
 
-class _SalesTodayReportState extends State<SalesTodayReport>
+class _SalesTransactionReportState extends State<SalesTransactionReport>
     with TickerProviderStateMixin {
   double totalSales = 0.0;
   double totalDebit = 0.0;
@@ -21,16 +22,16 @@ class _SalesTodayReportState extends State<SalesTodayReport>
   double totalOnline = 0.0;
   double totalDiscount = 0.0;
   int totalTransaction = 0;
-  bool _isCustom = false;
   late Future requestController;
   late final Setting setting;
-  late AnimationController controller;
-  DateTime startTime = DateTime.now().copyWith(hour: 0, minute: 0, second: 0);
-  DateTime endTime = DateTime.now()
-      .copyWith(hour: 23, minute: 59, second: 59, millisecond: 999);
+  late AnimationController _controller;
+  DateTimeRange _dateRange = DateTimeRange(
+      start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
+      end: DateTime.now()
+          .copyWith(hour: 23, minute: 59, second: 59, millisecond: 999));
   @override
   void initState() {
-    controller = AnimationController(
+    _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 5),
     )
@@ -39,26 +40,34 @@ class _SalesTodayReportState extends State<SalesTodayReport>
       })
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
-          controller.reset();
-          controller.forward();
+          _controller.reset();
+          _controller.forward();
         } else if (status == AnimationStatus.dismissed) {
-          controller.forward();
+          _controller.forward();
         }
       });
     setting = context.read<Setting>();
+    _dateRange = widget.controller?.range ?? _dateRange;
+    widget.controller?.addListener(() {
+      setState(() {
+        _dateRange = widget.controller?.range ?? _dateRange;
+        refreshReport();
+      });
+    });
+
     refreshReport();
     super.initState();
   }
 
   void refreshReport() {
-    controller.reset();
-    controller.forward();
+    _controller.reset();
+    _controller.forward();
     var sessionState = context.read<SessionState>();
-    requestController = sessionState.server.get('sales/transaction_report',
-        queryParam: {
-          'start_time': startTime.toIso8601String(),
-          'end_time': endTime.toIso8601String()
-        }).then((response) {
+    requestController = sessionState.server
+        .get('sales/transaction_report', queryParam: {
+      'start_time': _dateRange.start.toIso8601String(),
+      'end_time': _dateRange.end.toIso8601String()
+    }).then((response) {
       if (response.statusCode == 200) {
         var data = response.data['data'];
         setState(() {
@@ -73,48 +82,16 @@ class _SalesTodayReportState extends State<SalesTodayReport>
         });
       }
     },
-        onError: (error, stack) => sessionState.server.defaultResponse(
-            context: context,
-            error: error)).whenComplete(() => controller.stop());
-  }
-
-  String _rangeFormat() {
-    return "${setting.dateTimeFormat(startTime)} - ${setting.dateTimeFormat(endTime)}";
+            onError: (error, stack) => sessionState.server.defaultResponse(
+                context: context,
+                error: error)).whenComplete(() => _controller.stop());
   }
 
   @override
   void dispose() {
     requestController.ignore();
-    controller.dispose();
+    _controller.dispose();
     super.dispose();
-  }
-
-  void arrangeDate(String rangeType) {
-    startTime = DateTime.now().copyWith(hour: 0, minute: 0, second: 0);
-    endTime = DateTime.now()
-        .copyWith(hour: 23, minute: 59, second: 59, millisecond: 999);
-    switch (rangeType) {
-      case 'yesterday':
-        startTime = startTime.subtract(const Duration(days: 1));
-        endTime = endTime.subtract(const Duration(days: 1));
-        break;
-      case 'week':
-        startTime = startTime.subtract(const Duration(days: 7));
-        break;
-      case 'month':
-        startTime = startTime.copyWith(day: 1);
-        endTime = endTime
-            .copyWith(day: 4)
-            .add(const Duration(days: 28))
-            .copyWith(day: 1)
-            .subtract(const Duration(days: 1));
-        break;
-      case 'year':
-        startTime = startTime.copyWith(month: 1, day: 1);
-        endTime = endTime.copyWith(month: 12, day: 31);
-        break;
-    }
-    _isCustom = rangeType == 'custom';
   }
 
   @override
@@ -153,85 +130,18 @@ class _SalesTodayReportState extends State<SalesTodayReport>
                   icon: const Icon(Icons.refresh_rounded))
             ],
           ),
-          DropdownMenu(
-            textStyle:
-                TextStyle(fontSize: 18, color: colorScheme.onPrimaryContainer),
-            inputDecorationTheme: const InputDecorationTheme(
-                filled: true,
-                fillColor: Color.fromARGB(255, 221, 219, 219),
-                contentPadding: EdgeInsets.only(left: 10, right: 0),
-                border: OutlineInputBorder()),
-            enableSearch: false,
-            initialSelection: 'day',
-            dropdownMenuEntries: const [
-              DropdownMenuEntry(
-                value: 'day',
-                label: 'Hari ini',
-              ),
-              DropdownMenuEntry(
-                value: 'yesterday',
-                label: 'Kemarin',
-              ),
-              DropdownMenuEntry(
-                value: 'week',
-                label: 'Minggu ini',
-              ),
-              DropdownMenuEntry(
-                value: 'month',
-                label: 'Bulan ini',
-              ),
-              DropdownMenuEntry(
-                value: 'year',
-                label: 'Tahun ini',
-              ),
-              DropdownMenuEntry(
-                value: 'custom',
-                label: 'Custom',
-              ),
-            ],
-            onSelected: ((value) => setState(() {
-                  arrangeDate(value ?? '');
-                  refreshReport();
-                })),
-          ),
           const SizedBox(
             height: 10,
           ),
-          if (_isCustom)
-            DateRangePicker(
-              textStyle:
-                  const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
-              startDate: startTime,
-              endDate: endTime,
-              onChanged: (DateTimeRange range) {
-                setState(() {
-                  startTime = range.start;
-                  endTime = range.end;
-                  refreshReport();
-                });
-              },
-            ),
-          if (!_isCustom)
-            Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: Text(
-                _rangeFormat(),
-                style:
-                    const TextStyle(fontStyle: FontStyle.italic, fontSize: 16),
-              ),
-            ),
-          const SizedBox(
-            height: 10,
-          ),
-          if (controller.isAnimating)
+          if (_controller.isAnimating)
             Center(
               child: CircularProgressIndicator(
-                value: controller.value,
+                value: _controller.value,
                 semanticsLabel: 'Dalam proses data',
               ),
             ),
-          if (!controller.isAnimating) const Divider(),
-          if (!controller.isAnimating)
+          if (!_controller.isAnimating) const Divider(),
+          if (!_controller.isAnimating)
             Table(
               columnWidths: const {
                 0: FlexColumnWidth(0.7),
