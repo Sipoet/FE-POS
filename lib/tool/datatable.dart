@@ -2,6 +2,7 @@ import 'package:fe_pos/model/model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 export 'package:fe_pos/model/model.dart';
+export 'package:fe_pos/tool/custom_type.dart';
 
 class Datatable extends DataTableSource {
   late List<Model> sortedData;
@@ -9,26 +10,45 @@ class Datatable extends DataTableSource {
   Function? actionButtons;
 
   DataCell decorateValue(cell) {
-    if (cell == null) {
-      return const DataCell(Text('-'));
-    } else if (cell is DateTime) {
-      String val = _formatDate(cell);
-      return DataCell(SelectableText(val));
-    } else if (cell is double || cell is int) {
-      String val = _formatNumber(cell);
-      return DataCell(
-          Align(alignment: Alignment.centerRight, child: SelectableText(val)));
-    } else {
-      return DataCell(SelectableText(cell.toString()));
+    switch (cell.runtimeType) {
+      case Null:
+        return const DataCell(Text('-'));
+      case Date:
+        String val = _dateFormat(cell);
+        return DataCell(SelectableText(val));
+      case DateTime:
+        String val = _datetimeFormat(cell);
+        return DataCell(SelectableText(val));
+      case Money:
+        String val = _moneyFormat(cell);
+        return DataCell(Align(
+            alignment: Alignment.centerRight, child: SelectableText(val)));
+      case double:
+      case int:
+        String val = _numberFormat(cell);
+        return DataCell(Align(
+            alignment: Alignment.centerRight, child: SelectableText(val)));
+      default:
+        return DataCell(SelectableText(cell.toString()));
     }
   }
 
-  static String _formatDate(DateTime cell) {
-    var formated = DateFormat('dd/MM/y HH:mm');
-    return formated.format(cell.toUtc());
+  static String _dateFormat(DateTime data) {
+    var formated = DateFormat('dd/MM/y');
+    return formated.format(data);
   }
 
-  static String _formatNumber(number) {
+  static String _datetimeFormat(DateTime data) {
+    var formated = DateFormat('dd/MM/y HH:mm');
+    return formated.format(data.toUtc());
+  }
+
+  static String _moneyFormat(number) {
+    return NumberFormat.currency(locale: "en_US", symbol: number.symbol)
+        .format(number.value);
+  }
+
+  static String _numberFormat(number) {
     var formated = NumberFormat(",##0.##", "en_US");
     return formated.format(number);
   }
@@ -44,8 +64,8 @@ class Datatable extends DataTableSource {
 
   void sortData(String sortColumn, bool sortAscending) {
     sortedData.sort((Model a, Model b) {
-      final Comparable<Object> cellA = a.toMap()[sortColumn] ?? '';
-      final Comparable<Object> cellB = b.toMap()[sortColumn] ?? '';
+      var cellA = a.toMap()[sortColumn] ?? '';
+      var cellB = b.toMap()[sortColumn] ?? '';
       return cellA.compareTo(cellB) * (sortAscending ? 1 : -1);
     });
     notifyListeners();

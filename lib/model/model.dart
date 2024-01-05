@@ -1,3 +1,5 @@
+export 'package:fe_pos/tool/custom_type.dart';
+
 abstract class Model {
   Map<String, dynamic> toMap();
 

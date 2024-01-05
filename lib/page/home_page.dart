@@ -1,5 +1,5 @@
-import 'package:fe_pos/widget/sales_transaction_report.dart';
-import 'package:fe_pos/widget/item_sales_transaction_report.dart';
+import 'package:fe_pos/widget/sales_transaction_report_widget.dart';
+import 'package:fe_pos/widget/item_sales_transaction_report_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/date_range_picker.dart';
 import 'package:fe_pos/tool/setting.dart';
@@ -23,22 +23,22 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     _panels = [
-      SalesTransactionReport(
+      SalesTransactionReportWidget(
         controller: controller,
       ),
-      ItemSalesTransactionReport(
+      ItemSalesTransactionReportWidget(
           key: const ValueKey('brand'),
           controller: controller,
           groupKey: 'brand',
           limit: '5',
           label: 'Merek Terjual Terbanyak'),
-      ItemSalesTransactionReport(
+      ItemSalesTransactionReportWidget(
           key: const ValueKey('item_type'),
           controller: controller,
           groupKey: 'item_type',
           limit: '5',
           label: 'Departemen Terjual Terbanyak'),
-      ItemSalesTransactionReport(
+      ItemSalesTransactionReportWidget(
           key: const ValueKey('supplier'),
           groupKey: 'supplier',
           controller: controller,
@@ -135,7 +135,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     DropdownMenuEntry(
                       value: 'custom',
-                      label: 'Custom',
+                      label: 'Kustom',
                     ),
                   ],
                   onSelected: ((value) => setState(() {
@@ -156,9 +156,14 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                 ),
-                const SizedBox(
-                  height: 5,
-                ),
+                IconButton.filled(
+                    onPressed: () {
+                      controller.changeDate(controller.range);
+                    },
+                    tooltip: 'Refresh Laporan',
+                    icon: const Icon(
+                      Icons.refresh,
+                    )),
               ],
             ),
             const Divider(),

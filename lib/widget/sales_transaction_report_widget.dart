@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/sales_transaction_report.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/setting.dart';
@@ -5,23 +6,17 @@ import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/transaction_report_controller.dart';
 export 'package:fe_pos/tool/transaction_report_controller.dart';
 
-class SalesTransactionReport extends StatefulWidget {
-  const SalesTransactionReport({super.key, this.controller});
+class SalesTransactionReportWidget extends StatefulWidget {
+  const SalesTransactionReportWidget({super.key, this.controller});
   final TransactionReportController? controller;
   @override
-  State<SalesTransactionReport> createState() => _SalesTransactionReportState();
+  State<SalesTransactionReportWidget> createState() =>
+      _SalesTransactionReportWidgetState();
 }
 
-class _SalesTransactionReportState extends State<SalesTransactionReport>
-    with TickerProviderStateMixin {
-  double totalSales = 0.0;
-  double totalDebit = 0.0;
-  double totalCash = 0.0;
-  double totalCredit = 0.0;
-  double totalQRIS = 0.0;
-  double totalOnline = 0.0;
-  double totalDiscount = 0.0;
-  int totalTransaction = 0;
+class _SalesTransactionReportWidgetState
+    extends State<SalesTransactionReportWidget> with TickerProviderStateMixin {
+  late SalesTransactionReport salesTransactionReport;
   late Future requestController;
   late final Setting setting;
   late AnimationController _controller;
@@ -70,15 +65,10 @@ class _SalesTransactionReportState extends State<SalesTransactionReport>
     }).then((response) {
       if (response.statusCode == 200) {
         var data = response.data['data'];
+        data['start_time'] = _dateRange.start.toIso8601String();
+        data['end_time'] = _dateRange.end.toIso8601String();
         setState(() {
-          totalSales = double.tryParse(data['sales_total']) ?? 0;
-          totalDebit = double.tryParse(data['debit_total']) ?? 0;
-          totalCredit = double.tryParse(data['credit_total']) ?? 0;
-          totalCash = double.tryParse(data['cash_total']) ?? 0;
-          totalOnline = double.tryParse(data['online_total']) ?? 0;
-          totalQRIS = double.tryParse(data['qris_total']) ?? 0;
-          totalDiscount = double.tryParse(data['discount_total']) ?? 0;
-          totalTransaction = data['num_of_transaction'] ?? 0;
+          salesTransactionReport = SalesTransactionReport.fromJson(data);
         });
       }
     },
@@ -122,11 +112,10 @@ class _SalesTransactionReportState extends State<SalesTransactionReport>
                       fontWeight: FontWeight.bold),
                 ),
               ),
-              IconButton(
+              IconButton.filled(
                   tooltip: 'Refresh Laporan',
                   alignment: Alignment.centerRight,
                   onPressed: () => refreshReport(),
-                  color: colorScheme.onPrimaryContainer,
                   icon: const Icon(Icons.refresh_rounded))
             ],
           ),
@@ -160,7 +149,7 @@ class _SalesTransactionReportState extends State<SalesTransactionReport>
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      setting.moneyFormat(totalSales),
+                      setting.moneyFormat(salesTransactionReport.totalSales),
                       textAlign: TextAlign.right,
                       style: valueStyle,
                     ),
@@ -178,7 +167,8 @@ class _SalesTransactionReportState extends State<SalesTransactionReport>
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      setting.numberFormat(totalTransaction),
+                      setting.numberFormat(
+                          salesTransactionReport.totalTransaction),
                       textAlign: TextAlign.right,
                       style: valueStyle,
                     ),
@@ -196,7 +186,7 @@ class _SalesTransactionReportState extends State<SalesTransactionReport>
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      setting.moneyFormat(totalDiscount),
+                      setting.moneyFormat(salesTransactionReport.totalDiscount),
                       textAlign: TextAlign.right,
                       style: valueStyle,
                     ),
@@ -214,7 +204,7 @@ class _SalesTransactionReportState extends State<SalesTransactionReport>
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      setting.moneyFormat(totalCash),
+                      setting.moneyFormat(salesTransactionReport.totalCash),
                       textAlign: TextAlign.right,
                       style: valueStyle,
                     ),
@@ -232,7 +222,7 @@ class _SalesTransactionReportState extends State<SalesTransactionReport>
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      setting.moneyFormat(totalDebit),
+                      setting.moneyFormat(salesTransactionReport.totalDebit),
                       textAlign: TextAlign.right,
                       style: valueStyle,
                     ),
@@ -250,7 +240,7 @@ class _SalesTransactionReportState extends State<SalesTransactionReport>
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      setting.moneyFormat(totalCredit),
+                      setting.moneyFormat(salesTransactionReport.totalCredit),
                       textAlign: TextAlign.right,
                       style: valueStyle,
                     ),
@@ -268,7 +258,7 @@ class _SalesTransactionReportState extends State<SalesTransactionReport>
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      setting.moneyFormat(totalQRIS),
+                      setting.moneyFormat(salesTransactionReport.totalQRIS),
                       textAlign: TextAlign.right,
                       style: valueStyle,
                     ),
@@ -286,7 +276,7 @@ class _SalesTransactionReportState extends State<SalesTransactionReport>
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      setting.moneyFormat(totalOnline),
+                      setting.moneyFormat(salesTransactionReport.totalOnline),
                       textAlign: TextAlign.right,
                       style: valueStyle,
                     ),

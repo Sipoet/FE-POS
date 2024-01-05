@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:fe_pos/tool/custom_type.dart';
 
 class Setting extends ChangeNotifier {
   List<String> discountColumns = <String>[];
@@ -20,7 +21,11 @@ class Setting extends ChangeNotifier {
     return DateFormat('dd/MM/y HH:mm', 'id_ID').format(date);
   }
 
-  String moneyFormat(double value) {
+  String moneyFormat(var value) {
+    if (value is Money) {
+      return NumberFormat.currency(locale: "en_US", symbol: value.symbol)
+          .format(value.value);
+    }
     return NumberFormat.currency(locale: "en_US", symbol: "Rp").format(value);
   }
 

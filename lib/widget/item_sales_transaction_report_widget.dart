@@ -5,12 +5,12 @@ import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/transaction_report_controller.dart';
 export 'package:fe_pos/tool/transaction_report_controller.dart';
 
-class ItemSalesTransactionReport extends StatefulWidget {
+class ItemSalesTransactionReportWidget extends StatefulWidget {
   final TransactionReportController? controller;
   final String groupKey;
   final String limit;
   final String label;
-  const ItemSalesTransactionReport(
+  const ItemSalesTransactionReportWidget(
       {super.key,
       required this.label,
       required this.groupKey,
@@ -18,11 +18,12 @@ class ItemSalesTransactionReport extends StatefulWidget {
       this.controller});
 
   @override
-  State<ItemSalesTransactionReport> createState() =>
-      _ItemSalesTransactionReportState();
+  State<ItemSalesTransactionReportWidget> createState() =>
+      _ItemSalesTransactionReportWidgetState();
 }
 
-class _ItemSalesTransactionReportState extends State<ItemSalesTransactionReport>
+class _ItemSalesTransactionReportWidgetState
+    extends State<ItemSalesTransactionReportWidget>
     with TickerProviderStateMixin {
   List results = [];
   late final Setting setting;
@@ -137,8 +138,7 @@ class _ItemSalesTransactionReportState extends State<ItemSalesTransactionReport>
                     fontWeight: FontWeight.bold),
               ),
             ),
-            IconButton(
-                color: colorScheme.onPrimaryContainer,
+            IconButton.filled(
                 tooltip: 'Refresh Laporan',
                 alignment: Alignment.centerRight,
                 onPressed: () => refreshReport(),
