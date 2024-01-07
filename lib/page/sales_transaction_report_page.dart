@@ -23,7 +23,7 @@ class _SalesTransactionReportPageState
   bool _sortAscending = true;
   int _columnIndex = 0;
   bool _isDisplayTable = false;
-  late List<DataColumn> _columns;
+  late List<DataColumn2> _columns;
   List requestControllers = [];
   final dataSource = SalesTransactionDataSource();
   late Flash flash;
@@ -52,7 +52,8 @@ class _SalesTransactionReportPageState
     ]);
     _columns = [
       DataColumn2(
-        fixedWidth: 150,
+        tooltip: 'Tanggal',
+        fixedWidth: 160,
         onSort: ((columnIndex, ascending) {
           setState(() {
             _sortKey = 'start_time';
@@ -67,6 +68,7 @@ class _SalesTransactionReportPageState
         ),
       ),
       DataColumn2(
+        tooltip: 'Total Penjualan',
         fixedWidth: 200,
         onSort: ((columnIndex, ascending) {
           setState(() {
@@ -82,6 +84,7 @@ class _SalesTransactionReportPageState
         ),
       ),
       DataColumn2(
+        tooltip: 'Total Transaksi',
         fixedWidth: 185,
         onSort: ((columnIndex, ascending) {
           setState(() {
@@ -97,6 +100,7 @@ class _SalesTransactionReportPageState
         ),
       ),
       DataColumn2(
+        tooltip: 'Total Diskon',
         fixedWidth: 200,
         onSort: ((columnIndex, ascending) {
           setState(() {
@@ -112,6 +116,7 @@ class _SalesTransactionReportPageState
         ),
       ),
       DataColumn2(
+        tooltip: 'Total Tunai',
         fixedWidth: 200,
         onSort: ((columnIndex, ascending) {
           setState(() {
@@ -127,6 +132,7 @@ class _SalesTransactionReportPageState
         ),
       ),
       DataColumn2(
+        tooltip: 'Total Debit',
         fixedWidth: 200,
         onSort: ((columnIndex, ascending) {
           setState(() {
@@ -142,6 +148,7 @@ class _SalesTransactionReportPageState
         ),
       ),
       DataColumn2(
+        tooltip: 'Total Kredit',
         fixedWidth: 200,
         onSort: ((columnIndex, ascending) {
           setState(() {
@@ -157,6 +164,7 @@ class _SalesTransactionReportPageState
         ),
       ),
       DataColumn2(
+        tooltip: 'Total QRIS',
         fixedWidth: 200,
         onSort: ((columnIndex, ascending) {
           setState(() {
@@ -172,6 +180,7 @@ class _SalesTransactionReportPageState
         ),
       ),
       DataColumn2(
+        tooltip: 'Total Online',
         fixedWidth: 200,
         onSort: ((columnIndex, ascending) {
           setState(() {
@@ -241,9 +250,6 @@ class _SalesTransactionReportPageState
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    final padding = MediaQuery.of(context).padding;
-    double height = size.height - padding.top - padding.bottom - 80;
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       child: Padding(
@@ -272,7 +278,7 @@ class _SalesTransactionReportPageState
             if (_isDisplayTable) const Divider(),
             if (_isDisplayTable)
               SizedBox(
-                height: height,
+                height: 600,
                 child: PaginatedDataTable2(
                   source: dataSource,
                   fixedLeftColumns: 1,

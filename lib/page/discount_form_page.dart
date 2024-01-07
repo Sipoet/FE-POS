@@ -234,7 +234,7 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      var valDouble = double.tryParse(value ?? '');
+                      var valDouble = Percentage.tryParse(value ?? '');
                       if (valDouble == null || valDouble.isNaN) {
                         return 'tidak valid';
                       } else if (valDouble >= 100) {
@@ -242,8 +242,8 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                       }
                       return null;
                     },
-                    onChanged: ((value) =>
-                        discount.discount1 = double.tryParse(value) ?? 0.0),
+                    onChanged: ((value) => discount.discount1 =
+                        Percentage.tryParse(value) ?? const Percentage(0.0)),
                     initialValue: discount.discount1.toString(),
                   )),
                   Flexible(
@@ -256,7 +256,7 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      var valDouble = double.tryParse(value ?? '');
+                      var valDouble = Percentage.tryParse(value ?? '');
                       if (valDouble == null || valDouble.isNaN) {
                         return 'tidak valid';
                       } else if (valDouble >= 100) {
@@ -265,7 +265,7 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                       return null;
                     },
                     onChanged: ((value) =>
-                        discount.discount2 = double.tryParse(value)),
+                        discount.discount2 = Percentage.tryParse(value)),
                     initialValue: discount.discount2.toString(),
                   )),
                   Flexible(
@@ -278,7 +278,7 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      var valDouble = double.tryParse(value ?? '');
+                      var valDouble = Percentage.tryParse(value ?? '');
                       if (valDouble == null || valDouble.isNaN) {
                         return 'tidak valid';
                       } else if (valDouble >= 100) {
@@ -287,7 +287,7 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                       return null;
                     },
                     onChanged: ((value) =>
-                        discount.discount3 = double.tryParse(value)),
+                        discount.discount3 = Percentage.tryParse(value)),
                     initialValue: discount.discount3.toString(),
                   )),
                   Flexible(
@@ -300,7 +300,7 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      var valDouble = double.tryParse(value ?? '');
+                      var valDouble = Percentage.tryParse(value ?? '');
                       if (valDouble == null || valDouble.isNaN) {
                         return 'tidak valid';
                       } else if (valDouble >= 100) {
@@ -309,7 +309,7 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                       return null;
                     },
                     onChanged: ((value) =>
-                        discount.discount4 = double.tryParse(value)),
+                        discount.discount4 = Percentage.tryParse(value)),
                     initialValue: discount.discount4.toString(),
                   )),
                   const SizedBox(

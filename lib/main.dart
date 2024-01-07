@@ -25,7 +25,8 @@ class AllegraPos extends StatelessWidget {
           textTheme: Theme.of(context).textTheme.apply(
               fontSizeFactor: 1.1, fontSizeDelta: 2.0, fontFamily: 'Lato'),
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+          colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color.fromARGB(255, 135, 239, 154)),
           dividerTheme: const DividerThemeData(
               space: 20,
               color: Colors.grey,

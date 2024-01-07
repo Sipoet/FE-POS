@@ -10,26 +10,52 @@ class Datatable extends DataTableSource {
   Function? actionButtons;
 
   DataCell decorateValue(cell) {
+    return DataCell(Tooltip(
+      message: _formatData(cell),
+      triggerMode: TooltipTriggerMode.tap,
+      child: _decorateCell(cell),
+    ));
+  }
+
+  Widget _decorateCell(cell) {
+    String val = _formatData(cell);
     switch (cell.runtimeType) {
       case Null:
-        return const DataCell(Text('-'));
       case Date:
-        String val = _dateFormat(cell);
-        return DataCell(SelectableText(val));
       case DateTime:
-        String val = _datetimeFormat(cell);
-        return DataCell(SelectableText(val));
+        return Text(
+          val,
+          overflow: TextOverflow.ellipsis,
+        );
       case Money:
-        String val = _moneyFormat(cell);
-        return DataCell(Align(
-            alignment: Alignment.centerRight, child: SelectableText(val)));
       case double:
       case int:
-        String val = _numberFormat(cell);
-        return DataCell(Align(
-            alignment: Alignment.centerRight, child: SelectableText(val)));
+        return Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              val,
+              overflow: TextOverflow.ellipsis,
+            ));
       default:
-        return DataCell(SelectableText(cell.toString()));
+        return Text(val);
+    }
+  }
+
+  String _formatData(cell) {
+    switch (cell.runtimeType) {
+      case Null:
+        return '-';
+      case Date:
+        return _dateFormat(cell);
+      case DateTime:
+        return _datetimeFormat(cell);
+      case Money:
+        return _moneyFormat(cell);
+      case double:
+      case int:
+        return _numberFormat(cell);
+      default:
+        return cell.toString();
     }
   }
 

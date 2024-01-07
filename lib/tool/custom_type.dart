@@ -116,3 +116,94 @@ class Money {
     }
   }
 }
+
+class Percentage {
+  final double value;
+  const Percentage(this.value);
+  Percentage operator +(var other) {
+    if (other is Percentage) {
+      return Percentage(value + other.value);
+    } else {
+      return Percentage(value + other);
+    }
+  }
+
+  static Percentage parse(String val) {
+    return Percentage(double.parse(val));
+  }
+
+  static Percentage? tryParse(String val) {
+    var parsed = double.tryParse(val);
+    if (parsed == null) return null;
+    return Percentage(parsed);
+  }
+
+  @override
+  String toString() {
+    return "${value.toString()}%";
+  }
+
+  bool get isNaN {
+    return value.isNaN;
+  }
+
+  int compareTo(Percentage other) {
+    return value.compareTo(other.value);
+  }
+
+  Percentage operator *(var other) {
+    if (other is Percentage) {
+      return Percentage(value * other.value);
+    } else {
+      return Percentage(value * other);
+    }
+  }
+
+  Percentage operator /(var other) {
+    if (other is Percentage) {
+      return Percentage(value / other.value);
+    } else {
+      return Percentage(value / other);
+    }
+  }
+
+  Percentage operator -(var other) {
+    if (other is Percentage) {
+      return Percentage(value - other.value);
+    } else {
+      return Percentage(value - other);
+    }
+  }
+
+  bool operator >(var other) {
+    if (other is Percentage) {
+      return value > other.value;
+    } else {
+      return value > other;
+    }
+  }
+
+  bool operator <(var other) {
+    if (other is Percentage) {
+      return value < other.value;
+    } else {
+      return value < other;
+    }
+  }
+
+  bool operator <=(var other) {
+    if (other is Percentage) {
+      return value <= other.value;
+    } else {
+      return value <= other;
+    }
+  }
+
+  bool operator >=(var other) {
+    if (other is Percentage) {
+      return value >= other.value;
+    } else {
+      return value >= other;
+    }
+  }
+}

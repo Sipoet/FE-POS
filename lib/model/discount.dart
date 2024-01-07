@@ -1,14 +1,15 @@
 import 'package:fe_pos/model/model.dart';
+export 'package:fe_pos/tool/custom_type.dart';
 
 class Discount extends Model {
   String? itemCode;
   String? itemType;
   String? brandName;
   String? supplierCode;
-  double discount1;
-  double? discount2;
-  double? discount3;
-  double? discount4;
+  Percentage discount1;
+  Percentage? discount2;
+  Percentage? discount3;
+  Percentage? discount4;
   DateTime startTime;
   DateTime endTime;
   int? id;
@@ -37,10 +38,10 @@ class Discount extends Model {
         itemType: attributes['item_type_name'],
         supplierCode: attributes['supplier_code'],
         brandName: attributes['brand_name'],
-        discount1: attributes['discount1'],
-        discount2: attributes['discount2'],
-        discount3: attributes['discount3'],
-        discount4: attributes['discount4'],
+        discount1: Percentage(attributes['discount1']),
+        discount2: Percentage(attributes['discount2']),
+        discount3: Percentage(attributes['discount3']),
+        discount4: Percentage(attributes['discount4']),
         startTime: DateTime.parse(attributes['start_time']),
         endTime: DateTime.parse(attributes['end_time']));
   }

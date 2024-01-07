@@ -5,31 +5,40 @@ class ItemSalesPercentageReport extends Model {
   String itemCode;
   String itemName;
   String itemType;
-  String supplier;
+  String itemTypeDesc;
+  String supplierCode;
+  String supplierName;
   String brand;
-  String percentageSales;
-  double sellPrice;
-  double avgBuyPrice;
+  Percentage percentageSales;
+  Money sellPrice;
+  Money avgBuyPrice;
   int numberOfSales;
-  double salesTotal;
+  int storeStock;
+  int warehouseStock;
+  Money salesTotal;
   int numberOfPurchase;
-  double purchaseTotal;
+  Money purchaseTotal;
+  DateTime recentPurchaseDate;
 
-  ItemSalesPercentageReport({
-    required this.id,
-    required this.itemCode,
-    required this.itemName,
-    required this.itemType,
-    required this.supplier,
-    required this.brand,
-    required this.percentageSales,
-    required this.sellPrice,
-    required this.avgBuyPrice,
-    required this.numberOfSales,
-    required this.salesTotal,
-    required this.numberOfPurchase,
-    required this.purchaseTotal,
-  });
+  ItemSalesPercentageReport(
+      {required this.id,
+      required this.itemCode,
+      required this.itemName,
+      required this.itemType,
+      required this.itemTypeDesc,
+      required this.supplierCode,
+      required this.supplierName,
+      required this.brand,
+      required this.storeStock,
+      required this.warehouseStock,
+      required this.percentageSales,
+      required this.sellPrice,
+      required this.avgBuyPrice,
+      required this.numberOfSales,
+      required this.salesTotal,
+      required this.numberOfPurchase,
+      required this.purchaseTotal,
+      required this.recentPurchaseDate});
   @override
   factory ItemSalesPercentageReport.fromJson(Map<String, dynamic> json) {
     var attributes = json['attributes'];
@@ -38,15 +47,20 @@ class ItemSalesPercentageReport extends Model {
         itemCode: attributes['item_code'],
         itemName: attributes['item_name'],
         itemType: attributes['item_type'],
-        supplier: attributes['supplier'],
+        itemTypeDesc: attributes['item_type_desc'],
+        supplierCode: attributes['supplier_code'],
+        supplierName: attributes['supplier_name'],
+        storeStock: attributes['store_stock'],
+        warehouseStock: attributes['warehouse_stock'],
         brand: attributes['brand'],
-        percentageSales: attributes['percentage_sales'],
-        sellPrice: attributes['sell_price'],
-        avgBuyPrice: attributes['avg_buy_price'],
+        percentageSales: Percentage(attributes['percentage_sales']),
+        sellPrice: Money(attributes['sell_price']),
+        avgBuyPrice: Money(attributes['avg_buy_price']),
         numberOfSales: attributes['number_of_sales'],
-        salesTotal: attributes['sales_total'],
+        salesTotal: Money(attributes['sales_total']),
         numberOfPurchase: attributes['number_of_purchase'],
-        purchaseTotal: attributes['purchase_total']);
+        purchaseTotal: Money(attributes['purchase_total']),
+        recentPurchaseDate: DateTime.parse(attributes['recent_purchase_date']));
   }
 
   @override
@@ -54,7 +68,11 @@ class ItemSalesPercentageReport extends Model {
         'item_code': itemCode,
         'item_name': itemName,
         'item_type': itemType,
-        'supplier': supplier,
+        'item_type_desc': itemTypeDesc,
+        'supplier_code': supplierCode,
+        'supplier_name': supplierName,
+        'store_stock': storeStock,
+        'warehouse_stock': warehouseStock,
         'brand': brand,
         'percentage_sales': percentageSales,
         'sell_price': sellPrice,
@@ -62,11 +80,14 @@ class ItemSalesPercentageReport extends Model {
         'number_of_sales': numberOfSales,
         'sales_total': salesTotal,
         'number_of_purchase': numberOfPurchase,
-        'purchase_total': purchaseTotal
+        'purchase_total': purchaseTotal,
+        'recent_purchase_date': recentPurchaseDate,
       };
 
   @override
   Map<String, dynamic> toJson() {
-    return toMap();
+    var data = toMap();
+    data['recent_purchase_date'] = recentPurchaseDate.toIso8601String();
+    return data;
   }
 }

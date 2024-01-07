@@ -63,6 +63,7 @@ class _DiscountPageState extends State<DiscountPage> {
       data['column_names'].forEach((columnName) {
         _tableWidth += 215.0;
         _columns.add(DataColumn2(
+          tooltip: columnName,
           fixedWidth: 215.0,
           onSort: ((columnIndex, ascending) {
             setState(() {
@@ -146,10 +147,10 @@ class _DiscountPageState extends State<DiscountPage> {
 
   void addForm() {
     Discount discount = Discount(
-        discount1: 0.0,
-        discount2: 0.0,
-        discount3: 0.0,
-        discount4: 0.0,
+        discount1: const Percentage(0.0),
+        discount2: const Percentage(0.0),
+        discount3: const Percentage(0.0),
+        discount4: const Percentage(0.0),
         startTime: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
         endTime: DateTime.now().copyWith(hour: 23, minute: 59, second: 59));
     var tabManager = context.read<TabManager>();
@@ -212,9 +213,6 @@ class _DiscountPageState extends State<DiscountPage> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    final padding = MediaQuery.of(context).padding;
-    double height = size.height - padding.top - padding.bottom - 80;
     _source.actionButtons = (discount) => [
           IconButton(
               onPressed: () {
@@ -290,7 +288,7 @@ class _DiscountPageState extends State<DiscountPage> {
             ),
             if (_isDisplayTable)
               SizedBox(
-                height: height,
+                height: 600,
                 child: PaginatedDataTable2(
                   columns: _columns,
                   source: _source,

@@ -27,17 +27,17 @@ class _ItemSalesTransactionReportWidgetState
     with TickerProviderStateMixin {
   List results = [];
   late final Setting setting;
-  late AnimationController controller;
+  late AnimationController _controller;
   DateTimeRange _dateRange = DateTimeRange(
       start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
       end: DateTime.now()
           .copyWith(hour: 23, minute: 59, second: 59, millisecond: 999));
 
   late String limit;
-  late Future requestController;
+  CancelToken cancelToken = CancelToken();
   @override
   void initState() {
-    controller = AnimationController(
+    _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 5),
     )
@@ -46,10 +46,8 @@ class _ItemSalesTransactionReportWidgetState
       })
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
-          controller.reset();
-          controller.forward();
-        } else if (status == AnimationStatus.dismissed) {
-          controller.forward();
+          _controller.reset();
+          _controller.forward();
         }
       });
     limit = widget.limit;
@@ -67,31 +65,36 @@ class _ItemSalesTransactionReportWidgetState
 
   @override
   void dispose() {
-    requestController.ignore();
-    controller.dispose();
+    cancelToken.cancel();
+    _controller.stop();
+    _controller.dispose();
     super.dispose();
   }
 
   void refreshReport() {
-    controller.reset();
-    controller.forward();
+    _controller.forward();
     var sessionState = context.read<SessionState>();
-    requestController = sessionState.server
-        .get('item_sales/transaction_report', queryParam: {
-      'group_key': widget.groupKey,
-      'limit': limit,
-      'start_time': _dateRange.start.toIso8601String(),
-      'end_time': _dateRange.end.toIso8601String(),
-    }).then((response) {
+    sessionState.server.get('item_sales/transaction_report',
+        cancelToken: cancelToken,
+        queryParam: {
+          'group_key': widget.groupKey,
+          'limit': limit,
+          'start_time': _dateRange.start.toIso8601String(),
+          'end_time': _dateRange.end.toIso8601String(),
+        }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
           results = response.data['data'];
         });
       }
     },
-            onError: (error, stack) => sessionState.server.defaultResponse(
-                context: context,
-                error: error)).whenComplete(() => controller.stop());
+        onError: (error, stack) => sessionState.server
+            .defaultResponse(context: context, error: error)).whenComplete(() {
+      if (_controller.isAnimating) {
+        _controller.stop();
+        _controller.reset();
+      }
+    });
   }
 
   String _humanizeKey(String key) {
@@ -111,7 +114,7 @@ class _ItemSalesTransactionReportWidgetState
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
     var style = TextStyle(
-        fontWeight: FontWeight.w500, color: colorScheme.onSecondaryContainer);
+        fontWeight: FontWeight.bold, color: colorScheme.onSecondaryContainer);
     int index = 0;
     Size size = MediaQuery.of(context).size;
     final padding = MediaQuery.of(context).padding;
@@ -135,7 +138,7 @@ class _ItemSalesTransactionReportWidgetState
                 style: TextStyle(
                     fontSize: 18,
                     color: colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.bold),
+                    fontWeight: FontWeight.w900),
               ),
             ),
             IconButton.filled(
@@ -186,14 +189,14 @@ class _ItemSalesTransactionReportWidgetState
         const SizedBox(
           height: 10,
         ),
-        if (controller.isAnimating)
+        if (_controller.isAnimating)
           Center(
             child: CircularProgressIndicator(
-              value: controller.value,
+              value: _controller.value,
               semanticsLabel: 'Dalam proses data',
             ),
           ),
-        if (results.isNotEmpty && !controller.isAnimating)
+        if (results.isNotEmpty && !_controller.isAnimating)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: SizedBox(
@@ -262,7 +265,7 @@ class _ItemSalesTransactionReportWidgetState
                                     Padding(
                                       padding: const EdgeInsets.all(5),
                                       child: Text(
-                                        row['identifier'],
+                                        row['identifier'] ?? '',
                                         style: TextStyle(
                                             color: index.isOdd
                                                 ? colorScheme
@@ -317,7 +320,7 @@ class _ItemSalesTransactionReportWidgetState
                           .toList()),
             ),
           ),
-        if (results.isEmpty && !controller.isAnimating)
+        if (results.isEmpty && !_controller.isAnimating)
           Text('belum ada transaksi',
               style: TextStyle(color: colorScheme.onPrimaryContainer)),
       ],

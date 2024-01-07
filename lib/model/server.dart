@@ -90,9 +90,12 @@ class Server {
 
   Future get(String path,
       {Map<String, dynamic> queryParam = const {},
-      String type = 'json'}) async {
+      String type = 'json',
+      cancelToken}) async {
     Uri url = _generateUrl(path, queryParam);
-    return dio.getUri(url, options: Options(headers: generateHeaders(type)));
+    return dio.getUri(url,
+        cancelToken: cancelToken,
+        options: Options(headers: generateHeaders(type)));
   }
 
   Future put(String path, {Map body = const {}, String type = 'json'}) async {

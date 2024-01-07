@@ -42,7 +42,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   bool _sortAscending = true;
   String? _reportType;
   bool _isDisplayTable = false;
-  List<DataColumn> _columns = [];
+  List<DataColumn2> _columns = [];
   List<String> _columnOrder = [];
   SalesPercentageDataSource dataSource = SalesPercentageDataSource();
   late Flash flash;
@@ -74,6 +74,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
         double width = _columnWidth[columnName] ?? 215.0;
         _tableWidth += width;
         _columns.add(DataColumn2(
+          tooltip: columnName,
           fixedWidth: width,
           onSort: ((columnIndex, ascending) {
             setState(() {
@@ -159,7 +160,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
 
   final Map _columnWidth = {
     'Nama Item': 300.0,
-    'Kode Item': 150.0,
+    'Kode Item': 180.0,
     'Jenis/Departemen': 230.0,
     'Harga Beli Rata-rata': 230.0,
     'Persentase Laku Terjual': 180.0,
@@ -227,9 +228,6 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
   Widget build(BuildContext context) {
     DropdownRemoteConnection connection =
         DropdownRemoteConnection(server, context);
-    Size size = MediaQuery.of(context).size;
-    final padding = MediaQuery.of(context).padding;
-    double height = size.height - padding.top - padding.bottom - 80;
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       child: Padding(
@@ -349,14 +347,13 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
             const SizedBox(
               height: 10,
             ),
-            Row(
+            Wrap(
+              runSpacing: 10,
+              spacing: 10,
               children: [
                 ElevatedButton(
                   onPressed: () => {_displayReport()},
                   child: const Text('Tampilkan'),
-                ),
-                const SizedBox(
-                  width: 10,
                 ),
                 ElevatedButton(
                   onPressed: () => {_downloadReport()},
@@ -367,7 +364,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
             if (_isDisplayTable) const Divider(),
             if (_isDisplayTable)
               SizedBox(
-                height: height,
+                height: 600,
                 child: PaginatedDataTable2(
                   source: dataSource,
                   fixedLeftColumns: 1,
@@ -381,7 +378,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
                   minWidth: _tableWidth,
                   headingRowColor: MaterialStateProperty.resolveWith<Color?>(
                       (Set<MaterialState> states) {
-                    return colorScheme.onSecondaryContainer.withOpacity(0.08);
+                    return colorScheme.secondaryContainer.withOpacity(0.08);
                   }),
                 ),
               ),

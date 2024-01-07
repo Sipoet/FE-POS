@@ -17,7 +17,7 @@ class SalesTransactionReportWidget extends StatefulWidget {
 class _SalesTransactionReportWidgetState
     extends State<SalesTransactionReportWidget> with TickerProviderStateMixin {
   late SalesTransactionReport salesTransactionReport;
-  late Future requestController;
+  CancelToken cancelToken = CancelToken();
   late final Setting setting;
   late AnimationController _controller;
   DateTimeRange _dateRange = DateTimeRange(
@@ -36,8 +36,6 @@ class _SalesTransactionReportWidgetState
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
           _controller.reset();
-          _controller.forward();
-        } else if (status == AnimationStatus.dismissed) {
           _controller.forward();
         }
       });
@@ -58,11 +56,14 @@ class _SalesTransactionReportWidgetState
     _controller.reset();
     _controller.forward();
     var sessionState = context.read<SessionState>();
-    requestController = sessionState.server
-        .get('sales/transaction_report', queryParam: {
-      'start_time': _dateRange.start.toIso8601String(),
-      'end_time': _dateRange.end.toIso8601String()
-    }).then((response) {
+    sessionState.server
+        .get('sales/transaction_report',
+            queryParam: {
+              'start_time': _dateRange.start.toIso8601String(),
+              'end_time': _dateRange.end.toIso8601String()
+            },
+            cancelToken: cancelToken)
+        .then((response) {
       if (response.statusCode == 200) {
         var data = response.data['data'];
         data['start_time'] = _dateRange.start.toIso8601String();
@@ -73,13 +74,14 @@ class _SalesTransactionReportWidgetState
       }
     },
             onError: (error, stack) => sessionState.server.defaultResponse(
-                context: context,
-                error: error)).whenComplete(() => _controller.stop());
+                context: context, error: error)).whenComplete(() {
+      if (_controller.isAnimating) _controller.reset();
+    });
   }
 
   @override
   void dispose() {
-    requestController.ignore();
+    cancelToken.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -89,7 +91,7 @@ class _SalesTransactionReportWidgetState
     var colorScheme = Theme.of(context).colorScheme;
     var labelStyle = TextStyle(color: colorScheme.onPrimaryContainer);
     var valueStyle = TextStyle(
-        color: colorScheme.onPrimaryContainer, fontWeight: FontWeight.w400);
+        color: colorScheme.onPrimaryContainer, fontWeight: FontWeight.bold);
     Size size = MediaQuery.of(context).size;
     final padding = MediaQuery.of(context).padding;
     double width = size.width - padding.left - padding.right - 50;
@@ -109,7 +111,7 @@ class _SalesTransactionReportWidgetState
                   style: TextStyle(
                       fontSize: 18,
                       color: colorScheme.onPrimaryContainer,
-                      fontWeight: FontWeight.bold),
+                      fontWeight: FontWeight.w900),
                 ),
               ),
               IconButton.filled(
@@ -133,28 +135,35 @@ class _SalesTransactionReportWidgetState
           if (!_controller.isAnimating)
             Table(
               columnWidths: const {
-                0: FlexColumnWidth(0.7),
+                0: FlexColumnWidth(0.5),
                 1: FixedColumnWidth(10)
               },
               children: [
-                TableRow(children: [
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      'Total Penjualan',
-                      style: labelStyle,
-                    ),
-                  ),
-                  const Text(':'),
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      setting.moneyFormat(salesTransactionReport.totalSales),
-                      textAlign: TextAlign.right,
-                      style: valueStyle,
-                    ),
-                  )
-                ]),
+                TableRow(
+                    decoration: BoxDecoration(
+                        color: colorScheme.secondaryContainer,
+                        border: Border.symmetric(
+                            horizontal:
+                                BorderSide(color: colorScheme.outline))),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          'Total Penjualan',
+                          style: labelStyle,
+                        ),
+                      ),
+                      const Text(':'),
+                      Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          setting
+                              .moneyFormat(salesTransactionReport.totalSales),
+                          textAlign: TextAlign.right,
+                          style: valueStyle,
+                        ),
+                      )
+                    ]),
                 TableRow(children: [
                   Padding(
                     padding: const EdgeInsets.all(5),
@@ -174,24 +183,31 @@ class _SalesTransactionReportWidgetState
                     ),
                   )
                 ]),
-                TableRow(children: [
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      'Total Diskon',
-                      style: labelStyle,
-                    ),
-                  ),
-                  const Text(':'),
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      setting.moneyFormat(salesTransactionReport.totalDiscount),
-                      textAlign: TextAlign.right,
-                      style: valueStyle,
-                    ),
-                  )
-                ]),
+                TableRow(
+                    decoration: BoxDecoration(
+                        color: colorScheme.secondaryContainer,
+                        border: Border.symmetric(
+                            horizontal:
+                                BorderSide(color: colorScheme.outline))),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          'Total Diskon',
+                          style: labelStyle,
+                        ),
+                      ),
+                      const Text(':'),
+                      Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          setting.moneyFormat(
+                              salesTransactionReport.totalDiscount),
+                          textAlign: TextAlign.right,
+                          style: valueStyle,
+                        ),
+                      )
+                    ]),
                 TableRow(children: [
                   Padding(
                     padding: const EdgeInsets.all(5),
@@ -210,24 +226,31 @@ class _SalesTransactionReportWidgetState
                     ),
                   )
                 ]),
-                TableRow(children: [
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      'Total Debit',
-                      style: labelStyle,
-                    ),
-                  ),
-                  const Text(':'),
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      setting.moneyFormat(salesTransactionReport.totalDebit),
-                      textAlign: TextAlign.right,
-                      style: valueStyle,
-                    ),
-                  )
-                ]),
+                TableRow(
+                    decoration: BoxDecoration(
+                        color: colorScheme.secondaryContainer,
+                        border: Border.symmetric(
+                            horizontal:
+                                BorderSide(color: colorScheme.outline))),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          'Total Debit',
+                          style: labelStyle,
+                        ),
+                      ),
+                      const Text(':'),
+                      Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          setting
+                              .moneyFormat(salesTransactionReport.totalDebit),
+                          textAlign: TextAlign.right,
+                          style: valueStyle,
+                        ),
+                      )
+                    ]),
                 TableRow(children: [
                   Padding(
                     padding: const EdgeInsets.all(5),
@@ -246,24 +269,30 @@ class _SalesTransactionReportWidgetState
                     ),
                   )
                 ]),
-                TableRow(children: [
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      'Total QRIS',
-                      style: labelStyle,
-                    ),
-                  ),
-                  const Text(':'),
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      setting.moneyFormat(salesTransactionReport.totalQRIS),
-                      textAlign: TextAlign.right,
-                      style: valueStyle,
-                    ),
-                  )
-                ]),
+                TableRow(
+                    decoration: BoxDecoration(
+                        color: colorScheme.secondaryContainer,
+                        border: Border.symmetric(
+                            horizontal:
+                                BorderSide(color: colorScheme.outline))),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          'Total QRIS',
+                          style: labelStyle,
+                        ),
+                      ),
+                      const Text(':'),
+                      Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          setting.moneyFormat(salesTransactionReport.totalQRIS),
+                          textAlign: TextAlign.right,
+                          style: valueStyle,
+                        ),
+                      )
+                    ]),
                 TableRow(children: [
                   Padding(
                     padding: const EdgeInsets.all(5),
