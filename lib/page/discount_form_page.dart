@@ -97,7 +97,7 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
     if (discount.id == null) {
       request = server.post('discounts', body: body);
     } else {
-      request = server.put('discounts/${discount.code}', body: body);
+      request = server.put('discounts/${discount.id}', body: body);
     }
     request.then((response) {
       if ([200, 201].contains(response.statusCode)) {
