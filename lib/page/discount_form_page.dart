@@ -100,7 +100,7 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
       request = server.put('discounts/${discount.code}', body: body);
     }
     request.then((response) {
-      if (response.statusCode == 200) {
+      if ([200, 201].contains(response.statusCode)) {
         var data = response.data['data'];
         if (discount.id == null) {
           setState(() {

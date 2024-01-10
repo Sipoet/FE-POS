@@ -129,10 +129,12 @@ class Percentage {
   }
 
   static Percentage parse(String val) {
+    val = val.replaceAll(RegExp('%'), '');
     return Percentage(double.parse(val));
   }
 
   static Percentage? tryParse(String val) {
+    val = val.replaceAll(RegExp('%'), '');
     var parsed = double.tryParse(val);
     if (parsed == null) return null;
     return Percentage(parsed);

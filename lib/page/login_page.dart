@@ -86,6 +86,7 @@ class _LoginPageState extends State<LoginPage> {
                   onSaved: (newValue) {
                     _password = newValue.toString().trim();
                   },
+                  onChanged: ((value) {}),
                   validator: (value) {
                     if (value == null || value.toString().trim().isEmpty) {
                       return 'password belum diisi';

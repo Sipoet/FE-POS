@@ -14,8 +14,8 @@ class Server {
   String jwt;
   Dio dio = Dio(BaseOptions(
     connectTimeout: const Duration(seconds: 3),
-    validateStatus: (status) {
-      if (status is int && status <= 308 && status >= 200) {
+    validateStatus: (int? status) {
+      if (status != null && status <= 308 && status >= 200) {
         return true;
       }
       return [409].contains(status);
