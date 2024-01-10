@@ -169,7 +169,7 @@ class _DiscountPageState extends State<DiscountPage> {
   }
 
   void deleteRecord(discount) {
-    _sessionState.server.delete("discounts/${discount.code}").then((response) {
+    _sessionState.server.delete("discounts/${discount.id}").then((response) {
       if (response.statusCode == 200) {
         flash.showBanner(
             messageType: MessageType.success,
@@ -222,16 +222,16 @@ class _DiscountPageState extends State<DiscountPage> {
               icon: const Icon(Icons.edit)),
           IconButton(
               onPressed: () {
-                deleteRecord(discount);
-              },
-              tooltip: 'Hapus diskon',
-              icon: const Icon(Icons.delete)),
-          IconButton(
-              onPressed: () {
                 refreshPromotion(discount);
               },
               tooltip: 'Refresh item promotion',
               icon: const Icon(Icons.refresh)),
+          IconButton(
+              onPressed: () {
+                deleteRecord(discount);
+              },
+              tooltip: 'Hapus diskon',
+              icon: const Icon(Icons.delete)),
         ];
     return SingleChildScrollView(
       child: Padding(
