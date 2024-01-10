@@ -62,12 +62,19 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                   key: 'salesPercentageReport',
                 ),
                 Menu(
-                    icon: Icons.pages,
-                    isClosed: true,
-                    label: 'Transaksi Penjualan harian',
-                    page: const SalesTransactionReportPage(),
-                    key: 'salesTransactionReport',
-                    children: [])
+                  icon: Icons.pages,
+                  isClosed: true,
+                  label: 'Transaksi Penjualan harian',
+                  page: const SalesTransactionReportPage(),
+                  key: 'salesTransactionReport',
+                ),
+                Menu(
+                  icon: Icons.pages,
+                  isClosed: true,
+                  label: 'Item Penjualan Periode',
+                  page: const ItemSalesPeriodReportPage(),
+                  key: 'itemSalesPeriodReport',
+                ),
               ])
         ]),
     Menu(

@@ -17,6 +17,26 @@ class Setting extends ChangeNotifier {
     notifyListeners();
   }
 
+  Map tableColumns(tableName) {
+    switch (tableName) {
+      case 'itemSalesPeriodReport':
+        return {
+          'item_code': 'Kode Item',
+          'item_name': 'Nama Item',
+          'supplier_code': 'Kode Supplier',
+          'item_type_name': 'Jenis/Departemen',
+          'brand_name': 'Merek',
+          'discount_percentage': 'Diskon(%)',
+          'quantity': 'Jumlah',
+          'subtotal': 'Subtotal',
+          'discount_total': 'Total Diskon',
+          'sales_total': 'Total'
+        };
+      default:
+        return {};
+    }
+  }
+
   String dateTimeFormat(DateTime date) {
     return DateFormat('dd/MM/y HH:mm', 'id_ID').format(date);
   }
