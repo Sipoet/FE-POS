@@ -22,7 +22,8 @@ class SalesPercentageReportPage extends StatefulWidget {
       _SalesPercentageReportPageState();
 }
 
-class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
+class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
+    with AutomaticKeepAliveClientMixin {
   final BsSelectBoxController _brandSelectWidget =
       BsSelectBoxController(multiple: true, processing: true);
 
@@ -56,6 +57,9 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
     _fetchTableColumn();
     super.initState();
   }
+
+  @override
+  bool get wantKeepAlive => true;
 
   void _fetchTableColumn() async {
     var response = await server.get('item_sales_percentage_reports/columns');
@@ -127,12 +131,12 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
         .toList();
     List items =
         _itemSelectWidget.getSelectedAll().map((e) => e.getValue()).toList();
-    log('supplier $suppliers, brand $brands, item_types: $itemTypes, items: $items');
+    log('supplier $suppliers, brand $brands, item_types: $itemTypes, item_codes: $items');
     return server.get('item_sales_percentage_reports', queryParam: {
       'suppliers[]': suppliers,
       'brands[]': brands,
       'item_types[]': itemTypes,
-      'items[]': items,
+      'item_codes[]': items,
       'report_type': _reportType,
       if (page != null) 'page': page.toString(),
       if (per != null) 'per': per.toString()
@@ -219,14 +223,23 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
     return list
         .map(((row) => BsSelectBoxOption(
             value: row['id'],
-            text: Text(row['name'].substring(
-                0, row['name'].length < 16 ? row['name'].length : 16)))))
+            text: Text(
+              row['name'],
+              softWrap: true,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ))))
         .toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    DropdownRemoteConnection connection =
+    super.build(context);
+    final padding = MediaQuery.of(context).padding;
+    double tableHeight =
+        MediaQuery.of(context).size.height - padding.top - padding.bottom - 150;
+    tableHeight = tableHeight > 600 ? 600 : tableHeight;
+    final DropdownRemoteConnection connection =
         DropdownRemoteConnection(server, context);
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
@@ -364,7 +377,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage> {
             if (_isDisplayTable) const Divider(),
             if (_isDisplayTable)
               SizedBox(
-                height: 600,
+                height: tableHeight,
                 child: PaginatedDataTable2(
                   source: dataSource,
                   fixedLeftColumns: 1,

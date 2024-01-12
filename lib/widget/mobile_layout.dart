@@ -79,6 +79,7 @@ class _MobileLayoutState extends State<MobileLayout> {
         itemCount: _menus.length,
       )),
       body: TabBarView(
+        physics: const NeverScrollableScrollPhysics(),
         controller: tabManager.controller,
         children: tabManager.tabViews,
       ),

@@ -106,6 +106,8 @@ class Datatable extends DataTableSource {
         keys.map<DataCell>((key) => decorateValue(jsonData[key])).toList();
     if (actionButtons != null) {
       rows.add(DataCell(Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: actionButtons!(model),
       )));
     }

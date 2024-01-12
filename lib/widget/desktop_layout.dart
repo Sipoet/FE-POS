@@ -87,6 +87,7 @@ class _DesktopLayoutState extends State<DesktopLayout>
   Widget tabWidget() {
     var tabManager = context.read<TabManager>();
     return TabBarView(
+      physics: const NeverScrollableScrollPhysics(),
       controller: tabManager.controller,
       children: tabManager.tabViews,
     );

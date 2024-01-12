@@ -24,7 +24,8 @@ class ItemSalesPeriodReportPage extends StatefulWidget {
       _ItemSalesPeriodReportPageState();
 }
 
-class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage> {
+class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
+    with AutomaticKeepAliveClientMixin {
   final BsSelectBoxController _brandSelectWidget =
       BsSelectBoxController(multiple: true, processing: true);
 
@@ -224,9 +225,17 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage> {
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     DropdownRemoteConnection connection =
         DropdownRemoteConnection(server, context);
+    final padding = MediaQuery.of(context).padding;
+    double tableHeight =
+        MediaQuery.of(context).size.height - padding.top - padding.bottom - 150;
+    tableHeight = tableHeight > 600 ? 600 : tableHeight;
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       child: Padding(
@@ -381,7 +390,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage> {
             if (_isDisplayTable) const Divider(),
             if (_isDisplayTable)
               SizedBox(
-                height: 600,
+                height: tableHeight,
                 child: PaginatedDataTable2(
                   source: _dataSource,
                   fixedLeftColumns: 1,

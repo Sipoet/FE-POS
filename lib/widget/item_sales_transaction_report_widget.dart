@@ -24,7 +24,7 @@ class ItemSalesTransactionReportWidget extends StatefulWidget {
 
 class _ItemSalesTransactionReportWidgetState
     extends State<ItemSalesTransactionReportWidget>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   List results = [];
   late final Setting setting;
   late AnimationController _controller;
@@ -111,7 +111,11 @@ class _ItemSalesTransactionReportWidgetState
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     var colorScheme = Theme.of(context).colorScheme;
     var style = TextStyle(
         fontWeight: FontWeight.bold, color: colorScheme.onSecondaryContainer);

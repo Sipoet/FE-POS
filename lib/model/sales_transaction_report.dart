@@ -59,12 +59,4 @@ class SalesTransactionReport extends Model {
         'start_time': Date.parse(startDate.toIso8601String()),
         'end_time': Date.parse(endDate.toIso8601String()),
       };
-
-  @override
-  Map<String, dynamic> toJson() {
-    var json = toMap();
-    json['start_time'] = startDate.toIso8601String();
-    json['end_time'] = endDate.toIso8601String();
-    return json;
-  }
 }

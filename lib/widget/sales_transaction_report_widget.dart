@@ -15,7 +15,8 @@ class SalesTransactionReportWidget extends StatefulWidget {
 }
 
 class _SalesTransactionReportWidgetState
-    extends State<SalesTransactionReportWidget> with TickerProviderStateMixin {
+    extends State<SalesTransactionReportWidget>
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late SalesTransactionReport salesTransactionReport;
   CancelToken cancelToken = CancelToken();
   late final Setting setting;
@@ -87,7 +88,11 @@ class _SalesTransactionReportWidgetState
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     var colorScheme = Theme.of(context).colorScheme;
     var labelStyle = TextStyle(color: colorScheme.onPrimaryContainer);
     var valueStyle = TextStyle(

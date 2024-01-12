@@ -169,7 +169,6 @@ class _HomePageState extends State<HomePage> {
             const Divider(),
             Expanded(
               child: ListView.separated(
-                cacheExtent: 3000.0,
                 itemBuilder: (context, index) => Container(
                     constraints: const BoxConstraints(maxWidth: 400),
                     padding: const EdgeInsets.all(10),

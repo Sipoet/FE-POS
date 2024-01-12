@@ -84,11 +84,4 @@ class ItemSalesPercentageReport extends Model {
         'purchase_total': purchaseTotal,
         'recent_purchase_date': recentPurchaseDate,
       };
-
-  @override
-  Map<String, dynamic> toJson() {
-    var data = toMap();
-    data['recent_purchase_date'] = recentPurchaseDate?.toIso8601String();
-    return data;
-  }
 }

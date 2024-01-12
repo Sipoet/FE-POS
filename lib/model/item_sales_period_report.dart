@@ -58,10 +58,4 @@ class ItemSalesPeriodReport extends Model {
         'discount_total': discountTotal,
         'sales_total': salesTotal,
       };
-
-  @override
-  Map<String, dynamic> toJson() {
-    var data = toMap();
-    return data;
-  }
 }

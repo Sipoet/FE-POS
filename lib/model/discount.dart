@@ -60,17 +60,4 @@ class Discount extends Model {
         'start_time': startTime,
         'end_time': endTime,
       };
-
-  @override
-  Map<String, dynamic> toJson() {
-    var json = toMap();
-    json.forEach((key, value) {
-      if (value is Money || value is Percentage) {
-        json[key] = value.value;
-      } else if (value is Date || value is DateTime) {
-        json[key] = value.toIso8601String();
-      }
-    });
-    return json;
-  }
 }

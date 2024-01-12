@@ -1,9 +1,20 @@
+import 'package:fe_pos/tool/custom_type.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
 abstract class Model {
   Map<String, dynamic> toMap();
 
-  Map<String, dynamic> toJson();
+  Map<String, dynamic> toJson() {
+    var json = toMap();
+    json.forEach((key, object) {
+      if (object is Money || object is Percentage) {
+        json[key] = object.value;
+      } else if (object is Date || object is DateTime) {
+        json[key] = object.toIso8601String();
+      }
+    });
+    return json;
+  }
 }
 
 abstract class ModelClass {
