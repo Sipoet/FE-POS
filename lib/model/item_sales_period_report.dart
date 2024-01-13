@@ -9,6 +9,8 @@ class ItemSalesPeriodReport extends Model {
   String brandName;
   Percentage discountPercentage;
   int quantity;
+  Money buyPrice;
+  Money sellPrice;
   Money subtotal;
   Money discountTotal;
   Money salesTotal;
@@ -21,6 +23,8 @@ class ItemSalesPeriodReport extends Model {
     required this.supplierCode,
     required this.brandName,
     required this.discountPercentage,
+    required this.buyPrice,
+    required this.sellPrice,
     required this.quantity,
     required this.subtotal,
     required this.discountTotal,
@@ -38,6 +42,8 @@ class ItemSalesPeriodReport extends Model {
       supplierCode: attributes['supplier_code'],
       brandName: attributes['brand_name'],
       discountPercentage: Percentage(attributes['discount_percentage']),
+      buyPrice: Money(attributes['buy_price']),
+      sellPrice: Money(attributes['sell_price']),
       quantity: attributes['quantity'],
       subtotal: Money(attributes['subtotal']),
       discountTotal: Money(attributes['discount_total']),
@@ -53,6 +59,8 @@ class ItemSalesPeriodReport extends Model {
         'supplier_code': supplierCode,
         'brand_name': brandName,
         'discount_percentage': discountPercentage,
+        'buy_price': buyPrice,
+        'sell_price': sellPrice,
         'quantity': quantity,
         'subtotal': subtotal,
         'discount_total': discountTotal,

@@ -27,6 +27,8 @@ class Setting extends ChangeNotifier {
           'item_type_name': 'Jenis/Departemen',
           'brand_name': 'Merek',
           'discount_percentage': 'Diskon(%)',
+          'buy_price': 'Harga Pokok',
+          'sell_price': 'Harga Jual',
           'quantity': 'Jumlah',
           'subtotal': 'Subtotal',
           'discount_total': 'Total Diskon',

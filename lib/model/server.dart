@@ -84,8 +84,7 @@ class Server {
 
   Future post(String path, {Map body = const {}, String type = 'json'}) async {
     Uri url = _generateUrl(path, {});
-    return dio.postUri(url,
-        data: body, options: Options(headers: generateHeaders(type)));
+    return dio.postUri(url, data: body, options: generateHeaders(type));
   }
 
   Future get(String path,
@@ -94,34 +93,29 @@ class Server {
       cancelToken}) async {
     Uri url = _generateUrl(path, queryParam);
     return dio.getUri(url,
-        cancelToken: cancelToken,
-        options: Options(headers: generateHeaders(type)));
+        cancelToken: cancelToken, options: generateHeaders(type));
   }
 
   Future put(String path, {Map body = const {}, String type = 'json'}) async {
     Uri url = _generateUrl(path, {});
-    return dio.putUri(url,
-        data: body, options: Options(headers: generateHeaders(type)));
+    return dio.putUri(url, data: body, options: generateHeaders(type));
   }
 
   Future delete(String path,
       {Map body = const {}, String type = 'json'}) async {
     Uri url = _generateUrl(path, {});
-    return dio.deleteUri(url,
-        data: body, options: Options(headers: generateHeaders(type)));
+    return dio.deleteUri(url, data: body, options: generateHeaders(type));
   }
 
-  final Map _contentTypes = {
-    'json': 'application/json',
-    'text': 'application/text',
-    'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  final Map<String, ResponseType> _responseTypes = {
+    'json': ResponseType.json,
+    'text': ResponseType.plain,
+    'xlsx': ResponseType.bytes,
   };
-  Map<String, String> generateHeaders(String type) {
-    return {
+  Options generateHeaders(String type) {
+    return Options(headers: {
       if (jwt.isNotEmpty) 'Authorization': jwt,
-      'Accept': 'application/json',
-      'Content-Type': _contentTypes[type]
-    };
+    }, contentType: 'application/json', responseType: _responseTypes[type]);
   }
 
   Uri _generateUrl(String path, Map<String, dynamic> queryParams) {

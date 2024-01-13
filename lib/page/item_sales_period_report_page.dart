@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:convert';
 import 'package:fe_pos/tool/datatable.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/model/item_sales_period_report.dart';
@@ -126,17 +125,19 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
     List items =
         _itemSelectWidget.getSelectedAll().map((e) => e.getValue()).toList();
     log('supplier $suppliers, brand $brands, item_types: $itemTypes, items: $items');
-    return server.get('item_sales/period_report', queryParam: {
-      'suppliers[]': suppliers,
-      'brands[]': brands,
-      'item_types[]': itemTypes,
-      'items[]': items,
-      'report_type': _reportType,
-      'start_time': _dateRange.start.toIso8601String(),
-      'end_time': _dateRange.end.toIso8601String(),
-      if (page != null) 'page': page.toString(),
-      if (per != null) 'per': per.toString()
-    });
+    return server.get('item_sales/period_report',
+        queryParam: {
+          'suppliers[]': suppliers,
+          'brands[]': brands,
+          'item_types[]': itemTypes,
+          'items[]': items,
+          'report_type': _reportType,
+          'start_time': _dateRange.start.toIso8601String(),
+          'end_time': _dateRange.end.toIso8601String(),
+          if (page != null) 'page': page.toString(),
+          if (per != null) 'per': per.toString()
+        },
+        type: _reportType ?? 'json');
   }
 
   void _downloadResponse(response) async {
@@ -151,8 +152,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
     filename = filename.substring(
         filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
     if (response.statusCode == 200) {
-      List<int> bytes = utf8.encode(response.data);
-      _saveXlsxPick(filename, bytes);
+      _saveXlsxPick(filename, response.data);
     } else {
       flash.show(const Text('gagal simpan ke excel'), MessageType.failed);
     }

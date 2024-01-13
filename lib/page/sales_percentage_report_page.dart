@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:convert';
 import 'package:fe_pos/tool/datatable.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/model/item_sales_percentage_report.dart';
@@ -132,15 +131,17 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
     List items =
         _itemSelectWidget.getSelectedAll().map((e) => e.getValue()).toList();
     log('supplier $suppliers, brand $brands, item_types: $itemTypes, item_codes: $items');
-    return server.get('item_sales_percentage_reports', queryParam: {
-      'suppliers[]': suppliers,
-      'brands[]': brands,
-      'item_types[]': itemTypes,
-      'item_codes[]': items,
-      'report_type': _reportType,
-      if (page != null) 'page': page.toString(),
-      if (per != null) 'per': per.toString()
-    });
+    return server.get('item_sales_percentage_reports',
+        queryParam: {
+          'suppliers[]': suppliers,
+          'brands[]': brands,
+          'item_types[]': itemTypes,
+          'item_codes[]': items,
+          'report_type': _reportType,
+          if (page != null) 'page': page.toString(),
+          if (per != null) 'per': per.toString()
+        },
+        type: _reportType ?? 'json');
   }
 
   void _downloadResponse(response) async {
@@ -155,8 +156,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
     filename = filename.substring(
         filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
     if (response.statusCode == 200) {
-      List<int> bytes = utf8.encode(response.data);
-      _saveXlsxPick(filename, bytes);
+      _saveXlsxPick(filename, response.data);
     } else {
       flash.show(const Text('gagal simpan ke excel'), MessageType.failed);
     }
