@@ -45,7 +45,7 @@ class Server {
     );
   }
 
-  dynamic defaultResponse(
+  dynamic defaultErrorResponse(
       {required BuildContext context, required var error, var valueWhenError}) {
     if (error.runtimeType.toString() == '_TypeError') throw error;
     var response = error.response;

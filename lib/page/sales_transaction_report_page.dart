@@ -228,7 +228,7 @@ class _SalesTransactionReportPageState
         dataSource.setData(rows, _sortKey, _sortAscending);
       },
           onError: (error, trace) =>
-              server.defaultResponse(context: context, error: error));
+              server.defaultErrorResponse(context: context, error: error));
       requestControllers.add(request);
       start = start.add(const Duration(days: 1));
     }

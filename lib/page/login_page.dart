@@ -1,4 +1,5 @@
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/framework_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -128,8 +129,8 @@ class _LoginPageState extends State<LoginPage> {
           username: _username,
           password: _password,
           onSuccess: (response) {
+            fetchSetting(sessionState.server);
             flash.hide();
-            _redirectToHomePage();
             var body = response.data;
             flash.showBanner(
                 title: body['message'], messageType: MessageType.success);
@@ -154,6 +155,17 @@ class _LoginPageState extends State<LoginPage> {
           ),
           MessageType.failed);
     }
+  }
+
+  void fetchSetting(Server server) async {
+    Setting setting = context.read<Setting>();
+    server.get('settings').then((response) {
+      if (response.statusCode == 200) {
+        setting.tableColumns = response.data['data']['table_columns'];
+      }
+    }).whenComplete(() {
+      _redirectToHomePage();
+    });
   }
 
   void _redirectToHomePage() {

@@ -4,9 +4,9 @@ class ItemSalesPeriodReport extends Model {
   String id;
   String itemCode;
   String itemName;
-  String itemTypeName;
-  String supplierCode;
-  String brandName;
+  String? itemTypeName;
+  String? supplierCode;
+  String? brandName;
   Percentage discountPercentage;
   int quantity;
   Money buyPrice;

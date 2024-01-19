@@ -51,7 +51,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
       start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
       end: DateTime.now().copyWith(hour: 23, minute: 59, second: 59));
   late Flash flash;
-
+  final key = GlobalKey<PaginatedDataTable2State>();
   @override
   void initState() {
     SessionState sessionState = context.read<SessionState>();
@@ -64,9 +64,8 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
 
   void _fetchTableColumn() {
     Setting setting = context.read<Setting>();
-    Map tableSetting = setting.tableColumns('itemSalesPeriodReport');
-    List columnNames = tableSetting.values.toList();
-    _columnOrder = tableSetting.keys.map<String>((e) => e).toList();
+    List columnNames = setting.columnNames('itemSalesPercentageReport');
+    _columnOrder = setting.columnOrder('itemSalesPercentageReport');
     _dataSource.setKeys(_columnOrder);
 
     for (String columnName in columnNames) {
@@ -97,7 +96,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
     _reportType = 'json';
     _requestReport().then(_displayDatatable,
         onError: ((error, stackTrace) =>
-            server.defaultResponse(context: context, error: error)));
+            server.defaultErrorResponse(context: context, error: error)));
   }
 
   void _downloadReport() async {
@@ -108,7 +107,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
     _reportType = 'xlsx';
     _requestReport().then(_downloadResponse,
         onError: ((error, stackTrace) =>
-            server.defaultResponse(context: context, error: error)));
+            server.defaultErrorResponse(context: context, error: error)));
   }
 
   Future _requestReport({int? page, int? per}) async {
@@ -173,6 +172,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
     }
     var data = response.data;
     setState(() {
+      key.currentState?.pageTo(1);
       var rawData = data['data'].map<ItemSalesPeriodReport>((row) {
         return ItemSalesPeriodReport.fromJson(row);
       }).toList();
@@ -217,10 +217,14 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
 
   List<BsSelectBoxOption> convertToOptions(List list) {
     return list
-        .map(((row) => BsSelectBoxOption(
-            value: row['id'],
-            text: Text(row['name'].substring(
-                0, row['name'].length < 16 ? row['name'].length : 16)))))
+        .map(
+          ((row) => BsSelectBoxOption(
+              value: row['id'],
+              text: Tooltip(
+                  message: row['name'],
+                  child: Text(row['name'].substring(
+                      0, row['name'].length < 30 ? row['name'].length : 30))))),
+        )
         .toList();
   }
 
@@ -392,6 +396,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
               SizedBox(
                 height: tableHeight,
                 child: PaginatedDataTable2(
+                  key: key,
                   source: _dataSource,
                   fixedLeftColumns: 1,
                   sortColumnIndex: _sortColumnIndex,

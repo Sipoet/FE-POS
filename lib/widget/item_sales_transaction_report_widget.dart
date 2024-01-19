@@ -88,8 +88,8 @@ class _ItemSalesTransactionReportWidgetState
         });
       }
     },
-        onError: (error, stack) => sessionState.server
-            .defaultResponse(context: context, error: error)).whenComplete(() {
+        onError: (error, stack) => sessionState.server.defaultErrorResponse(
+            context: context, error: error)).whenComplete(() {
       if (_controller.isAnimating) {
         _controller.stop();
         _controller.reset();

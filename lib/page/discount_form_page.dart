@@ -17,7 +17,8 @@ class DiscountFormPage extends StatefulWidget {
   State<DiscountFormPage> createState() => _DiscountFormPageState();
 }
 
-class _DiscountFormPageState extends State<DiscountFormPage> {
+class _DiscountFormPageState extends State<DiscountFormPage>
+    with AutomaticKeepAliveClientMixin {
   late final BsSelectBoxController _brandSelectWidget;
 
   late final BsSelectBoxController _supplierSelectWidget;
@@ -29,6 +30,10 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
   late Flash flash;
   final _formKey = GlobalKey<FormState>();
   Discount get discount => widget.discount;
+
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   void initState() {
     var sessionState = context.read<SessionState>();
@@ -121,12 +126,13 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
             messageType: MessageType.failed);
       }
     }, onError: (error, stackTrace) {
-      server.defaultResponse(context: context, error: error);
+      server.defaultErrorResponse(context: context, error: error);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     var labelStyle = const TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
@@ -226,6 +232,31 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                   )),
                   Flexible(
                       child: TextFormField(
+                    enableSuggestions: false,
+                    decoration: InputDecoration(
+                      hintText:
+                          'level paling tinggi yang lebih dipakai jika antar aturan diskon konflik',
+                      label: Text(
+                        'Level Diskon',
+                        style: labelStyle,
+                      ),
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      var valDouble = int.tryParse(value ?? '');
+                      if (valDouble == null || valDouble.isNaN) {
+                        return 'tidak valid';
+                      } else if (valDouble < 1) {
+                        return 'tidak boleh lebih kecil dari 1';
+                      }
+                      return null;
+                    },
+                    onChanged: ((value) => discount.weight = int.parse(value)),
+                    initialValue: discount.weight.toString(),
+                  )),
+                  Flexible(
+                      child: TextFormField(
+                    enableSuggestions: false,
                     decoration: InputDecoration(
                       label: Text(
                         'Diskon 1',
@@ -237,8 +268,8 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                       var valDouble = Percentage.tryParse(value ?? '');
                       if (valDouble == null || valDouble.isNaN) {
                         return 'tidak valid';
-                      } else if (valDouble >= 100) {
-                        return 'tidak boleh lebih dari 100';
+                      } else if (valDouble >= 100 || valDouble < 0) {
+                        return 'range valid antara 0 - 100';
                       }
                       return null;
                     },
@@ -248,6 +279,7 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                   )),
                   Flexible(
                       child: TextFormField(
+                    enableSuggestions: false,
                     decoration: InputDecoration(
                       label: Text(
                         'Diskon 2',
@@ -259,8 +291,8 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                       var valDouble = Percentage.tryParse(value ?? '');
                       if (valDouble == null || valDouble.isNaN) {
                         return 'tidak valid';
-                      } else if (valDouble >= 100) {
-                        return 'tidak boleh lebih dari 100';
+                      } else if (valDouble >= 100 || valDouble < 0) {
+                        return 'range valid antara 0 - 100';
                       }
                       return null;
                     },
@@ -270,6 +302,7 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                   )),
                   Flexible(
                       child: TextFormField(
+                    enableSuggestions: false,
                     decoration: InputDecoration(
                       label: Text(
                         'Diskon 3',
@@ -281,8 +314,8 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                       var valDouble = Percentage.tryParse(value ?? '');
                       if (valDouble == null || valDouble.isNaN) {
                         return 'tidak valid';
-                      } else if (valDouble >= 100) {
-                        return 'tidak boleh lebih dari 100';
+                      } else if (valDouble >= 100 || valDouble < 0) {
+                        return 'range valid antara 0 - 100';
                       }
                       return null;
                     },
@@ -292,6 +325,7 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                   )),
                   Flexible(
                       child: TextFormField(
+                    enableSuggestions: false,
                     decoration: InputDecoration(
                       label: Text(
                         'Diskon 4',
@@ -303,8 +337,8 @@ class _DiscountFormPageState extends State<DiscountFormPage> {
                       var valDouble = Percentage.tryParse(value ?? '');
                       if (valDouble == null || valDouble.isNaN) {
                         return 'tidak valid';
-                      } else if (valDouble >= 100) {
-                        return 'tidak boleh lebih dari 100';
+                      } else if (valDouble >= 100 || valDouble < 0) {
+                        return 'range valid antara 0 - 100';
                       }
                       return null;
                     },

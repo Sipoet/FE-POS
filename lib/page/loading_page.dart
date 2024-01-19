@@ -29,12 +29,24 @@ class _LoadingPageState extends State<LoadingPage>
     )..addListener(() {
         setState(() {});
       });
-    setting = context.read<Setting>();
     controller.repeat(reverse: true);
     checkPermission().then((_) {
       reroute();
     });
     super.initState();
+  }
+
+  void fetchSetting(Server server) async {
+    setting = context.read<Setting>();
+    server.get('settings').then((response) {
+      if (response.statusCode == 200) {
+        setting.tableColumns = response.data['data']['table_columns'];
+      }
+    }).whenComplete(() {
+      controller.stop();
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context) => const FrameworkLayout()));
+    });
   }
 
   Future<void> checkPermission() async {
@@ -84,20 +96,14 @@ class _LoadingPageState extends State<LoadingPage>
   void reroute() {
     initializeDateFormatting('id_ID', null);
     SessionState sessionState = context.read<SessionState>();
-    sessionState.fetchServerData().then((isLogin) => {
-          controller.stop(),
-          if (isLogin)
-            {
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const FrameworkLayout())),
-            }
-          else
-            {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => const LoginPage())),
-            }
-        });
+    sessionState.fetchServerData().then((isLogin) {
+      if (isLogin) {
+        fetchSetting(sessionState.server);
+      } else {
+        controller.stop();
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const LoginPage()));
+      }
+    });
   }
 }

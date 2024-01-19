@@ -2,6 +2,7 @@ import 'package:fe_pos/model/discount.dart';
 import 'package:fe_pos/page/discount_form_page.dart';
 import 'package:fe_pos/tool/datatable.dart';
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -46,21 +47,14 @@ class _DiscountPageState extends State<DiscountPage> {
   }
 
   Future<void> _fetchTableColumn() async {
-    var server = _sessionState.server;
-    var response = await server
-        .get('discounts/columns', queryParam: {'search_text': _searchText});
-    if (response.statusCode != 200) {
-      return;
-    }
-    Map responseBody = response.data;
-    var data = responseBody['data'] ?? {'column_names': [], 'column_order': []};
-    _columnOrder =
-        data['column_order'].map<String>((e) => e.toString()).toList();
+    Setting setting = context.read<Setting>();
+    List columnNames = setting.columnNames('discount');
+    _columnOrder = setting.columnOrder('discount');
     _source.setKeys(_columnOrder);
     _columns = [];
+    _tableWidth = 50.0;
     setState(() {
-      _tableWidth = 50.0;
-      data['column_names'].forEach((columnName) {
+      for (String columnName in columnNames) {
         _tableWidth += 215.0;
         _columns.add(DataColumn2(
           tooltip: columnName,
@@ -77,7 +71,7 @@ class _DiscountPageState extends State<DiscountPage> {
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ));
-      });
+      }
       _tableWidth += 250.0;
       _columns.add(const DataColumn2(
           label: Text(
@@ -134,7 +128,7 @@ class _DiscountPageState extends State<DiscountPage> {
           requestController = null;
         }
       },
-          onError: (error, stackTrace) => server.defaultResponse(
+          onError: (error, stackTrace) => server.defaultErrorResponse(
               context: context, error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
@@ -168,6 +162,35 @@ class _DiscountPageState extends State<DiscountPage> {
     });
   }
 
+  void showConfirmDeleteDialog(discount) {
+    AlertDialog alert = AlertDialog(
+      title: const Text("Konfirmasi"),
+      content: Text("apakah yakin menghapus diskon ${discount.code} ?"),
+      actions: [
+        ElevatedButton(
+          child: const Text("Kembali"),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        ElevatedButton(
+          child: const Text("Hapus"),
+          onPressed: () {
+            deleteRecord(discount);
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
+    );
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
   void deleteRecord(discount) {
     _sessionState.server.delete("discounts/${discount.id}").then((response) {
       if (response.statusCode == 200) {
@@ -183,19 +206,19 @@ class _DiscountPageState extends State<DiscountPage> {
             messageType: MessageType.failed);
       }
     }, onError: (error, stack) {
-      _sessionState.server.defaultResponse(context: context, error: error);
+      _sessionState.server.defaultErrorResponse(context: context, error: error);
     });
   }
 
   void refreshPromotion(Discount discount) {
     var server = _sessionState.server;
-    server.post('discounts/${discount.code}/refresh_promotion').then((value) {
+    server.post('discounts/${discount.id}/refresh_promotion').then((value) {
       flash.showBanner(
           title: 'Refresh akan diproses',
           description: 'diskon ${discount.code} akan diproses',
           messageType: MessageType.info);
     }, onError: (error, stack) {
-      server.defaultResponse(context: context, error: error);
+      server.defaultErrorResponse(context: context, error: error);
     });
   }
 
@@ -207,7 +230,7 @@ class _DiscountPageState extends State<DiscountPage> {
           description: 'Semua diskon akan diproses',
           messageType: MessageType.info);
     }, onError: (error, stack) {
-      server.defaultResponse(context: context, error: error);
+      server.defaultErrorResponse(context: context, error: error);
     });
   }
 
@@ -228,7 +251,7 @@ class _DiscountPageState extends State<DiscountPage> {
               icon: const Icon(Icons.refresh)),
           IconButton(
               onPressed: () {
-                deleteRecord(discount);
+                showConfirmDeleteDialog(discount);
               },
               tooltip: 'Hapus diskon',
               icon: const Icon(Icons.delete)),

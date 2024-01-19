@@ -10,7 +10,7 @@ class DropdownRemoteConnection {
   Future<List> getData(String path, {String query = ''}) async {
     var response = await server.get(path, queryParam: {'query': query}).onError(
         (error, stackTrace) => {
-              server.defaultResponse(
+              server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: [])
             });
     if (response.statusCode == 200) {

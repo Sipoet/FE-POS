@@ -7,13 +7,15 @@ export 'package:fe_pos/tool/custom_type.dart';
 class Datatable extends DataTableSource {
   late List<Model> sortedData;
   late List<String> keys;
+  late Map<String, ColumnDetail> columnDetails = {};
   Function? actionButtons;
 
-  DataCell decorateValue(cell) {
+  DataCell decorateValue(cell, key) {
+    var columnDetail = columnDetails[key] ?? ColumnDetail(initX: 0, width: 150);
     return DataCell(Tooltip(
       message: _formatData(cell),
       triggerMode: TooltipTriggerMode.tap,
-      child: _decorateCell(cell),
+      child: SizedBox(width: columnDetail.width, child: _decorateCell(cell)),
     ));
   }
 
@@ -79,7 +81,11 @@ class Datatable extends DataTableSource {
     return formated.format(number);
   }
 
-  void setData(List<Model> rawData, String sortColumn, bool sortAscending) {
+  void setData(
+    List<Model> rawData,
+    String sortColumn,
+    bool sortAscending,
+  ) {
     sortedData = rawData;
     sortData(sortColumn, sortAscending);
   }
@@ -103,7 +109,7 @@ class Datatable extends DataTableSource {
   List<DataCell> decorateModel(model) {
     var jsonData = model.toMap();
     var rows =
-        keys.map<DataCell>((key) => decorateValue(jsonData[key])).toList();
+        keys.map<DataCell>((key) => decorateValue(jsonData[key], key)).toList();
     if (actionButtons != null) {
       rows.add(DataCell(Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -128,4 +134,10 @@ class Datatable extends DataTableSource {
 
   @override
   int get selectedRowCount => 0;
+}
+
+class ColumnDetail {
+  double initX;
+  double width;
+  ColumnDetail({required this.initX, required this.width});
 }

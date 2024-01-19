@@ -14,6 +14,7 @@ class Discount extends Model {
   DateTime endTime;
   int? id;
   String code;
+  int weight;
   Discount(
       {this.id,
       this.code = '[generated_code]',
@@ -26,7 +27,8 @@ class Discount extends Model {
       this.discount3,
       this.discount4,
       required this.startTime,
-      required this.endTime});
+      required this.endTime,
+      this.weight = 1});
 
   @override
   factory Discount.fromJson(Map<String, dynamic> json) {
@@ -42,6 +44,7 @@ class Discount extends Model {
         discount2: Percentage(attributes['discount2']),
         discount3: Percentage(attributes['discount3']),
         discount4: Percentage(attributes['discount4']),
+        weight: attributes['weight'],
         startTime: DateTime.parse(attributes['start_time']),
         endTime: DateTime.parse(attributes['end_time']));
   }
@@ -59,5 +62,6 @@ class Discount extends Model {
         'discount4': discount4,
         'start_time': startTime,
         'end_time': endTime,
+        'weight': weight,
       };
 }

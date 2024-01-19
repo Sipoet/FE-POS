@@ -65,7 +65,7 @@ class SessionState extends ChangeNotifier {
       if (error.type == DioExceptionType.badResponse) {
         onFailed(error.response);
       } else {
-        server.defaultResponse(context: context, error: error);
+        server.defaultErrorResponse(context: context, error: error);
       }
     });
   }
@@ -83,7 +83,7 @@ class SessionState extends ChangeNotifier {
                 {onFailed(response)}
             },
         onError: (error, stackTrace) =>
-            server.defaultResponse(context: context, error: error));
+            server.defaultErrorResponse(context: context, error: error));
   }
 
   Future<String> sessionPath() async {

@@ -74,7 +74,7 @@ class _SalesTransactionReportWidgetState
         });
       }
     },
-            onError: (error, stack) => sessionState.server.defaultResponse(
+            onError: (error, stack) => sessionState.server.defaultErrorResponse(
                 context: context, error: error)).whenComplete(() {
       if (_controller.isAnimating) _controller.reset();
     });

@@ -3,40 +3,20 @@ import 'package:intl/intl.dart';
 import 'package:fe_pos/tool/custom_type.dart';
 
 class Setting extends ChangeNotifier {
-  List<String> discountColumns = <String>[];
-  List<String> discountColumnOrder = <String>[];
-  List<String> salesItemPercentageReportColumns = <String>[];
-  List<String> salesItemPercentageReportColumnOrder = <String>[];
+  Map tableColumns = {};
   Setting();
 
   void removeSetting() {
-    discountColumns = <String>[];
-    discountColumnOrder = <String>[];
-    salesItemPercentageReportColumns = <String>[];
-    salesItemPercentageReportColumnOrder = <String>[];
+    tableColumns = {};
     notifyListeners();
   }
 
-  Map tableColumns(tableName) {
-    switch (tableName) {
-      case 'itemSalesPeriodReport':
-        return {
-          'item_code': 'Kode Item',
-          'item_name': 'Nama Item',
-          'supplier_code': 'Kode Supplier',
-          'item_type_name': 'Jenis/Departemen',
-          'brand_name': 'Merek',
-          'discount_percentage': 'Diskon(%)',
-          'buy_price': 'Harga Pokok',
-          'sell_price': 'Harga Jual',
-          'quantity': 'Jumlah',
-          'subtotal': 'Subtotal',
-          'discount_total': 'Total Diskon',
-          'sales_total': 'Total'
-        };
-      default:
-        return {};
-    }
+  List<String> columnOrder(key) {
+    return tableColumns[key].keys.map<String>((e) => e.toString()).toList();
+  }
+
+  List<String> columnNames(key) {
+    return tableColumns[key].values.map<String>((e) => e.toString()).toList();
   }
 
   String dateTimeFormat(DateTime date) {

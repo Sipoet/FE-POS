@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:fe_pos/tool/datatable.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/model/item_sales_percentage_report.dart';
+import 'package:fe_pos/tool/setting.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/dropdown_remote_connection.dart';
 import 'package:file_picker/file_picker.dart';
@@ -42,57 +43,105 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
   bool _sortAscending = true;
   String? _reportType;
   bool _isDisplayTable = false;
-  List<DataColumn2> _columns = [];
   List<String> _columnOrder = [];
+  final Map<String, ColumnDetail> _columnWidth = {};
+  double minimumColumnWidth = 150;
   SalesPercentageDataSource dataSource = SalesPercentageDataSource();
   late Flash flash;
+  late final Setting setting;
+  double _tableWidth = 4000;
+  final key = GlobalKey<PaginatedDataTable2State>();
 
   @override
   void initState() {
     SessionState sessionState = context.read<SessionState>();
-    flash = Flash(context);
     server = sessionState.server;
-    dataSource.setData([], 'item_code', true);
-    _fetchTableColumn();
+    setting = context.read<Setting>();
+    flash = Flash(context);
+
+    _initTableColumn();
     super.initState();
   }
 
   @override
   bool get wantKeepAlive => true;
 
-  void _fetchTableColumn() async {
-    var response = await server.get('item_sales_percentage_reports/columns');
-    if (response.statusCode != 200) {
-      return;
+  void _initTableColumn() async {
+    Setting setting = context.read<Setting>();
+    List<String> columnNames = setting.columnNames('itemSalesPercentageReport');
+    _columnOrder = setting.columnOrder('itemSalesPercentageReport');
+    for (String columnName in columnNames) {
+      _columnWidth[columnName] =
+          ColumnDetail(initX: 0, width: minimumColumnWidth);
     }
-    Map responseBody = response.data;
-    var data = responseBody['data'] ?? {'column_names': [], 'column_order': []};
-    _columnOrder =
-        data['column_order'].map<String>((row) => row.toString()).toList();
+    dataSource.columnDetails = _columnWidth;
+    dataSource.setData([], _columnOrder[0], true);
     dataSource.setKeys(_columnOrder);
-    _columns = [];
-    setState(() {
-      _tableWidth = 50;
-      data['column_names'].forEach((columnName) {
-        double width = _columnWidth[columnName] ?? 215.0;
-        _tableWidth += width;
-        _columns.add(DataColumn2(
-          tooltip: columnName,
-          fixedWidth: width,
-          onSort: ((columnIndex, ascending) {
-            setState(() {
-              _sortColumnIndex = columnIndex;
-              _sortAscending = ascending;
-            });
-            dataSource.sortData(_columnOrder[_sortColumnIndex], _sortAscending);
-          }),
-          label: Text(
-            columnName,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+  }
+
+  DataColumn generateColumn(String columnName) {
+    ColumnDetail columnDetail = dataSource.columnDetails[columnName] ??
+        ColumnDetail(initX: 0, width: minimumColumnWidth);
+    return DataColumn2(
+      tooltip: columnName,
+      onSort: ((columnIndex, ascending) {
+        setState(() {
+          _sortColumnIndex = columnIndex;
+          _sortAscending = ascending;
+        });
+        dataSource.sortData(_columnOrder[_sortColumnIndex], _sortAscending);
+      }),
+      label: Stack(
+        alignment: AlignmentDirectional.centerStart,
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: 10,
+            width: columnDetail.width - 70,
+            child: Text(
+              columnName,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
-        ));
-      });
-    });
+          Positioned(
+              right: 0,
+              top: 0,
+              child: GestureDetector(
+                  onPanStart: (details) {
+                    setState(() {
+                      columnDetail.initX = details.globalPosition.dx;
+                    });
+                  },
+                  onPanUpdate: (details) {
+                    final increment =
+                        details.globalPosition.dx - columnDetail.initX;
+                    final newWidth = columnDetail.width + increment;
+                    setState(() {
+                      columnDetail.initX = details.globalPosition.dx;
+                      columnDetail.width = newWidth > minimumColumnWidth
+                          ? newWidth
+                          : minimumColumnWidth;
+
+                      _tableWidth = calculateTableWidth();
+                    });
+                  },
+                  child: const Icon(
+                    Icons.drag_indicator_sharp,
+                    size: 20,
+                  )))
+        ],
+      ),
+    );
+  }
+
+  double calculateTableWidth() {
+    double tableWidth = 0;
+    for (ColumnDetail columnDetail in dataSource.columnDetails.values) {
+      tableWidth += columnDetail.width;
+    }
+    return tableWidth;
   }
 
   void _displayReport() async {
@@ -103,7 +152,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
     _reportType = 'json';
     _requestReport().then(_displayDatatable,
         onError: ((error, stackTrace) =>
-            server.defaultResponse(context: context, error: error)));
+            server.defaultErrorResponse(context: context, error: error)));
   }
 
   void _downloadReport() async {
@@ -114,7 +163,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
     _reportType = 'xlsx';
     _requestReport().then(_downloadResponse,
         onError: ((error, stackTrace) =>
-            server.defaultResponse(context: context, error: error)));
+            server.defaultErrorResponse(context: context, error: error)));
   }
 
   Future _requestReport({int? page, int? per}) async {
@@ -162,14 +211,6 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
     }
   }
 
-  final Map _columnWidth = {
-    'Nama Item': 300.0,
-    'Kode Item': 180.0,
-    'Jenis/Departemen': 230.0,
-    'Harga Beli Rata-rata': 230.0,
-    'Persentase Laku Terjual': 180.0,
-  };
-  double _tableWidth = 4000;
   void _displayDatatable(response) async {
     flash.hide();
     if (response.statusCode != 200) {
@@ -180,6 +221,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
       var rawData = data['data'].map<ItemSalesPercentageReport>((row) {
         return ItemSalesPercentageReport.fromJson(row);
       }).toList();
+      key.currentState?.pageTo(1);
       dataSource.setData(
           rawData, _columnOrder[_sortColumnIndex], _sortAscending);
       _isDisplayTable = true;
@@ -221,14 +263,14 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
 
   List<BsSelectBoxOption> convertToOptions(List list) {
     return list
-        .map(((row) => BsSelectBoxOption(
-            value: row['id'],
-            text: Text(
-              row['name'],
-              softWrap: true,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ))))
+        .map(
+          ((row) => BsSelectBoxOption(
+              value: row['id'],
+              text: Tooltip(
+                  message: row['name'],
+                  child: Text(row['name'].substring(
+                      0, row['name'].length < 30 ? row['name'].length : 30))))),
+        )
         .toList();
   }
 
@@ -242,6 +284,12 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
     final DropdownRemoteConnection connection =
         DropdownRemoteConnection(server, context);
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    List<String> columnNames = setting.columnNames('itemSalesPercentageReport');
+    List<DataColumn> columns = [];
+    for (String columnName in columnNames) {
+      columns.add(generateColumn(columnName));
+    }
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -256,8 +304,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
               children: [
                 Container(
                   padding: const EdgeInsets.only(right: 10),
-                  constraints:
-                      const BoxConstraints(maxHeight: 100, maxWidth: 320),
+                  constraints: const BoxConstraints(maxWidth: 350),
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
@@ -281,8 +328,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                 ),
                 Container(
                     padding: const EdgeInsets.only(right: 10),
-                    constraints:
-                        const BoxConstraints(maxHeight: 100, maxWidth: 320),
+                    constraints: const BoxConstraints(maxWidth: 350),
                     child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,8 +353,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                         ])),
                 Container(
                     padding: const EdgeInsets.only(right: 10),
-                    constraints:
-                        const BoxConstraints(maxHeight: 100, maxWidth: 320),
+                    constraints: const BoxConstraints(maxWidth: 350),
                     child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -332,8 +377,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                         ])),
                 Container(
                     padding: const EdgeInsets.only(right: 10),
-                    constraints:
-                        const BoxConstraints(maxHeight: 100, maxWidth: 320),
+                    constraints: const BoxConstraints(maxWidth: 350),
                     child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,20 +418,21 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                 ),
               ],
             ),
-            if (_isDisplayTable) const Divider(),
-            if (_isDisplayTable)
-              SizedBox(
+            Visibility(visible: _isDisplayTable, child: const Divider()),
+            Visibility(
+              visible: _isDisplayTable,
+              child: SizedBox(
                 height: tableHeight,
                 child: PaginatedDataTable2(
+                  key: key,
                   source: dataSource,
                   fixedLeftColumns: 1,
                   sortColumnIndex: _sortColumnIndex,
                   sortAscending: _sortAscending,
                   border: TableBorder.all(
-                      width: 1,
-                      color: colorScheme.onSecondary.withOpacity(0.3)),
+                      width: 1, color: colorScheme.outline.withOpacity(0.5)),
                   empty: const Text('Data tidak ditemukan'),
-                  columns: _columns,
+                  columns: columns,
                   minWidth: _tableWidth,
                   headingRowColor: MaterialStateProperty.resolveWith<Color?>(
                       (Set<MaterialState> states) {
@@ -395,6 +440,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                   }),
                 ),
               ),
+            ),
           ],
         ),
       ),
