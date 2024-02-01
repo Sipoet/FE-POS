@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/discount.dart';
 import 'package:fe_pos/page/discount_form_page.dart';
+import 'package:fe_pos/page/discount_mass_upload_page.dart';
 import 'package:fe_pos/tool/datatable.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
@@ -234,6 +235,26 @@ class _DiscountPageState extends State<DiscountPage> {
     });
   }
 
+  void deleteAllOldDiscount() {
+    var server = _sessionState.server;
+    server.delete('discounts/delete_inactive_past_discount').then((response) {
+      flash.showBanner(
+          title: response.data['message'],
+          description: 'Semua diskon akan diproses',
+          messageType: MessageType.success);
+      refreshTable();
+    }, onError: (error, stack) {
+      server.defaultErrorResponse(context: context, error: error);
+    });
+  }
+
+  void massUploadDiscount() {
+    var tabManager = context.read<TabManager>();
+    setState(() {
+      tabManager.addTab('Mass Upload Diskon', const DiscountMassUploadPage());
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     _source.actionButtons = (discount) => [
@@ -302,9 +323,17 @@ class _DiscountPageState extends State<DiscountPage> {
                       onPressed: () => addForm(),
                     ),
                     MenuItemButton(
-                      child: const Text('Refresh all promotion'),
+                      child: const Text('Refresh Semua promosi'),
                       onPressed: () => refreshAllPromotion(),
-                    )
+                    ),
+                    MenuItemButton(
+                      child: const Text('Hapus Semua Diskon lama'),
+                      onPressed: () => deleteAllOldDiscount(),
+                    ),
+                    MenuItemButton(
+                      child: const Text('Mass Upload'),
+                      onPressed: () => massUploadDiscount(),
+                    ),
                   ], child: const Icon(Icons.table_rows_rounded))
                 ],
               ),

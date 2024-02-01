@@ -107,6 +107,11 @@ class Server {
     return dio.deleteUri(url, data: body, options: generateHeaders(type));
   }
 
+  Future download(String path, String type, var destinationPath) async {
+    return dio.download("https://$host/api/$path", destinationPath,
+        options: generateHeaders(type));
+  }
+
   final Map<String, ResponseType> _responseTypes = {
     'json': ResponseType.json,
     'text': ResponseType.plain,

@@ -19,6 +19,10 @@ class Setting extends ChangeNotifier {
     return tableColumns[key].values.map<String>((e) => e.toString()).toList();
   }
 
+  String dateFormat(DateTime date) {
+    return DateFormat('dd/MM/y', 'id_ID').format(date);
+  }
+
   String dateTimeFormat(DateTime date) {
     return DateFormat('dd/MM/y HH:mm', 'id_ID').format(date);
   }
