@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:fe_pos/model/model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -22,7 +24,7 @@ class Datatable extends DataTableSource {
   Widget _decorateCell(cell) {
     String val = _formatData(cell);
     switch (cell.runtimeType) {
-      case Null:
+      case Void:
       case Date:
       case DateTime:
         return Text(
@@ -45,7 +47,7 @@ class Datatable extends DataTableSource {
 
   String _formatData(cell) {
     switch (cell.runtimeType) {
-      case Null:
+      case Void:
         return '-';
       case Date:
         return _dateFormat(cell);

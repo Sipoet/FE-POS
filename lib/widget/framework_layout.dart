@@ -75,6 +75,13 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                   page: const ItemSalesPeriodReportPage(),
                   key: 'itemSalesPeriodReport',
                 ),
+                Menu(
+                  icon: Icons.pages,
+                  isClosed: true,
+                  label: 'Penjualan Per Supplier',
+                  page: const SalesGroupBySupplierReportPage(),
+                  key: 'salesGroupBySupplierReport',
+                ),
               ])
         ]),
     Menu(
