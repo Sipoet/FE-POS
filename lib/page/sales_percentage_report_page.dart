@@ -37,7 +37,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
       BsSelectBoxController(multiple: true, processing: true);
 
   static const TextStyle _filterLabelStyle =
-      TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
+      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
   late Server server;
   int _sortColumnIndex = 0;
   bool _sortAscending = true;
@@ -50,8 +50,12 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
   late Flash flash;
   late final Setting setting;
   double _tableWidth = 4000;
+  String _storeStockComparison = '';
+  String _storeStockValue = '';
+  String _warehouseStockComparison = '';
+  String _warehouseStockValue = '';
   final key = GlobalKey<PaginatedDataTable2State>();
-
+  final _formKey = GlobalKey<FormState>();
   @override
   void initState() {
     SessionState sessionState = context.read<SessionState>();
@@ -167,19 +171,30 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
   }
 
   Future _requestReport({int? page, int? per}) async {
-    List brands =
-        _brandSelectWidget.getSelectedAll().map((e) => e.getValue()).toList();
+    List brands = _brandSelectWidget
+        .getSelectedAll()
+        .map((e) => e.getValue().trim())
+        .toList();
     List suppliers = _supplierSelectWidget
         .getSelectedAll()
-        .map((e) => e.getValue())
+        .map((e) => e.getValue().trim())
         .toList();
     List itemTypes = _itemTypeSelectWidget
         .getSelectedAll()
-        .map((e) => e.getValue())
+        .map((e) => e.getValue().trim())
         .toList();
-    List items =
-        _itemSelectWidget.getSelectedAll().map((e) => e.getValue()).toList();
-    log('supplier $suppliers, brand $brands, item_types: $itemTypes, item_codes: $items');
+    List items = _itemSelectWidget
+        .getSelectedAll()
+        .map((e) => e.getValue().trim())
+        .toList();
+    String warehouseStock = '$_warehouseStockComparison-$_warehouseStockValue';
+    String storeStock = '$_storeStockComparison-$_storeStockValue';
+    if (warehouseStock == '-') {
+      warehouseStock = '';
+    }
+    if (storeStock == '-') {
+      storeStock = '';
+    }
     return server.get('item_sales_percentage_reports',
         queryParam: {
           'suppliers[]': suppliers,
@@ -187,6 +202,8 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
           'item_types[]': itemTypes,
           'item_codes[]': items,
           'report_type': _reportType,
+          'warehouse_stock': warehouseStock,
+          'store_stock': storeStock,
           if (page != null) 'page': page.toString(),
           if (per != null) 'per': per.toString()
         },
@@ -299,107 +316,235 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
             const Text('Filter',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            Wrap(
-              direction: Axis.horizontal,
-              children: [
-                Container(
-                  padding: const EdgeInsets.only(right: 10),
-                  constraints: const BoxConstraints(maxWidth: 350),
-                  child: Column(
+            Form(
+              key: _formKey,
+              child: Wrap(
+                direction: Axis.horizontal,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.only(right: 10),
+                    constraints: const BoxConstraints(maxWidth: 350),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Padding(
+                              padding: EdgeInsets.only(left: 5, bottom: 5),
+                              child: Text('Merek :', style: _filterLabelStyle)),
+                          Flexible(
+                              child: BsSelectBox(
+                            key: const ValueKey('brandSelect'),
+                            searchable: true,
+                            controller: _brandSelectWidget,
+                            serverSide: (params) async {
+                              var list = await connection.getData('/brands',
+                                  query: params['searchValue'].toString());
+                              return BsSelectBoxResponse(
+                                  options: convertToOptions(list));
+                            },
+                          )),
+                        ]),
+                  ),
+                  Container(
+                      padding: const EdgeInsets.only(right: 10),
+                      constraints: const BoxConstraints(maxWidth: 350),
+                      child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(left: 5, bottom: 5),
+                              child: Text('Jenis/Departemen :',
+                                  style: _filterLabelStyle),
+                            ),
+                            Flexible(
+                                child: BsSelectBox(
+                              key: const ValueKey('itemTypeSelect'),
+                              searchable: true,
+                              controller: _itemTypeSelectWidget,
+                              serverSide: (params) async {
+                                var list = await connection.getData(
+                                    '/item_types',
+                                    query: params['searchValue'].toString());
+                                return BsSelectBoxResponse(
+                                    options: convertToOptions(list));
+                              },
+                            )),
+                          ])),
+                  Container(
+                      padding: const EdgeInsets.only(right: 10),
+                      constraints: const BoxConstraints(maxWidth: 350),
+                      child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(left: 5, bottom: 5),
+                              child:
+                                  Text('Supplier :', style: _filterLabelStyle),
+                            ),
+                            Flexible(
+                                child: BsSelectBox(
+                              key: const ValueKey('supplierSelect'),
+                              searchable: true,
+                              controller: _supplierSelectWidget,
+                              serverSide: (params) async {
+                                var list = await connection.getData(
+                                    '/suppliers',
+                                    query: params['searchValue'].toString());
+                                return BsSelectBoxResponse(
+                                    options: convertToOptions(list));
+                              },
+                            )),
+                          ])),
+                  Container(
+                      padding: const EdgeInsets.only(right: 10),
+                      constraints: const BoxConstraints(maxWidth: 350),
+                      child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(left: 5, bottom: 5),
+                              child: Text('Item :', style: _filterLabelStyle),
+                            ),
+                            Flexible(
+                                child: BsSelectBox(
+                              key: const ValueKey('itemSelect'),
+                              searchable: true,
+                              controller: _itemSelectWidget,
+                              serverSide: (params) async {
+                                var list = await connection.getData('/items',
+                                    query: params['searchValue'].toString());
+                                return BsSelectBoxResponse(
+                                    options: convertToOptions(list));
+                              },
+                            )),
+                          ])),
+                  Container(
+                    width: 350,
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Padding(
-                            padding: EdgeInsets.only(left: 5, bottom: 5),
-                            child: Text('Merek :', style: _filterLabelStyle)),
-                        Flexible(
-                            child: BsSelectBox(
-                          key: const ValueKey('brandSelect'),
-                          searchable: true,
-                          controller: _brandSelectWidget,
-                          serverSide: (params) async {
-                            var list = await connection.getData('/brands',
-                                query: params['searchValue'].toString());
-                            return BsSelectBoxResponse(
-                                options: convertToOptions(list));
-                          },
-                        )),
-                      ]),
-                ),
-                Container(
-                    padding: const EdgeInsets.only(right: 10),
-                    constraints: const BoxConstraints(maxWidth: 350),
-                    child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.only(left: 5, bottom: 5),
-                            child: Text('Jenis/Departemen :',
-                                style: _filterLabelStyle),
-                          ),
-                          Flexible(
-                              child: BsSelectBox(
-                            key: const ValueKey('itemTypeSelect'),
-                            searchable: true,
-                            controller: _itemTypeSelectWidget,
-                            serverSide: (params) async {
-                              var list = await connection.getData('/item_types',
-                                  query: params['searchValue'].toString());
-                              return BsSelectBoxResponse(
-                                  options: convertToOptions(list));
+                        const Text(
+                          'Stok Gudang:',
+                          style: _filterLabelStyle,
+                        ),
+                        SizedBox(
+                          width: 110,
+                          child: DropdownButtonFormField(
+                            decoration: const InputDecoration(
+                                border: OutlineInputBorder()),
+                            onChanged: (value) =>
+                                _warehouseStockComparison = value ?? '',
+                            items: const [
+                              DropdownMenuItem(value: '', child: Text('')),
+                              DropdownMenuItem(
+                                  value: 'eq', child: Text('Sama')),
+                              DropdownMenuItem(value: 'lt', child: Text('<')),
+                              DropdownMenuItem(value: 'gt', child: Text('>')),
+                              DropdownMenuItem(value: 'lte', child: Text('<=')),
+                              DropdownMenuItem(value: 'gte', child: Text('>=')),
+                              DropdownMenuItem(
+                                  value: 'nt', child: Text('Bukan')),
+                            ],
+                            validator: (value) {
+                              if (_warehouseStockValue
+                                      .toString()
+                                      .trim()
+                                      .isNotEmpty &&
+                                  value.toString().trim().isEmpty) {
+                                return 'perbandingan harus diisi';
+                              }
+                              return null;
                             },
-                          )),
-                        ])),
-                Container(
-                    padding: const EdgeInsets.only(right: 10),
-                    constraints: const BoxConstraints(maxWidth: 350),
-                    child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.only(left: 5, bottom: 5),
-                            child: Text('Supplier :', style: _filterLabelStyle),
                           ),
-                          Flexible(
-                              child: BsSelectBox(
-                            key: const ValueKey('supplierSelect'),
-                            searchable: true,
-                            controller: _supplierSelectWidget,
-                            serverSide: (params) async {
-                              var list = await connection.getData('/suppliers',
-                                  query: params['searchValue'].toString());
-                              return BsSelectBoxResponse(
-                                  options: convertToOptions(list));
+                        ),
+                        SizedBox(
+                            width: 80,
+                            child: TextFormField(
+                                keyboardType: TextInputType.number,
+                                onChanged: (value) =>
+                                    _warehouseStockValue = value,
+                                decoration: const InputDecoration(
+                                    border: OutlineInputBorder()),
+                                key: const ValueKey('warehouseStock'),
+                                validator: (value) {
+                                  if (value.toString().trim().isEmpty &&
+                                      _warehouseStockComparison
+                                          .toString()
+                                          .trim()
+                                          .isNotEmpty) {
+                                    return 'harus isi dengan angka';
+                                  }
+                                  return null;
+                                })),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 350,
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Stok Toko:', style: _filterLabelStyle),
+                        SizedBox(
+                          width: 110,
+                          child: DropdownButtonFormField(
+                            decoration: const InputDecoration(
+                                border: OutlineInputBorder()),
+                            onChanged: (value) =>
+                                _storeStockComparison = value ?? '',
+                            items: const [
+                              DropdownMenuItem(value: '', child: Text('')),
+                              DropdownMenuItem(
+                                  value: 'eq', child: Text('Sama')),
+                              DropdownMenuItem(value: 'lt', child: Text('<')),
+                              DropdownMenuItem(value: 'gt', child: Text('>')),
+                              DropdownMenuItem(value: 'lte', child: Text('<=')),
+                              DropdownMenuItem(value: 'gte', child: Text('>=')),
+                              DropdownMenuItem(
+                                  value: 'nt', child: Text('Bukan')),
+                            ],
+                            validator: (value) {
+                              if (_storeStockValue
+                                      .toString()
+                                      .trim()
+                                      .isNotEmpty &&
+                                  value.toString().trim().isEmpty) {
+                                return 'perbandingan harus diisi';
+                              }
+                              return null;
                             },
-                          )),
-                        ])),
-                Container(
-                    padding: const EdgeInsets.only(right: 10),
-                    constraints: const BoxConstraints(maxWidth: 350),
-                    child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.only(left: 5, bottom: 5),
-                            child: Text('Item :', style: _filterLabelStyle),
                           ),
-                          Flexible(
-                              child: BsSelectBox(
-                            key: const ValueKey('itemSelect'),
-                            searchable: true,
-                            controller: _itemSelectWidget,
-                            serverSide: (params) async {
-                              var list = await connection.getData('/items',
-                                  query: params['searchValue'].toString());
-                              return BsSelectBoxResponse(
-                                  options: convertToOptions(list));
-                            },
-                          )),
-                        ])),
-              ],
+                        ),
+                        SizedBox(
+                            width: 80,
+                            child: TextFormField(
+                                onChanged: (value) => _storeStockValue = value,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(
+                                    border: OutlineInputBorder()),
+                                key: const ValueKey('storeStock'),
+                                validator: (value) {
+                                  if (value.toString().trim().isEmpty &&
+                                      _storeStockComparison
+                                          .toString()
+                                          .trim()
+                                          .isNotEmpty) {
+                                    return 'harus isi dengan angka';
+                                  }
+                                  return null;
+                                })),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(
               height: 10,
@@ -409,11 +554,19 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
               spacing: 10,
               children: [
                 ElevatedButton(
-                  onPressed: () => {_displayReport()},
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _displayReport();
+                    }
+                  },
                   child: const Text('Tampilkan'),
                 ),
                 ElevatedButton(
-                  onPressed: () => {_downloadReport()},
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _downloadReport();
+                    }
+                  },
                   child: const Text('Download'),
                 ),
               ],
