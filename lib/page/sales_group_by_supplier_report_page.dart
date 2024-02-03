@@ -47,7 +47,7 @@ class _SalesGroupBySupplierReportPageState
   SalesGroupBySupplierDataSource dataSource = SalesGroupBySupplierDataSource();
   late Flash flash;
   late final Setting setting;
-  double _tableWidth = 1700;
+  final _tableWidth = 1700.0;
   final key = GlobalKey<PaginatedDataTable2State>();
 
   @override
@@ -66,8 +66,6 @@ class _SalesGroupBySupplierReportPageState
 
   void _initTableColumn() async {
     Setting setting = context.read<Setting>();
-    List<String> columnNames =
-        setting.columnNames('salesGroupBySupplierReport');
     _columnOrder = setting.columnOrder('salesGroupBySupplierReport');
 
     dataSource.columnDetails = _columnWidth;
@@ -87,7 +85,7 @@ class _SalesGroupBySupplierReportPageState
       }),
       label: Text(
         columnName,
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
       ),
     );
   }
