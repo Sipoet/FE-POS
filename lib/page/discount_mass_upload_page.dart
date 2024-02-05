@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:fe_pos/model/discount.dart';
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/tool/file_saver.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -149,12 +150,12 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
   }
 
   void downloadMassUploadFile() async {
-    var destinationPath = await FilePicker.platform.saveFile(
-        fileName: 'template_mass_upload_discount.xlsx',
-        type: FileType.custom,
-        allowedExtensions: ['xlsx']);
-    _server.download(
-        'discounts/template_mass_upload_excel', 'xlsx', destinationPath);
+    var fileSaver = const FileSaver();
+    String? path = await fileSaver.downloadPath(
+        'template_mass_upload_discount.xlsx', 'xlsx');
+    if (path != null) {
+      _server.download('discounts/template_mass_upload_excel', 'xlsx', path);
+    }
   }
 
   void submitDiscount() {

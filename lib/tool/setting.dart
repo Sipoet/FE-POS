@@ -21,7 +21,6 @@ class Setting extends ChangeNotifier {
               excelWidth: double.tryParse(row['width'].toString())))
           .toList();
     }
-    print(tableColumns.keys);
   }
 
   List<TableColumn> tableColumn(String key) {

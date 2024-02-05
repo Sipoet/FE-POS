@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/model/item_sales_period_report.dart';
 import 'package:fe_pos/tool/setting.dart';
@@ -6,13 +5,12 @@ import 'package:fe_pos/widget/custom_data_table.dart';
 import 'package:fe_pos/widget/date_range_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/dropdown_remote_connection.dart';
-import 'package:file_picker/file_picker.dart';
+
 import 'package:bs_flutter_selectbox/bs_flutter_selectbox.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:path_provider/path_provider.dart';
+
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
-import 'package:fe_pos/tool/web_downloader.dart';
+import 'package:fe_pos/tool/file_saver.dart';
 
 class ItemSalesPeriodReportPage extends StatefulWidget {
   const ItemSalesPeriodReportPage({super.key});
@@ -108,6 +106,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
   void _downloadResponse(response) async {
     flash.hide();
     if (response.statusCode != 200) {
+      flash.show(const Text('gagal simpan ke excel'), MessageType.failed);
       return;
     }
     String filename = response.headers.value('content-disposition') ?? '';
@@ -116,11 +115,15 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
     }
     filename = filename.substring(
         filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
-    if (response.statusCode == 200) {
-      _saveXlsxPick(filename, response.data);
-    } else {
-      flash.show(const Text('gagal simpan ke excel'), MessageType.failed);
-    }
+
+    var fileSaver = const FileSaver();
+    fileSaver.download(filename, response.data, 'xlsx',
+        onSuccess: (String path) {
+      flash.showBanner(
+          messageType: MessageType.success,
+          title: 'Sukses download',
+          description: 'sukses disimpan di $path');
+    });
   }
 
   void _displayDatatable(response) async {
@@ -136,39 +139,6 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
       _dataSource.setData(rawData);
       _isDisplayTable = true;
     });
-  }
-
-  void _saveXlsxPick(String filename, List<int> bytes) async {
-    String? outputFile;
-    if (kIsWeb) {
-      var webDownloader = const WebDownloader();
-      webDownloader.download(filename, bytes);
-      return;
-    } else if (Platform.isIOS) {
-      Directory? dir = await getDownloadsDirectory();
-      outputFile = "${dir?.path}/$filename";
-    } else if (Platform.isAndroid) {
-      Directory? dir = Directory('/storage/emulated/0/Download');
-      if (!dir.existsSync()) {
-        dir = await getExternalStorageDirectory();
-      }
-      outputFile = "${dir?.path}/$filename";
-    } else if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
-      outputFile = await FilePicker.platform.saveFile(
-          dialogTitle: 'Please select an output file:',
-          fileName: filename,
-          type: FileType.custom,
-          allowedExtensions: ['xlsx']);
-    }
-
-    if (outputFile != null) {
-      File file = File(outputFile);
-      file.writeAsBytesSync(bytes);
-      flash.showBanner(
-          messageType: MessageType.success,
-          title: 'Sukses download',
-          description: 'sukses disimpan di ${file.path}');
-    }
   }
 
   List<BsSelectBoxOption> convertToOptions(List list) {
