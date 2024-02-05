@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:fe_pos/model/sales_group_by_supplier.dart';
-import 'package:fe_pos/tool/datatable.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/widget/custom_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/dropdown_remote_connection.dart';
 import 'package:file_picker/file_picker.dart';
@@ -12,7 +12,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/web_downloader.dart';
-import 'package:data_table_2/data_table_2.dart';
 
 class SalesGroupBySupplierReportPage extends StatefulWidget {
   const SalesGroupBySupplierReportPage({super.key});
@@ -37,18 +36,11 @@ class _SalesGroupBySupplierReportPageState
   static const TextStyle _filterLabelStyle =
       TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
   late Server server;
-  int _sortColumnIndex = 0;
-  bool _sortAscending = true;
   String? _reportType;
   bool _isDisplayTable = false;
-  List<String> _columnOrder = [];
-  final Map<String, ColumnDetail> _columnWidth = {};
-  double minimumColumnWidth = 150;
-  SalesGroupBySupplierDataSource dataSource = SalesGroupBySupplierDataSource();
+  final dataSource = CustomDataTableSource();
   late Flash flash;
   late final Setting setting;
-  final _tableWidth = 1700.0;
-  final key = GlobalKey<PaginatedDataTable2State>();
 
   @override
   void initState() {
@@ -56,39 +48,11 @@ class _SalesGroupBySupplierReportPageState
     server = sessionState.server;
     setting = context.read<Setting>();
     flash = Flash(context);
-
-    _initTableColumn();
     super.initState();
   }
 
   @override
   bool get wantKeepAlive => true;
-
-  void _initTableColumn() async {
-    Setting setting = context.read<Setting>();
-    _columnOrder = setting.columnOrder('salesGroupBySupplierReport');
-
-    dataSource.columnDetails = _columnWidth;
-    dataSource.setData([], _columnOrder[0], true);
-    dataSource.setKeys(_columnOrder);
-  }
-
-  DataColumn generateColumn(String columnName) {
-    return DataColumn2(
-      tooltip: columnName,
-      onSort: ((columnIndex, ascending) {
-        setState(() {
-          _sortColumnIndex = columnIndex;
-          _sortAscending = ascending;
-        });
-        dataSource.sortData(_columnOrder[_sortColumnIndex], _sortAscending);
-      }),
-      label: Text(
-        columnName,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-      ),
-    );
-  }
 
   void _displayReport() async {
     flash.show(
@@ -165,9 +129,7 @@ class _SalesGroupBySupplierReportPageState
       var rawData = data['data'].map<SalesGroupBySupplier>((row) {
         return SalesGroupBySupplier.fromJson(row);
       }).toList();
-      key.currentState?.pageTo(1);
-      dataSource.setData(
-          rawData, _columnOrder[_sortColumnIndex], _sortAscending);
+      dataSource.setData(rawData);
       _isDisplayTable = true;
     });
   }
@@ -227,13 +189,7 @@ class _SalesGroupBySupplierReportPageState
     tableHeight = tableHeight > 600 ? 600 : tableHeight;
     final DropdownRemoteConnection connection =
         DropdownRemoteConnection(server, context);
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    List<String> columnNames =
-        setting.columnNames('salesGroupBySupplierReport');
-    List<DataColumn> columns = [];
-    for (String columnName in columnNames) {
-      columns.add(generateColumn(columnName));
-    }
+    dataSource.columns = setting.tableColumn('salesGroupBySupplierReport');
 
     return SingleChildScrollView(
       child: Padding(
@@ -344,21 +300,10 @@ class _SalesGroupBySupplierReportPageState
               visible: _isDisplayTable,
               child: SizedBox(
                 height: tableHeight,
-                child: PaginatedDataTable2(
-                  key: key,
-                  source: dataSource,
+                child: CustomDataTable(
+                  controller: dataSource,
                   fixedLeftColumns: 1,
-                  sortColumnIndex: _sortColumnIndex,
-                  sortAscending: _sortAscending,
-                  border: TableBorder.all(
-                      width: 1, color: colorScheme.outline.withOpacity(0.5)),
-                  empty: const Text('Data tidak ditemukan'),
-                  columns: columns,
-                  minWidth: _tableWidth,
-                  headingRowColor: MaterialStateProperty.resolveWith<Color?>(
-                      (Set<MaterialState> states) {
-                    return colorScheme.secondaryContainer.withOpacity(0.08);
-                  }),
+                  columns: dataSource.columns,
                 ),
               ),
             ),
@@ -368,5 +313,3 @@ class _SalesGroupBySupplierReportPageState
     );
   }
 }
-
-class SalesGroupBySupplierDataSource extends Datatable {}

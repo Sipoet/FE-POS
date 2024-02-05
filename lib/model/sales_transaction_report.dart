@@ -28,18 +28,20 @@ class SalesTransactionReport extends Model {
 
   @override
   factory SalesTransactionReport.fromJson(Map<String, dynamic> json) {
+    var attributes = json['attributes'];
     return SalesTransactionReport(
       range: DateTimeRange(
-          start: DateTime.parse(json['start_time']),
-          end: DateTime.parse(json['end_time'])),
-      totalSales: Money.tryParse(json['sales_total']) ?? const Money(0),
-      totalDebit: Money.tryParse(json['debit_total']) ?? const Money(0),
-      totalCredit: Money.tryParse(json['credit_total']) ?? const Money(0),
-      totalCash: Money.tryParse(json['cash_total']) ?? const Money(0),
-      totalOnline: Money.tryParse(json['online_total']) ?? const Money(0),
-      totalQRIS: Money.tryParse(json['qris_total']) ?? const Money(0),
-      totalDiscount: Money.tryParse(json['discount_total']) ?? const Money(0),
-      totalTransaction: json['num_of_transaction'] ?? 0,
+          start: DateTime.parse(attributes['start_time']),
+          end: DateTime.parse(attributes['end_time'])),
+      totalSales: Money.tryParse(attributes['sales_total']) ?? const Money(0),
+      totalDebit: Money.tryParse(attributes['debit_total']) ?? const Money(0),
+      totalCredit: Money.tryParse(attributes['credit_total']) ?? const Money(0),
+      totalCash: Money.tryParse(attributes['cash_total']) ?? const Money(0),
+      totalOnline: Money.tryParse(attributes['online_total']) ?? const Money(0),
+      totalQRIS: Money.tryParse(attributes['qris_total']) ?? const Money(0),
+      totalDiscount:
+          Money.tryParse(attributes['discount_total']) ?? const Money(0),
+      totalTransaction: attributes['num_of_transaction'] ?? 0,
     );
   }
 

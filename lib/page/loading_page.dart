@@ -40,7 +40,7 @@ class _LoadingPageState extends State<LoadingPage>
     setting = context.read<Setting>();
     server.get('settings').then((response) {
       if (response.statusCode == 200) {
-        setting.tableColumns = response.data['data']['table_columns'];
+        setting.setTableColumns(response.data['data']['table_columns']);
       }
     }).whenComplete(() {
       controller.stop();

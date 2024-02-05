@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'package:fe_pos/tool/datatable.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/model/item_sales_period_report.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/widget/custom_data_table.dart';
 import 'package:fe_pos/widget/date_range_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/dropdown_remote_connection.dart';
@@ -13,7 +13,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/web_downloader.dart';
-import 'package:data_table_2/data_table_2.dart';
 
 class ItemSalesPeriodReportPage extends StatefulWidget {
   const ItemSalesPeriodReportPage({super.key});
@@ -40,52 +39,19 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
   static const TextStyle _filterLabelStyle =
       TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
   late Server server;
-  int _sortColumnIndex = 0;
-  bool _sortAscending = true;
   String? _reportType;
   bool _isDisplayTable = false;
-  final List<DataColumn2> _columns = [];
-  List<String> _columnOrder = [];
-  final ItemSalesPeriodDataSource _dataSource = ItemSalesPeriodDataSource();
+  final _dataSource = CustomDataTableSource();
   DateTimeRange _dateRange = DateTimeRange(
       start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
       end: DateTime.now().copyWith(hour: 23, minute: 59, second: 59));
   late Flash flash;
-  final key = GlobalKey<PaginatedDataTable2State>();
   @override
   void initState() {
     SessionState sessionState = context.read<SessionState>();
     flash = Flash(context);
     server = sessionState.server;
-    _fetchTableColumn();
-    _dataSource.setData([], 'item_code', true);
     super.initState();
-  }
-
-  void _fetchTableColumn() {
-    Setting setting = context.read<Setting>();
-    List columnNames = setting.columnNames('itemSalesPercentageReport');
-    _columnOrder = setting.columnOrder('itemSalesPercentageReport');
-    _dataSource.setKeys(_columnOrder);
-
-    for (String columnName in columnNames) {
-      double width = _columnWidth[columnName] ?? 215.0;
-      _columns.add(DataColumn2(
-        tooltip: columnName,
-        fixedWidth: width,
-        onSort: ((columnIndex, ascending) {
-          setState(() {
-            _sortColumnIndex = columnIndex;
-            _sortAscending = ascending;
-          });
-          _dataSource.sortData(_columnOrder[_sortColumnIndex], _sortAscending);
-        }),
-        label: Text(
-          columnName,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-      ));
-    }
   }
 
   void _displayReport() async {
@@ -157,14 +123,6 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
     }
   }
 
-  final Map _columnWidth = {
-    'Nama Item': 300.0,
-    'Kode Item': 180.0,
-    'Jenis/Departemen': 230.0,
-    'Harga Beli Rata-rata': 230.0,
-    'Persentase Laku Terjual': 180.0,
-  };
-
   void _displayDatatable(response) async {
     flash.hide();
     if (response.statusCode != 200) {
@@ -172,12 +130,10 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
     }
     var data = response.data;
     setState(() {
-      key.currentState?.pageTo(1);
       var rawData = data['data'].map<ItemSalesPeriodReport>((row) {
         return ItemSalesPeriodReport.fromJson(row);
       }).toList();
-      _dataSource.setData(
-          rawData, _columnOrder[_sortColumnIndex], _sortAscending);
+      _dataSource.setData(rawData);
       _isDisplayTable = true;
     });
   }
@@ -240,7 +196,9 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
     double tableHeight =
         MediaQuery.of(context).size.height - padding.top - padding.bottom - 150;
     tableHeight = tableHeight > 600 ? 600 : tableHeight;
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    var setting = context.read<Setting>();
+    _dataSource.columns = setting.tableColumn('itemSalesPeriodReport');
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -395,22 +353,10 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
             if (_isDisplayTable)
               SizedBox(
                 height: tableHeight,
-                child: PaginatedDataTable2(
-                  key: key,
-                  source: _dataSource,
+                child: CustomDataTable(
+                  controller: _dataSource,
                   fixedLeftColumns: 1,
-                  sortColumnIndex: _sortColumnIndex,
-                  sortAscending: _sortAscending,
-                  border: TableBorder.all(
-                      width: 1,
-                      color: colorScheme.onSecondary.withOpacity(0.3)),
-                  empty: const Text('Data tidak ditemukan'),
-                  columns: _columns,
-                  minWidth: 4000,
-                  headingRowColor: MaterialStateProperty.resolveWith<Color?>(
-                      (Set<MaterialState> states) {
-                    return colorScheme.secondaryContainer.withOpacity(0.08);
-                  }),
+                  columns: _dataSource.columns,
                 ),
               ),
           ],
@@ -419,5 +365,3 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
     );
   }
 }
-
-class ItemSalesPeriodDataSource extends Datatable {}

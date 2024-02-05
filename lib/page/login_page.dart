@@ -161,7 +161,7 @@ class _LoginPageState extends State<LoginPage> {
     Setting setting = context.read<Setting>();
     server.get('settings').then((response) {
       if (response.statusCode == 200) {
-        setting.tableColumns = response.data['data']['table_columns'];
+        setting.setTableColumns(response.data['data']['table_columns']);
       }
     }).whenComplete(() {
       _redirectToHomePage();

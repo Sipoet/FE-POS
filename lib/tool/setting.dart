@@ -1,9 +1,9 @@
+import 'package:fe_pos/tool/datatable.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:fe_pos/tool/custom_type.dart';
 
 class Setting extends ChangeNotifier {
-  Map tableColumns = {};
+  Map<String, List<TableColumn>> tableColumns = {};
   Setting();
 
   void removeSetting() {
@@ -11,12 +11,21 @@ class Setting extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<String> columnOrder(key) {
-    return tableColumns[key].keys.map<String>((e) => e.toString()).toList();
+  void setTableColumns(Map<String, dynamic> data) {
+    for (final key in data.keys.toList()) {
+      tableColumns[key] = data[key]!
+          .map<TableColumn>((row) => TableColumn(
+              key: row['name'],
+              name: row['humanize_name'],
+              type: row['type'],
+              excelWidth: double.tryParse(row['width'].toString())))
+          .toList();
+    }
+    print(tableColumns.keys);
   }
 
-  List<String> columnNames(key) {
-    return tableColumns[key].values.map<String>((e) => e.toString()).toList();
+  List<TableColumn> tableColumn(String key) {
+    return tableColumns[key] ?? [];
   }
 
   String dateFormat(DateTime date) {

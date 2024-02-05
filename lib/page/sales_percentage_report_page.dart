@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'package:fe_pos/tool/datatable.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/model/item_sales_percentage_report.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/widget/custom_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/dropdown_remote_connection.dart';
 import 'package:file_picker/file_picker.dart';
@@ -12,7 +12,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/web_downloader.dart';
-import 'package:data_table_2/data_table_2.dart';
 
 class SalesPercentageReportPage extends StatefulWidget {
   const SalesPercentageReportPage({super.key});
@@ -39,22 +38,16 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
   static const TextStyle _filterLabelStyle =
       TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
   late Server server;
-  int _sortColumnIndex = 0;
-  bool _sortAscending = true;
   String? _reportType;
   bool _isDisplayTable = false;
-  List<String> _columnOrder = [];
-  final Map<String, ColumnDetail> _columnWidth = {};
   double minimumColumnWidth = 150;
-  SalesPercentageDataSource dataSource = SalesPercentageDataSource();
+  final dataSource = CustomDataTableSource();
   late Flash flash;
   late final Setting setting;
-  double _tableWidth = 4000;
   String _storeStockComparison = '';
   String _storeStockValue = '';
   String _warehouseStockComparison = '';
   String _warehouseStockValue = '';
-  final key = GlobalKey<PaginatedDataTable2State>();
   final _formKey = GlobalKey<FormState>();
   @override
   void initState() {
@@ -62,91 +55,11 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
     server = sessionState.server;
     setting = context.read<Setting>();
     flash = Flash(context);
-
-    _initTableColumn();
     super.initState();
   }
 
   @override
   bool get wantKeepAlive => true;
-
-  void _initTableColumn() async {
-    Setting setting = context.read<Setting>();
-    List<String> columnNames = setting.columnNames('itemSalesPercentageReport');
-    _columnOrder = setting.columnOrder('itemSalesPercentageReport');
-    for (String columnName in columnNames) {
-      _columnWidth[columnName] =
-          ColumnDetail(initX: 0, width: minimumColumnWidth);
-    }
-    dataSource.columnDetails = _columnWidth;
-    dataSource.setData([], _columnOrder[0], true);
-    dataSource.setKeys(_columnOrder);
-  }
-
-  DataColumn generateColumn(String columnName) {
-    ColumnDetail columnDetail = dataSource.columnDetails[columnName] ??
-        ColumnDetail(initX: 0, width: minimumColumnWidth);
-    return DataColumn2(
-      tooltip: columnName,
-      onSort: ((columnIndex, ascending) {
-        setState(() {
-          _sortColumnIndex = columnIndex;
-          _sortAscending = ascending;
-        });
-        dataSource.sortData(_columnOrder[_sortColumnIndex], _sortAscending);
-      }),
-      label: Stack(
-        alignment: AlignmentDirectional.centerStart,
-        clipBehavior: Clip.none,
-        children: [
-          Positioned(
-            left: 10,
-            width: columnDetail.width - 70,
-            child: Text(
-              columnName,
-              overflow: TextOverflow.ellipsis,
-              softWrap: false,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Positioned(
-              right: 0,
-              top: 0,
-              child: GestureDetector(
-                  onPanStart: (details) {
-                    setState(() {
-                      columnDetail.initX = details.globalPosition.dx;
-                    });
-                  },
-                  onPanUpdate: (details) {
-                    final increment =
-                        details.globalPosition.dx - columnDetail.initX;
-                    final newWidth = columnDetail.width + increment;
-                    setState(() {
-                      columnDetail.initX = details.globalPosition.dx;
-                      columnDetail.width = newWidth > minimumColumnWidth
-                          ? newWidth
-                          : minimumColumnWidth;
-
-                      _tableWidth = calculateTableWidth();
-                    });
-                  },
-                  child: const Icon(
-                    Icons.drag_indicator_sharp,
-                    size: 20,
-                  )))
-        ],
-      ),
-    );
-  }
-
-  double calculateTableWidth() {
-    double tableWidth = 0;
-    for (ColumnDetail columnDetail in dataSource.columnDetails.values) {
-      tableWidth += columnDetail.width;
-    }
-    return tableWidth;
-  }
 
   void _displayReport() async {
     flash.show(
@@ -235,12 +148,10 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
     }
     var data = response.data;
     setState(() {
-      var rawData = data['data'].map<ItemSalesPercentageReport>((row) {
+      var models = data['data'].map<ItemSalesPercentageReport>((row) {
         return ItemSalesPercentageReport.fromJson(row);
       }).toList();
-      key.currentState?.pageTo(1);
-      dataSource.setData(
-          rawData, _columnOrder[_sortColumnIndex], _sortAscending);
+      dataSource.setData(models);
       _isDisplayTable = true;
     });
   }
@@ -295,18 +206,12 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
   Widget build(BuildContext context) {
     super.build(context);
     final padding = MediaQuery.of(context).padding;
-    double tableHeight =
-        MediaQuery.of(context).size.height - padding.top - padding.bottom - 150;
+    final size = MediaQuery.of(context).size;
+    double tableHeight = size.height - padding.top - padding.bottom - 150;
     tableHeight = tableHeight > 600 ? 600 : tableHeight;
     final DropdownRemoteConnection connection =
         DropdownRemoteConnection(server, context);
-    ColorScheme colorScheme = Theme.of(context).colorScheme;
-    List<String> columnNames = setting.columnNames('itemSalesPercentageReport');
-    List<DataColumn> columns = [];
-    for (String columnName in columnNames) {
-      columns.add(generateColumn(columnName));
-    }
-
+    dataSource.columns = setting.tableColumn('itemSalesPercentageReport');
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -576,21 +481,9 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
               visible: _isDisplayTable,
               child: SizedBox(
                 height: tableHeight,
-                child: PaginatedDataTable2(
-                  key: key,
-                  source: dataSource,
-                  fixedLeftColumns: 1,
-                  sortColumnIndex: _sortColumnIndex,
-                  sortAscending: _sortAscending,
-                  border: TableBorder.all(
-                      width: 1, color: colorScheme.outline.withOpacity(0.5)),
-                  empty: const Text('Data tidak ditemukan'),
-                  columns: columns,
-                  minWidth: _tableWidth,
-                  headingRowColor: MaterialStateProperty.resolveWith<Color?>(
-                      (Set<MaterialState> states) {
-                    return colorScheme.secondaryContainer.withOpacity(0.08);
-                  }),
+                child: CustomDataTable(
+                  controller: dataSource,
+                  columns: dataSource.columns,
                 ),
               ),
             ),
@@ -600,5 +493,3 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
     );
   }
 }
-
-class SalesPercentageDataSource extends Datatable {}

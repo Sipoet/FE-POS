@@ -1,35 +1,37 @@
-import 'dart:ffi';
-
+import 'package:data_table_2/data_table_2.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 export 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-class Datatable extends DataTableSource {
+class CustomDataTableSource extends DataTableSource {
+  late List<TableColumn> columns;
   late List<Model> sortedData;
-  late List<String> keys;
-  late Map<String, ColumnDetail> columnDetails = {};
+  String? sortColumn;
+  bool isAscending = true;
   Function? actionButtons;
+  final paginatorController = PaginatorController();
 
-  DataCell decorateValue(cell, key) {
-    var columnDetail = columnDetails[key] ?? ColumnDetail(initX: 0, width: 150);
+  DataCell decorateValue(dynamic cell, TableColumn column) {
     return DataCell(Tooltip(
       message: _formatData(cell),
       triggerMode: TooltipTriggerMode.tap,
-      child: SizedBox(width: columnDetail.width, child: _decorateCell(cell)),
+      child: _decorateCell(cell),
     ));
   }
 
   Widget _decorateCell(cell) {
     String val = _formatData(cell);
     switch (cell.runtimeType) {
-      case Void:
       case Date:
       case DateTime:
-        return Text(
-          val,
-          overflow: TextOverflow.ellipsis,
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Text(
+            val,
+            overflow: TextOverflow.ellipsis,
+          ),
         );
       case Money:
       case double:
@@ -41,14 +43,15 @@ class Datatable extends DataTableSource {
               overflow: TextOverflow.ellipsis,
             ));
       default:
-        return Text(val);
+        return Align(alignment: Alignment.topLeft, child: Text(val));
     }
   }
 
   String _formatData(cell) {
+    if (cell == null) {
+      return '-';
+    }
     switch (cell.runtimeType) {
-      case Void:
-        return '-';
       case Date:
         return _dateFormat(cell);
       case DateTime:
@@ -83,24 +86,21 @@ class Datatable extends DataTableSource {
     return formated.format(number);
   }
 
-  void setData(
-    List<Model> rawData,
-    String sortColumn,
-    bool sortAscending,
-  ) {
+  void setData(List<Model> rawData) {
     sortedData = rawData;
-    sortData(sortColumn, sortAscending);
+    sortData(sortColumn ?? columns[0].key, isAscending);
+    if (paginatorController.isAttached) {
+      paginatorController.goToFirstPage();
+    }
   }
 
-  void setKeys(List<String> keys) {
-    this.keys = keys;
-  }
-
-  void sortData(String sortColumn, bool sortAscending) {
+  void sortData(String sortColumn, bool isAscending) {
+    this.sortColumn = sortColumn;
+    this.isAscending = isAscending;
     sortedData.sort((Model a, Model b) {
       var cellA = a.toMap()[sortColumn] ?? '';
       var cellB = b.toMap()[sortColumn] ?? '';
-      return cellA.compareTo(cellB) * (sortAscending ? 1 : -1);
+      return cellA.compareTo(cellB) * (isAscending ? 1 : -1);
     });
     notifyListeners();
   }
@@ -110,8 +110,9 @@ class Datatable extends DataTableSource {
 
   List<DataCell> decorateModel(model) {
     var jsonData = model.toMap();
-    var rows =
-        keys.map<DataCell>((key) => decorateValue(jsonData[key], key)).toList();
+    var rows = columns
+        .map<DataCell>((column) => decorateValue(jsonData[column.key], column))
+        .toList();
     if (actionButtons != null) {
       rows.add(DataCell(Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -138,8 +139,23 @@ class Datatable extends DataTableSource {
   int get selectedRowCount => 0;
 }
 
-class ColumnDetail {
+class TableColumn {
   double initX;
   double width;
-  ColumnDetail({required this.initX, required this.width});
+  double? excelWidth;
+  String key;
+  String type;
+  String name;
+
+  TableColumn(
+      {this.initX = 0,
+      this.width = 175,
+      this.excelWidth,
+      this.type = 'string',
+      required this.key,
+      required this.name});
+
+  bool isNumeric() {
+    return ['float', 'decimal', 'int', 'money', 'percentage'].contains(type);
+  }
 }
