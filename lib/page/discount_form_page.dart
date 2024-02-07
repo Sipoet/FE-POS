@@ -28,14 +28,27 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final BsSelectBoxController _itemSelectWidget;
   late DropdownRemoteConnection connection;
   late Flash flash;
+  late final BsSelectBoxController _blacklistBrandSelectWidget;
+
+  late final BsSelectBoxController _blacklistSupplierSelectWidget;
+
+  late final BsSelectBoxController _blacklistItemTypeSelectWidget;
   final _formKey = GlobalKey<FormState>();
   Discount get discount => widget.discount;
-
+  late final TextEditingController _discount2Controller;
+  late final TextEditingController _discount3Controller;
+  late final TextEditingController _discount4Controller;
   @override
   bool get wantKeepAlive => true;
 
   @override
   void initState() {
+    _discount2Controller =
+        TextEditingController(text: discount.discount2.toString());
+    _discount3Controller =
+        TextEditingController(text: discount.discount3.toString());
+    _discount4Controller =
+        TextEditingController(text: discount.discount4.toString());
     var sessionState = context.read<SessionState>();
     connection = DropdownRemoteConnection(sessionState.server, context);
     _brandSelectWidget = BsSelectBoxController(
@@ -79,6 +92,39 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                 BsSelectBoxOption(
                     value: discount.itemCode,
                     text: Text(discount.itemCode as String))
+              ]
+            : null);
+
+    _blacklistBrandSelectWidget = BsSelectBoxController(
+        multiple: false,
+        processing: true,
+        selected: discount.blacklistBrandName != null
+            ? <BsSelectBoxOption>[
+                BsSelectBoxOption(
+                    value: discount.blacklistBrandName,
+                    text: Text(discount.blacklistBrandName as String))
+              ]
+            : null);
+
+    _blacklistSupplierSelectWidget = BsSelectBoxController(
+        multiple: false,
+        processing: true,
+        selected: discount.blacklistSupplierCode != null
+            ? <BsSelectBoxOption>[
+                BsSelectBoxOption(
+                    value: discount.blacklistSupplierCode,
+                    text: Text(discount.blacklistSupplierCode as String))
+              ]
+            : null);
+
+    _blacklistItemTypeSelectWidget = BsSelectBoxController(
+        multiple: false,
+        processing: true,
+        selected: discount.blacklistItemType != null
+            ? <BsSelectBoxOption>[
+                BsSelectBoxOption(
+                    value: discount.blacklistItemType,
+                    text: Text(discount.blacklistItemType as String))
               ]
             : null);
     flash = Flash(context);
@@ -230,6 +276,106 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                           options: convertToOptions(list));
                     },
                   )),
+                  Text(
+                    'Blacklist Jenis/Departemen :',
+                    style: labelStyle,
+                  ),
+                  Flexible(
+                      child: BsSelectBox(
+                    key: const ValueKey('blacklistItemTypeSelect'),
+                    searchable: true,
+                    controller: _blacklistItemTypeSelectWidget,
+                    onChange: (option) {
+                      discount.blacklistItemType = option.getValueAsString();
+                    },
+                    serverSide: (params) async {
+                      var list = await connection.getData('/item_types',
+                          query: params['searchValue'].toString());
+                      return BsSelectBoxResponse(
+                          options: convertToOptions(list));
+                    },
+                  )),
+                  Text(
+                    'Blacklist Supplier:',
+                    style: labelStyle,
+                  ),
+                  Flexible(
+                      child: BsSelectBox(
+                    key: const ValueKey('blacklistSupplierSelect'),
+                    searchable: true,
+                    onChange: (option) {
+                      discount.blacklistSupplierCode =
+                          option.getValueAsString();
+                    },
+                    controller: _blacklistSupplierSelectWidget,
+                    serverSide: (params) async {
+                      var list = await connection.getData('/suppliers',
+                          query: params['searchValue'].toString());
+                      return BsSelectBoxResponse(
+                          options: convertToOptions(list));
+                    },
+                  )),
+                  Text(
+                    'Blacklist Merek:',
+                    style: labelStyle,
+                  ),
+                  Flexible(
+                      child: BsSelectBox(
+                    key: const ValueKey('blacklistBrandSelect'),
+                    searchable: true,
+                    onChange: (option) {
+                      discount.blacklistBrandName = option.getValueAsString();
+                    },
+                    controller: _blacklistBrandSelectWidget,
+                    serverSide: (params) async {
+                      var list = await connection.getData('/brands',
+                          query: params['searchValue'].toString());
+                      return BsSelectBoxResponse(
+                          options: convertToOptions(list));
+                    },
+                  )),
+                  Text(
+                    'Tipe Kalkulasi:',
+                    style: labelStyle,
+                  ),
+                  Row(
+                    children: [
+                      Radio<DiscountCalculationType>(
+                        value: DiscountCalculationType.percentage,
+                        groupValue: discount.calculationType,
+                        onChanged: (value) {
+                          setState(() {
+                            discount.calculationType =
+                                value ?? DiscountCalculationType.percentage;
+                            _discount2Controller.text =
+                                discount.discount2.toString();
+                            _discount3Controller.text =
+                                discount.discount3.toString();
+                            _discount4Controller.text =
+                                discount.discount4.toString();
+                          });
+                        },
+                      ),
+                      const Text('percentage'),
+                      Radio<DiscountCalculationType>(
+                        value: DiscountCalculationType.nominal,
+                        groupValue: discount.calculationType,
+                        onChanged: (value) {
+                          setState(() {
+                            discount.calculationType =
+                                value ?? DiscountCalculationType.percentage;
+                            discount.discount2 = const Percentage(0);
+                            _discount2Controller.text = '0';
+                            _discount3Controller.text = '0';
+                            _discount4Controller.text = '0';
+                            discount.discount3 = discount.discount2;
+                            discount.discount4 = discount.discount2;
+                          });
+                        },
+                      ),
+                      const Text('nominal'),
+                    ],
+                  ),
                   Flexible(
                       child: TextFormField(
                     enableSuggestions: false,
@@ -268,18 +414,35 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       var valDouble = Percentage.tryParse(value ?? '');
                       if (valDouble == null || valDouble.isNaN) {
                         return 'tidak valid';
-                      } else if (valDouble >= 100 || valDouble < 0) {
-                        return 'range valid antara 0 - 100';
+                      }
+                      if (discount.calculationType ==
+                          DiscountCalculationType.percentage) {
+                        if (valDouble >= 100 || valDouble < 0) {
+                          return 'range valid antara 0 - 100';
+                        }
+                        return null;
+                      } else if (discount.calculationType ==
+                          DiscountCalculationType.nominal) {
+                        if (valDouble <= 0) {
+                          return 'harus lebih besar dari 0';
+                        }
+                        return null;
                       }
                       return null;
                     },
                     onChanged: ((value) => discount.discount1 =
                         Percentage.tryParse(value) ?? const Percentage(0.0)),
-                    initialValue: discount.discount1.toString(),
+                    initialValue: discount.calculationType ==
+                            DiscountCalculationType.percentage
+                        ? discount.discount1.toString()
+                        : discount.discount1Nominal.toString(),
                   )),
                   Flexible(
                       child: TextFormField(
                     enableSuggestions: false,
+                    controller: _discount2Controller,
+                    readOnly: discount.calculationType ==
+                        DiscountCalculationType.nominal,
                     decoration: InputDecoration(
                       label: Text(
                         'Diskon 2',
@@ -298,11 +461,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     },
                     onChanged: ((value) =>
                         discount.discount2 = Percentage.tryParse(value)),
-                    initialValue: discount.discount2.toString(),
                   )),
                   Flexible(
                       child: TextFormField(
                     enableSuggestions: false,
+                    readOnly: discount.calculationType ==
+                        DiscountCalculationType.nominal,
+                    controller: _discount3Controller,
                     decoration: InputDecoration(
                       label: Text(
                         'Diskon 3',
@@ -321,11 +486,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     },
                     onChanged: ((value) =>
                         discount.discount3 = Percentage.tryParse(value)),
-                    initialValue: discount.discount3.toString(),
                   )),
                   Flexible(
                       child: TextFormField(
                     enableSuggestions: false,
+                    readOnly: discount.calculationType ==
+                        DiscountCalculationType.nominal,
+                    controller: _discount4Controller,
                     decoration: InputDecoration(
                       label: Text(
                         'Diskon 4',
@@ -344,7 +511,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     },
                     onChanged: ((value) =>
                         discount.discount4 = Percentage.tryParse(value)),
-                    initialValue: discount.discount4.toString(),
                   )),
                   const SizedBox(
                     height: 10,

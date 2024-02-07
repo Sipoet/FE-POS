@@ -38,7 +38,8 @@ class Flash extends ChangeNotifier {
   void showBanner(
       {String title = '',
       String description = '',
-      required MessageType messageType}) {
+      required MessageType messageType,
+      Duration? duration}) {
     hide();
     messenger = ScaffoldMessenger.of(context);
     MaterialColor color = _colorBasedMessageType(messageType);
@@ -70,9 +71,10 @@ class Flash extends ChangeNotifier {
       ],
     ));
     if (messageType == MessageType.success) {
-      Future.delayed(const Duration(seconds: 3), () {
-        hide();
-      });
+      duration = const Duration(seconds: 3);
+    }
+    if (duration != null) {
+      Future.delayed(duration, hide);
     }
   }
 

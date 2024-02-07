@@ -24,6 +24,7 @@ class CustomDataTableSource extends DataTableSource {
   Widget _decorateCell(cell) {
     String val = _formatData(cell);
     switch (cell.runtimeType) {
+      case Null:
       case Date:
       case DateTime:
         return Align(
@@ -52,6 +53,8 @@ class CustomDataTableSource extends DataTableSource {
       return '-';
     }
     switch (cell.runtimeType) {
+      case Null:
+        return '-';
       case Date:
         return _dateFormat(cell);
       case DateTime:
