@@ -16,15 +16,17 @@ class DiscountMassUploadPage extends StatefulWidget {
 
 class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
     with AutomaticKeepAliveClientMixin {
-  List _discounts = <Discount>[];
+  List<Discount> _discounts = <Discount>[];
   late Server _server;
   late Setting _setting;
+  late final DiscountMassUploadDatatableSource _source;
   List<bool> selected = [];
   @override
   void initState() {
     var sessionState = context.read<SessionState>();
     _server = sessionState.server;
     _setting = context.read<Setting>();
+    _source = DiscountMassUploadDatatableSource(setting: _setting);
     super.initState();
   }
 
@@ -36,6 +38,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
     super.build(context);
     var headerStyle =
         const TextStyle(fontWeight: FontWeight.bold, fontSize: 16);
+
     return SingleChildScrollView(
         child: Container(
       alignment: Alignment.center,
@@ -58,9 +61,10 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
           ),
           Visibility(
             visible: _discounts.isNotEmpty,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
+            child: SizedBox(
+              child: PaginatedDataTable(
+                showFirstLastButtons: true,
+                rowsPerPage: 10,
                 columns: [
                   DataColumn(
                     label: Text('Kode Supplier', style: headerStyle),
@@ -102,18 +106,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
                     label: Text('Status', style: headerStyle),
                   ),
                 ],
-                rows: List<DataRow>.generate(
-                  _discounts.length,
-                  (int index) => DataRow(
-                    cells: decorateDiscount(_discounts[index]),
-                    selected: selected[index],
-                    onSelectChanged: (bool? value) {
-                      setState(() {
-                        selected[index] = value!;
-                      });
-                    },
-                  ),
-                ),
+                source: _source,
               ),
             ),
           ),
@@ -134,24 +127,6 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
     ));
   }
 
-  List<DataCell> decorateDiscount(Discount discount) {
-    return <DataCell>[
-      DataCell(SelectableText(discount.supplierCode ?? '')),
-      DataCell(SelectableText(discount.brandName ?? '')),
-      DataCell(SelectableText(discount.itemType ?? '')),
-      DataCell(SelectableText(discount.itemCode ?? '')),
-      DataCell(SelectableText(discount.calculationType.toString())),
-      DataCell(SelectableText(discount.weight.toString())),
-      DataCell(SelectableText(discount.discount1.toString())),
-      DataCell(SelectableText(discount.discount2.toString())),
-      DataCell(SelectableText(discount.discount3.toString())),
-      DataCell(SelectableText(discount.discount4.toString())),
-      DataCell(SelectableText(_setting.dateTimeFormat(discount.startTime))),
-      DataCell(SelectableText(_setting.dateTimeFormat(discount.endTime))),
-      DataCell(SelectableText(discount.id == null ? 'Draft' : 'Saved')),
-    ];
-  }
-
   void downloadMassUploadFile() async {
     var destinationPath = await FilePicker.platform.saveFile(
         fileName: 'template_mass_upload_discount.xlsx',
@@ -161,34 +136,39 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
         'discounts/template_mass_upload_excel', 'xlsx', destinationPath);
   }
 
-  void submitDiscount() {
+  void submitDiscount() async {
     for (final (index, Discount discount) in _discounts.indexed) {
-      if (selected[index]) {
-        createOrUpdateDiscount(discount, index);
+      if (_source.selected[index]) {
+        await createOrUpdateDiscount(discount, index);
       }
     }
   }
 
-  void createOrUpdateDiscount(Discount discount, int index) {
+  Future createOrUpdateDiscount(Discount discount, int index) async {
     Map body = {'discount': discount};
-    Future request;
+    dynamic request;
     if (discount.id == null) {
-      request = _server.post('discounts', body: body);
+      request = await _server.post('discounts', body: body);
     } else {
-      request = _server.put('discounts/${discount.id}', body: body);
+      request = await _server.put('discounts/${discount.id}', body: body);
     }
-    request.then((response) {
-      if ([200, 201].contains(response.statusCode)) {
-        var data = response.data['data'];
+    if ([200, 201].contains(request.statusCode)) {
+      var data = request.data['data'];
+      setState(() {
         if (discount.id == null) {
-          setState(() {
-            discount.id = int.tryParse(data['id']);
-            discount.code = data['attributes']['code'];
-            selected[index] = false;
-          });
+          discount.id = int.tryParse(data['id']);
+          discount.code = data['attributes']['code'];
         }
-      }
-    });
+        _source.selected[index] = false;
+        _source.setStatus(index, 'saved');
+      });
+    } else {
+      setState(() {
+        _source.setStatus(index, 'failed');
+      });
+    }
+
+    return request;
   }
 
   void pickFile() async {
@@ -201,16 +181,15 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
 
     setState(() {
       _discounts = [];
-      selected = [];
       for (final (index, row) in excel.tables['master']!.rows.indexed) {
         if (index < 2 || row[5]?.value == null) {
           continue;
         }
         final discount = Discount(
-          supplierCode: row[0]?.value.toString(),
-          brandName: row[1]?.value.toString(),
-          itemType: row[2]?.value.toString(),
-          itemCode: row[3]?.value.toString(),
+          supplierCode: row[0]?.value?.toString(),
+          brandName: row[1]?.value?.toString(),
+          itemType: row[2]?.value?.toString(),
+          itemCode: row[3]?.value?.toString(),
           calculationType: row[4]?.value.toString() == 'percentage'
               ? DiscountCalculationType.percentage
               : DiscountCalculationType.nominal,
@@ -222,9 +201,72 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
           startTime: DateTime.parse(row[10]?.value.toString() ?? ''),
           endTime: DateTime.parse(row[11]?.value.toString() ?? ''),
         );
-        selected.add(true);
         _discounts.add(discount);
       }
+
+      _source.setData(_discounts);
     });
   }
+}
+
+class DiscountMassUploadDatatableSource extends DataTableSource {
+  List<Discount> rows = [];
+  List selected = [];
+  List status = [];
+  final Setting setting;
+
+  DiscountMassUploadDatatableSource({required this.setting});
+
+  void setData(data) {
+    rows = data;
+    selected = List.generate(rows.length, (index) => true);
+    status = List.generate(rows.length, (index) => 'Draft');
+    notifyListeners();
+  }
+
+  void setStatus(index, newStatus) {
+    status[index] = newStatus;
+    notifyListeners();
+  }
+
+  @override
+  int get rowCount => rows.length;
+
+  @override
+  DataRow? getRow(int index) {
+    return DataRow(
+      key: ObjectKey(rows[index]),
+      cells: decorateDiscount(index),
+      selected: selected[index],
+      onSelectChanged: (bool? value) {
+        selected[index] = value!;
+        notifyListeners();
+      },
+    );
+  }
+
+  List<DataCell> decorateDiscount(int index) {
+    final discount = rows[index];
+    return <DataCell>[
+      DataCell(SelectableText(discount.supplierCode ?? '')),
+      DataCell(SelectableText(discount.brandName ?? '')),
+      DataCell(SelectableText(discount.itemType ?? '')),
+      DataCell(SelectableText(discount.itemCode ?? '')),
+      DataCell(SelectableText(discount.calculationType.toString())),
+      DataCell(SelectableText(discount.weight.toString())),
+      DataCell(SelectableText(discount.discount1.toString())),
+      DataCell(SelectableText(discount.discount2.toString())),
+      DataCell(SelectableText(discount.discount3.toString())),
+      DataCell(SelectableText(discount.discount4.toString())),
+      DataCell(SelectableText(setting.dateTimeFormat(discount.startTime))),
+      DataCell(SelectableText(setting.dateTimeFormat(discount.endTime))),
+      DataCell(SelectableText(status[index] ?? 'Draft')),
+    ];
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get selectedRowCount => 0;
 }
