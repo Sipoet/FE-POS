@@ -75,6 +75,9 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
                     label: Text('Kode Item', style: headerStyle),
                   ),
                   DataColumn(
+                    label: Text('Tipe Kalkulasi', style: headerStyle),
+                  ),
+                  DataColumn(
                     label: Text('Level', style: headerStyle),
                   ),
                   DataColumn(
@@ -137,6 +140,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
       DataCell(SelectableText(discount.brandName ?? '')),
       DataCell(SelectableText(discount.itemType ?? '')),
       DataCell(SelectableText(discount.itemCode ?? '')),
+      DataCell(SelectableText(discount.calculationType.toString())),
       DataCell(SelectableText(discount.weight.toString())),
       DataCell(SelectableText(discount.discount1.toString())),
       DataCell(SelectableText(discount.discount2.toString())),
@@ -207,13 +211,16 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
           brandName: row[1]?.value.toString(),
           itemType: row[2]?.value.toString(),
           itemCode: row[3]?.value.toString(),
-          weight: int.parse(row[4]?.value.toString() ?? ''),
-          discount1: Percentage.parse(row[5]?.value?.toString() ?? '0'),
-          discount2: Percentage.parse(row[6]?.value?.toString() ?? '0'),
-          discount3: Percentage.parse(row[7]?.value?.toString() ?? '0'),
-          discount4: Percentage.parse(row[8]?.value?.toString() ?? '0'),
-          startTime: DateTime.parse(row[9]?.value.toString() ?? ''),
-          endTime: DateTime.parse(row[10]?.value.toString() ?? ''),
+          calculationType: row[4]?.value.toString() == 'percentage'
+              ? DiscountCalculationType.percentage
+              : DiscountCalculationType.nominal,
+          weight: int.parse(row[5]?.value.toString() ?? ''),
+          discount1: Percentage.parse(row[6]?.value?.toString() ?? '0'),
+          discount2: Percentage.parse(row[7]?.value?.toString() ?? '0'),
+          discount3: Percentage.parse(row[8]?.value?.toString() ?? '0'),
+          discount4: Percentage.parse(row[9]?.value?.toString() ?? '0'),
+          startTime: DateTime.parse(row[10]?.value.toString() ?? ''),
+          endTime: DateTime.parse(row[11]?.value.toString() ?? ''),
         );
         selected.add(true);
         _discounts.add(discount);

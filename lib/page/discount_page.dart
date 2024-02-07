@@ -146,6 +146,7 @@ class _DiscountPageState extends State<DiscountPage> {
         discount2: const Percentage(0.0),
         discount3: const Percentage(0.0),
         discount4: const Percentage(0.0),
+        calculationType: DiscountCalculationType.percentage,
         startTime: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
         endTime: DateTime.now().copyWith(hour: 23, minute: 59, second: 59));
     var tabManager = context.read<TabManager>();
@@ -217,7 +218,8 @@ class _DiscountPageState extends State<DiscountPage> {
       flash.showBanner(
           title: 'Refresh akan diproses',
           description: 'diskon ${discount.code} akan diproses',
-          messageType: MessageType.info);
+          messageType: MessageType.info,
+          duration: const Duration(seconds: 3));
     }, onError: (error, stack) {
       server.defaultErrorResponse(context: context, error: error);
     });
@@ -229,7 +231,8 @@ class _DiscountPageState extends State<DiscountPage> {
       flash.showBanner(
           title: 'Refresh akan diproses',
           description: 'Semua diskon akan diproses',
-          messageType: MessageType.info);
+          messageType: MessageType.info,
+          duration: const Duration(seconds: 3));
     }, onError: (error, stack) {
       server.defaultErrorResponse(context: context, error: error);
     });

@@ -28,6 +28,11 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final BsSelectBoxController _itemSelectWidget;
   late DropdownRemoteConnection connection;
   late Flash flash;
+  late final BsSelectBoxController _blacklistBrandSelectWidget;
+
+  late final BsSelectBoxController _blacklistSupplierSelectWidget;
+
+  late final BsSelectBoxController _blacklistItemTypeSelectWidget;
   final _formKey = GlobalKey<FormState>();
   Discount get discount => widget.discount;
 
@@ -79,6 +84,39 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                 BsSelectBoxOption(
                     value: discount.itemCode,
                     text: Text(discount.itemCode as String))
+              ]
+            : null);
+
+    _blacklistBrandSelectWidget = BsSelectBoxController(
+        multiple: false,
+        processing: true,
+        selected: discount.blacklistBrandName != null
+            ? <BsSelectBoxOption>[
+                BsSelectBoxOption(
+                    value: discount.blacklistBrandName,
+                    text: Text(discount.blacklistBrandName as String))
+              ]
+            : null);
+
+    _blacklistSupplierSelectWidget = BsSelectBoxController(
+        multiple: false,
+        processing: true,
+        selected: discount.blacklistSupplierCode != null
+            ? <BsSelectBoxOption>[
+                BsSelectBoxOption(
+                    value: discount.blacklistSupplierCode,
+                    text: Text(discount.blacklistSupplierCode as String))
+              ]
+            : null);
+
+    _blacklistItemTypeSelectWidget = BsSelectBoxController(
+        multiple: false,
+        processing: true,
+        selected: discount.blacklistItemType != null
+            ? <BsSelectBoxOption>[
+                BsSelectBoxOption(
+                    value: discount.blacklistItemType,
+                    text: Text(discount.blacklistItemType as String))
               ]
             : null);
     flash = Flash(context);
@@ -230,6 +268,94 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                           options: convertToOptions(list));
                     },
                   )),
+                  Text(
+                    'Blacklist Jenis/Departemen :',
+                    style: labelStyle,
+                  ),
+                  Flexible(
+                      child: BsSelectBox(
+                    key: const ValueKey('blacklistItemTypeSelect'),
+                    searchable: true,
+                    controller: _blacklistItemTypeSelectWidget,
+                    onChange: (option) {
+                      discount.blacklistItemType = option.getValueAsString();
+                    },
+                    serverSide: (params) async {
+                      var list = await connection.getData('/item_types',
+                          query: params['searchValue'].toString());
+                      return BsSelectBoxResponse(
+                          options: convertToOptions(list));
+                    },
+                  )),
+                  Text(
+                    'Blacklist Supplier:',
+                    style: labelStyle,
+                  ),
+                  Flexible(
+                      child: BsSelectBox(
+                    key: const ValueKey('blacklistSupplierSelect'),
+                    searchable: true,
+                    onChange: (option) {
+                      discount.blacklistSupplierCode =
+                          option.getValueAsString();
+                    },
+                    controller: _blacklistSupplierSelectWidget,
+                    serverSide: (params) async {
+                      var list = await connection.getData('/suppliers',
+                          query: params['searchValue'].toString());
+                      return BsSelectBoxResponse(
+                          options: convertToOptions(list));
+                    },
+                  )),
+                  Text(
+                    'Blacklist Merek:',
+                    style: labelStyle,
+                  ),
+                  Flexible(
+                      child: BsSelectBox(
+                    key: const ValueKey('blacklistBrandSelect'),
+                    searchable: true,
+                    onChange: (option) {
+                      discount.blacklistBrandName = option.getValueAsString();
+                    },
+                    controller: _blacklistBrandSelectWidget,
+                    serverSide: (params) async {
+                      var list = await connection.getData('/brands',
+                          query: params['searchValue'].toString());
+                      return BsSelectBoxResponse(
+                          options: convertToOptions(list));
+                    },
+                  )),
+                  Text(
+                    'Tipe Kalkulasi:',
+                    style: labelStyle,
+                  ),
+                  Row(
+                    children: [
+                      Radio<DiscountCalculationType>(
+                        value: DiscountCalculationType.percentage,
+                        groupValue: discount.calculationType,
+                        onChanged: (value) {
+                          setState(() {
+                            discount.calculationType =
+                                value ?? DiscountCalculationType.percentage;
+                          });
+                        },
+                      ),
+                      const Text('percentage'),
+                      Radio<DiscountCalculationType>(
+                        value: DiscountCalculationType.nominal,
+                        groupValue: discount.calculationType,
+                        onChanged: (value) {
+                          setState(() {
+                            discount.calculationType =
+                                value ?? DiscountCalculationType.percentage;
+                          });
+                        },
+                      ),
+                      const Text('nominal'),
+                    ],
+                  ),
                   Flexible(
                       child: TextFormField(
                     enableSuggestions: false,
@@ -268,14 +394,28 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       var valDouble = Percentage.tryParse(value ?? '');
                       if (valDouble == null || valDouble.isNaN) {
                         return 'tidak valid';
-                      } else if (valDouble >= 100 || valDouble < 0) {
-                        return 'range valid antara 0 - 100';
+                      }
+                      if (discount.calculationType ==
+                          DiscountCalculationType.percentage) {
+                        if (valDouble >= 100 || valDouble < 0) {
+                          return 'range valid antara 0 - 100';
+                        }
+                        return null;
+                      } else if (discount.calculationType ==
+                          DiscountCalculationType.nominal) {
+                        if (valDouble <= 0) {
+                          return 'harus lebih besar dari 0';
+                        }
+                        return null;
                       }
                       return null;
                     },
                     onChanged: ((value) => discount.discount1 =
                         Percentage.tryParse(value) ?? const Percentage(0.0)),
-                    initialValue: discount.discount1.toString(),
+                    initialValue: discount.calculationType ==
+                            DiscountCalculationType.percentage
+                        ? discount.discount1.toString()
+                        : discount.discount1Nominal.toString(),
                   )),
                   Flexible(
                       child: TextFormField(
