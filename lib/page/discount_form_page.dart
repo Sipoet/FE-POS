@@ -35,12 +35,20 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final BsSelectBoxController _blacklistItemTypeSelectWidget;
   final _formKey = GlobalKey<FormState>();
   Discount get discount => widget.discount;
-
+  late final TextEditingController _discount2Controller;
+  late final TextEditingController _discount3Controller;
+  late final TextEditingController _discount4Controller;
   @override
   bool get wantKeepAlive => true;
 
   @override
   void initState() {
+    _discount2Controller =
+        TextEditingController(text: discount.discount2.toString());
+    _discount3Controller =
+        TextEditingController(text: discount.discount3.toString());
+    _discount4Controller =
+        TextEditingController(text: discount.discount4.toString());
     var sessionState = context.read<SessionState>();
     connection = DropdownRemoteConnection(sessionState.server, context);
     _brandSelectWidget = BsSelectBoxController(
@@ -339,6 +347,12 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                           setState(() {
                             discount.calculationType =
                                 value ?? DiscountCalculationType.percentage;
+                            _discount2Controller.text =
+                                discount.discount2.toString();
+                            _discount3Controller.text =
+                                discount.discount3.toString();
+                            _discount4Controller.text =
+                                discount.discount4.toString();
                           });
                         },
                       ),
@@ -350,6 +364,12 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                           setState(() {
                             discount.calculationType =
                                 value ?? DiscountCalculationType.percentage;
+                            discount.discount2 = const Percentage(0);
+                            _discount2Controller.text = '0';
+                            _discount3Controller.text = '0';
+                            _discount4Controller.text = '0';
+                            discount.discount3 = discount.discount2;
+                            discount.discount4 = discount.discount2;
                           });
                         },
                       ),
@@ -420,6 +440,9 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   Flexible(
                       child: TextFormField(
                     enableSuggestions: false,
+                    controller: _discount2Controller,
+                    readOnly: discount.calculationType ==
+                        DiscountCalculationType.nominal,
                     decoration: InputDecoration(
                       label: Text(
                         'Diskon 2',
@@ -438,11 +461,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     },
                     onChanged: ((value) =>
                         discount.discount2 = Percentage.tryParse(value)),
-                    initialValue: discount.discount2.toString(),
                   )),
                   Flexible(
                       child: TextFormField(
                     enableSuggestions: false,
+                    readOnly: discount.calculationType ==
+                        DiscountCalculationType.nominal,
+                    controller: _discount3Controller,
                     decoration: InputDecoration(
                       label: Text(
                         'Diskon 3',
@@ -461,11 +486,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     },
                     onChanged: ((value) =>
                         discount.discount3 = Percentage.tryParse(value)),
-                    initialValue: discount.discount3.toString(),
                   )),
                   Flexible(
                       child: TextFormField(
                     enableSuggestions: false,
+                    readOnly: discount.calculationType ==
+                        DiscountCalculationType.nominal,
+                    controller: _discount4Controller,
                     decoration: InputDecoration(
                       label: Text(
                         'Diskon 4',
@@ -484,7 +511,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     },
                     onChanged: ((value) =>
                         discount.discount4 = Percentage.tryParse(value)),
-                    initialValue: discount.discount4.toString(),
                   )),
                   const SizedBox(
                     height: 10,

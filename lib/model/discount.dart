@@ -1,5 +1,4 @@
 import 'package:fe_pos/model/model.dart';
-import 'package:flutter/foundation.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
 enum DiscountCalculationType {
@@ -74,7 +73,7 @@ class Discount extends Model {
         supplierCode: attributes['supplier_code'],
         brandName: attributes['brand_name'],
         calculationType: DiscountCalculationType.convertFromString(
-            attributes['calculation_type']),
+            attributes['calculation_type'].toString()),
         blacklistItemType: attributes['blacklist_item_type_name'],
         blacklistSupplierCode: attributes['blacklist_supplier_code'],
         blacklistBrandName: attributes['blacklist_brand_name'],
