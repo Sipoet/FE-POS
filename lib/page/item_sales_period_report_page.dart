@@ -326,7 +326,6 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                 child: CustomDataTable(
                   controller: _dataSource,
                   fixedLeftColumns: 1,
-                  columns: _dataSource.columns,
                 ),
               ),
           ],

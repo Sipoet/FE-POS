@@ -8,7 +8,6 @@ class CustomDataTable extends StatefulWidget {
   final Future<List<Model>> Function(
       int page, String orderKey, bool isAscending)? onPageChanged;
   final CustomDataTableSource controller;
-  final List<TableColumn> columns;
   final int fixedLeftColumns;
   final List<Widget>? actions;
   final Widget? header;
@@ -19,7 +18,6 @@ class CustomDataTable extends StatefulWidget {
     this.actions,
     this.header,
     this.fixedLeftColumns = 1,
-    required this.columns,
   });
 
   @override
@@ -27,21 +25,19 @@ class CustomDataTable extends StatefulWidget {
 }
 
 class _CustomDataTableState extends State<CustomDataTable> {
-  late final CustomDataTableSource _dataSource;
   int _sortColumnIndex = 0;
   bool _sortAscending = true;
   final minimumColumnWidth = 100.0;
-
+  List<TableColumn> get columns => _dataSource.columns;
+  CustomDataTableSource get _dataSource => widget.controller;
   @override
   void initState() {
-    _dataSource = widget.controller;
-
     super.initState();
   }
 
   double calculateTableWidth() {
     double width = 100;
-    for (TableColumn column in widget.columns) {
+    for (TableColumn column in columns) {
       width += column.width;
     }
     return width;
@@ -69,7 +65,7 @@ class _CustomDataTableState extends State<CustomDataTable> {
       border: TableBorder.all(
           width: 1, color: colorScheme.outline.withOpacity(0.5)),
       empty: const Text('Data tidak ditemukan'),
-      columns: (widget.columns + actions).map<DataColumn2>((tableColumn) {
+      columns: (columns + actions).map<DataColumn2>((tableColumn) {
         return DataColumn2(
           tooltip: tableColumn.name,
           numeric: true,

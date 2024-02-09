@@ -16,50 +16,59 @@ class DiscountPage extends StatefulWidget {
   State<DiscountPage> createState() => _DiscountPageState();
 }
 
-class _DiscountPageState extends State<DiscountPage> {
+class _DiscountPageState extends State<DiscountPage>
+    with AutomaticKeepAliveClientMixin {
   final _source = CustomDataTableSource();
   late final SessionState _sessionState;
   bool _isDisplayTable = false;
   String _searchText = '';
   List<Discount> discounts = [];
-  Future? requestController;
+  final cancelToken = CancelToken();
   late Flash flash;
+
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   void initState() {
     _sessionState = context.read<SessionState>();
     flash = Flash(context);
+    final setting = context.read<Setting>();
+    _source.columns = setting.tableColumn('discount');
     refreshTable();
     super.initState();
   }
 
   @override
   void dispose() {
-    if (requestController != null) {
-      requestController?.ignore();
-    }
-
+    cancelToken.cancel();
     super.dispose();
   }
 
   Future<void> refreshTable() async {
-    discounts = []; // clear table row
+    // clear table row
     setState(() {
+      discounts = [];
       _isDisplayTable = false;
     });
-    requestController = fetchDiscounts(page: 1);
+    fetchDiscounts(page: 1);
   }
 
   Future fetchDiscounts({int page = 1}) {
     var server = _sessionState.server;
     String orderKey = _source.sortColumn ?? 'code';
     try {
-      return server.get('discounts', queryParam: {
-        'search_text': _searchText,
-        'page': page.toString(),
-        'per': '100',
-        'order_key': orderKey,
-        'is_order_asc': _source.isAscending.toString(),
-      }).then((response) {
+      return server
+          .get('discounts',
+              queryParam: {
+                'search_text': _searchText,
+                'page': page.toString(),
+                'per': '100',
+                'order_key': orderKey,
+                'is_order_asc': _source.isAscending.toString(),
+              },
+              cancelToken: cancelToken)
+          .then((response) {
         if (response.statusCode != 200) {
           throw 'error: ${response.data.toString()}';
         }
@@ -71,19 +80,18 @@ class _DiscountPageState extends State<DiscountPage> {
             .map<Discount>((json) => Discount.fromJson(json))
             .toList());
         setState(() {
-          _source.setData(discounts);
           _isDisplayTable = true;
+          _source.setData(discounts);
         });
+
         flash.hide();
         int totalPages = responseBody['meta']?['total_pages'];
         if (page < totalPages.toInt()) {
-          requestController = fetchDiscounts(page: page + 1);
-        } else {
-          requestController = null;
+          fetchDiscounts(page: page + 1);
         }
       },
-          onError: (error, stackTrace) => server.defaultErrorResponse(
-              context: context, error: error, valueWhenError: []));
+              onError: (error, stackTrace) => server.defaultErrorResponse(
+                  context: context, error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
           title: e.toString(),
@@ -213,6 +221,7 @@ class _DiscountPageState extends State<DiscountPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     _source.actionButtons = (discount) => [
           IconButton(
               onPressed: () {
@@ -233,8 +242,21 @@ class _DiscountPageState extends State<DiscountPage> {
               tooltip: 'Hapus diskon',
               icon: const Icon(Icons.delete)),
         ];
-    var setting = context.read<Setting>();
-    _source.columns = setting.tableColumn('discount');
+
+    void searchChanged(value) {
+      String container = _searchText;
+      setState(() {
+        if (value.length >= 3) {
+          _searchText = value;
+        } else {
+          _searchText = '';
+        }
+      });
+      if (container != _searchText) {
+        refreshTable();
+      }
+    }
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -260,19 +282,8 @@ class _DiscountPageState extends State<DiscountPage> {
                     child: TextField(
                       decoration:
                           const InputDecoration(hintText: 'Search Text'),
-                      onChanged: (value) {
-                        String container = _searchText;
-                        setState(() {
-                          if (value.length >= 3) {
-                            _searchText = value;
-                          } else {
-                            _searchText = '';
-                          }
-                        });
-                        if (container != _searchText) {
-                          refreshTable();
-                        }
-                      },
+                      onChanged: searchChanged,
+                      onSubmitted: searchChanged,
                     ),
                   ),
                   SubmenuButton(menuChildren: [
@@ -300,7 +311,6 @@ class _DiscountPageState extends State<DiscountPage> {
               SizedBox(
                 height: 600,
                 child: CustomDataTable(
-                  columns: _source.columns,
                   controller: _source,
                   fixedLeftColumns: 1,
                 ),

@@ -452,7 +452,6 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                 height: tableHeight,
                 child: CustomDataTable(
                   controller: dataSource,
-                  columns: dataSource.columns,
                 ),
               ),
             ),

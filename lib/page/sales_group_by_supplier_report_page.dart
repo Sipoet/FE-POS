@@ -273,7 +273,6 @@ class _SalesGroupBySupplierReportPageState
                 child: CustomDataTable(
                   controller: dataSource,
                   fixedLeftColumns: 1,
-                  columns: dataSource.columns,
                 ),
               ),
             ),

@@ -119,7 +119,6 @@ class _SalesTransactionReportPageState
                 child: CustomDataTable(
                   controller: dataSource,
                   fixedLeftColumns: 1,
-                  columns: dataSource.columns,
                 ),
               ),
           ],

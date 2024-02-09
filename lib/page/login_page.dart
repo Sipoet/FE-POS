@@ -87,7 +87,9 @@ class _LoginPageState extends State<LoginPage> {
                   onSaved: (newValue) {
                     _password = newValue.toString().trim();
                   },
-                  onChanged: ((value) {}),
+                  onChanged: ((value) {
+                    _password = value.toString().trim();
+                  }),
                   validator: (value) {
                     if (value == null || value.toString().trim().isEmpty) {
                       return 'password belum diisi';
@@ -95,6 +97,13 @@ class _LoginPageState extends State<LoginPage> {
                       return 'password tidak boleh ada spasi';
                     }
                     return null;
+                  },
+                  onFieldSubmitted: (value) {
+                    // Validate returns true if the form is valid, or false otherwise.
+                    if (_formKey.currentState!.validate()) {
+                      flash.show(const Text('Loading'), MessageType.info);
+                      _submit(sessionState);
+                    }
                   },
                 ),
                 Align(

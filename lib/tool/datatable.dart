@@ -11,7 +11,7 @@ class CustomDataTableSource extends DataTableSource {
   String? sortColumn;
   bool isAscending = true;
   Function? actionButtons;
-  final paginatorController = PaginatorController();
+  PaginatorController? paginatorController;
 
   DataCell decorateValue(dynamic cell, TableColumn column) {
     return DataCell(Tooltip(
@@ -90,11 +90,12 @@ class CustomDataTableSource extends DataTableSource {
   }
 
   void setData(List<Model> rawData) {
-    sortedData = rawData;
-    sortData(sortColumn ?? columns[0].key, isAscending);
-    if (paginatorController.isAttached) {
-      paginatorController.goToFirstPage();
+    if (paginatorController != null && paginatorController!.isAttached) {
+      paginatorController?.goToFirstPage();
     }
+    sortedData = rawData;
+
+    sortData(sortColumn ?? columns[0].key, isAscending);
   }
 
   void sortData(String sortColumn, bool isAscending) {
