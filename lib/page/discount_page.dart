@@ -16,8 +16,7 @@ class DiscountPage extends StatefulWidget {
   State<DiscountPage> createState() => _DiscountPageState();
 }
 
-class _DiscountPageState extends State<DiscountPage>
-    with AutomaticKeepAliveClientMixin {
+class _DiscountPageState extends State<DiscountPage> {
   final _source = CustomDataTableSource();
   late final SessionState _sessionState;
   bool _isDisplayTable = false;
@@ -26,8 +25,8 @@ class _DiscountPageState extends State<DiscountPage>
   final cancelToken = CancelToken();
   late Flash flash;
 
-  @override
-  bool get wantKeepAlive => true;
+  // @override
+  // bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -221,7 +220,7 @@ class _DiscountPageState extends State<DiscountPage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    // super.build(context);
     _source.actionButtons = (discount) => [
           IconButton(
               onPressed: () {
