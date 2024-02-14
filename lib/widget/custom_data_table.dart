@@ -11,12 +11,14 @@ class CustomDataTable extends StatefulWidget {
   final int fixedLeftColumns;
   final List<Widget>? actions;
   final Widget? header;
+  final bool showCheckboxColumn;
   const CustomDataTable({
     super.key,
     required this.controller,
     this.onPageChanged,
     this.actions,
     this.header,
+    this.showCheckboxColumn = false,
     this.fixedLeftColumns = 1,
   });
 
@@ -58,6 +60,7 @@ class _CustomDataTableState extends State<CustomDataTable> {
       source: _dataSource,
       actions: widget.actions,
       header: widget.header,
+      showCheckboxColumn: widget.showCheckboxColumn,
       fixedLeftColumns: widget.fixedLeftColumns,
       sortColumnIndex: _sortColumnIndex,
       sortAscending: _sortAscending,
@@ -102,7 +105,7 @@ class _CustomDataTableState extends State<CustomDataTable> {
                         });
                       },
                       child: const Icon(
-                        Icons.drag_indicator_sharp,
+                        Icons.switch_left,
                         size: 20,
                       ))),
               Positioned(

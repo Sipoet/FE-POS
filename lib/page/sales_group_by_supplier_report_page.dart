@@ -272,7 +272,7 @@ class _SalesGroupBySupplierReportPageState
                 height: tableHeight,
                 child: CustomDataTable(
                   controller: dataSource,
-                  fixedLeftColumns: 1,
+                  fixedLeftColumns: 3,
                 ),
               ),
             ),

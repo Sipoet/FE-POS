@@ -13,6 +13,7 @@ class AsyncDropdownFormField extends FormField<List<BsSelectBoxOption>?> {
     ValueChanged<List<BsSelectBoxOption>?>? onChanged,
     List<BsSelectBoxOption>? selected,
     required String path,
+    String? attributeKey,
     BsSelectBoxController? controller,
     super.validator,
     Widget? label,
@@ -36,7 +37,9 @@ class AsyncDropdownFormField extends FormField<List<BsSelectBoxOption>?> {
                   if (label != null) label,
                   AsyncDropdown(
                     selected: selected,
+                    attributeKey: attributeKey,
                     path: path,
+                    controller: controller,
                     side: state.hasError
                         ? const BorderSide(color: Colors.red, width: 1)
                         : BorderSide(color: Colors.grey.shade300, width: 1),
@@ -66,10 +69,12 @@ class AsyncDropdown extends StatefulWidget {
       this.multiple = false,
       this.width,
       this.onChanged,
+      this.attributeKey,
       this.selected})
       : super(key: key);
 
   final String path;
+  final String? attributeKey;
   final int minCharSearch;
   final double? width;
   final BsSelectBoxController? controller;
@@ -87,6 +92,7 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
       label: 'Data tidak Ditemukan', value: '', enabled: false);
   late final Server server;
   late final BsSelectBoxController _controller;
+
   @override
   void initState() {
     var sessionState = context.read<SessionState>();
@@ -96,6 +102,7 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
             multiple: widget.multiple,
             processing: true,
             selected: widget.selected);
+
     super.initState();
   }
 
@@ -119,6 +126,7 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
 
   @override
   Widget build(BuildContext context) {
+    var colorScheme = Theme.of(context).colorScheme;
     return BsSelectBox(
       searchable: true,
       onChange: (value) {
@@ -142,29 +150,36 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
   }
 
   Future<List<BsSelectBoxOption>> getData({String query = ''}) async {
-    var response = await server
-        .get(widget.path, queryParam: {'query': query}).onError(
-            (error, stackTrace) => {
-                  server.defaultErrorResponse(
-                      context: context, error: error, valueWhenError: [])
-                });
+    var response = await server.get(widget.path, queryParam: {
+      'query': query,
+    }).onError((error, stackTrace) => {
+          server.defaultErrorResponse(
+              context: context, error: error, valueWhenError: [])
+        });
     if (response.statusCode == 200) {
       Map responseBody = response.data;
       return convertToOptions(responseBody['data']);
     } else {
-      // return [];
       throw 'cant connect to server';
     }
   }
 
   List<BsSelectBoxOption> convertToOptions(List list) {
+    final nameOf = widget.attributeKey == null
+        ? (row) => row['name']
+        : (row) => row['attributes'][widget.attributeKey];
+
     return list
         .map<BsSelectBoxOption>((row) => BsSelectBoxOption(
-            value: row['id'],
-            text: Text(
-              row['name'],
-              overflow: TextOverflow.ellipsis,
-            )))
+              value: row['id'],
+              searchable: "${row['id']} ${row['name']}",
+              text: Text(
+                nameOf(row),
+                softWrap: true,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ))
         .toList();
   }
 }

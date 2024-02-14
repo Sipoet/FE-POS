@@ -3,7 +3,6 @@ import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
-import 'package:fe_pos/widget/dropdown_remote_connection.dart';
 import 'package:fe_pos/widget/date_range_picker.dart';
 import 'package:fe_pos/model/discount.dart';
 
@@ -19,7 +18,6 @@ class DiscountFormPage extends StatefulWidget {
 
 class _DiscountFormPageState extends State<DiscountFormPage>
     with AutomaticKeepAliveClientMixin {
-  late DropdownRemoteConnection connection;
   late Flash flash;
 
   final _formKey = GlobalKey<FormState>();
@@ -38,20 +36,9 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         TextEditingController(text: discount.discount3Nominal.toString());
     _discount4Controller =
         TextEditingController(text: discount.discount4Nominal.toString());
-    var sessionState = context.read<SessionState>();
-    connection = DropdownRemoteConnection(sessionState.server, context);
 
     flash = Flash(context);
     super.initState();
-  }
-
-  List<BsSelectBoxOption> convertToOptions(List list) {
-    return list
-        .map(((row) => BsSelectBoxOption(
-            value: row['id'],
-            text: Text(row['name'].substring(
-                0, row['name'].length < 16 ? row['name'].length : 16)))))
-        .toList();
   }
 
   void _submit() async {

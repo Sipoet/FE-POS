@@ -23,6 +23,16 @@ class Date extends DateTime {
     return Date.parsingDateTime(datetime);
   }
 
+  static Date? tryParse(String value) {
+    var datetime = DateTime.tryParse(value);
+    if (datetime == null) return null;
+    return Date.parsingDateTime(datetime);
+  }
+
+  static Date today() {
+    return parsingDateTime(DateTime.now());
+  }
+
   static Date parsingDateTime(DateTime value) {
     return Date(value.year, value.month, value.day, value.hour, value.minute,
         value.second, value.millisecond, value.microsecond);

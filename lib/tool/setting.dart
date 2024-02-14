@@ -23,6 +23,12 @@ class Setting extends ChangeNotifier {
     }
   }
 
+  String columnName(String tableName, String columnKey) {
+    return tableColumn(tableName)
+        .firstWhere((tableColumn) => tableColumn.key == columnKey)
+        .name;
+  }
+
   List<TableColumn> tableColumn(String key) {
     return tableColumns[key] ?? [];
   }

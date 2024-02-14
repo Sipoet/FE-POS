@@ -95,7 +95,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               label: 'Diskon',
               key: 'discount',
               page: const DiscountPage(),
-              children: [])
+              children: []),
+          Menu(
+              icon: Icons.person,
+              isClosed: true,
+              label: 'Karyawan',
+              key: 'employee',
+              page: const EmployeePage(),
+              children: []),
         ]),
   ];
   late TabManager tabManager;

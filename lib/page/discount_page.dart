@@ -218,6 +218,20 @@ class _DiscountPageState extends State<DiscountPage> {
     });
   }
 
+  void searchChanged(value) {
+    String container = _searchText;
+    setState(() {
+      if (value.length >= 3) {
+        _searchText = value;
+      } else {
+        _searchText = '';
+      }
+    });
+    if (container != _searchText) {
+      refreshTable();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // super.build(context);
@@ -241,20 +255,6 @@ class _DiscountPageState extends State<DiscountPage> {
               tooltip: 'Hapus diskon',
               icon: const Icon(Icons.delete)),
         ];
-
-    void searchChanged(value) {
-      String container = _searchText;
-      setState(() {
-        if (value.length >= 3) {
-          _searchText = value;
-        } else {
-          _searchText = '';
-        }
-      });
-      if (container != _searchText) {
-        refreshTable();
-      }
-    }
 
     return SingleChildScrollView(
       child: Padding(

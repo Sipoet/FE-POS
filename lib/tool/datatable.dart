@@ -5,13 +5,16 @@ import 'package:intl/intl.dart';
 export 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-class CustomDataTableSource extends DataTableSource {
+class CustomDataTableSource<T extends Model> extends DataTableSource {
   late List<TableColumn> columns;
-  late List<Model> sortedData;
+  late List<T> sortedData;
   String? sortColumn;
   bool isAscending = true;
   Function? actionButtons;
+  Map<int, T> selectedMap = {};
   PaginatorController? paginatorController;
+
+  List<T> get selected => selectedMap.values.toList();
 
   DataCell decorateValue(dynamic cell, TableColumn column) {
     return DataCell(Tooltip(
@@ -21,10 +24,18 @@ class CustomDataTableSource extends DataTableSource {
     ));
   }
 
+  void updateData(index, T model) {
+    sortedData[index] = model;
+    notifyListeners();
+  }
+
+  void refreshData() {
+    notifyListeners();
+  }
+
   Widget _decorateCell(cell) {
     String val = _formatData(cell);
     switch (cell.runtimeType) {
-      case Null:
       case Date:
       case DateTime:
         return Align(
@@ -53,8 +64,6 @@ class CustomDataTableSource extends DataTableSource {
       return '-';
     }
     switch (cell.runtimeType) {
-      case Null:
-        return '-';
       case Date:
         return _dateFormat(cell);
       case DateTime:
@@ -89,7 +98,7 @@ class CustomDataTableSource extends DataTableSource {
     return formated.format(number);
   }
 
-  void setData(List<Model> rawData) {
+  void setData(List<T> rawData) {
     if (paginatorController != null && paginatorController!.isAttached) {
       paginatorController?.goToFirstPage();
     }
@@ -101,7 +110,7 @@ class CustomDataTableSource extends DataTableSource {
   void sortData(String sortColumn, bool isAscending) {
     this.sortColumn = sortColumn;
     this.isAscending = isAscending;
-    sortedData.sort((Model a, Model b) {
+    sortedData.sort((T a, T b) {
       var cellA = a.toMap()[sortColumn] ?? '';
       var cellB = b.toMap()[sortColumn] ?? '';
       return cellA.compareTo(cellB) * (isAscending ? 1 : -1);
@@ -129,9 +138,18 @@ class CustomDataTableSource extends DataTableSource {
 
   @override
   DataRow? getRow(int index) {
-    Model model = sortedData[index];
+    T model = sortedData[index];
     return DataRow.byIndex(
       index: index,
+      selected: selectedMap.containsKey(index),
+      onSelectChanged: (bool? isSelected) {
+        if (isSelected == true) {
+          selectedMap[index] = model;
+        } else {
+          selectedMap.remove(index);
+        }
+        notifyListeners();
+      },
       cells: decorateModel(model),
     );
   }
