@@ -147,7 +147,7 @@ class _EmployeePageState extends State<EmployeePage> {
     );
   }
 
-  void toggleStatus(Employee employee) {
+  void toggleStatus(Employee employee, int index) {
     final statusPath =
         employee.status == EmployeeStatus.active ? 'deactivate' : 'activate';
     final statusName =
@@ -155,11 +155,12 @@ class _EmployeePageState extends State<EmployeePage> {
     showConfirmDialog(
         message: 'Apakah yakin $statusName ${employee.name}?',
         onSubmit: () {
-          server.post('employees/${employee.id}/$statusPath').then((response) {
-            Employee.fromJson(response.data['data'], model: employee);
+          server.post('employees/${employee.code}/$statusPath').then(
+              (response) {
+            _source.updateData(index, employee);
             flash.showBanner(
                 title: 'Sukses',
-                description: 'karyawan ${employee.code} sukses $statusPath',
+                description: 'karyawan ${employee.code} sukses $statusName',
                 messageType: MessageType.success,
                 duration: const Duration(seconds: 3));
           }, onError: (error, stack) {
@@ -179,7 +180,9 @@ class _EmployeePageState extends State<EmployeePage> {
             await server.post('employees/${employee.code}/activate').then(
                 (response) {
               employee = Employee.fromJson(response.data['data']);
-              _source.updateData(index, employee);
+              setState(() {
+                _source.updateData(index, employee);
+              });
             }, onError: (error, stack) {
               server.defaultErrorResponse(context: context, error: error);
             });
@@ -223,7 +226,7 @@ class _EmployeePageState extends State<EmployeePage> {
 
   @override
   Widget build(BuildContext context) {
-    _source.actionButtons = (employee) => [
+    _source.setActionButtons((employee, index) => <Widget>[
           IconButton(
               onPressed: () {
                 editForm(employee);
@@ -232,7 +235,7 @@ class _EmployeePageState extends State<EmployeePage> {
               icon: const Icon(Icons.edit)),
           IconButton(
               onPressed: () {
-                toggleStatus(employee);
+                toggleStatus(employee, index);
               },
               tooltip: 'Aktivasi/deaktivasi karyawan',
               icon: employee.status == EmployeeStatus.active
@@ -243,8 +246,7 @@ class _EmployeePageState extends State<EmployeePage> {
                   : const Icon(
                       Icons.lightbulb,
                     )),
-        ];
-
+        ]);
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(8.0),

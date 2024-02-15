@@ -2,20 +2,26 @@ import 'package:fe_pos/tool/setting.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class DatePicker<T> extends StatefulWidget {
-  final T? initialValue;
+class DatePicker extends StatefulWidget {
+  final DateTime? initialValue;
   final Widget? label;
   final String? restorationId;
-  final void Function(T date)? onChange;
   final DateTime? firstDate;
   final DateTime? lastDate;
+  final bool canRemove;
+  final void Function(DateTime?)? onSaved;
+  final void Function(DateTime? date)? onChanged;
+  final String? Function(DateTime?)? validator;
   const DatePicker(
       {super.key,
       this.restorationId,
       this.label,
-      this.onChange,
       this.firstDate,
       this.lastDate,
+      this.onSaved,
+      this.onChanged,
+      this.validator,
+      this.canRemove = false,
       required this.initialValue});
 
   @override
@@ -30,8 +36,6 @@ class _DatePickerState extends State<DatePicker> with RestorationMixin {
   String? get restorationId => widget.restorationId;
 
   late final RestorableDateTime _selectedDate;
-  final _controller = TextEditingController();
-  late final Setting _setting;
   late final RestorableRouteFuture<DateTime?> _restorableDatePickerRouteFuture =
       RestorableRouteFuture<DateTime?>(
     onComplete: _selectDate,
@@ -42,18 +46,25 @@ class _DatePickerState extends State<DatePicker> with RestorationMixin {
       );
     },
   );
+  DateTime? _date;
+
+  final _controller = TextEditingController();
+  late final Setting _setting;
 
   @override
   void initState() {
     _setting = context.read<Setting>();
     _selectedDate = RestorableDateTime(widget.initialValue ?? DateTime.now());
-    _controller.text = _setting.dateFormat(widget.initialValue ?? '');
+    _date = widget.initialValue;
+    _controller.text = widget.initialValue == null
+        ? ''
+        : _setting.dateFormat(widget.initialValue ?? DateTime(9999));
 
     super.initState();
   }
 
   @pragma('vm:entry-point')
-  Route<DateTime> _datePickerRoute(
+  static Route<DateTime> _datePickerRoute(
     BuildContext context,
     Object? arguments,
   ) {
@@ -61,11 +72,11 @@ class _DatePickerState extends State<DatePicker> with RestorationMixin {
       context: context,
       builder: (BuildContext context) {
         return DatePickerDialog(
-          initialDate: widget.initialValue,
+          initialDate: DateTime.fromMillisecondsSinceEpoch(arguments! as int),
           restorationId: 'date_picker_dialog',
           initialEntryMode: DatePickerEntryMode.calendarOnly,
-          firstDate: widget.firstDate ?? DateTime(2022),
-          lastDate: widget.lastDate ?? DateTime(9999),
+          firstDate: DateTime(2022),
+          lastDate: DateTime(9999),
         );
       },
     );
@@ -80,11 +91,12 @@ class _DatePickerState extends State<DatePicker> with RestorationMixin {
 
   void _selectDate(DateTime? newSelectedDate) {
     if (newSelectedDate != null) {
-      if (widget.onChange != null) {
-        widget.onChange!(newSelectedDate);
+      if (widget.onChanged != null) {
+        widget.onChanged!(newSelectedDate);
       }
       setState(() {
         _selectedDate.value = newSelectedDate;
+        _date = newSelectedDate;
         _controller.text = _setting.dateFormat(newSelectedDate);
       });
     }
@@ -94,13 +106,39 @@ class _DatePickerState extends State<DatePicker> with RestorationMixin {
   Widget build(BuildContext context) {
     return Padding(
         padding: const EdgeInsets.only(bottom: 10),
-        child: TextFormField(
-          onTap: () {
-            _restorableDatePickerRouteFuture.present();
-          },
-          decoration: InputDecoration(
-              label: widget.label, border: const OutlineInputBorder()),
-          controller: _controller,
-        ));
+        child: Stack(children: [
+          TextFormField(
+            onTap: () {
+              _restorableDatePickerRouteFuture.present();
+            },
+            validator: (value) {
+              if (widget.validator == null) {
+                return null;
+              }
+              return widget.validator!(_date);
+            },
+            onSaved: (newValue) {
+              widget.onSaved!(_date);
+            },
+            decoration: InputDecoration(
+                label: widget.label, border: const OutlineInputBorder()),
+            controller: _controller,
+          ),
+          if (widget.canRemove)
+            Positioned(
+              top: 5,
+              right: 5,
+              child: IconButton(
+                  iconSize: 30,
+                  onPressed: () {
+                    _controller.text = '';
+                    _date = null;
+                    if (widget.onChanged != null) {
+                      widget.onChanged!(_date);
+                    }
+                  },
+                  icon: const Icon(Icons.close)),
+            )
+        ]));
   }
 }

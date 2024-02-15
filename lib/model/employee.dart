@@ -58,30 +58,24 @@ class Employee extends Model {
       this.status = EmployeeStatus.inactive});
 
   @override
-  factory Employee.fromJson(Map<String, dynamic> json, {Employee? model}) {
+  factory Employee.fromJson(Map<String, dynamic> json) {
     var attributes = json['attributes'];
-    model ??= Employee(
-        code: '',
-        name: '',
-        startWorkingDate: Date.today(),
-        role: Role(name: ''));
-    model.id = int.parse(json['id']);
-    model.code = attributes['code']?.trim();
-    model.name = attributes['name']?.trim();
-    model.role = Role.fromJson(attributes['role']['data']);
-    model.status =
-        EmployeeStatus.convertFromString(attributes['status'].toString());
-    model.startWorkingDate = Date.parse(attributes['start_working_date']);
-    model.endWorkingDate = Date.tryParse(attributes['end_working_date'] ?? '');
-    model.debt = Money.parse(attributes['debt'] ?? 0);
-    model.idNumber = attributes['id_number'];
-    model.contactNumber = attributes['contact_number'];
-    model.address = attributes['address'];
-    model.bank = attributes['bank'];
-    model.bankAccount = attributes['start_time'];
-    model.description = attributes['description'];
-
-    return model;
+    return Employee(
+      id: int.parse(json['id']),
+      code: attributes['code']?.trim(),
+      name: attributes['name']?.trim(),
+      role: Role.fromJson(attributes['role']['data']),
+      status: EmployeeStatus.convertFromString(attributes['status'].toString()),
+      startWorkingDate: Date.parse(attributes['start_working_date']),
+      endWorkingDate: Date.tryParse(attributes['end_working_date'] ?? ''),
+      debt: Money.parse(attributes['debt'] ?? 0),
+      idNumber: attributes['id_number'],
+      contactNumber: attributes['contact_number'],
+      address: attributes['address'],
+      bank: attributes['bank'],
+      bankAccount: attributes['bank_account'],
+      description: attributes['description'],
+    );
   }
 
   @override
@@ -89,13 +83,14 @@ class Employee extends Model {
         'code': code.trim(),
         'name': name,
         'role_name': role.name,
+        'role_id': role.id,
         'status': status.toString(),
         'description': description,
         'start_working_date': startWorkingDate,
         'debt': debt,
         'end_working_date': endWorkingDate,
         'id_number': idNumber,
-        'contact_Number': contactNumber,
+        'contact_number': contactNumber,
         'address': address,
         'bank': bank,
         'bank_account': bankAccount,

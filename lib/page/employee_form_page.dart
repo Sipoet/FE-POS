@@ -44,7 +44,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     if (employee.id == null) {
       request = server.post('employees', body: body);
     } else {
-      request = server.put('employees/${employee.id}', body: body);
+      request = server.put('employees/${employee.code}', body: body);
     }
     request.then((response) {
       if ([200, 201].contains(response.statusCode)) {
@@ -180,20 +180,58 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   const SizedBox(
                     height: 10,
                   ),
-                  DatePicker<Date>(
+                  DatePicker(
                       label: const Text(
                         'Tanggal Mulai Kerja',
                         style: labelStyle,
                       ),
+                      onSaved: (newValue) {
+                        if (newValue == null) {
+                          return;
+                        }
+                        employee.startWorkingDate =
+                            Date.parsingDateTime(newValue);
+                      },
+                      validator: (newValue) {
+                        if (newValue == null) {
+                          return 'harus diisi';
+                        }
+                        return null;
+                      },
+                      onChanged: (newValue) {
+                        if (newValue == null) {
+                          return;
+                        }
+                        employee.startWorkingDate =
+                            Date.parsingDateTime(newValue);
+                      },
                       firstDate: DateTime(2023),
                       lastDate: DateTime.now().add(const Duration(days: 31)),
                       initialValue: employee.startWorkingDate),
-                  DatePicker<Date>(
+                  DatePicker(
                       label: const Text(
                         'Tanggal terakhir Kerja',
                         style: labelStyle,
                       ),
-                      initialValue: employee.startWorkingDate),
+                      onSaved: (newValue) {
+                        employee.endWorkingDate = newValue == null
+                            ? null
+                            : Date.parsingDateTime(newValue);
+                      },
+                      validator: (newValue) {
+                        if (newValue != null &&
+                            newValue.isBefore(employee.startWorkingDate)) {
+                          return 'harus lebih besar dari Tanggal mulai kerja';
+                        }
+                        return null;
+                      },
+                      canRemove: true,
+                      onChanged: (newValue) {
+                        employee.endWorkingDate = newValue == null
+                            ? null
+                            : Date.parsingDateTime(newValue);
+                      },
+                      initialValue: employee.endWorkingDate),
                   const SizedBox(
                     height: 10,
                   ),
