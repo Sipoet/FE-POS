@@ -49,9 +49,9 @@ class _CustomDataTableState extends State<CustomDataTable> {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     double tableWidth = calculateTableWidth();
-    List<TableColumn> actions = [];
+    List<DataColumn2> actions = [];
     if (_dataSource.actionButtons != null) {
-      actions.add(TableColumn(key: 'action', name: ''));
+      actions.add(const DataColumn2(label: Text(''), fixedWidth: 200.0));
       tableWidth += 200;
     }
     return PaginatedDataTable2(
@@ -68,61 +68,64 @@ class _CustomDataTableState extends State<CustomDataTable> {
       border: TableBorder.all(
           width: 1, color: colorScheme.outline.withOpacity(0.5)),
       empty: const Text('Data tidak ditemukan'),
-      columns: (columns + actions).map<DataColumn2>((tableColumn) {
-        return DataColumn2(
-          tooltip: tableColumn.name,
-          numeric: true,
-          onSort: ((columnIndex, ascending) {
-            setState(() {
-              _sortColumnIndex = columnIndex;
-              _sortAscending = ascending;
-            });
-            _dataSource.sortData(tableColumn.key, _sortAscending);
-          }),
-          fixedWidth: tableColumn.width,
-          label: Stack(
-            alignment: AlignmentDirectional.centerStart,
-            clipBehavior: Clip.none,
-            children: [
-              Positioned(
-                  right: 0,
-                  top: 0,
-                  child: GestureDetector(
-                      onPanStart: (details) {
-                        setState(() {
-                          tableColumn.initX = details.globalPosition.dx;
-                        });
-                      },
-                      onPanUpdate: (details) {
-                        final increment =
-                            details.globalPosition.dx - tableColumn.initX;
-                        final newWidth = tableColumn.width + increment;
-                        setState(() {
-                          tableColumn.initX = details.globalPosition.dx;
-                          tableColumn.width = newWidth > minimumColumnWidth
-                              ? newWidth
-                              : minimumColumnWidth;
-                        });
-                      },
-                      child: const Icon(
-                        Icons.switch_left,
-                        size: 20,
-                      ))),
-              Positioned(
-                left: 0,
-                width: tableColumn.width - 50,
-                child: Text(
-                  tableColumn.name,
-                  overflow: TextOverflow.ellipsis,
-                  softWrap: false,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+      columns: (columns).map<DataColumn2>((tableColumn) {
+            return DataColumn2(
+              tooltip: tableColumn.name,
+              numeric: true,
+              onSort: tableColumn.canSort
+                  ? ((columnIndex, ascending) {
+                      setState(() {
+                        _sortColumnIndex = columnIndex;
+                        _sortAscending = ascending;
+                      });
+                      _dataSource.sortData(tableColumn.key, _sortAscending);
+                    })
+                  : null,
+              fixedWidth: tableColumn.width,
+              label: Stack(
+                alignment: AlignmentDirectional.centerStart,
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned(
+                      right: 0,
+                      top: 0,
+                      child: GestureDetector(
+                          onPanStart: (details) {
+                            setState(() {
+                              tableColumn.initX = details.globalPosition.dx;
+                            });
+                          },
+                          onPanUpdate: (details) {
+                            final increment =
+                                details.globalPosition.dx - tableColumn.initX;
+                            final newWidth = tableColumn.width + increment;
+                            setState(() {
+                              tableColumn.initX = details.globalPosition.dx;
+                              tableColumn.width = newWidth > minimumColumnWidth
+                                  ? newWidth
+                                  : minimumColumnWidth;
+                            });
+                          },
+                          child: const Icon(
+                            Icons.switch_left,
+                            size: 20,
+                          ))),
+                  Positioned(
+                    left: 0,
+                    width: tableColumn.width - 50,
+                    child: Text(
+                      tableColumn.name,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: false,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
-      }).toList(),
+            );
+          }).toList() +
+          actions,
       minWidth: tableWidth,
       headingRowColor: MaterialStateProperty.resolveWith<Color?>(
           (Set<MaterialState> states) {

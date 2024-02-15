@@ -21,7 +21,7 @@ class _SalesTransactionReportPageState
   late Server server;
   bool _isDisplayTable = false;
   List requestControllers = [];
-  final dataSource = CustomDataTableSource();
+  final dataSource = CustomDataTableSource<SalesTransactionReport>();
   late Flash flash;
 
   @override

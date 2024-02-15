@@ -36,7 +36,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
   String? _reportType;
   bool _isDisplayTable = false;
   double minimumColumnWidth = 150;
-  final dataSource = CustomDataTableSource();
+  final dataSource = CustomDataTableSource<ItemSalesPercentageReport>();
   late Flash flash;
   late final Setting setting;
   String _storeStockComparison = '';

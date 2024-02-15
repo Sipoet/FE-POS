@@ -23,6 +23,8 @@ class SalesGroupBySupplier extends Model {
     required this.stockLeft,
   });
 
+  String get supplier => "$supplierCode - $supplierName";
+
   @override
   factory SalesGroupBySupplier.fromJson(Map<String, dynamic> json) {
     var attributes = json['attributes'];
@@ -50,5 +52,6 @@ class SalesGroupBySupplier extends Model {
         'number_of_purchase': numberOfPurchase,
         'number_of_sales': numberOfSales,
         'stock_left': stockLeft,
+        'supplier': supplier
       };
 }

@@ -36,7 +36,7 @@ class _SalesGroupBySupplierReportPageState
   late Server server;
   String? _reportType;
   bool _isDisplayTable = false;
-  final dataSource = CustomDataTableSource();
+  final dataSource = CustomDataTableSource<SalesGroupBySupplier>();
   late Flash flash;
   late final Setting setting;
 

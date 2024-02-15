@@ -17,7 +17,7 @@ class DiscountPage extends StatefulWidget {
 }
 
 class _DiscountPageState extends State<DiscountPage> {
-  final _source = CustomDataTableSource();
+  final _source = CustomDataTableSource<Discount>();
   late final SessionState _sessionState;
   bool _isDisplayTable = false;
   String _searchText = '';
@@ -235,7 +235,7 @@ class _DiscountPageState extends State<DiscountPage> {
   @override
   Widget build(BuildContext context) {
     // super.build(context);
-    _source.actionButtons = (discount) => [
+    _source.setActionButtons((discount, index) => [
           IconButton(
               onPressed: () {
                 editForm(discount);
@@ -254,7 +254,7 @@ class _DiscountPageState extends State<DiscountPage> {
               },
               tooltip: 'Hapus diskon',
               icon: const Icon(Icons.delete)),
-        ];
+        ]);
 
     return SingleChildScrollView(
       child: Padding(

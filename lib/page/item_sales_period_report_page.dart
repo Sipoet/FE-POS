@@ -39,7 +39,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
   late Server server;
   String? _reportType;
   bool _isDisplayTable = false;
-  final _dataSource = CustomDataTableSource();
+  final _dataSource = CustomDataTableSource<ItemSalesPeriodReport>();
   DateTimeRange _dateRange = DateTimeRange(
       start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
       end: DateTime.now().copyWith(hour: 23, minute: 59, second: 59));

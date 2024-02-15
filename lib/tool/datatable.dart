@@ -10,10 +10,10 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
   late List<T> sortedData;
   String? sortColumn;
   bool isAscending = true;
-  Function? actionButtons;
+  List<Widget> Function(T model, int index)? actionButtons;
   Map<int, T> selectedMap = {};
   PaginatorController? paginatorController;
-
+  bool isShowActions = false;
   List<T> get selected => selectedMap.values.toList();
 
   DataCell decorateValue(dynamic cell, TableColumn column) {
@@ -22,6 +22,10 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
       triggerMode: TooltipTriggerMode.tap,
       child: _decorateCell(cell),
     ));
+  }
+
+  void setActionButtons(value) {
+    actionButtons = value;
   }
 
   void updateData(index, T model) {
@@ -121,7 +125,7 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
   @override
   int get rowCount => sortedData.length;
 
-  List<DataCell> decorateModel(model) {
+  List<DataCell> decorateModel(T model, int index) {
     var jsonData = model.toMap();
     var rows = columns
         .map<DataCell>((column) => decorateValue(jsonData[column.key], column))
@@ -130,7 +134,7 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
       rows.add(DataCell(Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: actionButtons!(model),
+        children: actionButtons!(model, index),
       )));
     }
     return rows;
@@ -150,7 +154,7 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
         }
         notifyListeners();
       },
-      cells: decorateModel(model),
+      cells: decorateModel(model, index),
     );
   }
 
@@ -168,12 +172,14 @@ class TableColumn {
   String key;
   String type;
   String name;
+  bool canSort;
 
   TableColumn(
       {this.initX = 0,
       this.width = 175,
       this.excelWidth,
       this.type = 'string',
+      this.canSort = true,
       required this.key,
       required this.name});
 
