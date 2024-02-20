@@ -210,7 +210,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                   ),
                   const Text(
                     "Jadwal Kerja",
-                    style: labelStyle,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -349,7 +349,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                   ),
                   const Text(
                     "Lines",
-                    style: labelStyle,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,

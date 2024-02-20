@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/role.dart';
+export 'package:fe_pos/model/role.dart';
 import 'package:fe_pos/model/payroll.dart';
 export 'package:fe_pos/model/payroll.dart';
 export 'package:fe_pos/tool/custom_type.dart';
@@ -62,13 +63,34 @@ class Employee extends Model {
       this.status = EmployeeStatus.inactive});
 
   @override
-  factory Employee.fromJson(Map<String, dynamic> json) {
-    var attributes = json['attributes'];
+  factory Employee.fromJson(Map<String, dynamic> json,
+      {List included = const []}) {
+    final attributes = json['attributes'];
+    Payroll? payroll;
+    Role role = Role(name: '');
+    if (included.isNotEmpty) {
+      final payrollRelated = json['relationships']['payroll'];
+      final roleRelated = json['relationships']['role'];
+      if (payrollRelated != null) {
+        final payrollData = included.firstWhere((row) =>
+            row['type'] == payrollRelated['data']['type'] &&
+            row['id'] == payrollRelated['data']['id']);
+        payroll = Payroll.fromJson(payrollData);
+      }
+
+      if (roleRelated != null) {
+        final roleData = included.firstWhere((row) =>
+            row['type'] == roleRelated['data']['type'] &&
+            row['id'] == roleRelated['data']['id']);
+        role = Role.fromJson(roleData);
+      }
+    }
     return Employee(
       id: int.parse(json['id']),
       code: attributes['code']?.trim(),
       name: attributes['name']?.trim(),
-      role: Role.fromJson(attributes['role']['data']),
+      payroll: payroll,
+      role: role,
       status: EmployeeStatus.convertFromString(attributes['status'].toString()),
       startWorkingDate: Date.parse(attributes['start_working_date']),
       endWorkingDate: Date.tryParse(attributes['end_working_date'] ?? ''),
@@ -98,6 +120,8 @@ class Employee extends Model {
         'address': address,
         'bank': bank,
         'bank_account': bankAccount,
+        'payroll_id': payroll?.id,
+        'payroll_name': payroll?.name,
       };
 
   void updateAttributes() {}

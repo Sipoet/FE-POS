@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 class Menu {
-  IconData icon;
+  final IconData icon;
   bool isClosed;
-  String label;
-  String key;
-  List<Menu> children;
-  Widget page;
+  final String label;
+  final String key;
+  final List<Menu> children;
+  final Widget page;
   Menu(
       {required this.icon,
       this.isClosed = true,

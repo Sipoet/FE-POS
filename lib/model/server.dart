@@ -82,6 +82,15 @@ class Server {
     }
   }
 
+  Future upload(String path, File file) async {
+    String fileName = file.path.split('/').last;
+    FormData formData = FormData.fromMap({
+      "file": await MultipartFile.fromFile(file.path, filename: fileName),
+    });
+    Uri url = _generateUrl(path, {});
+    return dio.postUri(url, data: formData, options: generateHeaders('file'));
+  }
+
   Future post(String path, {Map body = const {}, String type = 'json'}) async {
     Uri url = _generateUrl(path, {});
     return dio.postUri(url, data: body, options: generateHeaders(type));
@@ -116,11 +125,16 @@ class Server {
     'json': ResponseType.json,
     'text': ResponseType.plain,
     'xlsx': ResponseType.bytes,
+    'file': ResponseType.json,
   };
   Options generateHeaders(String type) {
-    return Options(headers: {
-      if (jwt.isNotEmpty) 'Authorization': jwt,
-    }, contentType: 'application/json', responseType: _responseTypes[type]);
+    return Options(
+        headers: {
+          if (jwt.isNotEmpty) 'Authorization': jwt,
+        },
+        contentType:
+            type == 'file' ? 'multipart/form-data' : 'application/json',
+        responseType: _responseTypes[type]);
   }
 
   Uri _generateUrl(String path, Map<String, dynamic> queryParams) {

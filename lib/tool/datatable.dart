@@ -72,6 +72,8 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
         return _dateFormat(cell);
       case DateTime:
         return _datetimeFormat(cell);
+      case TimeOfDay:
+        return _timeFormat(cell);
       case Money:
         return _moneyFormat(cell);
       case double:
@@ -80,6 +82,11 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
       default:
         return cell.toString();
     }
+  }
+
+  static String _timeFormat(TimeOfDay data) {
+    var formated = NumberFormat("00", "en_US");
+    return "${formated.format(data.hour)}:${formated.format(data.minute)}";
   }
 
   static String _dateFormat(DateTime data) {

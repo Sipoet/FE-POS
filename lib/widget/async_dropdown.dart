@@ -12,11 +12,12 @@ class AsyncDropdownFormField extends FormField<List<BsSelectBoxOption>?> {
     super.key,
     ValueChanged<List<BsSelectBoxOption>?>? onChanged,
     List<BsSelectBoxOption>? selected,
-    required String path,
+    String? path,
     String? attributeKey,
     BsSelectBoxController? controller,
     super.validator,
     Widget? label,
+    Future Function(Server server, int offset, String searchText)? request,
     super.autovalidateMode,
   }) : super(
           initialValue: selected ?? controller?.getSelectedAll(),
@@ -39,6 +40,7 @@ class AsyncDropdownFormField extends FormField<List<BsSelectBoxOption>?> {
                     selected: selected,
                     attributeKey: attributeKey,
                     path: path,
+                    request: request,
                     controller: controller,
                     side: state.hasError
                         ? const BorderSide(color: Colors.red, width: 1)
@@ -63,17 +65,18 @@ class AsyncDropdown extends StatefulWidget {
       {Key? key,
       this.side =
           const BorderSide(color: Color.fromARGB(255, 224, 224, 224), width: 1),
-      required this.path,
+      this.path,
       this.controller,
       this.minCharSearch = 3,
       this.multiple = false,
       this.width,
       this.onChanged,
+      this.request,
       this.attributeKey,
       this.selected})
       : super(key: key);
 
-  final String path;
+  final String? path;
   final String? attributeKey;
   final int minCharSearch;
   final double? width;
@@ -82,6 +85,7 @@ class AsyncDropdown extends StatefulWidget {
   final bool multiple;
   final void Function(List<BsSelectBoxOption>)? onChanged;
   final BorderSide side;
+  final Future Function(Server server, int offset, String searchText)? request;
 
   @override
   State<AsyncDropdown> createState() => _AsyncDropdownState();
@@ -102,9 +106,18 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
             multiple: widget.multiple,
             processing: true,
             selected: widget.selected);
-
     super.initState();
   }
+
+  Future Function(Server server, int page, String searchText) get request =>
+      widget.request ??
+      (Server server, int offset, String searchText) {
+        return server.get(widget.path!, queryParam: {
+          'query': searchText,
+          'page[offset]': offset.toString(),
+          'page[limit]': '100'
+        });
+      };
 
   @override
   void didUpdateWidget(covariant AsyncDropdown oldWidget) {
@@ -150,12 +163,11 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
   }
 
   Future<List<BsSelectBoxOption>> getData({String query = ''}) async {
-    var response = await server.get(widget.path, queryParam: {
-      'query': query,
-    }).onError((error, stackTrace) => {
-          server.defaultErrorResponse(
-              context: context, error: error, valueWhenError: [])
-        });
+    var response = await request(server, 0, query).onError(
+        (error, stackTrace) => {
+              server.defaultErrorResponse(
+                  context: context, error: error, valueWhenError: [])
+            });
     if (response.statusCode == 200) {
       Map responseBody = response.data;
       return convertToOptions(responseBody['data']);

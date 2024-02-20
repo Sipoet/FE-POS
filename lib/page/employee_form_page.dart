@@ -178,15 +178,39 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   const SizedBox(
                     height: 10,
                   ),
-                  AsyncDropdown(
-                    path: 'payrolls',
+                  AsyncDropdownFormField(
+                    label: const Text(
+                      'Payroll',
+                      style: labelStyle,
+                    ),
+                    request: (server, offset, searchText) {
+                      return server.get('payrolls', queryParam: {
+                        'search_text': searchText,
+                        'field[payroll]': 'name',
+                        'page[offset]': offset.toString(),
+                      });
+                    },
                     attributeKey: 'name',
                     onChanged: (values) {
+                      if (values == null || values.isEmpty) {
+                        employee.payroll = null;
+                        return;
+                      }
                       employee.payroll = Payroll(
-                        id: values[0].getValue(),
+                        id: int.tryParse(values[0].getValueAsString()),
                         name: (values[0].getText() as Text).data ?? '',
                       );
                     },
+                    selected: employee.payroll == null
+                        ? null
+                        : [
+                            BsSelectBoxOption(
+                                value: employee.payroll?.id,
+                                text: Text(employee.payroll?.name ?? ''))
+                          ],
+                  ),
+                  const SizedBox(
+                    height: 10,
                   ),
                   DatePicker(
                       label: const Text(

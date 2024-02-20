@@ -1,5 +1,4 @@
 import 'package:fe_pos/model/employee.dart';
-import 'package:fe_pos/model/role.dart';
 import 'package:fe_pos/page/employee_form_page.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
@@ -59,6 +58,9 @@ class _EmployeePageState extends State<EmployeePage> {
                 'search_text': _searchText,
                 'page': page.toString(),
                 'per': '100',
+                'field[role]': 'name',
+                'field[payroll]': 'name',
+                'include': 'role,payroll',
                 'order_key': orderKey,
                 'is_order_asc': _source.isAscending.toString(),
               },
@@ -72,7 +74,8 @@ class _EmployeePageState extends State<EmployeePage> {
           throw 'error: invalid data type ${response.data.toString()}';
         }
         employees.addAll(responseBody['data']
-            .map<Employee>((json) => Employee.fromJson(json))
+            .map<Employee>((json) =>
+                Employee.fromJson(json, included: responseBody['included']))
             .toList());
         setState(() {
           _isDisplayTable = true;
