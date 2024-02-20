@@ -25,27 +25,37 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
         label: 'Home',
         page: const HomePage(),
         key: 'home'),
-    // Menu(
-    //     icon: Icons.money,
-    //     isClosed: true,
-    //     label: 'Penjualan',
-    //     page: const Placeholder(
-    //       child: Text('sales'),
-    //     ),
-    //     key: 'sales'),
+    Menu(
+        icon: Icons.payment_sharp,
+        isClosed: true,
+        label: 'Payroll',
+        key: 'payrollGroup',
+        children: [
+          Menu(
+              icon: Icons.settings,
+              isClosed: true,
+              label: 'Aturan Gaji',
+              page: const PayrollPage(),
+              key: 'payroll'),
+          Menu(
+              icon: Icons.monetization_on,
+              isClosed: true,
+              label: 'Slip Gaji',
+              page: const PayslipPage(),
+              key: 'payslip'),
+          Menu(
+              icon: Icons.calendar_month,
+              isClosed: true,
+              label: 'Absensi Karyawan',
+              page: const EmployeeAttendancePage(),
+              key: 'employeeAttendance'),
+        ]),
     Menu(
         icon: Icons.pages,
         isClosed: true,
         label: 'Laporan',
         key: 'report',
         children: [
-          // Menu(
-          //   icon: Icons.pages,
-          //   isClosed: true,
-          //   label: 'Penjualan persentase per item',
-          //   page: const SalesPercentageReportPage(),
-          //   key: 'salesPercentage',
-          // ),
           Menu(
               icon: Icons.money,
               isClosed: true,

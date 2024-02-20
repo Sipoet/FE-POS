@@ -126,7 +126,7 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    var colorScheme = Theme.of(context).colorScheme;
+    // var colorScheme = Theme.of(context).colorScheme;
     return BsSelectBox(
       searchable: true,
       onChange: (value) {

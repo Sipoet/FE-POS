@@ -19,6 +19,7 @@ class EmployeeFormPage extends StatefulWidget {
 class _EmployeeFormPageState extends State<EmployeeFormPage>
     with AutomaticKeepAliveClientMixin {
   late Flash flash;
+  final codeInputWidget = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
   Employee get employee => widget.employee;
@@ -28,10 +29,6 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
 
   @override
   void initState() {
-    // :code, :name,:role_id,:start_working_date,
-    //                                   :end_working_date, :description,
-    //                                   :id_number,:contact_number, :address,
-    //                                   :bank, :bank_account
     flash = Flash(context);
     super.initState();
   }
@@ -49,15 +46,12 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     request.then((response) {
       if ([200, 201].contains(response.statusCode)) {
         var data = response.data['data'];
-        if (employee.id == null) {
-          setState(() {
-            employee.id = int.tryParse(data['id']);
-            employee.code = data['attributes']['code'];
-            var tabManager = context.read<TabManager>();
-            tabManager.changeTabHeader(
-                widget, 'Edit employee ${employee.code}');
-          });
-        }
+        setState(() {
+          employee.id = int.tryParse(data['id']);
+          employee.code = data['attributes']['code'];
+          var tabManager = context.read<TabManager>();
+          tabManager.changeTabHeader(widget, 'Edit employee ${employee.code}');
+        });
 
         flash.show(const Text('Berhasil disimpan'), MessageType.success);
       } else if (response.statusCode == 409) {
@@ -75,6 +69,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    codeInputWidget.text = employee.code;
     const labelStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
@@ -95,13 +90,13 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                         labelText: 'Kode Karyawan',
                         labelStyle: labelStyle,
                         border: OutlineInputBorder()),
-                    initialValue: employee.code,
                     onSaved: (newValue) {
                       employee.code = newValue.toString();
                     },
                     onChanged: (newValue) {
                       employee.code = newValue.toString();
                     },
+                    controller: codeInputWidget,
                   ),
                   const SizedBox(
                     height: 10,
@@ -138,7 +133,10 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                         style: labelStyle,
                       ),
                       onChanged: (option) {
-                        employee.role.id = option?[0].getValue();
+                        employee.role.id =
+                            int.tryParse(option?[0].getValueAsString() ?? '');
+                        final text = option?[0].getText() as Text;
+                        employee.role.name = text.data ?? '';
                       },
                       selected: [
                         BsSelectBoxOption(
@@ -179,6 +177,16 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   ),
                   const SizedBox(
                     height: 10,
+                  ),
+                  AsyncDropdown(
+                    path: 'payrolls',
+                    attributeKey: 'name',
+                    onChanged: (values) {
+                      employee.payroll = Payroll(
+                        id: values[0].getValue(),
+                        name: (values[0].getText() as Text).data ?? '',
+                      );
+                    },
                   ),
                   DatePicker(
                       label: const Text(

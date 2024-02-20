@@ -1,5 +1,7 @@
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/role.dart';
+import 'package:fe_pos/model/payroll.dart';
+export 'package:fe_pos/model/payroll.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
 enum EmployeeStatus {
@@ -29,6 +31,7 @@ enum EmployeeStatus {
 class Employee extends Model {
   String name;
   Role role;
+  Payroll? payroll;
   EmployeeStatus status;
   Date startWorkingDate;
   Money debt;
@@ -46,6 +49,7 @@ class Employee extends Model {
       required this.code,
       required this.name,
       required this.role,
+      this.payroll,
       this.debt = const Money(0),
       required this.startWorkingDate,
       this.endWorkingDate,
