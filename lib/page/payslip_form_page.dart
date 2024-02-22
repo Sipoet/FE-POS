@@ -19,7 +19,6 @@ class PayslipFormPage extends StatefulWidget {
 class _PayslipFormPageState extends State<PayslipFormPage>
     with AutomaticKeepAliveClientMixin {
   late Flash flash;
-  final codeInputWidget = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
   Payslip get payslip => widget.payslip;
@@ -61,9 +60,6 @@ class _PayslipFormPageState extends State<PayslipFormPage>
   void _submit() async {
     var sessionState = context.read<SessionState>();
     var server = sessionState.server;
-    for (final (int index, PayslipLine payslipLine) in payslip.lines.indexed) {
-      payslipLine.row = index + 1;
-    }
     Map body = {
       'data': {
         'type': 'payslip',
@@ -143,6 +139,9 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                     ],
                     width: 200,
                   ),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   DatePicker(
                       label: const Text('Tanggal Mulai'),
                       onChanged: (value) {
@@ -183,6 +182,28 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                   ),
                   TextFormField(
                     decoration: const InputDecoration(
+                        labelText: 'Lembur dalam Jam',
+                        labelStyle: labelStyle,
+                        border: OutlineInputBorder()),
+                    initialValue: payslip.overtimeHour.toString(),
+                    onSaved: (newValue) {
+                      payslip.overtimeHour = int.parse(newValue.toString());
+                    },
+                    validator: (newValue) {
+                      if (newValue == null || newValue.isEmpty) {
+                        return 'harus diisi';
+                      }
+                      return null;
+                    },
+                    onChanged: (newValue) {
+                      payslip.overtimeHour = int.parse(newValue.toString());
+                    },
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  TextFormField(
+                    decoration: const InputDecoration(
                         labelText: 'Sick Leave',
                         labelStyle: labelStyle,
                         border: OutlineInputBorder()),
@@ -198,17 +219,17 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                     onChanged: (newValue) {
                       payslip.sickLeave = int.parse(newValue);
                     },
-                    controller: codeInputWidget,
+                    initialValue: payslip.sickLeave.toString(),
                   ),
                   const SizedBox(
                     height: 10,
                   ),
                   TextFormField(
                     decoration: const InputDecoration(
-                        labelText: 'Total Absen Tanpa Kabar',
+                        labelText: 'Izin Cuti',
                         labelStyle: labelStyle,
                         border: OutlineInputBorder()),
-                    initialValue: payslip.absence.toString(),
+                    initialValue: payslip.knownAbsence.toString(),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'harus diisi';
@@ -216,10 +237,29 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                       return null;
                     },
                     onSaved: (newValue) {
-                      payslip.absence = int.parse(newValue ?? '0');
+                      payslip.knownAbsence = int.parse(newValue ?? '0');
                     },
                     onChanged: (newValue) {
-                      payslip.absence = int.parse(newValue);
+                      payslip.knownAbsence = int.parse(newValue);
+                    },
+                  ),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                        labelText: 'Absen Tanpa Kabar',
+                        labelStyle: labelStyle,
+                        border: OutlineInputBorder()),
+                    initialValue: payslip.unknownAbsence.toString(),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'harus diisi';
+                      }
+                      return null;
+                    },
+                    onSaved: (newValue) {
+                      payslip.unknownAbsence = int.parse(newValue ?? '0');
+                    },
+                    onChanged: (newValue) {
+                      payslip.unknownAbsence = int.parse(newValue);
                     },
                   ),
                   const SizedBox(
@@ -305,12 +345,12 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                                               label: value.toString()))
                                       .toList(),
                                 )),
-                                DataCell(DropdownMenu<PayslipFormula>(
-                                  initialSelection: payslipLine.formula,
-                                  onSelected: (value) => payslipLine.formula =
-                                      value ?? PayslipFormula.basic,
-                                  dropdownMenuEntries: PayslipFormula.values
-                                      .map<DropdownMenuEntry<PayslipFormula>>(
+                                DataCell(DropdownMenu<PayslipType>(
+                                  initialSelection: payslipLine.payslipType,
+                                  onSelected: (value) =>
+                                      payslipLine.payslipType = value,
+                                  dropdownMenuEntries: PayslipType.values
+                                      .map<DropdownMenuEntry<PayslipType>>(
                                           (value) => DropdownMenuEntry(
                                               value: value,
                                               label: value.toString()))
@@ -334,73 +374,19 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                                     onSaved: (value) =>
                                         payslipLine.description = value ?? '',
                                     key: ValueKey(
-                                        "${payslipLine.id ?? payslipLine.row}-decription"),
+                                        "${payslipLine.id}-decription"),
                                   ),
                                 )),
                                 DataCell(TextFormField(
                                   decoration: const InputDecoration(
                                       border: OutlineInputBorder()),
-                                  initialValue:
-                                      (payslipLine.variable1 ?? '').toString(),
+                                  initialValue: payslipLine.amount.toString(),
                                   keyboardType: TextInputType.number,
-                                  onChanged: (value) => payslipLine.variable1 =
-                                      double.tryParse(value),
-                                  onSaved: (value) => payslipLine.variable1 =
-                                      double.tryParse(value ?? ''),
-                                  key: ValueKey(
-                                      "${payslipLine.id ?? payslipLine.row}-variable1"),
-                                )),
-                                DataCell(TextFormField(
-                                  decoration: const InputDecoration(
-                                      border: OutlineInputBorder()),
-                                  initialValue:
-                                      (payslipLine.variable2 ?? '').toString(),
-                                  keyboardType: TextInputType.number,
-                                  onChanged: (value) => payslipLine.variable2 =
-                                      double.tryParse(value),
-                                  onSaved: (value) => payslipLine.variable2 =
-                                      double.tryParse(value ?? ''),
-                                  key: ValueKey(
-                                      "${payslipLine.id ?? payslipLine.row}-variable2"),
-                                )),
-                                DataCell(TextFormField(
-                                  decoration: const InputDecoration(
-                                      border: OutlineInputBorder()),
-                                  initialValue:
-                                      (payslipLine.variable3 ?? '').toString(),
-                                  keyboardType: TextInputType.number,
-                                  onChanged: (value) => payslipLine.variable3 =
-                                      double.tryParse(value),
-                                  onSaved: (value) => payslipLine.variable3 =
-                                      double.tryParse(value ?? ''),
-                                  key: ValueKey(
-                                      "${payslipLine.id ?? payslipLine.row}-variable3"),
-                                )),
-                                DataCell(TextFormField(
-                                  decoration: const InputDecoration(
-                                      border: OutlineInputBorder()),
-                                  initialValue:
-                                      (payslipLine.variable4 ?? '').toString(),
-                                  keyboardType: TextInputType.number,
-                                  onChanged: (value) => payslipLine.variable4 =
-                                      double.tryParse(value),
-                                  onSaved: (value) => payslipLine.variable4 =
-                                      double.tryParse(value ?? ''),
-                                  key: ValueKey(
-                                      "${payslipLine.id ?? payslipLine.row}-variable4"),
-                                )),
-                                DataCell(TextFormField(
-                                  decoration: const InputDecoration(
-                                      border: OutlineInputBorder()),
-                                  initialValue:
-                                      (payslipLine.variable5 ?? '').toString(),
-                                  keyboardType: TextInputType.number,
-                                  onChanged: (value) => payslipLine.variable5 =
-                                      double.tryParse(value),
-                                  onSaved: (value) => payslipLine.variable5 =
-                                      double.tryParse(value ?? ''),
-                                  key: ValueKey(
-                                      "${payslipLine.id ?? payslipLine.row}-variable5"),
+                                  onChanged: (value) =>
+                                      payslipLine.amount = double.parse(value),
+                                  onSaved: (value) => payslipLine.amount =
+                                      double.parse(value ?? ''),
+                                  key: ValueKey("${payslipLine.id}-amount"),
                                 )),
                                 DataCell(ElevatedButton(
                                   onPressed: () {
@@ -419,9 +405,9 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                     child: ElevatedButton(
                         onPressed: () => setState(() {
                               payslip.lines.add(PayslipLine(
-                                  group: PayslipGroup.earning,
-                                  formula: PayslipFormula.basic,
-                                  row: payslip.lines.length));
+                                group: PayslipGroup.earning,
+                                amount: 0,
+                              ));
                             }),
                         child: const Text('Tambah')),
                   ),

@@ -19,7 +19,6 @@ class EmployeeAttendanceFormPage extends StatefulWidget {
 
 class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
     with AutomaticKeepAliveClientMixin {
-  List<EmployeeAttendance> _employeeAttendances = <EmployeeAttendance>[];
   late Server _server;
   late Setting _setting;
   late final EmployeeAttendanceMassUploadDatatableSource _source;
@@ -190,12 +189,12 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
       if (response.statusCode == 201) {
         final responseBody = response.data['data'] as List;
         setState(() {
-          _employeeAttendances = responseBody
+          final employeeAttendances = responseBody
               .map<EmployeeAttendance>((json) => EmployeeAttendance.fromJson(
                   json,
                   included: response.data['included']))
               .toList();
-          _source.setData(_employeeAttendances);
+          _source.setData(employeeAttendances);
         });
       } else {
         final flash = Flash(context);

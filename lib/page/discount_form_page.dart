@@ -84,7 +84,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(10.0),
         child: Center(
           child: Container(
             constraints: BoxConstraints.loose(const Size.fromWidth(600)),

@@ -16,6 +16,7 @@ class AsyncDropdownFormField extends FormField<List<BsSelectBoxOption>?> {
     String? attributeKey,
     BsSelectBoxController? controller,
     super.validator,
+    bool multiple = false,
     Widget? label,
     Future Function(Server server, int offset, String searchText)? request,
     super.autovalidateMode,
@@ -40,6 +41,7 @@ class AsyncDropdownFormField extends FormField<List<BsSelectBoxOption>?> {
                     selected: selected,
                     attributeKey: attributeKey,
                     path: path,
+                    multiple: multiple,
                     request: request,
                     controller: controller,
                     side: state.hasError
