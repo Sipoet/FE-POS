@@ -97,7 +97,9 @@ class _DesktopLayoutState extends State<DesktopLayout>
   List<Widget> decorateMenus(List<Menu> fromMenus) {
     var tabManager = context.watch<TabManager>();
     return fromMenus.map<Widget>((menu) {
-      if (menu.children.isEmpty) {
+      if (menu.isNotAuthorize()) {
+        return const SizedBox();
+      } else if (menu.children.isEmpty) {
         return MenuItemButton(
           leadingIcon: Icon(menu.icon),
           onPressed: () {

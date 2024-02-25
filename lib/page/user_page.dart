@@ -1,5 +1,5 @@
-import 'package:fe_pos/model/payroll.dart';
-import 'package:fe_pos/page/payroll_form_page.dart';
+import 'package:fe_pos/model/user.dart';
+import 'package:fe_pos/page/user_form_page.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -8,19 +8,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
 
-class PayrollPage extends StatefulWidget {
-  const PayrollPage({super.key});
+class UserPage extends StatefulWidget {
+  const UserPage({super.key});
 
   @override
-  State<PayrollPage> createState() => _PayrollPageState();
+  State<UserPage> createState() => _UserPageState();
 }
 
-class _PayrollPageState extends State<PayrollPage> {
-  final _source = CustomDataTableSource<Payroll>();
+class _UserPageState extends State<UserPage> {
+  final _source = CustomDataTableSource<User>();
   late final Server server;
   bool _isDisplayTable = false;
   String _searchText = '';
-  List<Payroll> payrolls = [];
+  List<User> users = [];
   final cancelToken = CancelToken();
   late Flash flash;
 
@@ -29,7 +29,7 @@ class _PayrollPageState extends State<PayrollPage> {
     server = context.read<SessionState>().server;
     flash = Flash(context);
     final setting = context.read<Setting>();
-    _source.columns = setting.tableColumn('payroll');
+    _source.columns = setting.tableColumn('user');
     refreshTable();
     super.initState();
   }
@@ -43,21 +43,22 @@ class _PayrollPageState extends State<PayrollPage> {
   Future<void> refreshTable() async {
     // clear table row
     setState(() {
-      payrolls = [];
+      users = [];
       _isDisplayTable = false;
     });
-    fetchPayrolls(page: 1);
+    fetchUsers(page: 1);
   }
 
-  Future fetchPayrolls({int page = 1}) {
-    String orderKey = _source.sortColumn ?? 'name';
+  Future fetchUsers({int page = 1}) {
+    String orderKey = _source.sortColumn ?? 'username';
     try {
       return server
-          .get('payrolls',
+          .get('users',
               queryParam: {
                 'search_text': _searchText,
                 'page[page]': page.toString(),
                 'page[limit]': '100',
+                'include': 'role',
                 'sort': '${_source.isAscending ? '' : '-'}$orderKey',
               },
               cancelToken: cancelToken)
@@ -69,18 +70,19 @@ class _PayrollPageState extends State<PayrollPage> {
         if (responseBody['data'] is! List) {
           throw 'error: invalid data type ${response.data.toString()}';
         }
-        payrolls.addAll(responseBody['data']
-            .map<Payroll>((json) => Payroll.fromJson(json))
+        users.addAll(responseBody['data']
+            .map<User>((json) =>
+                User.fromJson(json, included: responseBody['included']))
             .toList());
         setState(() {
           _isDisplayTable = true;
-          _source.setData(payrolls);
+          _source.setData(users);
         });
 
         flash.hide();
         int totalPages = responseBody['meta']?['total_pages'];
         if (page < totalPages.toInt()) {
-          fetchPayrolls(page: page + 1);
+          fetchUsers(page: page + 1);
         }
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
@@ -95,20 +97,20 @@ class _PayrollPageState extends State<PayrollPage> {
   }
 
   void addForm() {
-    Payroll payroll = Payroll(name: '', lines: []);
+    User user = User(username: '', role: Role(name: ''));
 
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('New Payroll',
-          PayrollFormPage(key: ObjectKey(payroll), payroll: payroll));
+      tabManager.addTab(
+          'New User', UserFormPage(key: ObjectKey(user), user: user));
     });
   }
 
-  void editForm(Payroll payroll) {
+  void editForm(User user) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Edit Payroll ${payroll.name}',
-          PayrollFormPage(key: ObjectKey(payroll), payroll: payroll));
+      tabManager.addTab('Edit User ${user.username}',
+          UserFormPage(key: ObjectKey(user), user: user));
     });
   }
 
@@ -142,16 +144,16 @@ class _PayrollPageState extends State<PayrollPage> {
     );
   }
 
-  void destroyRecord(Payroll payroll) {
+  void destroyRecord(User user) {
     showConfirmDialog(
-        message: 'Apakah anda yakin hapus ${payroll.name}?',
+        message: 'Apakah anda yakin hapus ${user.username}?',
         onSubmit: () {
-          server.delete('/payrolls/${payroll.id}').then((response) {
+          server.delete('/users/${user.id}').then((response) {
             if (response.statusCode == 200) {
               flash.showBanner(
                   messageType: MessageType.success,
                   title: 'Sukses Hapus',
-                  description: 'Sukses Hapus payroll ${payroll.name}');
+                  description: 'Sukses Hapus user ${user.username}');
               refreshTable();
             }
           }, onError: (error) {
@@ -176,18 +178,18 @@ class _PayrollPageState extends State<PayrollPage> {
 
   @override
   Widget build(BuildContext context) {
-    _source.setActionButtons((payroll, index) => <Widget>[
+    _source.setActionButtons((user, index) => <Widget>[
           IconButton(
               onPressed: () {
-                editForm(payroll);
+                editForm(user);
               },
-              tooltip: 'Edit Payroll',
+              tooltip: 'Edit User',
               icon: const Icon(Icons.edit)),
           IconButton(
               onPressed: () {
-                destroyRecord(payroll);
+                destroyRecord(user);
               },
-              tooltip: 'Hapus Payroll',
+              tooltip: 'Hapus User',
               icon: const Icon(Icons.delete)),
         ]);
     return SingleChildScrollView(
@@ -221,7 +223,7 @@ class _PayrollPageState extends State<PayrollPage> {
                   ),
                   SubmenuButton(menuChildren: [
                     MenuItemButton(
-                      child: const Text('Tambah Payroll'),
+                      child: const Text('Tambah User'),
                       onPressed: () => addForm(),
                     ),
                   ], child: const Icon(Icons.table_rows_rounded))

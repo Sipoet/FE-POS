@@ -2,10 +2,8 @@ import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/model/work_schedule.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
-import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/payroll.dart';
-
 import 'package:provider/provider.dart';
 
 class PayrollFormPage extends StatefulWidget {
@@ -18,7 +16,7 @@ class PayrollFormPage extends StatefulWidget {
 
 class _PayrollFormPageState extends State<PayrollFormPage>
     with AutomaticKeepAliveClientMixin {
-  late Flash flash;
+  late final Flash flash;
   final codeInputWidget = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();

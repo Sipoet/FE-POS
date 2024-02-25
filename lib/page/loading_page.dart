@@ -41,6 +41,10 @@ class _LoadingPageState extends State<LoadingPage>
     server.get('settings').then((response) {
       if (response.statusCode == 200) {
         setting.setTableColumns(response.data['data']['table_columns']);
+
+        response.data['data']['menus'].forEach((String key, value) {
+          setting.menus[key] = value.map<String>((e) => e.toString()).toList();
+        });
       }
     }).whenComplete(() {
       controller.stop();

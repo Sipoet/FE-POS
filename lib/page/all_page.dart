@@ -12,6 +12,11 @@ export 'login_page.dart';
 // master
 export 'discount_page.dart';
 export 'employee_page.dart';
+export 'user_page.dart';
+export 'role_page.dart';
+
+// human resource
 export 'payroll_page.dart';
 export 'payslip_page.dart';
 export 'employee_attendance_page.dart';
+export 'employee_leave_page.dart';

@@ -115,7 +115,7 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
       widget.request ??
       (Server server, int offset, String searchText) {
         return server.get(widget.path!, queryParam: {
-          'query': searchText,
+          'search_text': searchText,
           'page[offset]': offset.toString(),
           'page[limit]': '100'
         });
@@ -149,6 +149,7 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
           widget.onChanged!(_controller.getSelectedAll());
         }
       },
+      size: const BsSelectBoxSize(maxHeight: 200),
       style: BsSelectBoxStyle(
           border: Border.fromBorderSide(widget.side),
           focusedBoxShadow: const [
@@ -187,6 +188,7 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
         .map<BsSelectBoxOption>((row) => BsSelectBoxOption(
               value: row['id'],
               searchable: "${row['id']} ${row['name']}",
+              other: row,
               text: Text(
                 nameOf(row),
                 softWrap: true,

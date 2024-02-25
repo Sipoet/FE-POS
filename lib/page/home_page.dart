@@ -22,31 +22,36 @@ class _HomePageState extends State<HomePage> {
       DateTimeRange(start: DateTime.now(), end: DateTime.now()));
   @override
   void initState() {
+    setting = context.read<Setting>();
     _panels = [
-      SalesTransactionReportWidget(
-        controller: controller,
-      ),
-      ItemSalesTransactionReportWidget(
-          key: const ValueKey('brand'),
+      if (setting.isAuthorize('sale', 'transactionReport'))
+        SalesTransactionReportWidget(
           controller: controller,
-          groupKey: 'brand',
-          limit: '5',
-          label: 'Merek Terjual Terbanyak'),
-      ItemSalesTransactionReportWidget(
-          key: const ValueKey('item_type'),
-          controller: controller,
-          groupKey: 'item_type',
-          limit: '5',
-          label: 'Departemen Terjual Terbanyak'),
-      ItemSalesTransactionReportWidget(
-          key: const ValueKey('supplier'),
-          groupKey: 'supplier',
-          controller: controller,
-          limit: '5',
-          label: 'Supplier Terjual Terbanyak'),
+        ),
+      if (setting.isAuthorize('itemSale', 'transactionReport'))
+        ItemSalesTransactionReportWidget(
+            key: const ValueKey('brand'),
+            controller: controller,
+            groupKey: 'brand',
+            limit: '5',
+            label: 'Merek Terjual Terbanyak'),
+      if (setting.isAuthorize('itemSale', 'transactionReport'))
+        ItemSalesTransactionReportWidget(
+            key: const ValueKey('item_type'),
+            controller: controller,
+            groupKey: 'item_type',
+            limit: '5',
+            label: 'Departemen Terjual Terbanyak'),
+      if (setting.isAuthorize('itemSale', 'transactionReport'))
+        ItemSalesTransactionReportWidget(
+            key: const ValueKey('supplier'),
+            groupKey: 'supplier',
+            controller: controller,
+            limit: '5',
+            label: 'Supplier Terjual Terbanyak'),
     ];
     arrangeDate('day');
-    setting = context.read<Setting>();
+
     super.initState();
   }
 

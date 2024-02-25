@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 class Setting extends ChangeNotifier {
   Map<String, List<TableColumn>> tableColumns = {};
+  Map<String, List<String>> menus = {};
   Setting();
 
   void removeSetting() {
@@ -51,5 +52,10 @@ class Setting extends ChangeNotifier {
 
   String numberFormat(number) {
     return NumberFormat(",##0.##", "en_US").format(number);
+  }
+
+  bool isAuthorize(String controllerName, String actionName) {
+    return menus[controllerName] != null &&
+        menus[controllerName]!.contains(actionName);
   }
 }

@@ -2,6 +2,8 @@ import 'package:fe_pos/tool/custom_type.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
 abstract class Model {
+  // int? id;
+  // Model({this.id});
   Map<String, dynamic> toMap();
 
   Map<String, dynamic> toJson() {
