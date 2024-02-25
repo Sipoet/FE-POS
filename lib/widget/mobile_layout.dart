@@ -88,7 +88,7 @@ class _MobileLayoutState extends State<MobileLayout> {
 
   Widget decorateMenu(Menu menu) {
     if (menu.isNotAuthorize()) {
-      return SizedBox();
+      return const SizedBox();
     } else if (menu.children.isEmpty) {
       return ListTile(
         key: ValueKey(menu.key),

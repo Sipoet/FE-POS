@@ -171,6 +171,7 @@ class _LoginPageState extends State<LoginPage> {
     server.get('settings').then((response) {
       if (response.statusCode == 200) {
         setting.setTableColumns(response.data['data']['table_columns']);
+        setting.menus = {};
         response.data['data']['menus'].forEach((String key, value) {
           setting.menus[key] = value.map<String>((e) => e.toString()).toList();
         });

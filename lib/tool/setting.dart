@@ -9,6 +9,7 @@ class Setting extends ChangeNotifier {
 
   void removeSetting() {
     tableColumns = {};
+    menus = {};
     notifyListeners();
   }
 

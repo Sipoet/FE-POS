@@ -50,7 +50,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
           employee.id = int.tryParse(data['id']);
           employee.code = data['attributes']['code'];
           var tabManager = context.read<TabManager>();
-          tabManager.changeTabHeader(widget, 'Edit employee ${employee.code}');
+          tabManager.changeTabHeader(widget, 'Edit Karyawan ${employee.code}');
         });
 
         flash.show(const Text('Berhasil disimpan'), MessageType.success);
