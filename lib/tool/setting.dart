@@ -18,6 +18,9 @@ class Setting extends ChangeNotifier {
       tableColumns[key] = data[key]!
           .map<TableColumn>((row) => TableColumn(
               key: row['name'],
+              sortKey: row['sort_key'],
+              attributeKey: row['attribute_key'],
+              path: row['path'],
               name: row['humanize_name'],
               type: row['type'],
               excelWidth: double.tryParse(row['width'].toString())))

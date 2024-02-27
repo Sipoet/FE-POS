@@ -78,7 +78,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Center(
           child: Container(
             constraints: BoxConstraints.loose(const Size.fromWidth(600)),
@@ -150,6 +150,10 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                     height: 10,
                   ),
                   DropdownMenu<LeaveType>(
+                      label: const Text(
+                        'Tipe Cuti',
+                        style: labelStyle,
+                      ),
                       onSelected: (value) => employeeLeave.leaveType =
                           value ?? LeaveType.annualLeave,
                       initialSelection: employeeLeave.leaveType,

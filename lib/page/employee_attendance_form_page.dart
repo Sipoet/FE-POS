@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/employee_attendance.dart';
@@ -6,6 +5,7 @@ import 'package:fe_pos/model/session_state.dart';
 
 import 'package:fe_pos/tool/setting.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:provider/provider.dart';
 
@@ -183,7 +183,7 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
     if (result == null) {
       return;
     }
-    final file = File(result.files.single.path!);
+    final file = XFile(result.files.single.path!);
 
     _server.upload('employee_attendances/mass_upload', file).then((response) {
       if (response.statusCode == 201) {

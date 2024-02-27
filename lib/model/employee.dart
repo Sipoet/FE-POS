@@ -43,7 +43,9 @@ class Employee extends Model {
   String? bank;
   String? bankAccount;
   String? description;
+  String? imagePath;
   int? id;
+  int? imageId;
   String code;
   Employee(
       {this.id,
@@ -59,6 +61,8 @@ class Employee extends Model {
       this.contactNumber,
       this.address,
       this.bank,
+      this.imageId,
+      this.imagePath,
       this.bankAccount,
       this.status = EmployeeStatus.inactive});
 
@@ -86,29 +90,30 @@ class Employee extends Model {
       }
     }
     return Employee(
-      id: int.parse(json['id']),
-      code: attributes['code']?.trim(),
-      name: attributes['name']?.trim(),
-      payroll: payroll,
-      role: role,
-      status: EmployeeStatus.convertFromString(attributes['status'].toString()),
-      startWorkingDate: Date.parse(attributes['start_working_date']),
-      endWorkingDate: Date.tryParse(attributes['end_working_date'] ?? ''),
-      debt: Money.parse(attributes['debt'] ?? 0),
-      idNumber: attributes['id_number'],
-      contactNumber: attributes['contact_number'],
-      address: attributes['address'],
-      bank: attributes['bank'],
-      bankAccount: attributes['bank_account'],
-      description: attributes['description'],
-    );
+        id: int.parse(json['id']),
+        code: attributes['code']?.trim(),
+        name: attributes['name']?.trim(),
+        payroll: payroll,
+        role: role,
+        status:
+            EmployeeStatus.convertFromString(attributes['status'].toString()),
+        startWorkingDate: Date.parse(attributes['start_working_date']),
+        endWorkingDate: Date.tryParse(attributes['end_working_date'] ?? ''),
+        debt: Money.parse(attributes['debt'] ?? 0),
+        idNumber: attributes['id_number'],
+        contactNumber: attributes['contact_number'],
+        address: attributes['address'],
+        bank: attributes['bank'],
+        bankAccount: attributes['bank_account'],
+        description: attributes['description'],
+        imageId: attributes['image_id']);
   }
 
   @override
   Map<String, dynamic> toMap() => {
         'code': code.trim(),
         'name': name,
-        'role_name': role.name,
+        'role.name': role.name,
         'role_id': role.id,
         'status': status.toString(),
         'description': description,
@@ -119,9 +124,11 @@ class Employee extends Model {
         'contact_number': contactNumber,
         'address': address,
         'bank': bank,
+        'image_path': imagePath,
+        'image_id': imageId,
         'bank_account': bankAccount,
         'payroll_id': payroll?.id,
-        'payroll_name': payroll?.name,
+        'payroll.name': payroll?.name,
       };
 
   void updateAttributes() {}

@@ -37,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
           child: Container(
         alignment: Alignment.topLeft,
         width: 300,
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Form(
             key: _formKey,
             child: Column(

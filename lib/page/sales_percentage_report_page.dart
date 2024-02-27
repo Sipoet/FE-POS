@@ -184,6 +184,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                         label: const Text('Merek :', style: _filterLabelStyle),
                         key: const ValueKey('brandSelect'),
                         controller: _brandSelectWidget,
+                        attributeKey: 'merek',
                         path: '/brands',
                       )),
                   Container(
@@ -194,6 +195,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                             style: _filterLabelStyle),
                         key: const ValueKey('brandSelect'),
                         controller: _itemTypeSelectWidget,
+                        attributeKey: 'jenis',
                         path: '/item_types',
                       )),
                   Container(
@@ -203,6 +205,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                       label: const Text('Supplier :', style: _filterLabelStyle),
                       key: const ValueKey('supplierSelect'),
                       controller: _supplierSelectWidget,
+                      attributeKey: 'nama',
                       path: '/suppliers',
                     ),
                   ),
@@ -213,6 +216,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                       label: const Text('Item :', style: _filterLabelStyle),
                       key: const ValueKey('itemSelect'),
                       controller: _itemSelectWidget,
+                      attributeKey: 'namaitem',
                       path: '/items',
                     ),
                   ),

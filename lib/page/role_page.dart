@@ -7,6 +7,7 @@ import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/custom_data_table.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/widget/table_filter_form.dart';
 
 class RolePage extends StatefulWidget {
   const RolePage({super.key});
@@ -23,6 +24,7 @@ class _RolePageState extends State<RolePage> {
   List<Role> roles = [];
   final cancelToken = CancelToken();
   late Flash flash;
+  Map _filter = {};
 
   @override
   void initState() {
@@ -50,17 +52,19 @@ class _RolePageState extends State<RolePage> {
   }
 
   Future fetchRoles({int page = 1}) {
-    String orderKey = _source.sortColumn ?? 'name';
+    String orderKey = _source.sortColumn?.sortKey ?? 'name';
+    Map<String, dynamic> param = {
+      'search_text': _searchText,
+      'page[page]': page.toString(),
+      'page[limit]': '100',
+      'sort': '${_source.isAscending ? '' : '-'}$orderKey',
+    };
+    _filter.forEach((key, value) {
+      param[key] = value;
+    });
     try {
       return server
-          .get('roles',
-              queryParam: {
-                'search_text': _searchText,
-                'page[page]': page.toString(),
-                'page[limit]': '100',
-                'sort': '${_source.isAscending ? '' : '-'}$orderKey',
-              },
-              cancelToken: cancelToken)
+          .get('roles', queryParam: param, cancelToken: cancelToken)
           .then((response) {
         if (response.statusCode != 200) {
           throw 'error: ${response.data.toString()}';
@@ -192,9 +196,16 @@ class _RolePageState extends State<RolePage> {
         ]);
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Column(
           children: [
+            TableFilterForm(
+              columns: _source.columns,
+              onSubmit: (filter) {
+                _filter = filter;
+                refreshTable();
+              },
+            ),
             Padding(
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(

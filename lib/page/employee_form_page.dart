@@ -5,7 +5,7 @@ import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/date_picker.dart';
 import 'package:fe_pos/model/employee.dart';
-
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class EmployeeFormPage extends StatefulWidget {
@@ -20,10 +20,10 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     with AutomaticKeepAliveClientMixin {
   late Flash flash;
   final codeInputWidget = TextEditingController();
-
+  final ImagePicker _picker = ImagePicker();
   final _formKey = GlobalKey<FormState>();
   Employee get employee => widget.employee;
-
+  late final Server _server;
   @override
   bool get wantKeepAlive => true;
 
@@ -31,17 +31,17 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
   void initState() {
     flash = Flash(context);
     super.initState();
+    final sessionState = context.read<SessionState>();
+    _server = sessionState.server;
   }
 
   void _submit() async {
-    var sessionState = context.read<SessionState>();
-    var server = sessionState.server;
     Map body = {'employee': employee};
     Future request;
     if (employee.id == null) {
-      request = server.post('employees', body: body);
+      request = _server.post('employees', body: body);
     } else {
-      request = server.put('employees/${employee.code}', body: body);
+      request = _server.put('employees/${employee.code}', body: body);
     }
     request.then((response) {
       if ([200, 201].contains(response.statusCode)) {
@@ -49,6 +49,8 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
         setState(() {
           employee.id = int.tryParse(data['id']);
           employee.code = data['attributes']['code'];
+          employee.imageId = data['attributes']['image_id'];
+          employee.imagePath = null;
           var tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(widget, 'Edit Karyawan ${employee.code}');
         });
@@ -62,8 +64,25 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
             messageType: MessageType.failed);
       }
     }, onError: (error, stackTrace) {
-      server.defaultErrorResponse(context: context, error: error);
+      _server.defaultErrorResponse(context: context, error: error);
     });
+  }
+
+  void pickImage() async {
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
+    if (pickedFile == null) {
+      return;
+    }
+
+    _server.upload('assets/temporary_file', pickedFile).then((response) {
+      if (response.statusCode == 200) {
+        employee.imagePath = response.data['data']['id'];
+      }
+    },
+        onError: (error) =>
+            _server.defaultErrorResponse(context: context, error: error));
   }
 
   @override
@@ -74,7 +93,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Center(
           child: Container(
             constraints: BoxConstraints.loose(const Size.fromWidth(600)),
@@ -125,7 +144,6 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   ),
                   Flexible(
                     child: AsyncDropdownFormField(
-                      key: const ValueKey('roleSelect'),
                       path: '/roles',
                       attributeKey: 'name',
                       label: const Text(
@@ -370,6 +388,26 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   const SizedBox(
                     height: 10,
                   ),
+                  ElevatedButton.icon(
+                    onPressed: pickImage,
+                    label: const Text('Pilih gambar.'),
+                    icon: const Icon(Icons.image),
+                  ),
+                  Visibility(
+                      visible: employee.imageId != null,
+                      child: SizedBox(
+                        width: 400,
+                        height: 300,
+                        child: Image.network(_server.generateUrl(
+                            'assets/${employee.imageId}', {}).toString()),
+                      )),
+                  Visibility(
+                      visible: employee.imagePath != null,
+                      child: SizedBox(
+                        width: 400,
+                        height: 300,
+                        child: Image.network(employee.imagePath ?? ''),
+                      )),
                   Padding(
                     padding: const EdgeInsets.only(top: 10, bottom: 10),
                     child: ElevatedButton(

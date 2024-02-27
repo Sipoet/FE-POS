@@ -133,7 +133,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Center(
           child: Container(
             constraints: BoxConstraints.loose(const Size.fromWidth(600)),

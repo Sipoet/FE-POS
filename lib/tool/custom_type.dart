@@ -33,6 +33,12 @@ class Date extends DateTime {
     return parsingDateTime(DateTime.now());
   }
 
+  @override
+  String toIso8601String() {
+    final value = super.toIso8601String();
+    return value.substring(0, 10);
+  }
+
   static Date parsingDateTime(DateTime value) {
     return Date(value.year, value.month, value.day, value.hour, value.minute,
         value.second, value.millisecond, value.microsecond);

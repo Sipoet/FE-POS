@@ -78,7 +78,7 @@ class _CustomDataTableState extends State<CustomDataTable> {
                         _sortColumnIndex = columnIndex;
                         _sortAscending = ascending;
                       });
-                      _dataSource.sortData(tableColumn.key, _sortAscending);
+                      _dataSource.sortData(tableColumn, _sortAscending);
                     })
                   : null,
               fixedWidth: tableColumn.width,

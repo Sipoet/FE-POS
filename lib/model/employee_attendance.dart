@@ -20,7 +20,7 @@ class EmployeeAttendance extends Model {
   Map<String, dynamic> toMap() => {
         'start_time': startTime,
         'end_time': endTime,
-        'employee_name': employee.name,
+        'employee.name': employee.name,
         'employee_id': employee.id,
         'date': date,
         'start_work': startWork,

@@ -5,6 +5,7 @@ import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/custom_data_table.dart';
+import 'package:fe_pos/widget/table_filter_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
@@ -24,6 +25,7 @@ class _PayslipPageState extends State<PayslipPage> {
   List<Payslip> payslips = [];
   final cancelToken = CancelToken();
   late Flash flash;
+  Map _filter = {};
 
   @override
   void initState() {
@@ -51,19 +53,20 @@ class _PayslipPageState extends State<PayslipPage> {
   }
 
   Future fetchPayslips({int page = 1}) {
-    String orderKey = _source.sortColumn ?? 'code';
+    String orderKey = _source.sortColumn?.sortKey ?? 'id';
+    Map<String, dynamic> param = {
+      'search_text': _searchText,
+      'page[page]': page.toString(),
+      'page[limit]': '100',
+      'include': 'payroll,employee',
+      'sort': "${_source.isAscending ? '' : '-'}$orderKey",
+    };
+    _filter.forEach((key, value) {
+      param[key] = value;
+    });
     try {
       return server
-          .get('payslips',
-              queryParam: {
-                'search_text': _searchText,
-                'page': page.toString(),
-                'per': '100',
-                'include': 'payroll,employee',
-                'order_key': orderKey,
-                'is_order_asc': _source.isAscending.toString(),
-              },
-              cancelToken: cancelToken)
+          .get('payslips', queryParam: param, cancelToken: cancelToken)
           .then((response) {
         if (response.statusCode != 200) {
           throw 'error: ${response.data.toString()}';
@@ -205,9 +208,17 @@ class _PayslipPageState extends State<PayslipPage> {
         ]);
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Column(
           children: [
+            TableFilterForm(
+              columns: _source.columns,
+              enums: const {'status': PayslipStatus.values},
+              onSubmit: (filter) {
+                _filter = filter;
+                refreshTable();
+              },
+            ),
             Padding(
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(
@@ -253,8 +264,9 @@ class _PayslipPageState extends State<PayslipPage> {
                 ],
               ),
             ),
-            if (_isDisplayTable)
-              SizedBox(
+            Visibility(
+              visible: _isDisplayTable,
+              child: SizedBox(
                 height: 600,
                 child: CustomDataTable(
                   controller: _source,
@@ -262,6 +274,7 @@ class _PayslipPageState extends State<PayslipPage> {
                   showCheckboxColumn: true,
                 ),
               ),
+            ),
           ],
         ),
       ),

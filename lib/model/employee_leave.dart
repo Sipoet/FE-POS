@@ -7,6 +7,7 @@ export 'package:fe_pos/tool/custom_type.dart';
 enum LeaveType {
   sickLeave,
   annualLeave,
+  changeDay,
   maternalLeave;
 
   @override
@@ -16,6 +17,9 @@ enum LeaveType {
     }
     if (this == annualLeave) {
       return 'annual_leave';
+    }
+    if (this == changeDay) {
+      return 'change_day';
     }
     if (this == maternalLeave) {
       return 'maternal_leave';
@@ -33,6 +37,10 @@ enum LeaveType {
     if (this == maternalLeave) {
       return 'Cuti Hamil';
     }
+
+    if (this == changeDay) {
+      return 'Ganti Hari';
+    }
     return '';
   }
 
@@ -42,6 +50,8 @@ enum LeaveType {
         return sickLeave;
       case 'annual_leave':
         return annualLeave;
+      case 'change_day':
+        return changeDay;
       case 'maternal_leave':
         return maternalLeave;
       default:
@@ -55,20 +65,26 @@ class EmployeeLeave extends Model {
   LeaveType leaveType;
   Employee employee;
   String? description;
+  Date? changeDay;
+  int? changeShift;
   int? id;
   EmployeeLeave(
       {required this.leaveType,
       required this.date,
       required this.employee,
+      this.changeDay,
+      this.changeShift,
       this.description,
       this.id});
 
   @override
   Map<String, dynamic> toMap() => {
-        'employee_name': employee.name,
+        'employee.name': employee.name,
         'employee_id': employee.id,
         'date': date,
         'description': description,
+        'change_day': changeDay,
+        'change_shift': changeShift,
         'leave_type': leaveType.toString(),
       };
 
@@ -94,9 +110,11 @@ class EmployeeLeave extends Model {
         employee: employee);
     model.id = int.parse(json['id']);
     model.date = Date.parse(attributes['date']);
-    model.leaveType = LeaveType.fromString(attributes['leave_type']);
+    model.leaveType = LeaveType.fromString(attributes['leave_type'] ?? '');
     model.employee = employee;
     model.description = attributes['description'];
+    model.changeDay = Date.tryParse(attributes['change_day'] ?? '');
+    model.changeShift = attributes['change_shift'];
     return model;
   }
 }

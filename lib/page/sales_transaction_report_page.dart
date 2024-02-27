@@ -100,7 +100,8 @@ class _SalesTransactionReportPageState
                 startDate: range.start,
                 endDate: range.end,
                 onChanged: (newRange) {
-                  range = newRange;
+                  range = newRange ??
+                      DateTimeRange(start: DateTime.now(), end: DateTime.now());
                   _refreshTable(range);
                 },
               ),

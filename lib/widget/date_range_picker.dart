@@ -12,6 +12,7 @@ class DateRangePicker extends StatefulWidget {
       required this.endDate,
       this.onChanged,
       this.controller,
+      this.canRemove = false,
       this.format = 'dd/MM/y'});
   final Widget? label;
   final Widget? icon;
@@ -20,7 +21,8 @@ class DateRangePicker extends StatefulWidget {
   final DateTime endDate;
   final String format;
   final bool enabled;
-  final Function(DateTimeRange range)? onChanged;
+  final bool canRemove;
+  final Function(DateTimeRange? range)? onChanged;
   final PickerController? controller;
   @override
   State<DateRangePicker> createState() => _DateRangePickerState();
@@ -28,7 +30,7 @@ class DateRangePicker extends StatefulWidget {
 
 class _DateRangePickerState extends State<DateRangePicker> {
   late final TextEditingController _controller;
-  late DateTimeRange _dateRange =
+  late DateTimeRange? _dateRange =
       DateTimeRange(start: widget.startDate, end: widget.endDate);
   @override
   void initState() {
@@ -44,11 +46,14 @@ class _DateRangePickerState extends State<DateRangePicker> {
 
   String _daterangeFormat() {
     var formater = DateFormat(widget.format);
-    if (_isSameDay(_dateRange.start, _dateRange.end)) {
+    if (_dateRange == null) {
+      return '';
+    }
+    if (_isSameDay(_dateRange!.start, _dateRange!.end)) {
       var hourFormat = DateFormat('HH:mm');
-      return "${formater.format(_dateRange.start)} ${hourFormat.format(_dateRange.start)} - ${hourFormat.format(_dateRange.end)}";
+      return "${formater.format(_dateRange!.start)} ${hourFormat.format(_dateRange!.start)} - ${hourFormat.format(_dateRange!.end)}";
     } else {
-      return "${formater.format(_dateRange.start)} - ${formater.format(_dateRange.end)}";
+      return "${formater.format(_dateRange!.start)} - ${formater.format(_dateRange!.end)}";
     }
   }
 
@@ -61,48 +66,65 @@ class _DateRangePickerState extends State<DateRangePicker> {
   @override
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
-    return TextField(
-      readOnly: true,
-      style: widget.textStyle,
-      decoration: InputDecoration(
-          contentPadding: const EdgeInsets.all(12),
-          focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                  width: 2,
-                  color: widget.enabled ? colorScheme.outline : Colors.grey)),
-          border: OutlineInputBorder(
-              borderSide: BorderSide(
-                  width: 2,
-                  color: widget.enabled ? colorScheme.outline : Colors.grey)),
-          label: widget.label,
-          icon: widget.icon),
-      controller: _controller,
-      onTap: () async {
-        if (!widget.enabled) return;
-        DateTimeRange? pickedDateRange = await showDateRangePicker(
-          barrierColor: colorScheme.outline,
-          initialEntryMode: DatePickerEntryMode.calendarOnly,
-          context: context,
-          firstDate: DateTime(DateTime.now().year - 5),
-          lastDate: DateTime(DateTime.now().year + 100),
-          initialDateRange: _dateRange,
-        );
-        if (pickedDateRange is! DateTimeRange) {
-          return;
-        }
-        setState(() {
-          _dateRange = DateTimeRange(
-              start: pickedDateRange.start,
-              end: pickedDateRange.end
-                  .copyWith(hour: 23, minute: 59, second: 59));
-
-          _controller.text = _daterangeFormat();
-          if (widget.onChanged is Function) {
-            widget.onChanged!.call(_dateRange);
+    return Stack(children: [
+      TextFormField(
+        readOnly: true,
+        style: widget.textStyle,
+        decoration: InputDecoration(
+            contentPadding: const EdgeInsets.all(12),
+            focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                    width: 2,
+                    color: widget.enabled ? colorScheme.outline : Colors.grey)),
+            border: OutlineInputBorder(
+                borderSide: BorderSide(
+                    width: 2,
+                    color: widget.enabled ? colorScheme.outline : Colors.grey)),
+            label: widget.label,
+            icon: widget.icon),
+        controller: _controller,
+        onTap: () async {
+          if (!widget.enabled) return;
+          DateTimeRange? pickedDateRange = await showDateRangePicker(
+            barrierColor: colorScheme.outline,
+            initialEntryMode: DatePickerEntryMode.calendarOnly,
+            context: context,
+            firstDate: DateTime(DateTime.now().year - 5),
+            lastDate: DateTime(DateTime.now().year + 100),
+            initialDateRange: _dateRange,
+          );
+          if (pickedDateRange is! DateTimeRange) {
+            return;
           }
-        });
-      },
-    );
+          setState(() {
+            _dateRange = DateTimeRange(
+                start: pickedDateRange.start,
+                end: pickedDateRange.end
+                    .copyWith(hour: 23, minute: 59, second: 59));
+
+            _controller.text = _daterangeFormat();
+            if (widget.onChanged is Function) {
+              widget.onChanged!.call(_dateRange);
+            }
+          });
+        },
+      ),
+      if (widget.canRemove)
+        Positioned(
+          top: 5,
+          right: 5,
+          child: IconButton(
+              iconSize: 30,
+              onPressed: () {
+                _controller.text = '';
+                _dateRange = null;
+                if (widget.onChanged != null) {
+                  widget.onChanged!(_dateRange);
+                }
+              },
+              icon: const Icon(Icons.close)),
+        )
+    ]);
   }
 }
 

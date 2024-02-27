@@ -8,7 +8,7 @@ export 'package:fe_pos/tool/custom_type.dart';
 class CustomDataTableSource<T extends Model> extends DataTableSource {
   late List<TableColumn> columns;
   late List<T> sortedData;
-  String? sortColumn;
+  TableColumn? sortColumn;
   bool isAscending = true;
   List<Widget> Function(T model, int index)? actionButtons;
   Map<int, T> selectedMap = {};
@@ -16,11 +16,13 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
   bool isShowActions = false;
   List<T> get selected => selectedMap.values.toList();
 
-  DataCell decorateValue(dynamic cell, TableColumn column) {
+  DataCell decorateValue(jsonData, TableColumn column) {
+    final cell = jsonData[column.attributeKey];
+    final val = _formatData(cell);
     return DataCell(Tooltip(
-      message: _formatData(cell),
-      triggerMode: TooltipTriggerMode.tap,
-      child: _decorateCell(cell),
+      message: val,
+      triggerMode: TooltipTriggerMode.longPress,
+      child: _decorateCell(val, cell.runtimeType),
     ));
   }
 
@@ -37,9 +39,8 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
     notifyListeners();
   }
 
-  Widget _decorateCell(cell) {
-    String val = _formatData(cell);
-    switch (cell.runtimeType) {
+  Widget _decorateCell(String val, runtimeType) {
+    switch (runtimeType) {
       case Date:
       case DateTime:
         return Align(
@@ -115,15 +116,15 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
     }
     sortedData = rawData;
 
-    sortData(sortColumn ?? columns[0].key, isAscending);
+    sortData(sortColumn ?? columns[0], isAscending);
   }
 
-  void sortData(String sortColumn, bool isAscending) {
+  void sortData(TableColumn sortColumn, bool isAscending) {
     this.sortColumn = sortColumn;
     this.isAscending = isAscending;
     sortedData.sort((T a, T b) {
-      var cellA = a.toMap()[sortColumn] ?? '';
-      var cellB = b.toMap()[sortColumn] ?? '';
+      var cellA = a.toMap()[sortColumn.attributeKey] ?? '';
+      var cellB = b.toMap()[sortColumn.attributeKey] ?? '';
       return cellA.compareTo(cellB) * (isAscending ? 1 : -1);
     });
     notifyListeners();
@@ -135,7 +136,7 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
   List<DataCell> decorateModel(T model, int index) {
     var jsonData = model.toMap();
     var rows = columns
-        .map<DataCell>((column) => decorateValue(jsonData[column.key], column))
+        .map<DataCell>((column) => decorateValue(jsonData, column))
         .toList();
     if (actionButtons != null) {
       rows.add(DataCell(Row(
@@ -179,14 +180,20 @@ class TableColumn {
   String key;
   String type;
   String name;
+  String? path;
+  String attributeKey;
+  String sortKey;
   bool canSort;
 
   TableColumn(
       {this.initX = 0,
       this.width = 175,
       this.excelWidth,
+      this.path,
+      required this.attributeKey,
       this.type = 'string',
       this.canSort = true,
+      required this.sortKey,
       required this.key,
       required this.name});
 

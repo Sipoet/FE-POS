@@ -72,10 +72,10 @@ class Payslip extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'employee_name': employee.name,
+        'employee.name': employee.name,
         'employee_id': employee.id,
         'payroll_id': payroll.id,
-        'payroll_name': payroll.name,
+        'payroll.name': payroll.name,
         'status': status.toString(),
         'start_date': startDate,
         'end_date': endDate,

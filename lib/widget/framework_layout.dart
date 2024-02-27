@@ -50,7 +50,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 icon: Icons.monetization_on,
                 isClosed: true,
                 label: 'Slip Gaji',
-                isDisabled: !setting.isAuthorize('payslip', 'indez'),
+                isDisabled: !setting.isAuthorize('payslip', 'index'),
                 page: const PayslipPage(),
                 key: 'payslip'),
             Menu(

@@ -2,12 +2,13 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:dio/io.dart';
 import 'package:dio/dio.dart';
+import 'package:fe_pos/page/loading_page.dart';
 export 'package:dio/dio.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:fe_pos/page/login_page.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:image_picker/image_picker.dart';
 
 class Server {
   String host;
@@ -52,8 +53,9 @@ class Server {
     switch (error.type) {
       case DioExceptionType.badResponse:
         if (response?.statusCode == 401) {
+          Navigator.pop(context);
           Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => const LoginPage()));
+              MaterialPageRoute(builder: (context) => const LoadingPage()));
         } else if (response?.statusCode == 500) {
           Flash flash = Flash(context);
           flash.showBanner(
@@ -82,17 +84,17 @@ class Server {
     }
   }
 
-  Future upload(String path, File file) async {
+  Future upload(String path, XFile file) async {
     String fileName = file.path.split('/').last;
     FormData formData = FormData.fromMap({
       "file": await MultipartFile.fromFile(file.path, filename: fileName),
     });
-    Uri url = _generateUrl(path, {});
+    Uri url = generateUrl(path, {});
     return dio.postUri(url, data: formData, options: generateHeaders('file'));
   }
 
   Future post(String path, {Map body = const {}, String type = 'json'}) async {
-    Uri url = _generateUrl(path, {});
+    Uri url = generateUrl(path, {});
     return dio.postUri(url, data: body, options: generateHeaders(type));
   }
 
@@ -100,19 +102,19 @@ class Server {
       {Map<String, dynamic> queryParam = const {},
       String type = 'json',
       cancelToken}) async {
-    Uri url = _generateUrl(path, queryParam);
+    Uri url = generateUrl(path, queryParam);
     return dio.getUri(url,
         cancelToken: cancelToken, options: generateHeaders(type));
   }
 
   Future put(String path, {Map body = const {}, String type = 'json'}) async {
-    Uri url = _generateUrl(path, {});
+    Uri url = generateUrl(path, {});
     return dio.putUri(url, data: body, options: generateHeaders(type));
   }
 
   Future delete(String path,
       {Map body = const {}, String type = 'json'}) async {
-    Uri url = _generateUrl(path, {});
+    Uri url = generateUrl(path, {});
     return dio.deleteUri(url, data: body, options: generateHeaders(type));
   }
 
@@ -137,7 +139,7 @@ class Server {
         responseType: _responseTypes[type]);
   }
 
-  Uri _generateUrl(String path, Map<String, dynamic> queryParams) {
+  Uri generateUrl(String path, Map<String, dynamic> queryParams) {
     return Uri(
         scheme: 'https',
         host: host,

@@ -107,6 +107,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   AsyncDropdownFormField(
                     key: const ValueKey('itemTypeSelect'),
                     path: '/item_types',
+                    attributeKey: 'jenis',
                     label: const Text(
                       'Jenis/Departemen :',
                       style: labelStyle,
@@ -127,6 +128,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   AsyncDropdownFormField(
                     key: const ValueKey('supplierSelect'),
                     path: '/suppliers',
+                    attributeKey: 'kode',
                     label: const Text(
                       'Supplier:',
                       style: labelStyle,
@@ -147,6 +149,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   AsyncDropdownFormField(
                     key: const ValueKey('brandSelect'),
                     path: '/brands',
+                    attributeKey: 'merek',
                     label: const Text(
                       'Merek:',
                       style: labelStyle,
@@ -167,6 +170,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   AsyncDropdownFormField(
                     key: const ValueKey('itemSelect'),
                     path: '/items',
+                    attributeKey: 'namaitem',
                     label: const Text(
                       'Item:',
                       style: labelStyle,
@@ -187,6 +191,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   AsyncDropdownFormField(
                     key: const ValueKey('blacklistItemTypeSelect'),
                     path: '/item_types',
+                    attributeKey: 'jenis',
                     label: const Text(
                       'Blacklist Jenis/Departemen :',
                       style: labelStyle,
@@ -199,6 +204,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   AsyncDropdownFormField(
                     key: const ValueKey('blacklistSupplierSelect'),
                     path: '/suppliers',
+                    attributeKey: 'kode',
                     label: const Text(
                       'Blacklist Supplier:',
                       style: labelStyle,
@@ -211,6 +217,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   AsyncDropdownFormField(
                     key: const ValueKey('blacklistBrandSelect'),
                     path: '/brands',
+                    attributeKey: 'merek',
                     label: const Text(
                       'Blacklist Merek:',
                       style: labelStyle,
@@ -411,7 +418,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                         style: labelStyle,
                       ),
                       icon: const Icon(Icons.calendar_today_outlined),
-                      onChanged: ((DateTimeRange range) {
+                      onChanged: ((DateTimeRange? range) {
+                        if (range == null) {
+                          return;
+                        }
                         discount.startTime = range.start;
                         discount.endTime = range.end;
                       }),

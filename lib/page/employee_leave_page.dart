@@ -4,6 +4,7 @@ import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/custom_data_table.dart';
+import 'package:fe_pos/widget/table_filter_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
@@ -24,6 +25,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage> {
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
+  Map _filter = {};
 
   @override
   void initState() {
@@ -51,19 +53,20 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage> {
   }
 
   Future fetchEmployeeLeaves({int page = 1}) {
-    String orderKey = _source.sortColumn ?? 'code';
+    String orderKey = _source.sortColumn?.sortKey ?? 'employees.name';
+    Map<String, dynamic> param = {
+      'search_text': _searchText,
+      'page[page]': page.toString(),
+      'page[limit]': '100',
+      'include': 'employee',
+      'sort': '${_source.isAscending ? '' : '-'}$orderKey',
+    };
+    _filter.forEach((key, value) {
+      param[key] = value;
+    });
     try {
       return server
-          .get('employee_leaves',
-              queryParam: {
-                'search_text': _searchText,
-                'page[offset]': ((page - 1) * 100).toString(),
-                'page[limit]': '100',
-                'include': 'employee',
-                'order_key': orderKey,
-                'is_order_asc': _source.isAscending.toString(),
-              },
-              cancelToken: cancelToken)
+          .get('employee_leaves', queryParam: param, cancelToken: cancelToken)
           .then((response) {
         if (response.statusCode != 200) {
           throw 'error: ${response.data.toString()}';
@@ -112,8 +115,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage> {
       tabManager.addTab(
           'Tambah Cuti Karyawan',
           EmployeeLeaveFormPage(
-              key: const ObjectKey('EmployeeLeaveFormPage'),
-              employeeLeave: employeeLeave));
+              key: ObjectKey(employeeLeave), employeeLeave: employeeLeave));
     });
   }
 
@@ -121,10 +123,9 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage> {
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Edit Cuti Karyawan',
+          'Edit Cuti Karyawan ${employeeLeave.id}',
           EmployeeLeaveFormPage(
-              key: const ObjectKey('EmployeeLeaveFormPage'),
-              employeeLeave: employeeLeave));
+              key: ObjectKey(employeeLeave), employeeLeave: employeeLeave));
     });
   }
 
@@ -211,9 +212,17 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage> {
         ]);
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Column(
           children: [
+            TableFilterForm(
+              columns: _source.columns,
+              enums: const {'leave_type': LeaveType.values},
+              onSubmit: (filter) {
+                _filter = filter;
+                refreshTable();
+              },
+            ),
             Padding(
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(

@@ -156,7 +156,10 @@ class _HomePageState extends State<HomePage> {
                     startDate: controller.range.start,
                     endDate: controller.range.end,
                     controller: pickerController,
-                    onChanged: (DateTimeRange range) {
+                    onChanged: (DateTimeRange? range) {
+                      if (range == null) {
+                        return;
+                      }
                       controller.changeDate(range);
                     },
                   ),

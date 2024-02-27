@@ -61,7 +61,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                           style: labelStyle,
                         ),
                         onChanged: (range) {
-                          startDate = range.start;
+                          startDate = range!.start;
                           endDate = range.end;
                         },
                         startDate: startDate,

@@ -7,6 +7,7 @@ import 'package:fe_pos/widget/custom_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/widget/table_filter_form.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({super.key});
@@ -23,6 +24,7 @@ class _UserPageState extends State<UserPage> {
   List<User> users = [];
   final cancelToken = CancelToken();
   late Flash flash;
+  Map _filter = {};
 
   @override
   void initState() {
@@ -50,18 +52,20 @@ class _UserPageState extends State<UserPage> {
   }
 
   Future fetchUsers({int page = 1}) {
-    String orderKey = _source.sortColumn ?? 'username';
+    String orderKey = _source.sortColumn?.sortKey ?? 'username';
+    Map<String, dynamic> param = {
+      'search_text': _searchText,
+      'page[page]': page.toString(),
+      'page[limit]': '100',
+      'include': 'role',
+      'sort': '${_source.isAscending ? '' : '-'}$orderKey',
+    };
+    _filter.forEach((key, value) {
+      param[key] = value;
+    });
     try {
       return server
-          .get('users',
-              queryParam: {
-                'search_text': _searchText,
-                'page[page]': page.toString(),
-                'page[limit]': '100',
-                'include': 'role',
-                'sort': '${_source.isAscending ? '' : '-'}$orderKey',
-              },
-              cancelToken: cancelToken)
+          .get('users', queryParam: param, cancelToken: cancelToken)
           .then((response) {
         if (response.statusCode != 200) {
           throw 'error: ${response.data.toString()}';
@@ -194,9 +198,16 @@ class _UserPageState extends State<UserPage> {
         ]);
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Column(
           children: [
+            TableFilterForm(
+              columns: _source.columns,
+              onSubmit: (filter) {
+                _filter = filter;
+                refreshTable();
+              },
+            ),
             Padding(
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(

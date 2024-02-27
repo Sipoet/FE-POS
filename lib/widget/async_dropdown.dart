@@ -18,7 +18,7 @@ class AsyncDropdownFormField extends FormField<List<BsSelectBoxOption>?> {
     super.validator,
     bool multiple = false,
     Widget? label,
-    Future Function(Server server, int offset, String searchText)? request,
+    Future Function(Server server, int page, String searchText)? request,
     super.autovalidateMode,
   }) : super(
           initialValue: selected ?? controller?.getSelectedAll(),
@@ -87,7 +87,7 @@ class AsyncDropdown extends StatefulWidget {
   final bool multiple;
   final void Function(List<BsSelectBoxOption>)? onChanged;
   final BorderSide side;
-  final Future Function(Server server, int offset, String searchText)? request;
+  final Future Function(Server server, int page, String searchText)? request;
 
   @override
   State<AsyncDropdown> createState() => _AsyncDropdownState();
@@ -113,10 +113,10 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
 
   Future Function(Server server, int page, String searchText) get request =>
       widget.request ??
-      (Server server, int offset, String searchText) {
+      (Server server, int page, String searchText) {
         return server.get(widget.path!, queryParam: {
           'search_text': searchText,
-          'page[offset]': offset.toString(),
+          'page[page]': page.toString(),
           'page[limit]': '100'
         });
       };
@@ -149,6 +149,16 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
           widget.onChanged!(_controller.getSelectedAll());
         }
       },
+      onClear: () {
+        if (widget.onChanged != null) {
+          widget.onChanged!(_controller.getSelectedAll());
+        }
+      },
+      onRemoveSelectedItem: (value) {
+        if (widget.onChanged != null) {
+          widget.onChanged!(_controller.getSelectedAll());
+        }
+      },
       size: const BsSelectBoxSize(maxHeight: 200),
       style: BsSelectBoxStyle(
           border: Border.fromBorderSide(widget.side),
@@ -166,7 +176,7 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
   }
 
   Future<List<BsSelectBoxOption>> getData({String query = ''}) async {
-    var response = await request(server, 0, query).onError(
+    var response = await request(server, 1, query).onError(
         (error, stackTrace) => {
               server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: [])

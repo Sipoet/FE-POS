@@ -7,6 +7,7 @@ import 'package:fe_pos/widget/custom_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/widget/table_filter_form.dart';
 
 class EmployeePage extends StatefulWidget {
   const EmployeePage({super.key});
@@ -23,6 +24,7 @@ class _EmployeePageState extends State<EmployeePage> {
   List<Employee> employees = [];
   final cancelToken = CancelToken();
   late Flash flash;
+  Map _filter = {};
 
   @override
   void initState() {
@@ -50,21 +52,22 @@ class _EmployeePageState extends State<EmployeePage> {
   }
 
   Future fetchEmployees({int page = 1}) {
-    String orderKey = _source.sortColumn ?? 'code';
+    String orderKey = _source.sortColumn?.sortKey ?? 'code';
+    Map<String, dynamic> param = {
+      'search_text': _searchText,
+      'page': page.toString(),
+      'per': '100',
+      'fields[role]': 'name',
+      'fields[payroll]': 'name',
+      'include': 'role,payroll',
+      'sort': '${_source.isAscending ? '' : '-'}$orderKey',
+    };
+    _filter.forEach((key, value) {
+      param[key] = value;
+    });
     try {
       return server
-          .get('employees',
-              queryParam: {
-                'search_text': _searchText,
-                'page': page.toString(),
-                'per': '100',
-                'field[role]': 'name',
-                'field[payroll]': 'name',
-                'include': 'role,payroll',
-                'order_key': orderKey,
-                'is_order_asc': _source.isAscending.toString(),
-              },
-              cancelToken: cancelToken)
+          .get('employees', queryParam: param, cancelToken: cancelToken)
           .then((response) {
         if (response.statusCode != 200) {
           throw 'error: ${response.data.toString()}';
@@ -252,9 +255,17 @@ class _EmployeePageState extends State<EmployeePage> {
         ]);
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Column(
           children: [
+            TableFilterForm(
+              columns: _source.columns,
+              enums: const {'status': EmployeeStatus.values},
+              onSubmit: (filter) {
+                _filter = filter;
+                refreshTable();
+              },
+            ),
             Padding(
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(

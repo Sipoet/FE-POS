@@ -17,7 +17,7 @@ class User extends Model {
         'username': username,
         'email': email,
         'role_id': role.id,
-        'role_name': role.name,
+        'role.name': role.name,
         'password': password,
         'password_confirmation': passwordConfirmation
       };

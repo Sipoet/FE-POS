@@ -2,10 +2,9 @@ import 'package:fe_pos/model/sales_group_by_supplier.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/custom_data_table.dart';
+import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/dropdown_remote_connection.dart';
-
-import 'package:bs_flutter_selectbox/bs_flutter_selectbox.dart';
 
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
@@ -137,19 +136,6 @@ class _SalesGroupBySupplierReportPageState
     });
   }
 
-  List<BsSelectBoxOption> convertToOptions(List list) {
-    return list
-        .map(
-          ((row) => BsSelectBoxOption(
-              value: row['id'],
-              text: Tooltip(
-                  message: row['name'],
-                  child: Text(row['name'].substring(
-                      0, row['name'].length < 30 ? row['name'].length : 30))))),
-        )
-        .toList();
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -157,8 +143,7 @@ class _SalesGroupBySupplierReportPageState
     double tableHeight =
         MediaQuery.of(context).size.height - padding.top - padding.bottom - 150;
     tableHeight = tableHeight > 600 ? 600 : tableHeight;
-    final DropdownRemoteConnection connection =
-        DropdownRemoteConnection(server, context);
+
     dataSource.columns = setting.tableColumn('salesGroupBySupplierReport');
 
     return SingleChildScrollView(
@@ -174,78 +159,37 @@ class _SalesGroupBySupplierReportPageState
               direction: Axis.horizontal,
               children: [
                 Container(
+                    padding: const EdgeInsets.only(right: 10),
+                    constraints: const BoxConstraints(maxWidth: 350),
+                    child: AsyncDropdownFormField(
+                      label: const Text('Merek :', style: _filterLabelStyle),
+                      key: const ValueKey('brandSelect'),
+                      controller: _brandSelectWidget,
+                      attributeKey: 'merek',
+                      path: '/brands',
+                    )),
+                Container(
+                    padding: const EdgeInsets.only(right: 10),
+                    constraints: const BoxConstraints(maxWidth: 350),
+                    child: AsyncDropdownFormField(
+                      label: const Text('Jenis/Departemen :',
+                          style: _filterLabelStyle),
+                      key: const ValueKey('brandSelect'),
+                      controller: _itemTypeSelectWidget,
+                      attributeKey: 'jenis',
+                      path: '/item_types',
+                    )),
+                Container(
                   padding: const EdgeInsets.only(right: 10),
                   constraints: const BoxConstraints(maxWidth: 350),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Padding(
-                            padding: EdgeInsets.only(left: 5, bottom: 5),
-                            child: Text('Merek :', style: _filterLabelStyle)),
-                        Flexible(
-                            child: BsSelectBox(
-                          key: const ValueKey('brandSelect'),
-                          searchable: true,
-                          controller: _brandSelectWidget,
-                          serverSide: (params) async {
-                            var list = await connection.getData('/brands',
-                                query: params['searchValue'].toString());
-                            return BsSelectBoxResponse(
-                                options: convertToOptions(list));
-                          },
-                        )),
-                      ]),
+                  child: AsyncDropdownFormField(
+                    label: const Text('Supplier :', style: _filterLabelStyle),
+                    key: const ValueKey('supplierSelect'),
+                    controller: _supplierSelectWidget,
+                    attributeKey: 'nama',
+                    path: '/suppliers',
+                  ),
                 ),
-                Container(
-                    padding: const EdgeInsets.only(right: 10),
-                    constraints: const BoxConstraints(maxWidth: 350),
-                    child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.only(left: 5, bottom: 5),
-                            child: Text('Jenis/Departemen :',
-                                style: _filterLabelStyle),
-                          ),
-                          Flexible(
-                              child: BsSelectBox(
-                            key: const ValueKey('itemTypeSelect'),
-                            searchable: true,
-                            controller: _itemTypeSelectWidget,
-                            serverSide: (params) async {
-                              var list = await connection.getData('/item_types',
-                                  query: params['searchValue'].toString());
-                              return BsSelectBoxResponse(
-                                  options: convertToOptions(list));
-                            },
-                          )),
-                        ])),
-                Container(
-                    padding: const EdgeInsets.only(right: 10),
-                    constraints: const BoxConstraints(maxWidth: 350),
-                    child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.only(left: 5, bottom: 5),
-                            child: Text('Supplier :', style: _filterLabelStyle),
-                          ),
-                          Flexible(
-                              child: BsSelectBox(
-                            key: const ValueKey('supplierSelect'),
-                            searchable: true,
-                            controller: _supplierSelectWidget,
-                            serverSide: (params) async {
-                              var list = await connection.getData('/suppliers',
-                                  query: params['searchValue'].toString());
-                              return BsSelectBoxResponse(
-                                  options: convertToOptions(list));
-                            },
-                          )),
-                        ])),
               ],
             ),
             const SizedBox(
