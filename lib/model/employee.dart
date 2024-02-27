@@ -44,6 +44,7 @@ class Employee extends Model {
   String? bankAccount;
   String? description;
   String? imagePath;
+  String? bankRegisterName;
   int? id;
   int? imageId;
   String code;
@@ -64,6 +65,7 @@ class Employee extends Model {
       this.imageId,
       this.imagePath,
       this.bankAccount,
+      this.bankRegisterName,
       this.status = EmployeeStatus.inactive});
 
   @override
@@ -106,7 +108,8 @@ class Employee extends Model {
         bank: attributes['bank'],
         bankAccount: attributes['bank_account'],
         description: attributes['description'],
-        imageId: attributes['image_id']);
+        imageId: attributes['image_id'],
+        bankRegisterName: attributes['bank_register_name']);
   }
 
   @override
@@ -129,6 +132,7 @@ class Employee extends Model {
         'bank_account': bankAccount,
         'payroll_id': payroll?.id,
         'payroll.name': payroll?.name,
+        'bank_register_name': bankRegisterName,
       };
 
   void updateAttributes() {}

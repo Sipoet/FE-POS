@@ -336,6 +336,19 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                       employee.bankAccount = newValue.toString();
                     },
                   ),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                        labelText: 'Bank Atas Nama',
+                        labelStyle: labelStyle,
+                        border: OutlineInputBorder()),
+                    initialValue: employee.bankRegisterName,
+                    onSaved: (newValue) {
+                      employee.bankRegisterName = newValue.toString();
+                    },
+                    onChanged: (newValue) {
+                      employee.bankRegisterName = newValue.toString();
+                    },
+                  ),
                   const SizedBox(
                     height: 10,
                   ),
