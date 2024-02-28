@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_picker.dart';
@@ -19,7 +20,7 @@ class PayslipFormPage extends StatefulWidget {
 class _PayslipFormPageState extends State<PayslipFormPage>
     with AutomaticKeepAliveClientMixin {
   late Flash flash;
-
+  late final Setting setting;
   final _formKey = GlobalKey<FormState>();
   Payslip get payslip => widget.payslip;
 
@@ -28,6 +29,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
 
   @override
   void initState() {
+    setting = context.read<Setting>();
     flash = Flash(context);
     super.initState();
     if (payslip.id != null) {
@@ -88,8 +90,15 @@ class _PayslipFormPageState extends State<PayslipFormPage>
         final data = response.data['data'];
         setState(() {
           payslip.id = int.tryParse(data['id']);
-          payslip.status =
-              PayslipStatus.fromString(data['attributes']['status']);
+          final attributes = data['attributes'];
+          if (attributes != null) {
+            payslip.status = PayslipStatus.fromString(attributes['status']);
+            payslip.grossSalary =
+                double.tryParse(attributes['gross_salary']) ?? 0;
+            payslip.taxAmount = double.tryParse(attributes['tax_amount']) ?? 0;
+            payslip.nettSalary =
+                double.tryParse(attributes['nett_salary']) ?? 0;
+          }
           var tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(widget, 'Edit payslip ${payslip.id}');
         });
@@ -175,6 +184,29 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                     },
                     onChanged: (newValue) {
                       payslip.paidTimeOff = int.parse(newValue.toString());
+                    },
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  TextFormField(
+                    enabled: false,
+                    decoration: const InputDecoration(
+                        labelText: 'Jumlah Hari Kerja',
+                        labelStyle: labelStyle,
+                        border: OutlineInputBorder()),
+                    initialValue: payslip.workDays.toString(),
+                    onSaved: (newValue) {
+                      payslip.workDays = int.parse(newValue.toString());
+                    },
+                    validator: (newValue) {
+                      if (newValue == null || newValue.isEmpty) {
+                        return 'harus diisi';
+                      }
+                      return null;
+                    },
+                    onChanged: (newValue) {
+                      payslip.workDays = int.parse(newValue.toString());
                     },
                   ),
                   const SizedBox(
@@ -413,6 +445,49 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                               ));
                             }),
                         child: const Text('Tambah')),
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: SizedBox(
+                      width: 300,
+                      child: Table(
+                        children: [
+                          TableRow(children: [
+                            const Text(
+                              "Jumlah Kotor :",
+                              style: labelStyle,
+                              textAlign: TextAlign.right,
+                            ),
+                            Text(
+                              setting.moneyFormat(payslip.grossSalary),
+                              textAlign: TextAlign.right,
+                            ),
+                          ]),
+                          TableRow(children: [
+                            const Text(
+                              "PPN :",
+                              style: labelStyle,
+                              textAlign: TextAlign.right,
+                            ),
+                            Text(
+                              setting.moneyFormat(payslip.taxAmount),
+                              textAlign: TextAlign.right,
+                            ),
+                          ]),
+                          TableRow(children: [
+                            const Text(
+                              "Jumlah Bersih :",
+                              style: labelStyle,
+                              textAlign: TextAlign.right,
+                            ),
+                            Text(
+                              setting.moneyFormat(payslip.nettSalary),
+                              textAlign: TextAlign.right,
+                            ),
+                          ])
+                        ],
+                      ),
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 10, bottom: 10),

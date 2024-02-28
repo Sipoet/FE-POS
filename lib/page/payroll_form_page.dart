@@ -237,6 +237,11 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                             'Akhir',
                             style: labelStyle,
                           )),
+                          const DataColumn(
+                              label: Text(
+                            'Long shift per minggu',
+                            style: labelStyle,
+                          )),
                           DataColumn(
                               label: ElevatedButton(
                             onPressed: () {
@@ -324,6 +329,23 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                     },
                                     onChanged: (value) =>
                                         workSchedule.endWork = value,
+                                  )),
+                                  DataCell(TextFormField(
+                                    decoration: const InputDecoration(
+                                        border: OutlineInputBorder()),
+                                    initialValue: workSchedule.longShiftPerWeek
+                                        ?.toString(),
+                                    onSaved: (value) =>
+                                        workSchedule.longShiftPerWeek =
+                                            int.tryParse(value ?? ''),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'harus diisi';
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (value) => workSchedule
+                                        .longShiftPerWeek = int.tryParse(value),
                                   )),
                                   DataCell(ElevatedButton(
                                     onPressed: () {

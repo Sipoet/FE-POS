@@ -67,6 +67,8 @@ enum PayrollFormula {
   basic,
   fulltime,
   overtimeHour,
+  sickLeaveCut,
+  annualLeaveCut,
   periodProportional;
 
   @override
@@ -76,6 +78,12 @@ enum PayrollFormula {
     }
     if (this == periodProportional) {
       return 'period_proportional';
+    }
+    if (this == sickLeaveCut) {
+      return 'sick_leave_cut';
+    }
+    if (this == annualLeaveCut) {
+      return 'annual_leave_cut';
     }
     return super.toString().split('.').last;
   }
@@ -90,6 +98,10 @@ enum PayrollFormula {
         return fulltime;
       case 'period_proportional':
         return periodProportional;
+      case 'annual_leave_cut':
+        return annualLeaveCut;
+      case 'sick_leave_cut':
+        return sickLeaveCut;
       default:
         throw 'invalid Payroll formula';
     }

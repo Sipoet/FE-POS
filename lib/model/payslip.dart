@@ -47,6 +47,7 @@ class Payslip extends Model {
   int unknownAbsence;
   int paidTimeOff;
   int overtimeHour;
+  int workDays;
   int late;
   int? id;
   List<PayslipLine> lines;
@@ -67,6 +68,7 @@ class Payslip extends Model {
       this.paidTimeOff = 0,
       this.overtimeHour = 0,
       this.late = 0,
+      this.workDays = 0,
       this.lines = const [],
       this.id});
 
@@ -89,6 +91,7 @@ class Payslip extends Model {
         'unknown_absence': unknownAbsence,
         'paid_time_off': paidTimeOff,
         'overtime_hour': overtimeHour,
+        'work_days': workDays,
         'late': late,
       };
 
@@ -144,6 +147,7 @@ class Payslip extends Model {
     model.paidTimeOff = attributes['paid_time_off'];
     model.overtimeHour = attributes['overtime_hour'];
     model.late = attributes['late'];
+    model.workDays = attributes['work_days'];
     return model;
   }
 }

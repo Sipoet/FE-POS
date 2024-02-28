@@ -45,6 +45,7 @@ dependencies:
   permission_handler: ^11.1.0
   device_info_plus: ^9.1.1
   excel: ^4.0.2
+  image_picker: ^1.0.7
 dev_dependencies:
   flutter_test:
     sdk: flutter

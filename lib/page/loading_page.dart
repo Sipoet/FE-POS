@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fe_pos/tool/setting.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/page/login_page.dart';
@@ -9,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
 
 class LoadingPage extends StatefulWidget {
   const LoadingPage({super.key});
@@ -54,7 +53,7 @@ class _LoadingPageState extends State<LoadingPage>
   }
 
   Future<void> checkPermission() async {
-    if (Platform.isAndroid) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
       DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
       if (androidInfo.version.sdkInt >= 30) {

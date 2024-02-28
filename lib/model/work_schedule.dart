@@ -7,11 +7,13 @@ class WorkSchedule extends Model {
   int shift;
   int dayOfWeek;
   int? id;
+  int? longShiftPerWeek;
   WorkSchedule(
       {required this.beginWork,
       required this.endWork,
       this.dayOfWeek = 1,
       this.shift = 1,
+      this.longShiftPerWeek = 0,
       this.id});
 
   @override
@@ -20,6 +22,7 @@ class WorkSchedule extends Model {
         'end_work': endWork,
         'shift': shift,
         'day_of_week': dayOfWeek,
+        'long_shift_per_week': longShiftPerWeek,
       };
 
   @override
@@ -32,6 +35,7 @@ class WorkSchedule extends Model {
     model.endWork = attributes['end_work'];
     model.shift = attributes['shift'];
     model.dayOfWeek = attributes['day_of_week'];
+    model.longShiftPerWeek = attributes['long_shift_per_week'];
     return model;
   }
 }

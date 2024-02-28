@@ -53,6 +53,9 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage> {
   }
 
   Future fetchEmployeeAttendances({int page = 1}) {
+    if (page > 3) {
+      return Future(() => null);
+    }
     String orderKey = _source.sortColumn?.sortKey ?? 'employees.name';
     Map<String, dynamic> param = {
       'search_text': _searchText,
@@ -106,9 +109,9 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage> {
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Mass Upload Employee Attendance',
+          'Mass Upload Absensi Karyawan',
           const EmployeeAttendanceFormPage(
-            key: ObjectKey('EmployeeAttendanceFormPage'),
+            key: ValueKey('EmployeeAttendanceMassUploadFormPage'),
           ));
     });
   }

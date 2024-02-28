@@ -270,7 +270,7 @@ class _PayslipPageState extends State<PayslipPage> {
                 height: 600,
                 child: CustomDataTable(
                   controller: _source,
-                  fixedLeftColumns: 1,
+                  fixedLeftColumns: 2,
                   showCheckboxColumn: true,
                 ),
               ),

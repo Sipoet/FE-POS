@@ -1,6 +1,6 @@
 import 'package:universal_html/html.dart' as html;
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
@@ -23,16 +23,20 @@ class FileSaver {
 
   Future<String?> downloadPath(String filename, String extFile) async {
     String? outputFile;
-    if (Platform.isIOS) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
       Directory? dir = await getDownloadsDirectory();
       outputFile = "${dir?.path}/$filename";
-    } else if (Platform.isAndroid) {
+    } else if (defaultTargetPlatform == TargetPlatform.android) {
       Directory? dir = Directory('/storage/emulated/0/Download');
       if (!dir.existsSync()) {
         dir = await getExternalStorageDirectory();
       }
       outputFile = "${dir?.path}/$filename";
-    } else if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+    } else if ([
+      TargetPlatform.linux,
+      TargetPlatform.windows,
+      TargetPlatform.macOS
+    ].contains(defaultTargetPlatform)) {
       outputFile = await FilePicker.platform.saveFile(
           dialogTitle: 'Please select an output file:',
           fileName: filename,

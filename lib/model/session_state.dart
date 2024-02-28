@@ -1,9 +1,7 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:fe_pos/model/server.dart';
 export 'package:fe_pos/model/server.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SessionState extends ChangeNotifier {
@@ -84,11 +82,6 @@ class SessionState extends ChangeNotifier {
             },
         onError: (error, stackTrace) =>
             server.defaultErrorResponse(context: context, error: error));
-  }
-
-  Future<String> sessionPath() async {
-    Directory? dir = await getApplicationCacheDirectory();
-    return "${dir.path}/session.yaml";
   }
 
   void saveSession() async {
