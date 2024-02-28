@@ -224,6 +224,10 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
               .toList();
           _source.setData(payslip);
         });
+        flash.showBanner(
+            messageType: MessageType.success,
+            title: 'Sukses',
+            description: 'Sukses buat slip gaji');
       } else {
         flash.showBanner(
             messageType: MessageType.failed,
