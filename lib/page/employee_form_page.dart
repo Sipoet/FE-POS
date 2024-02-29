@@ -336,6 +336,9 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                       employee.bankAccount = newValue.toString();
                     },
                   ),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   TextFormField(
                     decoration: const InputDecoration(
                         labelText: 'Bank Atas Nama',

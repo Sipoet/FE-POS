@@ -48,6 +48,7 @@ class Employee extends Model {
   int? id;
   int? imageId;
   String code;
+  int shift;
   Employee(
       {this.id,
       required this.code,
@@ -62,6 +63,7 @@ class Employee extends Model {
       this.contactNumber,
       this.address,
       this.bank,
+      this.shift = 1,
       this.imageId,
       this.imagePath,
       this.bankAccount,
@@ -109,6 +111,7 @@ class Employee extends Model {
         bankAccount: attributes['bank_account'],
         description: attributes['description'],
         imageId: attributes['image_id'],
+        shift: attributes['shift'],
         bankRegisterName: attributes['bank_register_name']);
   }
 
@@ -131,6 +134,7 @@ class Employee extends Model {
         'image_id': imageId,
         'bank_account': bankAccount,
         'payroll_id': payroll?.id,
+        'shift': shift,
         'payroll.name': payroll?.name,
         'bank_register_name': bankRegisterName,
       };
