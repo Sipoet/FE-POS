@@ -59,8 +59,8 @@ class _DiscountPageState extends State<DiscountPage> {
     String orderKey = _source.sortColumn?.sortKey ?? 'code';
     Map<String, dynamic> param = {
       'search_text': _searchText,
-      'page': page.toString(),
-      'per': '100',
+      'page[page]': page.toString(),
+      'page[limit]': '100',
       'order_key': orderKey,
       'sort': '${_source.isAscending ? '' : '-'}$orderKey',
     };
