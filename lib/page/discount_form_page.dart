@@ -95,14 +95,18 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      const Text('kode diskon : ', style: labelStyle),
-                      Text(
-                        discount.code,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      label: Text('kode diskon : ', style: labelStyle),
+                    ),
+                    initialValue: discount.code,
+                    onChanged: (value) {
+                      discount.code = value;
+                    },
+                    readOnly: discount.id != null,
+                    onSaved: (value) {
+                      discount.code = value ?? '';
+                    },
                   ),
                   AsyncDropdownFormField(
                     key: const ValueKey('itemTypeSelect'),

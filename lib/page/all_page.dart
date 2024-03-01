@@ -10,6 +10,10 @@ export 'sales_group_by_supplier_report_page.dart';
 export 'login_page.dart';
 
 // master
+export 'item_page.dart';
+export 'supplier_page.dart';
+export 'brand_page.dart';
+export 'item_type_page.dart';
 export 'discount_page.dart';
 export 'employee_page.dart';
 export 'user_page.dart';
