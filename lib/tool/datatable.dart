@@ -22,7 +22,7 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
     return DataCell(Tooltip(
       message: val,
       triggerMode: TooltipTriggerMode.longPress,
-      child: _decorateCell(val, cell.runtimeType),
+      child: _decorateCell(val, column.type),
     ));
   }
 
@@ -39,10 +39,13 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
     notifyListeners();
   }
 
-  Widget _decorateCell(String val, runtimeType) {
-    switch (runtimeType) {
-      case Date:
-      case DateTime:
+  Widget _decorateCell(String val, String columnType) {
+    switch (columnType) {
+      // case 'image':
+      // return Image.network('assets/${val}')
+      // case 'link':
+      case 'date':
+      case 'datetime':
         return Align(
           alignment: Alignment.topLeft,
           child: Text(
@@ -50,9 +53,10 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
             overflow: TextOverflow.ellipsis,
           ),
         );
-      case Money:
-      case double:
-      case int:
+      case 'money':
+      case 'double':
+      case 'decimal':
+      case 'integer':
         return Align(
             alignment: Alignment.centerRight,
             child: Text(

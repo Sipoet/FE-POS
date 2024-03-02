@@ -90,53 +90,56 @@ class Server {
       "file": await MultipartFile.fromFile(file.path, filename: fileName),
     });
     Uri url = generateUrl(path, {});
-    return dio.postUri(url, data: formData, options: generateHeaders('file'));
+    return dio.postUri(url,
+        data: formData, options: generateHeaders('file', 'json'));
   }
 
   Future post(String path, {Map body = const {}, String type = 'json'}) async {
     Uri url = generateUrl(path, {});
-    return dio.postUri(url, data: body, options: generateHeaders(type));
+    return dio.postUri(url, data: body, options: generateHeaders(type, type));
   }
 
   Future get(String path,
       {Map<String, dynamic> queryParam = const {},
       String type = 'json',
+      String? responseType,
       cancelToken}) async {
     Uri url = generateUrl(path, queryParam);
     return dio.getUri(url,
-        cancelToken: cancelToken, options: generateHeaders(type));
+        cancelToken: cancelToken,
+        options: generateHeaders(type, responseType ?? type));
   }
 
   Future put(String path, {Map body = const {}, String type = 'json'}) async {
     Uri url = generateUrl(path, {});
-    return dio.putUri(url, data: body, options: generateHeaders(type));
+    return dio.putUri(url, data: body, options: generateHeaders(type, type));
   }
 
   Future delete(String path,
       {Map body = const {}, String type = 'json'}) async {
     Uri url = generateUrl(path, {});
-    return dio.deleteUri(url, data: body, options: generateHeaders(type));
+    return dio.deleteUri(url, data: body, options: generateHeaders(type, type));
   }
 
   Future download(String path, String type, var destinationPath) async {
     return dio.download("https://$host/api/$path", destinationPath,
-        options: generateHeaders(type));
+        options: generateHeaders('json', type));
   }
 
   final Map<String, ResponseType> _responseTypes = {
     'json': ResponseType.json,
     'text': ResponseType.plain,
     'xlsx': ResponseType.bytes,
-    'file': ResponseType.json,
+    'file': ResponseType.bytes,
   };
-  Options generateHeaders(String type) {
+  Options generateHeaders(String requestType, String responseType) {
     return Options(
         headers: {
           if (jwt.isNotEmpty) 'Authorization': jwt,
         },
         contentType:
-            type == 'file' ? 'multipart/form-data' : 'application/json',
-        responseType: _responseTypes[type]);
+            requestType == 'file' ? 'multipart/form-data' : 'application/json',
+        responseType: _responseTypes[responseType]);
   }
 
   Uri generateUrl(String path, Map<String, dynamic> queryParams) {

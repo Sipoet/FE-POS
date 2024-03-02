@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -24,6 +26,8 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
   final _formKey = GlobalKey<FormState>();
   Employee get employee => widget.employee;
   late final Server _server;
+  Uint8List? _imageBytes;
+
   @override
   bool get wantKeepAlive => true;
 
@@ -33,10 +37,18 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     super.initState();
     final sessionState = context.read<SessionState>();
     _server = sessionState.server;
+    if (employee.imageCode != null) {
+      loadImage(employee.imageCode ?? '');
+    }
   }
 
   void _submit() async {
-    Map body = {'employee': employee};
+    Map body = {
+      'data': {
+        'type': 'employee',
+        'attributes': employee.toJson(),
+      }
+    };
     Future request;
     if (employee.id == null) {
       request = _server.post('employees', body: body);
@@ -49,8 +61,6 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
         setState(() {
           employee.id = int.tryParse(data['id']);
           employee.code = data['attributes']['code'];
-          employee.imageId = data['attributes']['image_id'];
-          employee.imagePath = null;
           var tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(widget, 'Edit Karyawan ${employee.code}');
         });
@@ -75,14 +85,43 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     if (pickedFile == null) {
       return;
     }
+    if (await pickedFile.length() > 1024000000) {
+      flash.showBanner(
+          messageType: MessageType.failed,
+          title: 'Gagal Upload gambar',
+          description: 'Gambar tidak boleh lebih dari 1MB');
+      return;
+    }
 
-    _server.upload('assets/temporary_file', pickedFile).then((response) {
-      if (response.statusCode == 200) {
-        employee.imagePath = response.data['data']['id'];
+    _server.upload('assets', pickedFile).then((response) {
+      if (response.statusCode == 201) {
+        setState(() {
+          employee.imageCode = response.data['data']['attributes']['code'];
+          if (employee.imageCode != null) {
+            loadImage(employee.imageCode ?? '');
+          } else {
+            _imageBytes = null;
+          }
+        });
       }
     },
         onError: (error) =>
             _server.defaultErrorResponse(context: context, error: error));
+  }
+
+  void loadImage(String imageCode) async {
+    final response =
+        await _server.get('assets/$imageCode', responseType: 'file');
+    if (response.statusCode == 200) {
+      setState(() {
+        _imageBytes = response.data;
+      });
+    } else {
+      flash.showBanner(
+          messageType: MessageType.failed,
+          title: 'Gagal',
+          description: 'gagal tampilkan gambar');
+    }
   }
 
   @override
@@ -409,21 +448,18 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                     label: const Text('Pilih gambar.'),
                     icon: const Icon(Icons.image),
                   ),
-                  Visibility(
-                      visible: employee.imageId != null,
-                      child: SizedBox(
-                        width: 400,
-                        height: 300,
-                        child: Image.network(_server.generateUrl(
-                            'assets/${employee.imageId}', {}).toString()),
-                      )),
-                  Visibility(
-                      visible: employee.imagePath != null,
-                      child: SizedBox(
-                        width: 400,
-                        height: 300,
-                        child: Image.network(employee.imagePath ?? ''),
-                      )),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  if (_imageBytes != null)
+                    Image.memory(
+                      _imageBytes!,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Text('error load image');
+                      },
+                      width: 150,
+                      height: 200,
+                    ),
                   Padding(
                     padding: const EdgeInsets.only(top: 10, bottom: 10),
                     child: ElevatedButton(

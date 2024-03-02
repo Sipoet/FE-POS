@@ -154,8 +154,10 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                         'Tipe Cuti',
                         style: labelStyle,
                       ),
-                      onSelected: (value) => employeeLeave.leaveType =
-                          value ?? LeaveType.annualLeave,
+                      onSelected: (value) => setState(() {
+                            employeeLeave.leaveType =
+                                value ?? LeaveType.annualLeave;
+                          }),
                       initialSelection: employeeLeave.leaveType,
                       dropdownMenuEntries: LeaveType.values
                           .map<DropdownMenuEntry<LeaveType>>((leaveType) =>
@@ -163,6 +165,78 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                                   value: leaveType,
                                   label: leaveType.humanize()))
                           .toList()),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Visibility(
+                    visible: employeeLeave.leaveType == LeaveType.changeDay,
+                    child: Column(
+                      children: [
+                        DatePicker(
+                            label: const Text(
+                              'Tanggal Ganti Hari',
+                              style: labelStyle,
+                            ),
+                            onSaved: (newValue) {
+                              if (newValue == null) {
+                                employeeLeave.changeDate = null;
+                                return;
+                              }
+                              employeeLeave.changeDate =
+                                  Date.parsingDateTime(newValue);
+                            },
+                            validator: (newValue) {
+                              if (newValue == null &&
+                                  employeeLeave.leaveType ==
+                                      LeaveType.changeDay) {
+                                return 'harus diisi';
+                              }
+                              return null;
+                            },
+                            onChanged: (newValue) {
+                              if (newValue == null) {
+                                employeeLeave.changeDate = null;
+                                return;
+                              }
+                              employeeLeave.changeDate =
+                                  Date.parsingDateTime(newValue);
+                            },
+                            firstDate: DateTime(2023),
+                            lastDate:
+                                DateTime.now().add(const Duration(days: 31)),
+                            initialValue: employeeLeave.date),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        TextFormField(
+                          keyboardType: TextInputType.number,
+                          onSaved: (value) {
+                            employeeLeave.changeShift =
+                                int.tryParse(value ?? '');
+                          },
+                          onChanged: (value) {
+                            employeeLeave.changeShift = int.tryParse(value);
+                          },
+                          validator: (newValue) {
+                            if ((newValue == null || newValue.isEmpty) &&
+                                employeeLeave.leaveType ==
+                                    LeaveType.changeDay) {
+                              return 'harus diisi';
+                            }
+                            return null;
+                          },
+                          initialValue: employeeLeave.changeShift?.toString(),
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            label: Text(
+                              'Ganti Shift',
+                              style: labelStyle,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(
                     height: 10,
                   ),

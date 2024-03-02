@@ -65,14 +65,14 @@ class EmployeeLeave extends Model {
   LeaveType leaveType;
   Employee employee;
   String? description;
-  Date? changeDay;
+  Date? changeDate;
   int? changeShift;
   int? id;
   EmployeeLeave(
       {required this.leaveType,
       required this.date,
       required this.employee,
-      this.changeDay,
+      this.changeDate,
       this.changeShift,
       this.description,
       this.id});
@@ -83,7 +83,7 @@ class EmployeeLeave extends Model {
         'employee_id': employee.id,
         'date': date,
         'description': description,
-        'change_day': changeDay,
+        'change_date': changeDate,
         'change_shift': changeShift,
         'leave_type': leaveType.toString(),
       };
@@ -113,7 +113,7 @@ class EmployeeLeave extends Model {
     model.leaveType = LeaveType.fromString(attributes['leave_type'] ?? '');
     model.employee = employee;
     model.description = attributes['description'];
-    model.changeDay = Date.tryParse(attributes['change_day'] ?? '');
+    model.changeDate = Date.tryParse(attributes['change_date'] ?? '');
     model.changeShift = attributes['change_shift'];
     return model;
   }
