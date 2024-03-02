@@ -2,7 +2,7 @@
   <AppInstaller xmlns="http://schemas.microsoft.com/appx/appinstaller/2018"
     Uri="src/windows\fe_pos.appinstaller" Version="0.0.0.1">
     <MainPackage Name="karyaSuksesSentosa.suite.allegraPos" Version="0.0.0.1"
-      Publisher="E=fransiskus.r.sianto@gmail.com, CN=allegra-pos.net, O=Karya Sukses Sentosa, L=Palu, S=Central Sulawesi, C=ID"
+      Publisher="CN=Msix Testing, O=Msix Testing Corporation, S=Some-State, C=US"
       Uri="src/windows\versions\fe_pos_0.0.0.1.msix"
       ProcessorArchitecture="x64" />
     <UpdateSettings>
