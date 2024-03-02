@@ -43,10 +43,9 @@ class Employee extends Model {
   String? bank;
   String? bankAccount;
   String? description;
-  String? imagePath;
   String? bankRegisterName;
   int? id;
-  int? imageId;
+  String? imageCode;
   String code;
   int shift;
   Employee(
@@ -64,8 +63,7 @@ class Employee extends Model {
       this.address,
       this.bank,
       this.shift = 1,
-      this.imageId,
-      this.imagePath,
+      this.imageCode,
       this.bankAccount,
       this.bankRegisterName,
       this.status = EmployeeStatus.inactive});
@@ -110,7 +108,7 @@ class Employee extends Model {
         bank: attributes['bank'],
         bankAccount: attributes['bank_account'],
         description: attributes['description'],
-        imageId: attributes['image_id'],
+        imageCode: attributes['image_code'],
         shift: attributes['shift'],
         bankRegisterName: attributes['bank_register_name']);
   }
@@ -130,8 +128,7 @@ class Employee extends Model {
         'contact_number': contactNumber,
         'address': address,
         'bank': bank,
-        'image_path': imagePath,
-        'image_id': imageId,
+        'image_code': imageCode,
         'bank_account': bankAccount,
         'payroll_id': payroll?.id,
         'shift': shift,

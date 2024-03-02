@@ -45,7 +45,7 @@ class Discount extends Model {
   int weight;
   Discount(
       {this.id,
-      this.code = '[generated_code]',
+      this.code = '',
       this.itemCode,
       this.itemType,
       this.brandName,

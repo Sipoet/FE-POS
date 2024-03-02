@@ -126,6 +126,38 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           page: const Placeholder(),
           children: [
             Menu(
+                icon: Icons.inventory,
+                isClosed: true,
+                label: 'Item',
+                isDisabled: !setting.isAuthorize('item', 'index'),
+                key: 'item',
+                page: const ItemPage(),
+                children: []),
+            Menu(
+                icon: Icons.local_shipping,
+                isClosed: true,
+                label: 'Supplier',
+                isDisabled: !setting.isAuthorize('supplier', 'index'),
+                key: 'supplier',
+                page: const SupplierPage(),
+                children: []),
+            Menu(
+                icon: Icons.branding_watermark,
+                isClosed: true,
+                label: 'Merek',
+                isDisabled: !setting.isAuthorize('brand', 'index'),
+                key: 'brand',
+                page: const BrandPage(),
+                children: []),
+            Menu(
+                icon: Icons.abc,
+                isClosed: true,
+                label: 'Jenis/Departemen',
+                isDisabled: !setting.isAuthorize('itemType', 'index'),
+                key: 'itemType',
+                page: const ItemTypePage(),
+                children: []),
+            Menu(
                 icon: Icons.discount,
                 isClosed: true,
                 label: 'Diskon',
