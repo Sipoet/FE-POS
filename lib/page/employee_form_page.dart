@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +28,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
   Employee get employee => widget.employee;
   late final Server _server;
   Uint8List? _imageBytes;
+  late final Setting setting;
 
   @override
   bool get wantKeepAlive => true;
@@ -34,12 +36,13 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
   @override
   void initState() {
     flash = Flash(context);
-    super.initState();
+    setting = context.read<Setting>();
     final sessionState = context.read<SessionState>();
     _server = sessionState.server;
     if (employee.imageCode != null) {
       loadImage(employee.imageCode ?? '');
     }
+    super.initState();
   }
 
   void _submit() async {
@@ -235,36 +238,39 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   const SizedBox(
                     height: 10,
                   ),
-                  AsyncDropdownFormField(
-                    label: const Text(
-                      'Payroll',
-                      style: labelStyle,
+                  Visibility(
+                    visible: setting.isAuthorize('payroll', 'index'),
+                    child: AsyncDropdownFormField(
+                      label: const Text(
+                        'Payroll',
+                        style: labelStyle,
+                      ),
+                      request: (server, offset, searchText) {
+                        return server.get('payrolls', queryParam: {
+                          'search_text': searchText,
+                          'field[payroll]': 'name',
+                          'page[offset]': offset.toString(),
+                        });
+                      },
+                      attributeKey: 'name',
+                      onChanged: (values) {
+                        if (values == null || values.isEmpty) {
+                          employee.payroll = null;
+                          return;
+                        }
+                        employee.payroll = Payroll(
+                          id: int.tryParse(values[0].getValueAsString()),
+                          name: (values[0].getText() as Text).data ?? '',
+                        );
+                      },
+                      selected: employee.payroll == null
+                          ? null
+                          : [
+                              BsSelectBoxOption(
+                                  value: employee.payroll?.id,
+                                  text: Text(employee.payroll?.name ?? ''))
+                            ],
                     ),
-                    request: (server, offset, searchText) {
-                      return server.get('payrolls', queryParam: {
-                        'search_text': searchText,
-                        'field[payroll]': 'name',
-                        'page[offset]': offset.toString(),
-                      });
-                    },
-                    attributeKey: 'name',
-                    onChanged: (values) {
-                      if (values == null || values.isEmpty) {
-                        employee.payroll = null;
-                        return;
-                      }
-                      employee.payroll = Payroll(
-                        id: int.tryParse(values[0].getValueAsString()),
-                        name: (values[0].getText() as Text).data ?? '',
-                      );
-                    },
-                    selected: employee.payroll == null
-                        ? null
-                        : [
-                            BsSelectBoxOption(
-                                value: employee.payroll?.id,
-                                text: Text(employee.payroll?.name ?? ''))
-                          ],
                   ),
                   const SizedBox(
                     height: 10,
