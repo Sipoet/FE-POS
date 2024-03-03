@@ -242,7 +242,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage> {
                   height: 600,
                   child: CustomDataTable(
                     controller: _source,
-                    fixedLeftColumns: 1,
+                    fixedLeftColumns: 2,
                     showCheckboxColumn: true,
                   ),
                 )),
