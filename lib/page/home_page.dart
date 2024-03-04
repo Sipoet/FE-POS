@@ -1,3 +1,5 @@
+import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/widget/sales_transaction_report_widget.dart';
 import 'package:fe_pos/widget/item_sales_transaction_report_widget.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +25,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     setting = context.read<Setting>();
+    final server = context.read<SessionState>().server;
+    final appUpdater = AppUpdater(context: context);
+    appUpdater.checkUpdate(server);
     _panels = [
       if (setting.isAuthorize('sale', 'transactionReport'))
         SalesTransactionReportWidget(

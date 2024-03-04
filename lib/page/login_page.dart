@@ -1,10 +1,12 @@
+import 'package:fe_pos/tool/app_updater.dart';
+
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/framework_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,11 +20,13 @@ class _LoginPageState extends State<LoginPage> {
   String _host = '';
   String _username = '';
   String _password = '';
-  late Flash flash;
-
+  late final Flash flash;
   @override
   void initState() {
     flash = Flash(context);
+    SessionState sessionState = context.read<SessionState>();
+    final appUpdater = AppUpdater(context: context);
+    appUpdater.checkUpdate(sessionState.server);
     super.initState();
   }
 
