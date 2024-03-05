@@ -64,6 +64,22 @@ class _PayrollFormPageState extends State<PayrollFormPage>
     });
   }
 
+  void duplicateRecord() {
+    setState(() {
+      payroll.id = null;
+      payroll.name = '';
+      for (PayrollLine payrollLine in payroll.lines) {
+        payrollLine.id = null;
+      }
+
+      for (WorkSchedule workSchedule in payroll.schedules) {
+        workSchedule.id = null;
+      }
+    });
+    var tabManager = context.read<TabManager>();
+    tabManager.changeTabHeader(widget, 'Tambah payroll');
+  }
+
   void _submit() async {
     var sessionState = context.read<SessionState>();
     var server = sessionState.server;
@@ -338,12 +354,6 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                     onSaved: (value) =>
                                         workSchedule.longShiftPerWeek =
                                             int.tryParse(value ?? ''),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'harus diisi';
-                                      }
-                                      return null;
-                                    },
                                     onChanged: (value) => workSchedule
                                         .longShiftPerWeek = int.tryParse(value),
                                   )),
@@ -555,14 +565,25 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 10, bottom: 10),
-                    child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            flash.show(const Text('Loading'), MessageType.info);
-                            _submit();
-                          }
-                        },
-                        child: const Text('submit')),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        ElevatedButton(
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                flash.show(
+                                    const Text('Loading'), MessageType.info);
+                                _submit();
+                              }
+                            },
+                            child: const Text('submit')),
+                        ElevatedButton(
+                            onPressed: () {
+                              duplicateRecord();
+                            },
+                            child: const Text('duplicate')),
+                      ],
+                    ),
                   )
                 ],
               ),

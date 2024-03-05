@@ -18,6 +18,7 @@ class ItemSalesPercentageReport extends Model {
   Money salesTotal;
   int numberOfPurchase;
   Money purchaseTotal;
+  int itemOut;
   DateTime? recentPurchaseDate;
 
   ItemSalesPercentageReport(
@@ -38,6 +39,7 @@ class ItemSalesPercentageReport extends Model {
       required this.salesTotal,
       required this.numberOfPurchase,
       required this.purchaseTotal,
+      required this.itemOut,
       this.recentPurchaseDate});
   @override
   factory ItemSalesPercentageReport.fromJson(Map<String, dynamic> json) {
@@ -59,6 +61,7 @@ class ItemSalesPercentageReport extends Model {
         numberOfSales: attributes['number_of_sales'],
         salesTotal: Money(attributes['sales_total']),
         numberOfPurchase: attributes['number_of_purchase'],
+        itemOut: attributes['item_out'],
         purchaseTotal: Money(attributes['purchase_total']),
         recentPurchaseDate:
             DateTime.tryParse(attributes['recent_purchase_date'] ?? ''));
@@ -83,5 +86,6 @@ class ItemSalesPercentageReport extends Model {
         'number_of_purchase': numberOfPurchase,
         'purchase_total': purchaseTotal,
         'recent_purchase_date': recentPurchaseDate,
+        'item_out': itemOut,
       };
 }

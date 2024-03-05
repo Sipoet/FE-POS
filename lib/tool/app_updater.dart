@@ -19,8 +19,8 @@ class AppUpdater {
     String platform = defaultTargetPlatform.toString().split('.').last;
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     final version = packageInfo.version;
-    server.get('check_update/$platform', queryParam: {'version': version}).then(
-        (response) {
+    server.get('check_update/$platform',
+        queryParam: {'client_version': version}).then((response) {
       final filename = response.data['data']?['filename'];
       if (response.statusCode == 200 && filename != null) {
         showConfirmDialog(
