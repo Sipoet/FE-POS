@@ -1,5 +1,4 @@
 import 'package:fe_pos/model/payslip.dart';
-import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
@@ -32,8 +31,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
 
   @override
   void initState() {
-    final sessionState = context.read<SessionState>();
-    _server = sessionState.server;
+    _server = context.read<Server>();
     _setting = context.read<Setting>();
     flash = Flash(context);
     _source = GeneratePayslipDatatableSource(setting: _setting);
@@ -56,16 +54,17 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                 child: Column(
                   children: [
                     DateRangePicker(
-                        label: const Text(
-                          'Periode',
-                          style: labelStyle,
-                        ),
-                        onChanged: (range) {
-                          startDate = range!.start;
-                          endDate = range.end;
-                        },
-                        startDate: startDate,
-                        endDate: endDate),
+                      label: const Text(
+                        'Periode',
+                        style: labelStyle,
+                      ),
+                      onChanged: (range) {
+                        startDate = range!.start;
+                        endDate = range.end;
+                      },
+                      initialDateRange:
+                          DateTimeRange(start: startDate, end: endDate),
+                    ),
                     AsyncDropdownFormField(
                       attributeKey: 'name',
                       multiple: true,

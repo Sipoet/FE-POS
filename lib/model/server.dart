@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:image_picker/image_picker.dart';
 
-class Server {
+class Server extends ChangeNotifier {
   String host;
   String jwt;
   Dio dio = Dio(BaseOptions(
@@ -136,10 +136,22 @@ class Server {
     return Options(
         headers: {
           if (jwt.isNotEmpty) 'Authorization': jwt,
+          Headers.acceptHeader: acceptHeader(responseType),
         },
         contentType:
             requestType == 'file' ? 'multipart/form-data' : 'application/json',
         responseType: _responseTypes[responseType]);
+  }
+
+  String acceptHeader(String responseType) {
+    switch (responseType) {
+      case 'json':
+        return 'application/json';
+      case 'xlsx':
+        return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      default:
+        return 'application/json';
+    }
   }
 
   Uri generateUrl(String path, Map<String, dynamic> queryParams) {

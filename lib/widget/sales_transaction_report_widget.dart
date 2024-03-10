@@ -56,8 +56,8 @@ class _SalesTransactionReportWidgetState
   void refreshReport() {
     _controller.reset();
     _controller.forward();
-    var sessionState = context.read<SessionState>();
-    sessionState.server
+    final server = context.read<Server>();
+    server
         .get('sales/transaction_report',
             queryParam: {
               'start_time': _dateRange.start.toIso8601String(),
@@ -74,7 +74,7 @@ class _SalesTransactionReportWidgetState
         });
       }
     },
-            onError: (error, stack) => sessionState.server.defaultErrorResponse(
+            onError: (error, stack) => server.defaultErrorResponse(
                 context: context, error: error)).whenComplete(() {
       if (_controller.isAnimating) _controller.reset();
     });

@@ -5,7 +5,6 @@ import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/custom_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/file_saver.dart';
 
 class SalesPercentageReportPage extends StatefulWidget {
@@ -46,8 +45,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
   final _formKey = GlobalKey<FormState>();
   @override
   void initState() {
-    SessionState sessionState = context.read<SessionState>();
-    server = sessionState.server;
+    server = context.read<Server>();
     setting = context.read<Setting>();
     flash = Flash(context);
     super.initState();

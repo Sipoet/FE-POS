@@ -26,8 +26,7 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
   List<bool> selected = [];
   @override
   void initState() {
-    var sessionState = context.read<SessionState>();
-    _server = sessionState.server;
+    _server = context.read<Server>();
     _setting = context.read<Setting>();
     _source = EmployeeAttendanceMassUploadDatatableSource(setting: _setting);
     super.initState();

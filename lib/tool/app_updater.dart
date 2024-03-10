@@ -7,10 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:fe_pos/tool/file_saver.dart';
 
-class AppUpdater {
-  final BuildContext context;
+mixin AppUpdater<T extends StatefulWidget> on State<T> {
   bool _isDownloading = false;
-  AppUpdater({required this.context});
 
   void checkUpdate(Server server) async {
     if (kIsWeb) {
@@ -77,7 +75,10 @@ class AppUpdater {
         server
             .download('download_app/$platform', 'file', filePath)
             .then((value) {
-          _isDownloading = false;
+          setState(() {
+            _isDownloading = false;
+          });
+
           if (platform == 'windows') {
             installApp(filePath);
           } else {

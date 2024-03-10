@@ -1,4 +1,3 @@
-import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -38,8 +37,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
   }
 
   void fetchPayslip() {
-    var sessionState = context.read<SessionState>();
-    var server = sessionState.server;
+    final server = context.read<Server>();
     server.get('payslips/${payslip.id}',
         queryParam: {'include': 'payslip_lines'}).then((response) {
       if (response.statusCode == 200) {
@@ -60,8 +58,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
   }
 
   void _submit() async {
-    var sessionState = context.read<SessionState>();
-    var server = sessionState.server;
+    final server = context.read<Server>();
     Map body = {
       'data': {
         'type': 'payslip',

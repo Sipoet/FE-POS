@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -37,8 +36,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
   void initState() {
     flash = Flash(context);
     setting = context.read<Setting>();
-    final sessionState = context.read<SessionState>();
-    _server = sessionState.server;
+    _server = context.read<Server>();
     if (employee.imageCode != null) {
       loadImage(employee.imageCode ?? '');
     }

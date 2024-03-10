@@ -101,8 +101,7 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
 
   @override
   void initState() {
-    var sessionState = context.read<SessionState>();
-    server = sessionState.server;
+    server = context.read<Server>();
     _controller = widget.controller ??
         BsSelectBoxController(
             multiple: widget.multiple,

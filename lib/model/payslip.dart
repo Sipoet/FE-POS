@@ -29,6 +29,21 @@ enum PayslipStatus {
         throw 'not valid payslip status';
     }
   }
+
+  String humanize() {
+    switch (this) {
+      case draft:
+        return 'draft';
+      case confirmed:
+        return 'dikonfirm';
+      case paid:
+        return 'terbayar';
+      case cancelled:
+        return 'dibatalkan';
+      default:
+        throw 'not valid payslip status';
+    }
+  }
 }
 
 class Payslip extends Model {

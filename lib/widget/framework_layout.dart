@@ -116,7 +116,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     page: const SalesGroupBySupplierReportPage(),
                     key: 'salesGroupBySupplierReport',
                   ),
-                ])
+                ]),
+            Menu(
+              icon: Icons.money,
+              isClosed: true,
+              label: 'Laporan Slip Gaji',
+              key: 'payslipReport',
+              page: const PayslipReportPage(),
+            ),
           ]),
       Menu(
           icon: Icons.table_chart,
@@ -214,8 +221,10 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
 
   void _logout() {
     SessionState sessionState = context.read<SessionState>();
+    Server server = context.read<Server>();
     try {
       sessionState.logout(
+          server: server,
           context: context,
           onSuccess: (response) {
             var body = response.data;

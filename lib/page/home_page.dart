@@ -14,7 +14,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with AppUpdater<HomePage>, AutomaticKeepAliveClientMixin {
   final TransactionReportController controller = TransactionReportController(
       DateTimeRange(start: DateTime.now(), end: DateTime.now()));
   bool _isCustom = false;
@@ -25,9 +26,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     setting = context.read<Setting>();
-    final server = context.read<SessionState>().server;
-    final appUpdater = AppUpdater(context: context);
-    appUpdater.checkUpdate(server);
+    final server = context.read<Server>();
+    checkUpdate(server);
     _panels = [
       if (setting.isAuthorize('sale', 'transactionReport'))
         SalesTransactionReportWidget(
@@ -59,6 +59,9 @@ class _HomePageState extends State<HomePage> {
 
     super.initState();
   }
+
+  @override
+  bool get wantKeepAlive => true;
 
   void arrangeDate(String rangeType) {
     var startTime = DateTime.now().copyWith(hour: 0, minute: 0, second: 0);
@@ -93,6 +96,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     var colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
@@ -158,8 +162,7 @@ class _HomePageState extends State<HomePage> {
                     enabled: _isCustom,
                     textStyle: const TextStyle(
                         fontSize: 16, fontStyle: FontStyle.italic),
-                    startDate: controller.range.start,
-                    endDate: controller.range.end,
+                    initialDateRange: controller.range,
                     controller: pickerController,
                     onChanged: (DateTimeRange? range) {
                       if (range == null) {

@@ -8,8 +8,7 @@ class DateRangePicker extends StatefulWidget {
       this.icon,
       this.textStyle,
       this.enabled = true,
-      required this.startDate,
-      required this.endDate,
+      this.initialDateRange,
       this.onChanged,
       this.controller,
       this.canRemove = false,
@@ -17,8 +16,7 @@ class DateRangePicker extends StatefulWidget {
   final Widget? label;
   final Widget? icon;
   final TextStyle? textStyle;
-  final DateTime startDate;
-  final DateTime endDate;
+  final DateTimeRange? initialDateRange;
   final String format;
   final bool enabled;
   final bool canRemove;
@@ -30,8 +28,7 @@ class DateRangePicker extends StatefulWidget {
 
 class _DateRangePickerState extends State<DateRangePicker> {
   late final TextEditingController _controller;
-  late DateTimeRange? _dateRange =
-      DateTimeRange(start: widget.startDate, end: widget.endDate);
+  late DateTimeRange? _dateRange = widget.initialDateRange;
   @override
   void initState() {
     _controller = TextEditingController(text: _daterangeFormat());

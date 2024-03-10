@@ -6,7 +6,6 @@ import 'package:fe_pos/widget/date_range_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:provider/provider.dart';
-import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/file_saver.dart';
 
 class ItemSalesPeriodReportPage extends StatefulWidget {
@@ -43,9 +42,8 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
   late Flash flash;
   @override
   void initState() {
-    SessionState sessionState = context.read<SessionState>();
     flash = Flash(context);
-    server = sessionState.server;
+    server = context.read<Server>();
     super.initState();
   }
 
@@ -174,8 +172,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                           padding: EdgeInsets.only(left: 5, bottom: 5),
                           child: Text('Tanggal :', style: _filterLabelStyle)),
                       DateRangePicker(
-                        startDate: _dateRange.start,
-                        endDate: _dateRange.end,
+                        initialDateRange: _dateRange,
                         onChanged: (range) => _dateRange = range ??
                             DateTimeRange(
                                 start: DateTime.now(), end: DateTime.now()),

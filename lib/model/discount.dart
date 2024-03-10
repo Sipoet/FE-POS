@@ -23,6 +23,15 @@ enum DiscountCalculationType {
     }
     throw '$value is not valid discount calculation type';
   }
+
+  String humanize() {
+    if (this == percentage) {
+      return 'persentase';
+    } else if (this == nominal) {
+      return 'nominal';
+    }
+    return '';
+  }
 }
 
 class Discount extends Model {
@@ -97,7 +106,7 @@ class Discount extends Model {
         'item_type.jenis': itemType,
         'brand.merek': brandName,
         'supplier.kode': supplierCode,
-        'calculation_type': calculationType.toString(),
+        'calculation_type': calculationType,
         'blacklist_item_type_name': blacklistItemType,
         'blacklist_brand_name': blacklistBrandName,
         'blacklist_supplier_code': blacklistSupplierCode,

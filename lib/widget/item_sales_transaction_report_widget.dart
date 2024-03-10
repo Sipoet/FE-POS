@@ -73,8 +73,8 @@ class _ItemSalesTransactionReportWidgetState
 
   void refreshReport() {
     _controller.forward();
-    var sessionState = context.read<SessionState>();
-    sessionState.server.get('item_sales/transaction_report',
+    final server = context.read<Server>();
+    server.get('item_sales/transaction_report',
         cancelToken: cancelToken,
         queryParam: {
           'group_key': widget.groupKey,
@@ -88,7 +88,7 @@ class _ItemSalesTransactionReportWidgetState
         });
       }
     },
-        onError: (error, stack) => sessionState.server.defaultErrorResponse(
+        onError: (error, stack) => server.defaultErrorResponse(
             context: context, error: error)).whenComplete(() {
       if (_controller.isAnimating) {
         _controller.stop();

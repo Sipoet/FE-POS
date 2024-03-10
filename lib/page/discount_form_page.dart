@@ -1,4 +1,3 @@
-import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
@@ -42,8 +41,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   }
 
   void _submit() async {
-    var sessionState = context.read<SessionState>();
-    var server = sessionState.server;
+    final server = context.read<Server>();
     Map body = {'discount': discount};
     Future request;
     if (discount.id == null) {
@@ -415,8 +413,8 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   ),
                   Flexible(
                     child: DateRangePicker(
-                      startDate: discount.startTime,
-                      endDate: discount.endTime,
+                      initialDateRange: DateTimeRange(
+                          start: discount.startTime, end: discount.endTime),
                       label: const Text(
                         'Tanggal Aktif',
                         style: labelStyle,

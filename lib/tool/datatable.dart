@@ -7,7 +7,7 @@ export 'package:fe_pos/tool/custom_type.dart';
 
 class CustomDataTableSource<T extends Model> extends DataTableSource {
   late List<TableColumn> columns;
-  late List<T> sortedData;
+  late List<T> sortedData = [];
   TableColumn? sortColumn;
   bool isAscending = true;
   List<Widget> Function(T model, int index)? actionButtons;
@@ -84,8 +84,14 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
       case double:
       case int:
         return _numberFormat(cell);
+      case String:
+        return cell;
       default:
-        return cell.toString();
+        try {
+          return cell.humanize();
+        } catch (error) {
+          return cell.toString();
+        }
     }
   }
 

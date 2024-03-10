@@ -24,8 +24,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
   List<bool> selected = [];
   @override
   void initState() {
-    var sessionState = context.read<SessionState>();
-    _server = sessionState.server;
+    _server = context.read<Server>();
     _setting = context.read<Setting>();
     _source = DiscountMassUploadDatatableSource(setting: _setting);
     super.initState();

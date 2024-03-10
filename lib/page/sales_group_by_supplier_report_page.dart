@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/dropdown_remote_connection.dart';
 
 import 'package:provider/provider.dart';
-import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/file_saver.dart';
 
 class SalesGroupBySupplierReportPage extends StatefulWidget {
@@ -41,8 +40,7 @@ class _SalesGroupBySupplierReportPageState
 
   @override
   void initState() {
-    SessionState sessionState = context.read<SessionState>();
-    server = sessionState.server;
+    server = context.read<Server>();
     setting = context.read<Setting>();
     flash = Flash(context);
     super.initState();

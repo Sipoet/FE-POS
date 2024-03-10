@@ -29,7 +29,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage> {
 
   @override
   void initState() {
-    server = context.read<SessionState>().server;
+    server = context.read<Server>();
     flash = Flash(context);
     setting = context.read<Setting>();
     _source.columns = setting.tableColumn('employeeAttendance');

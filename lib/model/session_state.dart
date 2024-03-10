@@ -1,31 +1,30 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:fe_pos/model/server.dart';
 export 'package:fe_pos/model/server.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SessionState extends ChangeNotifier {
-  Server server = Server();
-
   final _storage = const FlutterSecureStorage();
 
-  Future fetchServerData() async {
+  Future fetchServerData(Server server) async {
     try {
       String? sessionString = await _storage.read(key: 'server');
       if (sessionString != null) {
-        var sessionData = jsonDecode(sessionString);
+        final sessionData = jsonDecode(sessionString);
         server.host = sessionData['host'];
         server.jwt = sessionData['jwt'];
       }
       await server.setCert();
-    } catch (e) {
-      // unknown error
+    } catch (error) {
+      log(error.toString());
     }
 
-    return await isLogin();
+    return await isLogin(server);
   }
 
-  Future<bool> isLogin() async {
+  Future<bool> isLogin(Server server) async {
     if (server.jwt.isEmpty) {
       return false;
     }
@@ -38,6 +37,7 @@ class SessionState extends ChangeNotifier {
   }
 
   Future login({
+    required Server server,
     required String username,
     required String password,
     required String host,
@@ -53,7 +53,7 @@ class SessionState extends ChangeNotifier {
     }).then((response) {
       if (response.statusCode == 200) {
         server.jwt = response.headers.value('Authorization');
-        saveSession();
+        saveSession(server);
         onSuccess(response);
       } else {
         server.jwt = jwtBefore;
@@ -69,6 +69,7 @@ class SessionState extends ChangeNotifier {
   }
 
   Future logout({
+    required Server server,
     required Function onSuccess,
     required Function onFailed,
     required BuildContext context,
@@ -76,7 +77,7 @@ class SessionState extends ChangeNotifier {
     return server.delete('logout').then(
         (response) => {
               if (response.statusCode == 200)
-                {server.jwt = '', saveSession(), onSuccess(response)}
+                {server.jwt = '', saveSession(server), onSuccess(response)}
               else
                 {onFailed(response)}
             },
@@ -84,7 +85,7 @@ class SessionState extends ChangeNotifier {
             server.defaultErrorResponse(context: context, error: error));
   }
 
-  void saveSession() async {
+  void saveSession(Server server) async {
     _storage.write(
         key: 'server',
         value: jsonEncode({'host': server.host, 'jwt': server.jwt}));

@@ -1,4 +1,3 @@
-import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
@@ -32,8 +31,7 @@ class _UserFormPageState extends State<UserFormPage>
   }
 
   void _submit() async {
-    var sessionState = context.read<SessionState>();
-    var server = sessionState.server;
+    final server = context.read<Server>();
     Map body = {
       'data': {
         'type': 'user',

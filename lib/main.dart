@@ -15,6 +15,7 @@ class AllegraPos extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider<Server>(create: (_) => Server()),
         ChangeNotifierProvider<SessionState>(create: (_) => SessionState()),
         ChangeNotifierProvider<Setting>(create: (_) => Setting()),
       ],

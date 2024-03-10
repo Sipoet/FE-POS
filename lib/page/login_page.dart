@@ -15,7 +15,7 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with AppUpdater {
   final _formKey = GlobalKey<FormState>();
   String _host = '';
   String _username = '';
@@ -24,15 +24,15 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     flash = Flash(context);
-    SessionState sessionState = context.read<SessionState>();
-    final appUpdater = AppUpdater(context: context);
-    appUpdater.checkUpdate(sessionState.server);
+    Server server = context.read<Server>();
+
+    checkUpdate(server);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    SessionState sessionState = context.read<SessionState>();
+    final server = context.read<Server>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
@@ -49,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 if (!kIsWeb)
                   TextFormField(
-                    initialValue: sessionState.server.host,
+                    initialValue: server.host,
                     decoration: const InputDecoration(
                       icon: Icon(Icons.screen_search_desktop),
                       labelText: 'Server',
@@ -106,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
                     // Validate returns true if the form is valid, or false otherwise.
                     if (_formKey.currentState!.validate()) {
                       flash.show(const Text('Loading'), MessageType.info);
-                      _submit(sessionState);
+                      _submit();
                     }
                   },
                 ),
@@ -120,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
                         // Validate returns true if the form is valid, or false otherwise.
                         if (_formKey.currentState!.validate()) {
                           flash.show(const Text('Loading'), MessageType.info);
-                          _submit(sessionState);
+                          _submit();
                         }
                       },
                       child: const Text('Submit'),
@@ -133,16 +133,19 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _submit(sessionState) async {
+  void _submit() async {
+    SessionState sessionState = context.read<SessionState>();
+    Server server = context.read<Server>();
     _formKey.currentState?.save();
     try {
       sessionState.login(
+          server: server,
           host: _host,
           context: context,
           username: _username,
           password: _password,
           onSuccess: (response) {
-            fetchSetting(sessionState.server);
+            fetchSetting(server);
             flash.hide();
             var body = response.data;
             flash.showBanner(

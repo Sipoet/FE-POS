@@ -35,8 +35,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
   }
 
   void fetchPayroll() {
-    var sessionState = context.read<SessionState>();
-    var server = sessionState.server;
+    final server = context.read<Server>();
     server.get('payrolls/${payroll.id}', queryParam: {
       'include': 'payroll_lines,work_schedules'
     }).then((response) {
@@ -81,8 +80,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
   }
 
   void _submit() async {
-    var sessionState = context.read<SessionState>();
-    var server = sessionState.server;
+    final server = context.read<Server>();
     for (final (int index, PayrollLine payrollLine) in payroll.lines.indexed) {
       payrollLine.row = index + 1;
     }
@@ -346,25 +344,20 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                     onChanged: (value) =>
                                         workSchedule.endWork = value,
                                   )),
-                                  DataCell(TextFormField(
-                                    decoration: const InputDecoration(
-                                        border: OutlineInputBorder()),
-                                    initialValue: workSchedule.longShiftPerWeek
-                                        ?.toString(),
-                                    onSaved: (value) =>
-                                        workSchedule.longShiftPerWeek =
-                                            int.tryParse(value ?? ''),
-                                    onChanged: (value) => workSchedule
-                                        .longShiftPerWeek = int.tryParse(value),
-                                  )),
-                                  DataCell(ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        payroll.schedules.remove(workSchedule);
-                                      });
-                                    },
-                                    child: const Text('hapus'),
-                                  ))
+                                  DataCell(DropdownMenu<ActiveWeekWorkSchedule>(
+                                      initialSelection: workSchedule.activeWeek,
+                                      onSelected: ((value) =>
+                                          workSchedule.activeWeek = value ??
+                                              ActiveWeekWorkSchedule.allWeek),
+                                      dropdownMenuEntries: ActiveWeekWorkSchedule
+                                          .values
+                                          .map<
+                                                  DropdownMenuEntry<
+                                                      ActiveWeekWorkSchedule>>(
+                                              (activeWeek) => DropdownMenuEntry(
+                                                  value: activeWeek,
+                                                  label: activeWeek.humanize()))
+                                          .toList()))
                                 ]))
                             .toList()),
                   ),

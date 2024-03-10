@@ -99,9 +99,10 @@ class _LoadingPageState extends State<LoadingPage>
   void reroute() {
     initializeDateFormatting('id_ID', null);
     SessionState sessionState = context.read<SessionState>();
-    sessionState.fetchServerData().then((isLogin) {
+    Server server = context.read<Server>();
+    sessionState.fetchServerData(server).then((isLogin) {
       if (isLogin) {
-        fetchSetting(sessionState.server);
+        fetchSetting(server);
       } else {
         controller.stop();
         Navigator.pushReplacement(context,

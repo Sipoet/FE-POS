@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 class TableFilterForm extends StatefulWidget {
   final List<TableColumn> columns;
-  final Map<String, List<Enum>> enums;
+  final Map<String, List<dynamic>> enums;
   final TableFilterFormController? controller;
   final void Function(Map)? onSubmit;
   const TableFilterForm(
@@ -145,8 +145,6 @@ class _TableFilterFormState extends State<TableFilterForm> {
     return DateRangePicker(
       label: Text(column.name, style: _labelStyle),
       key: ValueKey(column.key),
-      startDate: DateTime.now(),
-      endDate: DateTime.now(),
       canRemove: true,
       onChanged: (value) {
         if (value == null) {
@@ -181,7 +179,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
             ] +
             enumList!
                 .map<DropdownMenuEntry<String>>((data) => DropdownMenuEntry(
-                    value: data.toString(), label: data.toString()))
+                    value: data.toString(), label: data.humanize()))
                 .toList());
   }
 

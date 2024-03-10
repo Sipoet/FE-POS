@@ -5,13 +5,12 @@ import 'package:fe_pos/tool/datatable.dart';
 export 'package:fe_pos/tool/datatable.dart';
 
 class CustomDataTable extends StatefulWidget {
-  final Future<List<Model>> Function(
-      int page, String orderKey, bool isAscending)? onPageChanged;
   final CustomDataTableSource controller;
   final int fixedLeftColumns;
   final List<Widget>? actions;
   final Widget? header;
   final bool showCheckboxColumn;
+  final void Function(int)? onPageChanged;
   const CustomDataTable({
     super.key,
     required this.controller,
@@ -127,6 +126,10 @@ class _CustomDataTableState extends State<CustomDataTable> {
           }).toList() +
           actions,
       minWidth: tableWidth,
+      onPageChanged: widget.onPageChanged,
+      onRowsPerPageChanged: (int? limit) {
+        _dataSource.paginatorController?.goToFirstPage();
+      },
       headingRowColor: MaterialStateProperty.resolveWith<Color?>(
           (Set<MaterialState> states) {
         return colorScheme.secondaryContainer.withOpacity(0.08);

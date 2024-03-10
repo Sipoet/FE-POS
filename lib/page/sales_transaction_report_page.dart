@@ -32,9 +32,8 @@ class _SalesTransactionReportPageState
         end: endOfDay(now
             .copyWith(month: now.month + 1, day: 1)
             .subtract(const Duration(days: 1))));
-    SessionState sessionState = context.read<SessionState>();
     flash = Flash(context);
-    server = sessionState.server;
+    server = context.read<Server>();
     super.initState();
   }
 
@@ -97,8 +96,7 @@ class _SalesTransactionReportPageState
             SizedBox(
               width: 350,
               child: DateRangePicker(
-                startDate: range.start,
-                endDate: range.end,
+                initialDateRange: range,
                 onChanged: (newRange) {
                   range = newRange ??
                       DateTimeRange(start: DateTime.now(), end: DateTime.now());

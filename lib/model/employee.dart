@@ -27,6 +27,15 @@ enum EmployeeStatus {
     }
     throw '$value is not valid employee status';
   }
+
+  String humanize() {
+    if (this == active) {
+      return 'Aktif';
+    } else if (this == inactive) {
+      return 'Tidak Aktif';
+    }
+    return '';
+  }
 }
 
 class Employee extends Model {
@@ -119,7 +128,7 @@ class Employee extends Model {
         'name': name,
         'role.name': role.name,
         'role_id': role.id,
-        'status': status.toString(),
+        'status': status,
         'description': description,
         'start_working_date': startWorkingDate,
         'debt': debt,

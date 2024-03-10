@@ -27,23 +27,6 @@ enum LeaveType {
     return '';
   }
 
-  String humanize() {
-    if (this == sickLeave) {
-      return 'Cuti Sakit';
-    }
-    if (this == annualLeave) {
-      return 'Izin';
-    }
-    if (this == maternalLeave) {
-      return 'Cuti Hamil';
-    }
-
-    if (this == changeDay) {
-      return 'Ganti Hari';
-    }
-    return '';
-  }
-
   static LeaveType fromString(String value) {
     switch (value) {
       case 'sick_leave':
@@ -57,6 +40,23 @@ enum LeaveType {
       default:
         throw 'invalid sick leave $value';
     }
+  }
+
+  String humanize() {
+    if (this == LeaveType.sickLeave) {
+      return 'Cuti Sakit';
+    }
+    if (this == LeaveType.annualLeave) {
+      return 'Izin';
+    }
+    if (this == LeaveType.maternalLeave) {
+      return 'Cuti Hamil';
+    }
+
+    if (this == LeaveType.changeDay) {
+      return 'Ganti Hari';
+    }
+    return '';
   }
 }
 
@@ -85,7 +85,7 @@ class EmployeeLeave extends Model {
         'description': description,
         'change_date': changeDate,
         'change_shift': changeShift,
-        'leave_type': leaveType.toString(),
+        'leave_type': leaveType,
       };
 
   @override

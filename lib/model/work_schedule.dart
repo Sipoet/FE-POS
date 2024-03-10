@@ -1,19 +1,79 @@
 import 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
+enum ActiveWeekWorkSchedule {
+  allWeek,
+  oddWeek,
+  evenWeek,
+  firstWeekOfMonth,
+  lastWeekOfMonth;
+
+  @override
+  String toString() {
+    switch (this) {
+      case allWeek:
+        return 'all_week';
+      case oddWeek:
+        return 'odd_week';
+      case evenWeek:
+        return 'even_week';
+      case firstWeekOfMonth:
+        return 'first_week_of_month';
+      case lastWeekOfMonth:
+        return 'last_week_of_month';
+      default:
+        return super.toString();
+    }
+  }
+
+  static ActiveWeekWorkSchedule fromString(value) {
+    switch (value) {
+      case 'all_week':
+        return allWeek;
+      case 'odd_week':
+        return oddWeek;
+      case 'even_week':
+        return evenWeek;
+      case 'first_week_of_month':
+        return firstWeekOfMonth;
+      case 'last_week_of_month':
+        return lastWeekOfMonth;
+      default:
+        throw 'invalid value active week';
+    }
+  }
+
+  String humanize() {
+    switch (this) {
+      case allWeek:
+        return 'Semua';
+      case oddWeek:
+        return 'Ganjil';
+      case evenWeek:
+        return 'Genap';
+      case firstWeekOfMonth:
+        return 'Minggu Pertama per bulan';
+      case lastWeekOfMonth:
+        return 'Minggu terakhir per bulan';
+      default:
+        return '';
+    }
+  }
+}
+
 class WorkSchedule extends Model {
   String beginWork;
   String endWork;
   int shift;
   int dayOfWeek;
   int? id;
-  int? longShiftPerWeek;
+  ActiveWeekWorkSchedule activeWeek;
   WorkSchedule(
       {required this.beginWork,
       required this.endWork,
       this.dayOfWeek = 1,
       this.shift = 1,
-      this.longShiftPerWeek = 0,
+      this.activeWeek = ActiveWeekWorkSchedule.allWeek,
       this.id});
 
   @override
@@ -22,7 +82,7 @@ class WorkSchedule extends Model {
         'end_work': endWork,
         'shift': shift,
         'day_of_week': dayOfWeek,
-        'long_shift_per_week': longShiftPerWeek,
+        'long_shift_per_week': activeWeek,
       };
 
   @override
@@ -35,7 +95,7 @@ class WorkSchedule extends Model {
     model.endWork = attributes['end_work'];
     model.shift = attributes['shift'];
     model.dayOfWeek = attributes['day_of_week'];
-    model.longShiftPerWeek = attributes['long_shift_per_week'];
+    model.activeWeek = attributes['long_shift_per_week'];
     return model;
   }
 }

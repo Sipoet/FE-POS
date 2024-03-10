@@ -15,6 +15,8 @@ abstract class Model {
         json[key] = object.value;
       } else if (object is Date || object is DateTime) {
         json[key] = object.toIso8601String();
+      } else if (object is Enum) {
+        json[key] = object.toString();
       }
     });
     return json;

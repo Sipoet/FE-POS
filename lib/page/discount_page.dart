@@ -19,7 +19,7 @@ class DiscountPage extends StatefulWidget {
 
 class _DiscountPageState extends State<DiscountPage> {
   final _source = CustomDataTableSource<Discount>();
-  late final SessionState _sessionState;
+  late final Server server;
   bool _isDisplayTable = false;
   String _searchText = '';
   List<Discount> discounts = [];
@@ -31,7 +31,7 @@ class _DiscountPageState extends State<DiscountPage> {
 
   @override
   void initState() {
-    _sessionState = context.read<SessionState>();
+    server = context.read<Server>();
     flash = Flash(context);
     final setting = context.read<Setting>();
     _source.columns = setting.tableColumn('discount');
@@ -55,7 +55,6 @@ class _DiscountPageState extends State<DiscountPage> {
   }
 
   Future fetchDiscounts({int page = 1}) {
-    var server = _sessionState.server;
     String orderKey = _source.sortColumn?.sortKey ?? 'code';
     Map<String, dynamic> param = {
       'search_text': _searchText,
@@ -157,7 +156,7 @@ class _DiscountPageState extends State<DiscountPage> {
   }
 
   void deleteRecord(discount) {
-    _sessionState.server.delete("discounts/${discount.id}").then((response) {
+    server.delete("discounts/${discount.id}").then((response) {
       if (response.statusCode == 200) {
         flash.showBanner(
             messageType: MessageType.success,
@@ -171,12 +170,11 @@ class _DiscountPageState extends State<DiscountPage> {
             messageType: MessageType.failed);
       }
     }, onError: (error, stack) {
-      _sessionState.server.defaultErrorResponse(context: context, error: error);
+      server.defaultErrorResponse(context: context, error: error);
     });
   }
 
   void refreshPromotion(Discount discount) {
-    var server = _sessionState.server;
     server.post('discounts/${discount.id}/refresh_promotion').then((value) {
       flash.showBanner(
           title: 'Refresh akan diproses',
@@ -189,7 +187,6 @@ class _DiscountPageState extends State<DiscountPage> {
   }
 
   void refreshAllPromotion() {
-    var server = _sessionState.server;
     server.post('discounts/refresh_all_promotion').then((value) {
       flash.showBanner(
           title: 'Refresh akan diproses',
@@ -202,7 +199,6 @@ class _DiscountPageState extends State<DiscountPage> {
   }
 
   void deleteAllOldDiscount() {
-    var server = _sessionState.server;
     server.delete('discounts/delete_inactive_past_discount').then((response) {
       flash.showBanner(
           title: response.data['message'],

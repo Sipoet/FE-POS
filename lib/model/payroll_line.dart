@@ -25,6 +25,15 @@ enum PayrollGroup {
     }
     throw 'invalid Payroll group';
   }
+
+  String humanize() {
+    if (this == earning) {
+      return 'penghasilan';
+    } else if (this == deduction) {
+      return 'potongan';
+    }
+    return '';
+  }
 }
 
 enum PayrollType {
@@ -41,6 +50,25 @@ enum PayrollType {
       return 'base_salary';
     }
     return super.toString().split('.').last;
+  }
+
+  String humanize() {
+    switch (this) {
+      case baseSalary:
+        return "gaji pokok";
+      case incentive:
+        return "tunjangan";
+      case insurance:
+        return "asuransi";
+      case debt:
+        return "hutang";
+      case commission:
+        return "komisi";
+      case tax:
+        return "pajak";
+      default:
+        throw 'invalid Payroll type';
+    }
   }
 
   static PayrollType fromString(value) {
@@ -86,6 +114,25 @@ enum PayrollFormula {
       return 'annual_leave_cut';
     }
     return super.toString().split('.').last;
+  }
+
+  String humanize() {
+    switch (this) {
+      case basic:
+        return "basic";
+      case fulltime:
+        return "fulltime";
+      case overtimeHour:
+        return "Overtime";
+      case sickLeaveCut:
+        return "berdasarkan jumlah sakit";
+      case annualLeaveCut:
+        return "berdasarkan jumlah cuti";
+      case periodProportional:
+        return "periode proportional";
+      default:
+        throw 'invalid Payroll formula';
+    }
   }
 
   static PayrollFormula fromString(value) {
@@ -136,9 +183,9 @@ class PayrollLine extends Model {
   @override
   Map<String, dynamic> toMap() => {
         'row': row,
-        'group': group.toString(),
-        'payroll_type': payrollType.toString(),
-        'formula': formula.toString(),
+        'group': group,
+        'payroll_type': payrollType,
+        'formula': formula,
         'variable1': variable1,
         'variable2': variable2,
         'variable3': variable3,

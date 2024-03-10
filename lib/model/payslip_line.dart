@@ -16,6 +16,15 @@ enum PayslipGroup {
     return '';
   }
 
+  String humanize() {
+    if (this == earning) {
+      return 'penghasilan';
+    } else if (this == deduction) {
+      return 'potongan';
+    }
+    return '';
+  }
+
   static PayslipGroup fromString(value) {
     if (value == 'earning') {
       return earning;
@@ -41,6 +50,25 @@ enum PayslipType {
       return 'base_salary';
     }
     return super.toString().split('.').last;
+  }
+
+  String humanize() {
+    switch (this) {
+      case baseSalary:
+        return "gaji pokok";
+      case incentive:
+        return "tunjangan";
+      case insurance:
+        return "asuransi";
+      case debt:
+        return "hutang";
+      case commission:
+        return "komisi";
+      case tax:
+        return "pajak";
+      default:
+        throw 'invalid Payroll type';
+    }
   }
 
   static PayslipType fromString(value) {
@@ -79,8 +107,8 @@ class PayslipLine extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'group': group.toString(),
-        'payslip_type': payslipType.toString(),
+        'group': group,
+        'payslip_type': payslipType,
         'amount': amount,
         'description': description,
       };
