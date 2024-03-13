@@ -16,7 +16,8 @@ class RolePage extends StatefulWidget {
   State<RolePage> createState() => _RolePageState();
 }
 
-class _RolePageState extends State<RolePage> {
+class _RolePageState extends State<RolePage>
+    with AutomaticKeepAliveClientMixin {
   final _source = CustomDataTableSource<Role>();
   late final Server server;
   bool _isDisplayTable = false;
@@ -25,6 +26,9 @@ class _RolePageState extends State<RolePage> {
   final cancelToken = CancelToken();
   late Flash flash;
   Map _filter = {};
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -180,6 +184,7 @@ class _RolePageState extends State<RolePage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     _source.setActionButtons((role, index) => <Widget>[
           IconButton(
               onPressed: () {

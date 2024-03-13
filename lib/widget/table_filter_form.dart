@@ -26,6 +26,10 @@ class _TableFilterFormState extends State<TableFilterForm> {
   late final TableFilterFormController controller;
   late ColorScheme colorScheme;
   bool isShowFilter = false;
+
+  final Map _textController = {};
+  final Map _numComparison = {};
+
   @override
   void initState() {
     controller = widget.controller ?? TableFilterFormController();
@@ -68,11 +72,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
                   runSpacing: 10.0,
                   spacing: 10.0,
                   children: widget.columns
-                      .map<Widget>((column) => SizedBox(
-                            width: 300,
-                            height: 90,
-                            child: formFilter(column),
-                          ))
+                      .map<Widget>((column) => formFilter(column))
                       .toList(),
                 ),
                 if (widget.onSubmit != null)
@@ -100,12 +100,12 @@ class _TableFilterFormState extends State<TableFilterForm> {
     switch (column.type) {
       case 'string':
         return textFilter(column);
-      // case 'integer':
-      // case 'float':
-      // case 'decimal':
-      // case 'money':
-      // case 'percentage':
-      //   return numberFilter(column);
+      case 'integer':
+      case 'float':
+      case 'decimal':
+      case 'money':
+      case 'percentage':
+        return numberFilter(column);
       case 'date':
       case 'datetime':
         return dateFilter(column);
@@ -114,17 +114,21 @@ class _TableFilterFormState extends State<TableFilterForm> {
       case 'link':
         return linkFilter(column);
       default:
-        return TextFormField(
-          enabled: false,
-          decoration: InputDecoration(
-              contentPadding: const EdgeInsets.all(12),
-              label: Text(
-                column.name,
-                style: _labelStyle,
-              ),
-              border: const OutlineInputBorder(),
-              helperStyle: const TextStyle(fontSize: 11),
-              helperText: 'Tidak support filter'),
+        return SizedBox(
+          width: 300,
+          height: 90,
+          child: TextFormField(
+            enabled: false,
+            decoration: InputDecoration(
+                contentPadding: const EdgeInsets.all(12),
+                label: Text(
+                  column.name,
+                  style: _labelStyle,
+                ),
+                border: const OutlineInputBorder(),
+                helperStyle: const TextStyle(fontSize: 11),
+                helperText: 'Tidak support filter'),
+          ),
         );
     }
   }
@@ -142,24 +146,28 @@ class _TableFilterFormState extends State<TableFilterForm> {
   }
 
   Widget dateFilter(TableColumn column) {
-    return DateRangePicker(
-      label: Text(column.name, style: _labelStyle),
-      key: ValueKey(column.key),
-      canRemove: true,
-      onChanged: (value) {
-        if (value == null) {
-          return;
-        }
-        controller.setFilter(
-            column.key, 'btw', decorateTimeRange(value, column.type));
-      },
+    return SizedBox(
+      width: 300,
+      height: 90,
+      child: DateRangePicker(
+        label: Text(column.name, style: _labelStyle),
+        key: ValueKey(column.key),
+        canRemove: true,
+        onChanged: (value) {
+          if (value == null) {
+            return;
+          }
+          controller.setFilter(
+              column.key, 'btw', decorateTimeRange(value, column.type));
+        },
+      ),
     );
   }
 
   Widget enumFilter(TableColumn column) {
     final enumList = widget.enums[column.key];
     return DropdownMenu<String>(
-        width: 299,
+        width: 300,
         inputDecorationTheme: const InputDecorationTheme(
             contentPadding: EdgeInsets.all(12), border: OutlineInputBorder()),
         key: ValueKey(column.key),
@@ -184,62 +192,69 @@ class _TableFilterFormState extends State<TableFilterForm> {
   }
 
   Widget textFilter(TableColumn column) {
-    return TextFormField(
-      key: ValueKey(column.key),
-      onSaved: (newValue) {
-        if (newValue == null || newValue.isEmpty) {
-          controller.removeFilter(column.key);
-          return;
-        }
-        controller.setFilter(column.key, 'like', newValue);
-      },
-      onChanged: (newValue) {
-        if (newValue.isEmpty) {
-          controller.removeFilter(column.key);
-          return;
-        }
-        controller.setFilter(column.key, 'like', newValue);
-      },
-      decoration: InputDecoration(
-          contentPadding: const EdgeInsets.all(12),
-          label: Text(column.name, style: _labelStyle),
-          border: const OutlineInputBorder()),
+    return SizedBox(
+      width: 300,
+      height: 90,
+      child: TextFormField(
+        key: ValueKey(column.key),
+        onSaved: (newValue) {
+          if (newValue == null || newValue.isEmpty) {
+            controller.removeFilter(column.key);
+            return;
+          }
+          controller.setFilter(column.key, 'like', newValue);
+        },
+        onChanged: (newValue) {
+          if (newValue.isEmpty) {
+            controller.removeFilter(column.key);
+            return;
+          }
+          controller.setFilter(column.key, 'like', newValue);
+        },
+        decoration: InputDecoration(
+            contentPadding: const EdgeInsets.all(12),
+            label: Text(column.name, style: _labelStyle),
+            border: const OutlineInputBorder()),
+      ),
     );
   }
 
   Widget linkFilter(TableColumn column) {
     final attributes = column.attributeKey.split('.');
-    return AsyncDropdownFormField(
-      label: Text(column.name, style: _labelStyle),
-      multiple: true,
-      request: (server, page, searchText) =>
-          server.get(column.path ?? '', queryParam: {
-        'search_text': searchText,
-        'fields[${attributes[0]}]': attributes[1],
-        'page[page]': page.toString(),
-        'page[limit]': '20'
-      }),
-      attributeKey: attributes[1],
-      onChanged: (value) {
-        if (value != null && value.isNotEmpty) {
-          final decoratedValue =
-              value.map<String>((e) => e.getValueAsString()).toList().join(',');
-          controller.setFilter(column.key, 'eq', decoratedValue);
-        } else {
-          controller.removeFilter(column.key);
-        }
-      },
+    return SizedBox(
+      width: 300,
+      height: 90,
+      child: AsyncDropdownFormField(
+        label: Text(column.name, style: _labelStyle),
+        multiple: true,
+        request: (server, page, searchText) =>
+            server.get(column.path ?? '', queryParam: {
+          'search_text': searchText,
+          'fields[${attributes[0]}]': attributes[1],
+          'page[page]': page.toString(),
+          'page[limit]': '20'
+        }),
+        attributeKey: attributes[1],
+        onChanged: (value) {
+          if (value != null && value.isNotEmpty) {
+            final decoratedValue = value
+                .map<String>((e) => e.getValueAsString())
+                .toList()
+                .join(',');
+            controller.setFilter(column.key, 'eq', decoratedValue);
+          } else {
+            controller.removeFilter(column.key);
+          }
+        },
+      ),
     );
   }
 
-  Widget numberFilter(TableColumn column) {
-    String comparison = '';
-    String value1 = '';
-    String value2 = '';
-    final valueController1 = TextEditingController();
-    final valueController2 = TextEditingController();
-    final comparisonController = TextEditingController();
-    final onChange = () {
+  void comparisonChanged(column) {
+    setState(() {
+      final comparison = _textController['${column.key}-comparison'].text;
+      final value1 = _textController['${column.key}-val1'].text;
+      final value2 = _textController['${column.key}-val2'].text;
       if (comparison.isEmpty) {
         controller.removeFilter(column.key);
         return;
@@ -249,23 +264,38 @@ class _TableFilterFormState extends State<TableFilterForm> {
       } else if (comparison != 'btw' && value1.isNotEmpty) {
         controller.setFilter(column.key, comparison, value1);
       }
-    };
+    });
+  }
+
+  Widget numberFilter(TableColumn column) {
+    _textController['${column.key}-val1'] = TextEditingController();
+    _textController['${column.key}-val2'] = TextEditingController();
+    _textController['${column.key}-comparison'] = TextEditingController();
+
     return SizedBox(
-      width: 290,
-      child: Flexible(
-        child: Row(
-          children: [
-            DropdownMenu<String>(
+      width: _numComparison[column.key] == 'btw' ? 450 : 310,
+      height: 90,
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            child: DropdownMenu<String>(
+                width: 120,
                 onSelected: (value) {
                   setState(() {
-                    comparison = value ?? '';
-                    onChange();
+                    _numComparison[column.key] = value;
                   });
+                  comparisonChanged(column);
                 },
-                controller: comparisonController,
+                inputDecorationTheme: const InputDecorationTheme(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.all(12),
+                ),
+                controller: _textController['${column.key}-comparison'],
                 label: Text(column.name, style: _labelStyle),
                 dropdownMenuEntries: const [
-                  DropdownMenuEntry(value: 'eq', label: 'sama dengan'),
+                  DropdownMenuEntry(value: '', label: ''),
+                  DropdownMenuEntry(value: 'eq', label: 'sama'),
                   DropdownMenuEntry(value: 'not', label: 'bukan'),
                   DropdownMenuEntry(value: 'gt', label: '>'),
                   DropdownMenuEntry(value: 'gte', label: '>='),
@@ -273,46 +303,55 @@ class _TableFilterFormState extends State<TableFilterForm> {
                   DropdownMenuEntry(value: 'lte', label: '<='),
                   DropdownMenuEntry(value: 'btw', label: 'antara'),
                 ]),
-            SizedBox(
+          ),
+          Positioned(
+            left: 120,
+            child: SizedBox(
+              width: 130,
               child: TextFormField(
                 key: ValueKey('${column.key}-value1'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) {
-                  value1 = value ?? '';
-                  onChange();
+                  comparisonChanged(column);
                 },
-                controller: valueController1,
-                decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.all(12),
-                    label: Text(column.name, style: _labelStyle),
-                    border: const OutlineInputBorder()),
+                controller: _textController['${column.key}-val1'],
+                decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.all(12),
+                    border: OutlineInputBorder()),
               ),
             ),
-            if (comparison == 'btw')
-              TextFormField(
-                key: ValueKey('${column.key}-value2'),
-                keyboardType: TextInputType.number,
-                onSaved: (value) {
-                  value2 = value ?? '';
-                  onChange();
-                },
-                controller: valueController2,
-                decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.all(12),
-                    label: Text(column.name, style: _labelStyle),
-                    border: const OutlineInputBorder()),
+          ),
+          if (_numComparison[column.key] == 'btw')
+            Positioned(
+              left: 250,
+              child: SizedBox(
+                width: 130,
+                child: TextFormField(
+                  key: ValueKey('${column.key}-value2'),
+                  keyboardType: TextInputType.number,
+                  onSaved: (value) {
+                    comparisonChanged(column);
+                  },
+                  controller: _textController['${column.key}-val2'],
+                  decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.all(12),
+                      border: OutlineInputBorder()),
+                ),
               ),
-            IconButton.filled(
+            ),
+          Positioned(
+            right: 0,
+            child: IconButton.filled(
               onPressed: () {
-                comparisonController.text = '';
-                valueController1.text = '';
-                valueController2.text = '';
+                _textController['${column.key}-val1'].text = '';
+                _textController['${column.key}-val2'].text = '';
+                _textController['${column.key}-comparison'].text = '';
               },
               icon: const Icon(Icons.close),
-              color: colorScheme.primary,
-            )
-          ],
-        ),
+              // color: colorScheme.primary,
+            ),
+          )
+        ],
       ),
     );
   }

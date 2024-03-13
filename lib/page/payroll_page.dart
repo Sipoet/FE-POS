@@ -16,7 +16,8 @@ class PayrollPage extends StatefulWidget {
   State<PayrollPage> createState() => _PayrollPageState();
 }
 
-class _PayrollPageState extends State<PayrollPage> {
+class _PayrollPageState extends State<PayrollPage>
+    with AutomaticKeepAliveClientMixin {
   final _source = CustomDataTableSource<Payroll>();
   late final Server server;
   bool _isDisplayTable = false;
@@ -25,6 +26,9 @@ class _PayrollPageState extends State<PayrollPage> {
   final cancelToken = CancelToken();
   late Flash flash;
   Map _filter = {};
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -180,6 +184,7 @@ class _PayrollPageState extends State<PayrollPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     _source.setActionButtons((payroll, index) => <Widget>[
           IconButton(
               onPressed: () {
