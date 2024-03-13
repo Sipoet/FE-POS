@@ -39,7 +39,7 @@ enum ActiveWeekWorkSchedule {
       case 'last_week_of_month':
         return lastWeekOfMonth;
       default:
-        throw 'invalid value active week';
+        throw 'invalid value active week $value';
     }
   }
 
@@ -82,7 +82,7 @@ class WorkSchedule extends Model {
         'end_work': endWork,
         'shift': shift,
         'day_of_week': dayOfWeek,
-        'long_shift_per_week': activeWeek,
+        'active_week': activeWeek,
       };
 
   @override
@@ -95,7 +95,8 @@ class WorkSchedule extends Model {
     model.endWork = attributes['end_work'];
     model.shift = attributes['shift'];
     model.dayOfWeek = attributes['day_of_week'];
-    model.activeWeek = attributes['long_shift_per_week'];
+    model.activeWeek =
+        ActiveWeekWorkSchedule.fromString(attributes['active_week']);
     return model;
   }
 }

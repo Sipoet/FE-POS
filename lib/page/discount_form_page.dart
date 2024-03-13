@@ -96,6 +96,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   TextFormField(
                     decoration: const InputDecoration(
                       label: Text('kode diskon : ', style: labelStyle),
+                      border: OutlineInputBorder(),
                     ),
                     initialValue: discount.code,
                     onChanged: (value) {
@@ -107,6 +108,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     },
                   ),
                   AsyncDropdownFormField(
+                    selected: discount.itemType == null
+                        ? null
+                        : [
+                            BsSelectBoxOption(
+                                value: discount.itemType,
+                                text: Text(discount.itemType ?? ''))
+                          ],
                     key: const ValueKey('itemTypeSelect'),
                     path: '/item_types',
                     attributeKey: 'jenis',
@@ -129,6 +137,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   ),
                   AsyncDropdownFormField(
                     key: const ValueKey('supplierSelect'),
+                    selected: discount.supplierCode == null
+                        ? null
+                        : [
+                            BsSelectBoxOption(
+                                value: discount.supplierCode,
+                                text: Text(discount.supplierCode ?? ''))
+                          ],
                     path: '/suppliers',
                     attributeKey: 'kode',
                     label: const Text(
@@ -150,6 +165,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   ),
                   AsyncDropdownFormField(
                     key: const ValueKey('brandSelect'),
+                    selected: discount.brandName == null
+                        ? null
+                        : [
+                            BsSelectBoxOption(
+                                value: discount.brandName,
+                                text: Text(discount.brandName ?? ''))
+                          ],
                     path: '/brands',
                     attributeKey: 'merek',
                     label: const Text(
@@ -171,6 +193,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   ),
                   AsyncDropdownFormField(
                     key: const ValueKey('itemSelect'),
+                    selected: discount.itemCode == null
+                        ? null
+                        : [
+                            BsSelectBoxOption(
+                                value: discount.itemCode,
+                                text: Text(discount.itemCode ?? ''))
+                          ],
                     path: '/items',
                     attributeKey: 'namaitem',
                     label: const Text(
@@ -192,6 +221,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   ),
                   AsyncDropdownFormField(
                     key: const ValueKey('blacklistItemTypeSelect'),
+                    selected: discount.blacklistItemType == null
+                        ? null
+                        : [
+                            BsSelectBoxOption(
+                                value: discount.blacklistItemType,
+                                text: Text(discount.blacklistItemType ?? ''))
+                          ],
                     path: '/item_types',
                     attributeKey: 'jenis',
                     label: const Text(
@@ -205,6 +241,14 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   ),
                   AsyncDropdownFormField(
                     key: const ValueKey('blacklistSupplierSelect'),
+                    selected: discount.blacklistSupplierCode == null
+                        ? null
+                        : [
+                            BsSelectBoxOption(
+                                value: discount.blacklistSupplierCode,
+                                text:
+                                    Text(discount.blacklistSupplierCode ?? ''))
+                          ],
                     path: '/suppliers',
                     attributeKey: 'kode',
                     label: const Text(
@@ -218,6 +262,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   ),
                   AsyncDropdownFormField(
                     key: const ValueKey('blacklistBrandSelect'),
+                    selected: discount.blacklistBrandName == null
+                        ? null
+                        : [
+                            BsSelectBoxOption(
+                                value: discount.blacklistBrandName,
+                                text: Text(discount.blacklistBrandName ?? ''))
+                          ],
                     path: '/brands',
                     attributeKey: 'merek',
                     label: const Text(
@@ -280,7 +331,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     enableSuggestions: false,
                     decoration: const InputDecoration(
                       hintText:
-                          'level paling tinggi yang lebih dipakai jika antar aturan diskon konflik',
+                          'level paling tinggi yang akan dipakai jika antar aturan diskon konflik',
                       label: Text(
                         'Level Diskon',
                         style: labelStyle,

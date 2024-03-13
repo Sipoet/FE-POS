@@ -253,7 +253,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                           )),
                           const DataColumn(
                               label: Text(
-                            'Long shift per minggu',
+                            'Minggu Aktif',
                             style: labelStyle,
                           )),
                           DataColumn(
@@ -357,7 +357,15 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                               (activeWeek) => DropdownMenuEntry(
                                                   value: activeWeek,
                                                   label: activeWeek.humanize()))
-                                          .toList()))
+                                          .toList())),
+                                  DataCell(ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        payroll.schedules.remove(workSchedule);
+                                      });
+                                    },
+                                    child: const Text('Hapus'),
+                                  )),
                                 ]))
                             .toList()),
                   ),
@@ -540,7 +548,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                     });
                                   },
                                   child: const Text('Hapus'),
-                                ))
+                                )),
                               ]))
                           .toList(),
                     ),
