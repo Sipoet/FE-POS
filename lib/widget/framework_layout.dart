@@ -36,7 +36,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
       Menu(
           icon: Icons.payment_sharp,
           isClosed: true,
-          label: 'Human Resource',
+          label: 'HRD',
           key: 'humanResource',
           children: [
             Menu(
