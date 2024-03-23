@@ -117,24 +117,14 @@ class Payslip extends Model {
     Employee? employee;
     Payroll? payroll;
     if (included.isNotEmpty) {
-      final payrollRelated = json['relationships']['payroll']?['data'];
-      final employeeRelated = json['relationships']['employee']?['data'];
-      if (payrollRelated != null) {
-        final payrollData = included.firstWhere((row) =>
-            row['type'] == payrollRelated['type'] &&
-            row['id'] == payrollRelated['id']);
-        if (payrollData != null) {
-          payroll = Payroll.fromJson(payrollData);
-        }
-      }
-      if (employeeRelated != null) {
-        final employeeData = included.firstWhere((row) =>
-            row['type'] == employeeRelated['type'] &&
-            row['id'] == employeeRelated['id']);
-        if (employeeData != null) {
-          employee = Employee.fromJson(employeeData, included: included);
-        }
-      }
+      payroll = Model.findRelationData<Payroll>(
+          included: included,
+          relation: json['relationships']['payroll'],
+          convert: Payroll.fromJson);
+      employee = Model.findRelationData<Employee>(
+          included: included,
+          relation: json['relationships']['employee'],
+          convert: Employee.fromJson);
     }
     model ??= Payslip(
         employee: Employee(

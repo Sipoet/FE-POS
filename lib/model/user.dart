@@ -26,15 +26,11 @@ class User extends Model {
   factory User.fromJson(Map<String, dynamic> json,
       {User? model, List included = const []}) {
     var attributes = json['attributes'];
-    Role? role;
-    final roleRelated = json['relationships']?['role']?['data'];
-    if (included.isNotEmpty && roleRelated != null) {
-      final roleData = included.firstWhere((row) =>
-          row['type'] == roleRelated['type'] && row['id'] == roleRelated['id']);
-      if (roleData != null) {
-        role = Role.fromJson(roleData);
-      }
-    }
+    Role? role = Model.findRelationData<Role>(
+        included: included,
+        relation: json['relationships']['role'],
+        convert: Role.fromJson);
+
     model ??= User(username: '', role: Role(name: ''));
     model.id = int.parse(json['id']);
     model.username = attributes['username'];

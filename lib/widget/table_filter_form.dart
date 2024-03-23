@@ -252,10 +252,10 @@ class _TableFilterFormState extends State<TableFilterForm> {
 
   void comparisonChanged(column) {
     setState(() {
-      final comparison = _textController['${column.key}-comparison'].text;
+      final comparison = _numComparison[column.key];
       final value1 = _textController['${column.key}-val1'].text;
       final value2 = _textController['${column.key}-val2'].text;
-      if (comparison.isEmpty) {
+      if (comparison == null) {
         controller.removeFilter(column.key);
         return;
       }
@@ -268,30 +268,29 @@ class _TableFilterFormState extends State<TableFilterForm> {
   }
 
   Widget numberFilter(TableColumn column) {
-    _textController['${column.key}-val1'] = TextEditingController();
-    _textController['${column.key}-val2'] = TextEditingController();
-    _textController['${column.key}-comparison'] = TextEditingController();
+    _textController['${column.key}-val1'] ??= TextEditingController();
+    _textController['${column.key}-val2'] ??= TextEditingController();
+    _textController['${column.key}-cmpr'] ??= TextEditingController();
 
     return SizedBox(
-      width: _numComparison[column.key] == 'btw' ? 450 : 310,
       height: 90,
+      width: _numComparison[column.key] == 'btw' ? 440 : 310,
       child: Stack(
         children: [
           Positioned(
             left: 0,
             child: DropdownMenu<String>(
-                width: 120,
+                width: 130,
                 onSelected: (value) {
                   setState(() {
                     _numComparison[column.key] = value;
                   });
-                  comparisonChanged(column);
                 },
                 inputDecorationTheme: const InputDecorationTheme(
                   border: OutlineInputBorder(),
                   contentPadding: EdgeInsets.all(12),
                 ),
-                controller: _textController['${column.key}-comparison'],
+                controller: _textController['${column.key}-cmpr'],
                 label: Text(column.name, style: _labelStyle),
                 dropdownMenuEntries: const [
                   DropdownMenuEntry(value: '', label: ''),
@@ -305,7 +304,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
                 ]),
           ),
           Positioned(
-            left: 120,
+            left: 130,
             child: SizedBox(
               width: 130,
               child: TextFormField(
@@ -323,7 +322,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
           ),
           if (_numComparison[column.key] == 'btw')
             Positioned(
-              left: 250,
+              left: 260,
               child: SizedBox(
                 width: 130,
                 child: TextFormField(
@@ -341,11 +340,12 @@ class _TableFilterFormState extends State<TableFilterForm> {
             ),
           Positioned(
             right: 0,
+            top: 5,
             child: IconButton.filled(
               onPressed: () {
                 _textController['${column.key}-val1'].text = '';
                 _textController['${column.key}-val2'].text = '';
-                _textController['${column.key}-comparison'].text = '';
+                _textController['${column.key}-cmpr'].text = '';
               },
               icon: const Icon(Icons.close),
               // color: colorScheme.primary,

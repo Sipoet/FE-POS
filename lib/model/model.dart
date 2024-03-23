@@ -21,6 +21,22 @@ abstract class Model {
     });
     return json;
   }
+
+  static T? findRelationData<T extends Model>(
+      {required List included,
+      Map? relation,
+      required T Function(Map<String, dynamic>) convert}) {
+    final relationData = relation?['data'];
+    if (relationData == null) {
+      return null;
+    }
+    final data = included.firstWhere((row) =>
+        row['type'] == relationData['type'] && row['id'] == relationData['id']);
+    if (data == null) {
+      return null;
+    }
+    return convert(data);
+  }
 }
 
 abstract class ModelClass {

@@ -84,21 +84,15 @@ class Employee extends Model {
     Payroll? payroll;
     Role role = Role(name: '');
     if (included.isNotEmpty) {
-      final payrollRelated = json['relationships']['payroll'];
-      final roleRelated = json['relationships']['role'];
-      if (payrollRelated != null) {
-        final payrollData = included.firstWhere((row) =>
-            row['type'] == payrollRelated['data']['type'] &&
-            row['id'] == payrollRelated['data']['id']);
-        payroll = Payroll.fromJson(payrollData);
-      }
-
-      if (roleRelated != null) {
-        final roleData = included.firstWhere((row) =>
-            row['type'] == roleRelated['data']['type'] &&
-            row['id'] == roleRelated['data']['id']);
-        role = Role.fromJson(roleData);
-      }
+      payroll = Model.findRelationData<Payroll>(
+          included: included,
+          relation: json['relationships']['payroll'],
+          convert: Payroll.fromJson);
+      role = Model.findRelationData<Role>(
+              included: included,
+              relation: json['relationships']['role'],
+              convert: Role.fromJson) ??
+          role;
     }
     return Employee(
         id: int.parse(json['id']),

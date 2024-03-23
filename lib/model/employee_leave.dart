@@ -99,10 +99,11 @@ class EmployeeLeave extends Model {
         startWorkingDate: Date.today());
     final employeeRelated = json['relationships']['employee'];
     if (included.isNotEmpty && employeeRelated != null) {
-      final employeeData = included.firstWhere((row) =>
-          row['type'] == employeeRelated['data']['type'] &&
-          row['id'] == employeeRelated['data']['id']);
-      employee = Employee.fromJson(employeeData);
+      employee = Model.findRelationData<Employee>(
+              included: included,
+              relation: employeeRelated,
+              convert: Employee.fromJson) ??
+          employee;
     }
     model ??= EmployeeLeave(
         date: Date.today(),
