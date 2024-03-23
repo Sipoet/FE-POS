@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.1.2
+version: 0.1.3
 
 environment:
   sdk: '>=3.0.0'
@@ -37,6 +37,7 @@ dependencies:
   path_provider: ^2.1.1
   file_picker: ^6.1.1
   bs_flutter_selectbox: ^1.3.0
+  dropdown_search: ^5.0.6
   provider: ^6.1.1
   flutter_secure_storage: ^9.0.0
   universal_html: ^2.2.4
@@ -119,7 +120,7 @@ msix_config:
   display_name: Allegra POS
   publisher_display_name: Karya Sukses Sentosa
   identity_name: karyaSuksesSentosa.suite.allegraPos
-  msix_version: 0.1.2
+  msix_version: 0.1.3
   logo_path: assets/logo-allegra.ico
   capabilities: internetClient
   app_installer: #<-- app installer configuration
