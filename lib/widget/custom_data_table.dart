@@ -130,6 +130,7 @@ class _CustomDataTableState extends State<CustomDataTable> {
       onRowsPerPageChanged: (int? limit) {
         _dataSource.paginatorController?.goToFirstPage();
       },
+      availableRowsPerPage: const [10, 20, 50, 100],
       headingRowColor: MaterialStateProperty.resolveWith<Color?>(
           (Set<MaterialState> states) {
         return colorScheme.secondaryContainer.withOpacity(0.08);

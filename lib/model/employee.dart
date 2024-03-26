@@ -4,6 +4,7 @@ export 'package:fe_pos/model/role.dart';
 import 'package:fe_pos/model/payroll.dart';
 export 'package:fe_pos/model/payroll.dart';
 export 'package:fe_pos/tool/custom_type.dart';
+import 'package:fe_pos/model/work_schedule.dart';
 
 enum EmployeeStatus {
   active,
@@ -57,6 +58,7 @@ class Employee extends Model {
   String? imageCode;
   String code;
   int shift;
+  List<WorkSchedule> schedules;
   Employee(
       {this.id,
       required this.code,
@@ -75,6 +77,7 @@ class Employee extends Model {
       this.imageCode,
       this.bankAccount,
       this.bankRegisterName,
+      this.schedules = const <WorkSchedule>[],
       this.status = EmployeeStatus.inactive});
 
   @override

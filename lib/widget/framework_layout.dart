@@ -31,7 +31,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           icon: Icons.home,
           isClosed: true,
           label: 'Home',
-          page: const HomePage(),
+          pageFunct: () => const HomePage(),
           key: 'home'),
       Menu(
           icon: Icons.payment_sharp,
@@ -44,28 +44,28 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 isClosed: true,
                 label: 'Aturan Gaji',
                 isDisabled: !setting.isAuthorize('payroll', 'index'),
-                page: const PayrollPage(),
+                pageFunct: () => const PayrollPage(),
                 key: 'payroll'),
             Menu(
                 icon: Icons.monetization_on,
                 isClosed: true,
                 label: 'Slip Gaji',
                 isDisabled: !setting.isAuthorize('payslip', 'index'),
-                page: const PayslipPage(),
+                pageFunct: () => const PayslipPage(),
                 key: 'payslip'),
             Menu(
                 icon: Icons.calendar_month,
                 isClosed: true,
                 label: 'Absensi Karyawan',
                 isDisabled: !setting.isAuthorize('employeeAttendance', 'index'),
-                page: const EmployeeAttendancePage(),
+                pageFunct: () => const EmployeeAttendancePage(),
                 key: 'employeeAttendance'),
             Menu(
                 icon: Icons.calendar_month,
                 isClosed: true,
                 label: 'Cuti Karyawan',
                 isDisabled: !setting.isAuthorize('employeeLeave', 'index'),
-                page: const EmployeeLeavePage(),
+                pageFunct: () => const EmployeeLeavePage(),
                 key: 'employeeLeave'),
           ]),
       Menu(
@@ -86,7 +86,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     label: 'Penjualan persentase per item',
                     isDisabled: !setting.isAuthorize(
                         'itemSalesPercentageReport', 'index'),
-                    page: const SalesPercentageReportPage(),
+                    pageFunct: () => const SalesPercentageReportPage(),
                     key: 'salesPercentageReport',
                   ),
                   Menu(
@@ -95,7 +95,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     label: 'Transaksi Penjualan harian',
                     isDisabled:
                         !setting.isAuthorize('sale', 'transactionReport'),
-                    page: const SalesTransactionReportPage(),
+                    pageFunct: () => const SalesTransactionReportPage(),
                     key: 'salesTransactionReport',
                   ),
                   Menu(
@@ -104,7 +104,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     label: 'Item Penjualan Periode',
                     isDisabled:
                         !setting.isAuthorize('itemSale', 'periodReport'),
-                    page: const ItemSalesPeriodReportPage(),
+                    pageFunct: () => const ItemSalesPeriodReportPage(),
                     key: 'itemSalesPeriodReport',
                   ),
                   Menu(
@@ -113,7 +113,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     label: 'Penjualan Per Supplier',
                     isDisabled: !setting.isAuthorize(
                         'itemSalesPercentageReport', 'groupBySupplier'),
-                    page: const SalesGroupBySupplierReportPage(),
+                    pageFunct: () => const SalesGroupBySupplierReportPage(),
                     key: 'salesGroupBySupplierReport',
                   ),
                 ]),
@@ -122,7 +122,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               isClosed: true,
               label: 'Laporan Slip Gaji',
               key: 'payslipReport',
-              page: const PayslipReportPage(),
+              pageFunct: () => const PayslipReportPage(),
             ),
           ]),
       Menu(
@@ -130,7 +130,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           isClosed: true,
           label: 'Master Data',
           key: 'master',
-          page: const Placeholder(),
+          pageFunct: () => const Placeholder(),
           children: [
             Menu(
                 icon: Icons.inventory,
@@ -138,7 +138,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 label: 'Item',
                 isDisabled: !setting.isAuthorize('item', 'index'),
                 key: 'item',
-                page: const ItemPage(),
+                pageFunct: () => const ItemPage(),
                 children: []),
             Menu(
                 icon: Icons.local_shipping,
@@ -146,7 +146,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 label: 'Supplier',
                 isDisabled: !setting.isAuthorize('supplier', 'index'),
                 key: 'supplier',
-                page: const SupplierPage(),
+                pageFunct: () => const SupplierPage(),
                 children: []),
             Menu(
                 icon: Icons.branding_watermark,
@@ -154,7 +154,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 label: 'Merek',
                 isDisabled: !setting.isAuthorize('brand', 'index'),
                 key: 'brand',
-                page: const BrandPage(),
+                pageFunct: () => const BrandPage(),
                 children: []),
             Menu(
                 icon: Icons.abc,
@@ -162,7 +162,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 label: 'Jenis/Departemen',
                 isDisabled: !setting.isAuthorize('itemType', 'index'),
                 key: 'itemType',
-                page: const ItemTypePage(),
+                pageFunct: () => const ItemTypePage(),
                 children: []),
             Menu(
                 icon: Icons.discount,
@@ -170,7 +170,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 label: 'Diskon',
                 isDisabled: !setting.isAuthorize('discount', 'index'),
                 key: 'discount',
-                page: const DiscountPage(),
+                pageFunct: () => const DiscountPage(),
                 children: []),
             Menu(
                 icon: Icons.person,
@@ -178,7 +178,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 label: 'Karyawan',
                 isDisabled: !setting.isAuthorize('employee', 'index'),
                 key: 'employee',
-                page: const EmployeePage(),
+                pageFunct: () => const EmployeePage(),
                 children: []),
             Menu(
                 icon: Icons.person,
@@ -186,7 +186,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 label: 'User',
                 isDisabled: !setting.isAuthorize('user', 'index'),
                 key: 'user',
-                page: const UserPage(),
+                pageFunct: () => const UserPage(),
                 children: []),
             Menu(
                 icon: Icons.person,
@@ -194,7 +194,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 label: 'Role',
                 isDisabled: !setting.isAuthorize('role', 'index'),
                 key: 'role',
-                page: const RolePage(),
+                pageFunct: () => const RolePage(),
                 children: []),
           ]),
     ];

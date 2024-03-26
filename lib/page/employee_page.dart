@@ -59,8 +59,8 @@ class _EmployeePageState extends State<EmployeePage>
     String orderKey = _source.sortColumn?.sortKey ?? 'code';
     Map<String, dynamic> param = {
       'search_text': _searchText,
-      'page': page.toString(),
-      'per': '100',
+      'page[page]': page.toString(),
+      'page[limit]': '20',
       'fields[role]': 'name',
       'fields[payroll]': 'name',
       'include': 'role,payroll',

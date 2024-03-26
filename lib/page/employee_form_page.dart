@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-
+import 'package:fe_pos/model/work_schedule.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -40,7 +40,31 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     if (employee.imageCode != null) {
       loadImage(employee.imageCode ?? '');
     }
+    if (employee.id != null) {
+      fetchEmployee();
+    }
     super.initState();
+  }
+
+  void fetchEmployee() {
+    final server = context.read<Server>();
+    server.get('employees/${employee.id}',
+        queryParam: {'include': 'work_schedules'}).then((response) {
+      if (response.statusCode == 200) {
+        final workSchedules = response.data['data']['relationships']
+            ['work_schedules']['data'] as List;
+        final relationshipsData = response.data['included'] as List;
+        setState(() {
+          employee.schedules = workSchedules.map<WorkSchedule>((line) {
+            final json = relationshipsData.firstWhere((row) =>
+                row['type'] == line['type'] && row['id'] == line['id']);
+            return WorkSchedule.fromJson(json);
+          }).toList();
+        });
+      }
+    }, onError: (error) {
+      server.defaultErrorResponse(context: context, error: error);
+    });
   }
 
   void _submit() async {
@@ -48,13 +72,24 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
       'data': {
         'type': 'employee',
         'attributes': employee.toJson(),
+        'relationships': {
+          'work_schedules': {
+            'data': employee.schedules
+                .map<Map>((workSchedule) => {
+                      'id': workSchedule.id,
+                      'type': 'work_schedule',
+                      'attributes': workSchedule.toJson()
+                    })
+                .toList()
+          },
+        }
       }
     };
     Future request;
     if (employee.id == null) {
       request = _server.post('employees', body: body);
     } else {
-      request = _server.put('employees/${employee.code}', body: body);
+      request = _server.put('employees/${employee.id}', body: body);
     }
     request.then((response) {
       if ([200, 201].contains(response.statusCode)) {
@@ -464,6 +499,164 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                       width: 150,
                       height: 200,
                     ),
+                  const Text(
+                    "Jadwal Kerja",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                        dataRowMinHeight: 60,
+                        dataRowMaxHeight: 100,
+                        showBottomBorder: true,
+                        columns: [
+                          const DataColumn(
+                              label: Text(
+                            'Hari',
+                            style: labelStyle,
+                          )),
+                          const DataColumn(
+                              label: Text(
+                            'Shift',
+                            style: labelStyle,
+                          )),
+                          const DataColumn(
+                              label: Text(
+                            'Mulai',
+                            style: labelStyle,
+                          )),
+                          const DataColumn(
+                              label: Text(
+                            'Akhir',
+                            style: labelStyle,
+                          )),
+                          const DataColumn(
+                              label: Text(
+                            'Minggu Aktif',
+                            style: labelStyle,
+                          )),
+                          DataColumn(
+                              label: ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                employee.schedules.clear();
+                              });
+                            },
+                            child: const Text(
+                              'hapus semua',
+                              style: labelStyle,
+                            ),
+                          )),
+                        ],
+                        rows: employee.schedules
+                            .map<DataRow>((workSchedule) => DataRow(cells: [
+                                  DataCell(DropdownMenu<int>(
+                                    initialSelection: workSchedule.dayOfWeek,
+                                    onSelected: ((value) =>
+                                        workSchedule.dayOfWeek = value ?? 0),
+                                    dropdownMenuEntries: const [
+                                      DropdownMenuEntry(
+                                          value: 1, label: 'Senin'),
+                                      DropdownMenuEntry(
+                                          value: 2, label: 'Selasa'),
+                                      DropdownMenuEntry(
+                                          value: 3, label: 'Rabu'),
+                                      DropdownMenuEntry(
+                                          value: 4, label: 'Kamis'),
+                                      DropdownMenuEntry(
+                                          value: 5, label: 'Jumat'),
+                                      DropdownMenuEntry(
+                                          value: 6, label: 'Sabtu'),
+                                      DropdownMenuEntry(
+                                          value: 7, label: 'Minggu'),
+                                    ],
+                                  )),
+                                  DataCell(TextFormField(
+                                    decoration: const InputDecoration(
+                                        border: OutlineInputBorder()),
+                                    initialValue: workSchedule.shift.toString(),
+                                    keyboardType: TextInputType.number,
+                                    onSaved: (value) => workSchedule.shift =
+                                        int.parse(value ?? '1'),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'harus diisi';
+                                      }
+                                      if (int.tryParse(value) == null) {
+                                        return 'tidak valid';
+                                      }
+                                      if (int.parse(value) <= 0) {
+                                        return 'harus lebih besar dari 0';
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (value) => workSchedule.shift =
+                                        int.tryParse(value) ?? 0,
+                                  )),
+                                  DataCell(TextFormField(
+                                    decoration: const InputDecoration(
+                                        border: OutlineInputBorder()),
+                                    initialValue: workSchedule.beginWork,
+                                    onSaved: (value) =>
+                                        workSchedule.beginWork = value ?? '',
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'harus diisi';
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (value) =>
+                                        workSchedule.beginWork = value,
+                                  )),
+                                  DataCell(TextFormField(
+                                    decoration: const InputDecoration(
+                                        border: OutlineInputBorder()),
+                                    initialValue: workSchedule.endWork,
+                                    onSaved: (value) =>
+                                        workSchedule.endWork = value ?? '',
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'harus diisi';
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (value) =>
+                                        workSchedule.endWork = value,
+                                  )),
+                                  DataCell(DropdownMenu<ActiveWeekWorkSchedule>(
+                                      initialSelection: workSchedule.activeWeek,
+                                      onSelected: ((value) =>
+                                          workSchedule.activeWeek = value ??
+                                              ActiveWeekWorkSchedule.allWeek),
+                                      dropdownMenuEntries: ActiveWeekWorkSchedule
+                                          .values
+                                          .map<
+                                                  DropdownMenuEntry<
+                                                      ActiveWeekWorkSchedule>>(
+                                              (activeWeek) => DropdownMenuEntry(
+                                                  value: activeWeek,
+                                                  label: activeWeek.humanize()))
+                                          .toList())),
+                                  DataCell(ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        employee.schedules.remove(workSchedule);
+                                      });
+                                    },
+                                    child: const Text('Hapus'),
+                                  )),
+                                ]))
+                            .toList()),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10, bottom: 10),
+                    child: ElevatedButton(
+                        onPressed: () => setState(() {
+                              employee.schedules.add(
+                                  WorkSchedule(beginWork: '', endWork: ''));
+                            }),
+                        child: const Text('Tambah')),
+                  ),
                   Padding(
                     padding: const EdgeInsets.only(top: 10, bottom: 10),
                     child: ElevatedButton(
