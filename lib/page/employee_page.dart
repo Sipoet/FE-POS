@@ -165,8 +165,7 @@ class _EmployeePageState extends State<EmployeePage>
     showConfirmDialog(
         message: 'Apakah yakin $statusName ${employee.name}?',
         onSubmit: () {
-          server.post('employees/${employee.code}/$statusPath').then(
-              (response) {
+          server.post('employees/${employee.id}/$statusPath').then((response) {
             _source.updateData(index, employee);
             flash.showBanner(
                 title: 'Sukses',
@@ -187,7 +186,7 @@ class _EmployeePageState extends State<EmployeePage>
         message: 'Apakah yakin aktifkan ${_source.selected.length} karyawan?',
         onSubmit: () {
           _source.selectedMap.forEach((int index, Employee employee) async {
-            await server.post('employees/${employee.code}/activate').then(
+            await server.post('employees/${employee.id}/activate').then(
                 (response) {
               employee = Employee.fromJson(response.data['data']);
               setState(() {
@@ -209,7 +208,7 @@ class _EmployeePageState extends State<EmployeePage>
             'Apakah yakin nonaktifkan ${_source.selected.length} karyawan?',
         onSubmit: () {
           _source.selectedMap.forEach((int index, Employee employee) async {
-            await server.post('employees/${employee.code}/deactivate').then(
+            await server.post('employees/${employee.id}/deactivate').then(
                 (response) {
               employee = Employee.fromJson(response.data['data']);
               _source.updateData(index, employee);
