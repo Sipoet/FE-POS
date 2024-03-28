@@ -2,6 +2,9 @@ import 'package:fe_pos/model/model.dart';
 
 class PayslipReport extends Model {
   String employeeName;
+  String? bank;
+  String? bankAccount;
+  String? bankRegisterName;
   Date? employeeStartWorkingDate;
   int employeeId;
   Date startDate;
@@ -64,6 +67,9 @@ class PayslipReport extends Model {
         'work_days': workDays,
         'late': late,
         'debt': debt,
+        'bank': bank,
+        'bank_register_name': bankRegisterName,
+        'bank_account': bankAccount,
       };
 
   @override
@@ -81,10 +87,13 @@ class PayslipReport extends Model {
     model.startDate = Date.parse(attributes['start_date']);
     model.endDate = Date.parse(attributes['end_date']);
 
-    model.baseSalary = double.parse(attributes['base_salary']);
+    model.baseSalary = double.parse(attributes['base_salary'].toString());
     model.nettSalary = double.parse(attributes['nett_salary']);
     model.employeeId = attributes['employee_id'];
     model.employeeName = attributes['employee_name'];
+    model.bank = attributes['bank'];
+    model.bankAccount = attributes['bank_account'];
+    model.bankRegisterName = attributes['bank_register_name'];
     model.taxAmount = double.parse(attributes['tax_amount']);
     model.sickLeave = attributes['sick_leave'];
     model.knownAbsence = attributes['known_absence'];

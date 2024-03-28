@@ -94,31 +94,48 @@ class Server extends ChangeNotifier {
         data: formData, options: generateHeaders('file', 'json'));
   }
 
-  Future post(String path, {Map body = const {}, String type = 'json'}) async {
+  Future post(String path,
+      {Map body = const {},
+      String type = 'json',
+      CancelToken? cancelToken}) async {
     Uri url = generateUrl(path, {});
-    return dio.postUri(url, data: body, options: generateHeaders(type, type));
+    return dio.postUri(url,
+        data: body,
+        cancelToken: cancelToken,
+        options: generateHeaders(type, type));
   }
 
   Future get(String path,
       {Map<String, dynamic> queryParam = const {},
       String type = 'json',
       String? responseType,
-      cancelToken}) async {
+      CancelToken? cancelToken}) async {
     Uri url = generateUrl(path, queryParam);
     return dio.getUri(url,
         cancelToken: cancelToken,
         options: generateHeaders(type, responseType ?? type));
   }
 
-  Future put(String path, {Map body = const {}, String type = 'json'}) async {
+  Future put(String path,
+      {Map body = const {},
+      String type = 'json',
+      CancelToken? cancelToken}) async {
     Uri url = generateUrl(path, {});
-    return dio.putUri(url, data: body, options: generateHeaders(type, type));
+    return dio.putUri(url,
+        data: body,
+        cancelToken: cancelToken,
+        options: generateHeaders(type, type));
   }
 
   Future delete(String path,
-      {Map body = const {}, String type = 'json'}) async {
+      {Map body = const {},
+      String type = 'json',
+      CancelToken? cancelToken}) async {
     Uri url = generateUrl(path, {});
-    return dio.deleteUri(url, data: body, options: generateHeaders(type, type));
+    return dio.deleteUri(url,
+        data: body,
+        cancelToken: cancelToken,
+        options: generateHeaders(type, type));
   }
 
   Future download(String path, String type, var destinationPath) async {

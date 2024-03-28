@@ -42,6 +42,8 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     }
     if (employee.id != null) {
       fetchEmployee();
+    } else {
+      employee.schedules = [];
     }
     super.initState();
   }
@@ -67,7 +69,11 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     });
   }
 
+  Future? request;
   void _submit() async {
+    if (request != null) {
+      return;
+    }
     Map body = {
       'data': {
         'type': 'employee',
@@ -85,13 +91,14 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
         }
       }
     };
-    Future request;
+
     if (employee.id == null) {
       request = _server.post('employees', body: body);
     } else {
       request = _server.put('employees/${employee.id}', body: body);
     }
-    request.then((response) {
+    request?.then((response) {
+      request = null;
       if ([200, 201].contains(response.statusCode)) {
         var data = response.data['data'];
         setState(() {
@@ -110,6 +117,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
             messageType: MessageType.failed);
       }
     }, onError: (error, stackTrace) {
+      request = null;
       _server.defaultErrorResponse(context: context, error: error);
     });
   }

@@ -114,7 +114,7 @@ class _EmployeePageState extends State<EmployeePage>
         role: Role(name: ''));
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('New Employee',
+      tabManager.addTab('Tambah Karyawan',
           EmployeeFormPage(key: ObjectKey(employee), employee: employee));
     });
   }
@@ -122,7 +122,7 @@ class _EmployeePageState extends State<EmployeePage>
   void editForm(Employee employee) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Edit Employee ${employee.code}',
+      tabManager.addTab('Edit Karyawan ${employee.code}',
           EmployeeFormPage(key: ObjectKey(employee), employee: employee));
     });
   }
