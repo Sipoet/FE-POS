@@ -136,7 +136,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                     path: 'employees',
                     attributeKey: 'name',
                     onChanged: (values) {
-                      payslip.employee.id = int.parse(values?[0].getValue());
+                      payslip.employee.id = int.parse(values[0].getValue());
                     },
                     selected: [
                       BsSelectBoxOption(
