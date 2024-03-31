@@ -65,7 +65,10 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                       initialDateRange:
                           DateTimeRange(start: startDate, end: endDate),
                     ),
-                    AsyncDropdownFormField(
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    AsyncDropdownMultiple(
                       attributeKey: 'name',
                       multiple: true,
                       label: const Text(
@@ -78,14 +81,14 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                           return;
                         }
                         _employeeIds = values
-                            .map<String>((row) => row.getValueAsString())
+                            .map<String>((row) => row.toString())
                             .toList();
                       },
-                      request: (server, offset, searchText) {
+                      request: (server, limit, searchText) {
                         return server.get('employees', queryParam: {
                           'field[employee]': 'code,name',
                           'search_text': searchText,
-                          'page[offset]': offset.toString(),
+                          'page[limit]': '100',
                         });
                       },
                     ),

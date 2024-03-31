@@ -107,14 +107,12 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       discount.code = value ?? '';
                     },
                   ),
-                  AsyncDropdownFormField(
+                  AsyncDropdown(
                     selected: discount.itemType == null
                         ? null
-                        : [
-                            BsSelectBoxOption(
-                                value: discount.itemType,
-                                text: Text(discount.itemType ?? ''))
-                          ],
+                        : DropdownResult(
+                            value: discount.itemType,
+                            text: discount.itemType ?? ''),
                     key: const ValueKey('itemTypeSelect'),
                     path: '/item_types',
                     attributeKey: 'jenis',
@@ -123,7 +121,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       style: labelStyle,
                     ),
                     onChanged: (option) {
-                      discount.itemType = option?[0].getValueAsString();
+                      discount.itemType = option?.value;
                     },
                     validator: (value) {
                       if (discount.itemCode == null &&
@@ -135,15 +133,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       return null;
                     },
                   ),
-                  AsyncDropdownFormField(
+                  AsyncDropdown(
                     key: const ValueKey('supplierSelect'),
                     selected: discount.supplierCode == null
                         ? null
-                        : [
-                            BsSelectBoxOption(
-                                value: discount.supplierCode,
-                                text: Text(discount.supplierCode ?? ''))
-                          ],
+                        : DropdownResult(
+                            value: discount.supplierCode,
+                            text: discount.supplierCode ?? ''),
                     path: '/suppliers',
                     attributeKey: 'kode',
                     label: const Text(
@@ -151,7 +147,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       style: labelStyle,
                     ),
                     onChanged: (option) {
-                      discount.supplierCode = option?[0].getValueAsString();
+                      discount.supplierCode = option?.value;
                     },
                     validator: (value) {
                       if (discount.itemCode == null &&
@@ -163,15 +159,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       return null;
                     },
                   ),
-                  AsyncDropdownFormField(
+                  AsyncDropdown(
                     key: const ValueKey('brandSelect'),
                     selected: discount.brandName == null
                         ? null
-                        : [
-                            BsSelectBoxOption(
-                                value: discount.brandName,
-                                text: Text(discount.brandName ?? ''))
-                          ],
+                        : DropdownResult(
+                            value: discount.brandName,
+                            text: discount.brandName ?? ''),
                     path: '/brands',
                     attributeKey: 'merek',
                     label: const Text(
@@ -179,7 +173,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       style: labelStyle,
                     ),
                     onChanged: (option) {
-                      discount.brandName = option?[0].getValueAsString();
+                      discount.brandName = option?.value;
                     },
                     validator: (value) {
                       if (discount.itemCode == null &&
@@ -191,15 +185,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       return null;
                     },
                   ),
-                  AsyncDropdownFormField(
+                  AsyncDropdown(
                     key: const ValueKey('itemSelect'),
                     selected: discount.itemCode == null
                         ? null
-                        : [
-                            BsSelectBoxOption(
-                                value: discount.itemCode,
-                                text: Text(discount.itemCode ?? ''))
-                          ],
+                        : DropdownResult(
+                            value: discount.itemCode,
+                            text: discount.itemCode ?? ''),
                     path: '/items',
                     attributeKey: 'namaitem',
                     label: const Text(
@@ -207,7 +199,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       style: labelStyle,
                     ),
                     onChanged: (option) {
-                      discount.itemCode = option?[0].getValueAsString();
+                      discount.itemCode = option?.value;
                     },
                     validator: (value) {
                       if (discount.itemCode == null &&
@@ -219,15 +211,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       return null;
                     },
                   ),
-                  AsyncDropdownFormField(
+                  AsyncDropdown(
                     key: const ValueKey('blacklistItemTypeSelect'),
                     selected: discount.blacklistItemType == null
                         ? null
-                        : [
-                            BsSelectBoxOption(
-                                value: discount.blacklistItemType,
-                                text: Text(discount.blacklistItemType ?? ''))
-                          ],
+                        : DropdownResult(
+                            value: discount.blacklistItemType,
+                            text: discount.blacklistItemType ?? ''),
                     path: '/item_types',
                     attributeKey: 'jenis',
                     label: const Text(
@@ -235,20 +225,16 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       style: labelStyle,
                     ),
                     onChanged: (option) {
-                      discount.blacklistItemType =
-                          option?[0].getValueAsString();
+                      discount.blacklistItemType = option?.value;
                     },
                   ),
-                  AsyncDropdownFormField(
+                  AsyncDropdown(
                     key: const ValueKey('blacklistSupplierSelect'),
                     selected: discount.blacklistSupplierCode == null
                         ? null
-                        : [
-                            BsSelectBoxOption(
-                                value: discount.blacklistSupplierCode,
-                                text:
-                                    Text(discount.blacklistSupplierCode ?? ''))
-                          ],
+                        : DropdownResult(
+                            value: discount.blacklistSupplierCode,
+                            text: discount.blacklistSupplierCode ?? ''),
                     path: '/suppliers',
                     attributeKey: 'kode',
                     label: const Text(
@@ -256,19 +242,16 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       style: labelStyle,
                     ),
                     onChanged: (option) {
-                      discount.blacklistSupplierCode =
-                          option?[0].getValueAsString();
+                      discount.blacklistSupplierCode = option?.value;
                     },
                   ),
-                  AsyncDropdownFormField(
+                  AsyncDropdown(
                     key: const ValueKey('blacklistBrandSelect'),
                     selected: discount.blacklistBrandName == null
                         ? null
-                        : [
-                            BsSelectBoxOption(
-                                value: discount.blacklistBrandName,
-                                text: Text(discount.blacklistBrandName ?? ''))
-                          ],
+                        : DropdownResult(
+                            value: discount.blacklistBrandName,
+                            text: discount.blacklistBrandName ?? ''),
                     path: '/brands',
                     attributeKey: 'merek',
                     label: const Text(
@@ -276,8 +259,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       style: labelStyle,
                     ),
                     onChanged: (option) {
-                      discount.blacklistBrandName =
-                          option?[0].getValueAsString();
+                      discount.blacklistBrandName = option?.value;
                     },
                   ),
                   const Text(

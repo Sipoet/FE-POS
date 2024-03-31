@@ -88,7 +88,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Flexible(
-                    child: AsyncDropdownFormField(
+                    child: AsyncDropdown(
                       key: const ValueKey('employeeSelect'),
                       path: '/employees',
                       attributeKey: 'name',
@@ -98,15 +98,14 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                       ),
                       onChanged: (option) {
                         employeeLeave.employee.id =
-                            int.tryParse(option?[0].getValueAsString() ?? '');
-                        final text = option?[0].getText() as Text;
-                        employeeLeave.employee.name = text.data ?? '';
+                            int.tryParse(option?.value ?? '');
+                        employeeLeave.employee.name = option?.text ?? '';
                       },
-                      selected: [
-                        BsSelectBoxOption(
-                            value: employeeLeave.employee.id,
-                            text: Text(employeeLeave.employee.name)),
-                      ],
+                      selected: employeeLeave.employee.id == null
+                          ? null
+                          : DropdownResult(
+                              value: employeeLeave.employee.id,
+                              text: employeeLeave.employee.name),
                       validator: (value) {
                         if (employeeLeave.employee.id == null) {
                           return 'harus diisi';

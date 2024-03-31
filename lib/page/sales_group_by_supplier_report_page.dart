@@ -4,7 +4,6 @@ import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/custom_data_table.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
-import 'package:fe_pos/widget/dropdown_remote_connection.dart';
 
 import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/file_saver.dart';
@@ -20,15 +19,6 @@ class SalesGroupBySupplierReportPage extends StatefulWidget {
 class _SalesGroupBySupplierReportPageState
     extends State<SalesGroupBySupplierReportPage>
     with AutomaticKeepAliveClientMixin {
-  final BsSelectBoxController _brandSelectWidget =
-      BsSelectBoxController(multiple: true, processing: true);
-
-  final BsSelectBoxController _supplierSelectWidget =
-      BsSelectBoxController(multiple: true, processing: true);
-
-  final BsSelectBoxController _itemTypeSelectWidget =
-      BsSelectBoxController(multiple: true, processing: true);
-
   static const TextStyle _filterLabelStyle =
       TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
   late Server server;
@@ -37,6 +27,9 @@ class _SalesGroupBySupplierReportPageState
   final dataSource = CustomDataTableSource<SalesGroupBySupplier>();
   late Flash flash;
   late final Setting setting;
+  List _brands = [];
+  List _suppliers = [];
+  List _itemTypes = [];
 
   @override
   void initState() {
@@ -72,23 +65,11 @@ class _SalesGroupBySupplierReportPageState
   }
 
   Future _requestReport({int? page, int? per}) async {
-    List brands =
-        _brandSelectWidget.getSelectedAll().map((e) => e.getValue()).toList();
-    List suppliers = _supplierSelectWidget
-        .getSelectedAll()
-        .map((e) => e.getValue())
-        .toList();
-    List itemTypes = _itemTypeSelectWidget
-        .getSelectedAll()
-        .map((e) => e.getValue())
-        .toList();
-
-    log('supplier $suppliers, brand $brands, item_types: $itemTypes');
     return server.get('item_sales_percentage_reports/group_by_supplier',
         queryParam: {
-          'suppliers[]': suppliers,
-          'brands[]': brands,
-          'item_types[]': itemTypes,
+          'suppliers[]': _suppliers,
+          'brands[]': _brands,
+          'item_types[]': _itemTypes,
           'report_type': _reportType,
           if (page != null) 'page': page.toString(),
           if (per != null) 'per': per.toString()
@@ -159,32 +140,32 @@ class _SalesGroupBySupplierReportPageState
                 Container(
                     padding: const EdgeInsets.only(right: 10),
                     constraints: const BoxConstraints(maxWidth: 350),
-                    child: AsyncDropdownFormField(
+                    child: AsyncDropdownMultiple(
                       label: const Text('Merek :', style: _filterLabelStyle),
                       key: const ValueKey('brandSelect'),
-                      controller: _brandSelectWidget,
+                      onChanged: (value) => _brands = value ?? [],
                       attributeKey: 'merek',
                       path: '/brands',
                     )),
                 Container(
                     padding: const EdgeInsets.only(right: 10),
                     constraints: const BoxConstraints(maxWidth: 350),
-                    child: AsyncDropdownFormField(
+                    child: AsyncDropdownMultiple(
                       label: const Text('Jenis/Departemen :',
                           style: _filterLabelStyle),
-                      key: const ValueKey('brandSelect'),
-                      controller: _itemTypeSelectWidget,
+                      key: const ValueKey('itemTypeSelect'),
+                      onChanged: (value) => _itemTypes = value ?? [],
                       attributeKey: 'jenis',
                       path: '/item_types',
                     )),
                 Container(
                   padding: const EdgeInsets.only(right: 10),
                   constraints: const BoxConstraints(maxWidth: 350),
-                  child: AsyncDropdownFormField(
+                  child: AsyncDropdownMultiple(
                     label: const Text('Supplier :', style: _filterLabelStyle),
                     key: const ValueKey('supplierSelect'),
-                    controller: _supplierSelectWidget,
                     attributeKey: 'nama',
+                    onChanged: (value) => _suppliers = value ?? [],
                     path: '/suppliers',
                   ),
                 ),

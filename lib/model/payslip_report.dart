@@ -15,12 +15,13 @@ class PayslipReport extends Model {
   double positionalIncentive;
   double attendanceIncentive;
   double otherIncentive;
+  double overtimeIncentive;
   double debt;
   int totalDay;
   int sickLeave;
   int knownAbsence;
   int unknownAbsence;
-  int overtimeHour;
+  double overtimeHour;
   int workDays;
   int late;
   int? id;
@@ -33,6 +34,7 @@ class PayslipReport extends Model {
       this.employeeStartWorkingDate,
       this.positionalIncentive = 0,
       this.attendanceIncentive = 0,
+      this.overtimeIncentive = 0,
       this.otherIncentive = 0,
       this.totalDay = 0,
       this.taxAmount = 0,
@@ -57,6 +59,7 @@ class PayslipReport extends Model {
         'positional_incentive': positionalIncentive,
         'attendance_incentive': attendanceIncentive,
         'other_incentive': otherIncentive,
+        'overtime_incentive': overtimeIncentive,
         'total_day': totalDay,
         'tax_amount': taxAmount,
         'nett_salary': nettSalary,
@@ -98,7 +101,7 @@ class PayslipReport extends Model {
     model.sickLeave = attributes['sick_leave'];
     model.knownAbsence = attributes['known_absence'];
     model.unknownAbsence = attributes['unknown_absence'];
-    model.overtimeHour = attributes['overtime_hour'];
+    model.overtimeHour = double.parse(attributes['overtime_hour']);
     model.late = attributes['late'] ?? model.late;
     model.workDays = attributes['work_days'];
     model.totalDay = attributes['total_day'];
@@ -111,6 +114,9 @@ class PayslipReport extends Model {
         double.parse(attributes['attendance_incentive'].toString());
     model.otherIncentive =
         double.parse(attributes['other_incentive'].toString());
+    model.overtimeIncentive =
+        double.parse(attributes['overtime_incentive'].toString());
+
     return model;
   }
 }

@@ -18,18 +18,6 @@ class ItemSalesPeriodReportPage extends StatefulWidget {
 
 class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
     with AutomaticKeepAliveClientMixin {
-  final BsSelectBoxController _brandSelectWidget =
-      BsSelectBoxController(multiple: true, processing: true);
-
-  final BsSelectBoxController _supplierSelectWidget =
-      BsSelectBoxController(multiple: true, processing: true);
-
-  final BsSelectBoxController _itemTypeSelectWidget =
-      BsSelectBoxController(multiple: true, processing: true);
-
-  final BsSelectBoxController _itemSelectWidget =
-      BsSelectBoxController(multiple: true, processing: true);
-
   static const TextStyle _filterLabelStyle =
       TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
   late Server server;
@@ -40,6 +28,10 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
       start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
       end: DateTime.now().copyWith(hour: 23, minute: 59, second: 59));
   late Flash flash;
+  List _items = [];
+  List _itemTypes = [];
+  List _suppliers = [];
+  List _brands = [];
   @override
   void initState() {
     flash = Flash(context);
@@ -70,25 +62,12 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
   }
 
   Future _requestReport({int? page, int? per}) async {
-    List brands =
-        _brandSelectWidget.getSelectedAll().map((e) => e.getValue()).toList();
-    List suppliers = _supplierSelectWidget
-        .getSelectedAll()
-        .map((e) => e.getValue())
-        .toList();
-    List itemTypes = _itemTypeSelectWidget
-        .getSelectedAll()
-        .map((e) => e.getValue())
-        .toList();
-    List items =
-        _itemSelectWidget.getSelectedAll().map((e) => e.getValue()).toList();
-
     return server.get('item_sales/period_report',
         queryParam: {
-          'suppliers[]': suppliers,
-          'brands[]': brands,
-          'item_types[]': itemTypes,
-          'items[]': items,
+          'suppliers[]': _suppliers,
+          'brands[]': _brands,
+          'item_types[]': _itemTypes,
+          'items[]': _items,
           'report_type': _reportType,
           'start_time': _dateRange.start.toIso8601String(),
           'end_time': _dateRange.end.toIso8601String(),
@@ -183,31 +162,31 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                 Container(
                     padding: const EdgeInsets.only(right: 10),
                     constraints: const BoxConstraints(maxWidth: 350),
-                    child: AsyncDropdownFormField(
+                    child: AsyncDropdownMultiple(
                       label: const Text('Merek :', style: _filterLabelStyle),
                       key: const ValueKey('brandSelect'),
-                      controller: _brandSelectWidget,
+                      onChanged: (value) => _brands = value ?? [],
                       attributeKey: 'merek',
                       path: '/brands',
                     )),
                 Container(
                     padding: const EdgeInsets.only(right: 10),
                     constraints: const BoxConstraints(maxWidth: 350),
-                    child: AsyncDropdownFormField(
+                    child: AsyncDropdownMultiple(
                       label: const Text('Jenis/Departemen :',
                           style: _filterLabelStyle),
                       key: const ValueKey('brandSelect'),
-                      controller: _itemTypeSelectWidget,
+                      onChanged: (value) => _itemTypes = value ?? [],
                       attributeKey: 'jenis',
                       path: '/item_types',
                     )),
                 Container(
                   padding: const EdgeInsets.only(right: 10),
                   constraints: const BoxConstraints(maxWidth: 350),
-                  child: AsyncDropdownFormField(
+                  child: AsyncDropdownMultiple(
                     label: const Text('Supplier :', style: _filterLabelStyle),
                     key: const ValueKey('supplierSelect'),
-                    controller: _supplierSelectWidget,
+                    onChanged: (value) => _suppliers = value ?? [],
                     attributeKey: 'nama',
                     path: '/suppliers',
                   ),
@@ -215,10 +194,10 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                 Container(
                   padding: const EdgeInsets.only(right: 10),
                   constraints: const BoxConstraints(maxWidth: 350),
-                  child: AsyncDropdownFormField(
+                  child: AsyncDropdownMultiple(
                     label: const Text('Item :', style: _filterLabelStyle),
                     key: const ValueKey('itemSelect'),
-                    controller: _itemSelectWidget,
+                    onChanged: (value) => _items = value ?? [],
                     attributeKey: 'namaitem',
                     path: '/items',
                   ),

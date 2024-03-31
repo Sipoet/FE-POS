@@ -93,21 +93,35 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                       SizedBox(
                         width: 300,
                         child: DateRangePicker(
+                          label: const Text(
+                            'Periode',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           initialDateRange: _dateRange,
                           onChanged: (range) =>
                               _dateRange = range ?? _dateRange,
                         ),
                       ),
+                      const SizedBox(
+                        height: 10,
+                      ),
                       SizedBox(
                         width: 300,
-                        child: AsyncDropdownFormField(
+                        child: AsyncDropdownMultiple(
+                          label: const Text(
+                            'Karyawan',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           multiple: true,
                           path: 'employees',
                           attributeKey: 'name',
                           onChanged: (value) => _employeeIds = value == null
                               ? []
-                              : value.map((e) => e.getValueAsString()).toList(),
+                              : value.map<String>((e) => e.toString()).toList(),
                         ),
+                      ),
+                      const SizedBox(
+                        height: 10,
                       ),
                       Row(
                         children: [

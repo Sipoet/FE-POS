@@ -224,7 +224,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
     return SizedBox(
       width: 300,
       height: 90,
-      child: AsyncDropdownFormField(
+      child: AsyncDropdownMultiple(
         label: Text(column.name, style: _labelStyle),
         multiple: true,
         request: (server, page, searchText) =>
@@ -232,15 +232,13 @@ class _TableFilterFormState extends State<TableFilterForm> {
           'search_text': searchText,
           'fields[${attributes[0]}]': attributes[1],
           'page[page]': page.toString(),
-          'page[limit]': '20'
+          'page[limit]': '100'
         }),
         attributeKey: attributes[1],
-        onChanged: (value) {
+        onSaved: (value) {
           if (value != null && value.isNotEmpty) {
-            final decoratedValue = value
-                .map<String>((e) => e.getValueAsString())
-                .toList()
-                .join(',');
+            final decoratedValue =
+                value.map<String>((e) => e.toString()).toList().join(',');
             controller.setFilter(column.key, 'eq', decoratedValue);
           } else {
             controller.removeFilter(column.key);

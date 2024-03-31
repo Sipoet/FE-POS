@@ -226,7 +226,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                     height: 10,
                   ),
                   Flexible(
-                    child: AsyncDropdownFormField(
+                    child: AsyncDropdown(
                       path: '/roles',
                       attributeKey: 'name',
                       label: const Text(
@@ -234,16 +234,15 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                         style: labelStyle,
                       ),
                       onChanged: (option) {
-                        employee.role.id =
-                            int.tryParse(option?[0].getValueAsString() ?? '');
-                        final text = option?[0].getText() as Text;
-                        employee.role.name = text.data ?? '';
+                        employee.role.id = int.tryParse(option?.value ?? '');
+
+                        employee.role.name = option?.text ?? '';
                       },
-                      selected: [
-                        BsSelectBoxOption(
-                            value: employee.role.id,
-                            text: Text(employee.role.name)),
-                      ],
+                      selected: employee.role.id == null
+                          ? null
+                          : DropdownResult(
+                              value: employee.role.id,
+                              text: employee.role.name),
                       validator: (value) {
                         if (employee.role.id == null) {
                           return 'harus diisi';
@@ -281,7 +280,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   ),
                   Visibility(
                     visible: setting.isAuthorize('payroll', 'index'),
-                    child: AsyncDropdownFormField(
+                    child: AsyncDropdown(
                       label: const Text(
                         'Payroll',
                         style: labelStyle,
@@ -294,23 +293,21 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                         });
                       },
                       attributeKey: 'name',
-                      onChanged: (values) {
-                        if (values == null || values.isEmpty) {
+                      onChanged: (value) {
+                        if (value == null) {
                           employee.payroll = null;
                           return;
                         }
                         employee.payroll = Payroll(
-                          id: int.tryParse(values[0].getValueAsString()),
-                          name: (values[0].getText() as Text).data ?? '',
+                          id: int.tryParse(value.value ?? ''),
+                          name: value.text,
                         );
                       },
                       selected: employee.payroll == null
                           ? null
-                          : [
-                              BsSelectBoxOption(
-                                  value: employee.payroll?.id,
-                                  text: Text(employee.payroll?.name ?? ''))
-                            ],
+                          : DropdownResult(
+                              value: employee.payroll?.id,
+                              text: employee.payroll?.name ?? ''),
                     ),
                   ),
                   const SizedBox(

@@ -17,18 +17,6 @@ class SalesPercentageReportPage extends StatefulWidget {
 
 class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
     with AutomaticKeepAliveClientMixin {
-  final BsSelectBoxController _brandSelectWidget =
-      BsSelectBoxController(multiple: true, processing: true);
-
-  final BsSelectBoxController _supplierSelectWidget =
-      BsSelectBoxController(multiple: true, processing: true);
-
-  final BsSelectBoxController _itemTypeSelectWidget =
-      BsSelectBoxController(multiple: true, processing: true);
-
-  final BsSelectBoxController _itemSelectWidget =
-      BsSelectBoxController(multiple: true, processing: true);
-
   static const TextStyle _filterLabelStyle =
       TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
   late Server server;
@@ -42,6 +30,10 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
   String _storeStockValue = '';
   String _warehouseStockComparison = '';
   String _warehouseStockValue = '';
+  List _brands = [];
+  List _suppliers = [];
+  List _items = [];
+  List _itemTypes = [];
   final _formKey = GlobalKey<FormState>();
   @override
   void initState() {
@@ -77,22 +69,6 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
   }
 
   Future _requestReport({int? page, int? per}) async {
-    List brands = _brandSelectWidget
-        .getSelectedAll()
-        .map((e) => e.getValue().trim())
-        .toList();
-    List suppliers = _supplierSelectWidget
-        .getSelectedAll()
-        .map((e) => e.getValue().trim())
-        .toList();
-    List itemTypes = _itemTypeSelectWidget
-        .getSelectedAll()
-        .map((e) => e.getValue().trim())
-        .toList();
-    List items = _itemSelectWidget
-        .getSelectedAll()
-        .map((e) => e.getValue().trim())
-        .toList();
     String warehouseStock = '$_warehouseStockComparison-$_warehouseStockValue';
     String storeStock = '$_storeStockComparison-$_storeStockValue';
     if (warehouseStock == '-') {
@@ -103,10 +79,10 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
     }
     return server.get('item_sales_percentage_reports',
         queryParam: {
-          'suppliers[]': suppliers,
-          'brands[]': brands,
-          'item_types[]': itemTypes,
-          'item_codes[]': items,
+          'suppliers[]': _suppliers,
+          'brands[]': _brands,
+          'item_types[]': _itemTypes,
+          'item_codes[]': _items,
           'report_type': _reportType,
           'warehouse_stock': warehouseStock,
           'store_stock': storeStock,
@@ -178,44 +154,44 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                   Container(
                       padding: const EdgeInsets.only(right: 10),
                       constraints: const BoxConstraints(maxWidth: 350),
-                      child: AsyncDropdownFormField(
+                      child: AsyncDropdownMultiple(
                         label: const Text('Merek :', style: _filterLabelStyle),
                         key: const ValueKey('brandSelect'),
-                        controller: _brandSelectWidget,
                         attributeKey: 'merek',
                         path: '/brands',
+                        onSaved: (value) => _brands = value ?? [],
                       )),
                   Container(
                       padding: const EdgeInsets.only(right: 10),
                       constraints: const BoxConstraints(maxWidth: 350),
-                      child: AsyncDropdownFormField(
+                      child: AsyncDropdownMultiple(
                         label: const Text('Jenis/Departemen :',
                             style: _filterLabelStyle),
                         key: const ValueKey('brandSelect'),
-                        controller: _itemTypeSelectWidget,
                         attributeKey: 'jenis',
                         path: '/item_types',
+                        onSaved: (value) => _itemTypes = value ?? [],
                       )),
                   Container(
                     padding: const EdgeInsets.only(right: 10),
                     constraints: const BoxConstraints(maxWidth: 350),
-                    child: AsyncDropdownFormField(
+                    child: AsyncDropdownMultiple(
                       label: const Text('Supplier :', style: _filterLabelStyle),
                       key: const ValueKey('supplierSelect'),
-                      controller: _supplierSelectWidget,
                       attributeKey: 'nama',
                       path: '/suppliers',
+                      onSaved: (value) => _suppliers = value ?? [],
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.only(right: 10),
                     constraints: const BoxConstraints(maxWidth: 350),
-                    child: AsyncDropdownFormField(
+                    child: AsyncDropdownMultiple(
                       label: const Text('Item :', style: _filterLabelStyle),
                       key: const ValueKey('itemSelect'),
-                      controller: _itemSelectWidget,
                       attributeKey: 'namaitem',
                       path: '/items',
+                      onSaved: (value) => _items = value ?? [],
                     ),
                   ),
                   Container(
@@ -353,6 +329,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
                       _displayReport();
                     }
                   },
@@ -361,6 +338,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
                       _downloadReport();
                     }
                   },

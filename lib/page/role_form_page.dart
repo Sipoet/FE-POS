@@ -186,24 +186,24 @@ class _RoleFormPageState extends State<RoleFormPage>
                             .map<DataRow>((accessAuthorize) => DataRow(cells: [
                                   DataCell(SizedBox(
                                     width: 250,
-                                    child: AsyncDropdownFormField(
+                                    child: AsyncDropdown(
                                         onChanged: (value) => setState(() {
                                               accessAuthorize.controller =
-                                                  value?[0]
-                                                          .getValueAsString() ??
-                                                      '';
+                                                  value?.value ?? '';
                                             }),
-                                        selected: [
-                                          BsSelectBoxOption(
-                                              value: accessAuthorize.controller,
-                                              text: Text(
-                                                  accessAuthorize.controller))
-                                        ],
+                                        selected: accessAuthorize
+                                                .controller.isEmpty
+                                            ? null
+                                            : DropdownResult(
+                                                value:
+                                                    accessAuthorize.controller,
+                                                text:
+                                                    accessAuthorize.controller),
                                         path: 'roles/controller_names'),
                                   )),
                                   DataCell(SizedBox(
                                     width: 250,
-                                    child: AsyncDropdownFormField(
+                                    child: AsyncDropdownMultiple(
                                       multiple: true,
                                       onChanged: (value) => accessAuthorize
                                           .action = value
@@ -211,14 +211,11 @@ class _RoleFormPageState extends State<RoleFormPage>
                                                   (e) => e.getValueAsString())
                                               .toList() ??
                                           [],
-                                      selected: accessAuthorize.action.isEmpty
-                                          ? null
-                                          : accessAuthorize.action
-                                              .map<BsSelectBoxOption>(
-                                                  (action) => BsSelectBoxOption(
-                                                      value: action,
-                                                      text: Text(action)))
-                                              .toList(),
+                                      selecteds: accessAuthorize.action
+                                          .map<DropdownResult>((action) =>
+                                              DropdownResult(
+                                                  value: action, text: action))
+                                          .toList(),
                                       request: (server, offset, searchText) {
                                         return server.get('roles/action_names',
                                             queryParam: {
@@ -282,36 +279,31 @@ class _RoleFormPageState extends State<RoleFormPage>
                           .map<DataRow>((columnAuthorize) => DataRow(cells: [
                                 DataCell(SizedBox(
                                   width: 250,
-                                  child: AsyncDropdownFormField(
+                                  child: AsyncDropdown(
                                       onChanged: (value) => columnAuthorize
-                                              .table =
-                                          value?[0].getValueAsString() ?? '',
-                                      selected: [
-                                        BsSelectBoxOption(
-                                            value: columnAuthorize.table,
-                                            text: Text(columnAuthorize.table))
-                                      ],
+                                          .table = value?.value ?? '',
+                                      selected: columnAuthorize.table.isEmpty
+                                          ? null
+                                          : DropdownResult(
+                                              value: columnAuthorize.table,
+                                              text: columnAuthorize.table),
                                       path: 'roles/table_names'),
                                 )),
                                 DataCell(SizedBox(
                                   width: 250,
-                                  child: AsyncDropdownFormField(
+                                  child: AsyncDropdownMultiple(
                                     multiple: true,
                                     onChanged: (value) => setState(() {
                                       columnAuthorize.column = value
-                                              ?.map<String>(
-                                                  (e) => e.getValueAsString())
+                                              ?.map<String>((e) => e.toString())
                                               .toList() ??
                                           [];
                                     }),
-                                    selected: columnAuthorize.column.isEmpty
-                                        ? null
-                                        : columnAuthorize.column
-                                            .map<BsSelectBoxOption>((column) =>
-                                                BsSelectBoxOption(
-                                                    value: column,
-                                                    text: Text(column)))
-                                            .toList(),
+                                    selecteds: columnAuthorize.column
+                                        .map<DropdownResult>((column) =>
+                                            DropdownResult(
+                                                value: column, text: column))
+                                        .toList(),
                                     request: (server, offset, searchText) =>
                                         server.get('roles/column_names',
                                             queryParam: {

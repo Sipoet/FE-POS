@@ -194,6 +194,8 @@ class _PayslipPageState extends State<PayslipPage>
     }
   }
 
+  final menuController = MenuController();
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -248,24 +250,44 @@ class _PayslipPageState extends State<PayslipPage>
                       onSubmitted: searchChanged,
                     ),
                   ),
-                  SubmenuButton(menuChildren: [
-                    MenuItemButton(
-                      child: const Text('Cancel Payslip'),
-                      onPressed: () => actionSelected(cancelPayslip),
-                    ),
-                    MenuItemButton(
-                      child: const Text('confirm Payslip'),
-                      onPressed: () => actionSelected(confirmPayslip),
-                    ),
-                    MenuItemButton(
-                      child: const Text('pay Payslip'),
-                      onPressed: () => actionSelected(payPayslip),
-                    ),
-                    MenuItemButton(
-                      child: const Text('Generate Payslip'),
-                      onPressed: () => generatePayslip(),
-                    ),
-                  ], child: const Icon(Icons.table_rows_rounded))
+                  SubmenuButton(
+                      controller: menuController,
+                      onHover: (isHover) {
+                        if (isHover) {
+                          menuController.close();
+                        }
+                      },
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Cancel Payslip'),
+                          onPressed: () {
+                            menuController.close();
+                            actionSelected(cancelPayslip);
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('confirm Payslip'),
+                          onPressed: () {
+                            menuController.close();
+                            actionSelected(confirmPayslip);
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('pay Payslip'),
+                          onPressed: () {
+                            menuController.close();
+                            actionSelected(payPayslip);
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('Generate Payslip'),
+                          onPressed: () {
+                            menuController.close();
+                            generatePayslip();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded))
                 ],
               ),
             ),

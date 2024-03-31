@@ -135,14 +135,12 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                   AsyncDropdown(
                     path: 'employees',
                     attributeKey: 'name',
-                    onChanged: (values) {
-                      payslip.employee.id = int.parse(values[0].getValue());
+                    onChanged: (value) {
+                      payslip.employee.id = int.parse(value?.value ?? '');
                     },
-                    selected: [
-                      BsSelectBoxOption(
-                          value: payslip.employee.id,
-                          text: Text(payslip.employee.name)),
-                    ],
+                    selected: DropdownResult(
+                        value: payslip.employee.id,
+                        text: payslip.employee.name),
                     width: 200,
                   ),
                   const SizedBox(
@@ -216,7 +214,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                         border: OutlineInputBorder()),
                     initialValue: payslip.overtimeHour.toString(),
                     onSaved: (newValue) {
-                      payslip.overtimeHour = int.parse(newValue.toString());
+                      payslip.overtimeHour = double.parse(newValue.toString());
                     },
                     validator: (newValue) {
                       if (newValue == null || newValue.isEmpty) {
@@ -225,7 +223,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                       return null;
                     },
                     onChanged: (newValue) {
-                      payslip.overtimeHour = int.parse(newValue.toString());
+                      payslip.overtimeHour = double.parse(newValue.toString());
                     },
                   ),
                   const SizedBox(

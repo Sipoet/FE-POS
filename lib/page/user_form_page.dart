@@ -125,7 +125,7 @@ class _UserFormPageState extends State<UserFormPage>
                     height: 10,
                   ),
                   Flexible(
-                    child: AsyncDropdownFormField(
+                    child: AsyncDropdown(
                       key: const ValueKey('roleSelect'),
                       path: '/roles',
                       attributeKey: 'name',
@@ -134,15 +134,11 @@ class _UserFormPageState extends State<UserFormPage>
                         style: labelStyle,
                       ),
                       onChanged: (option) {
-                        user.role.id =
-                            int.tryParse(option?[0].getValueAsString() ?? '');
-                        final text = option?[0].getText() as Text;
-                        user.role.name = text.data ?? '';
+                        user.role.id = int.tryParse(option?.value ?? '');
+                        user.role.name = option?.text ?? '';
                       },
-                      selected: [
-                        BsSelectBoxOption(
-                            value: user.role.id, text: Text(user.role.name)),
-                      ],
+                      selected: DropdownResult(
+                          value: user.role.id, text: user.role.name),
                       validator: (value) {
                         if (user.role.id == null) {
                           return 'harus diisi';

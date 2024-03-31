@@ -16,7 +16,8 @@ class EmployeeAttendancePage extends StatefulWidget {
   State<EmployeeAttendancePage> createState() => _EmployeeAttendancePageState();
 }
 
-class _EmployeeAttendancePageState extends State<EmployeeAttendancePage> {
+class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
+    with AutomaticKeepAliveClientMixin {
   final _source = CustomDataTableSource<EmployeeAttendance>();
   late final Server server;
   bool _isDisplayTable = false;
@@ -26,6 +27,9 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage> {
   late Flash flash;
   late final Setting setting;
   Map _filter = {};
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -111,7 +115,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage> {
       tabManager.addTab(
           'Mass Upload Absensi Karyawan',
           const EmployeeAttendanceFormPage(
-            key: ValueKey('EmployeeAttendanceMassUploadFormPage'),
+            key: ObjectKey('EmployeeAttendanceMassUploadFormPage'),
           ));
     });
   }
@@ -183,6 +187,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     _source.setActionButtons((employeeAttendance, index) => <Widget>[
           IconButton(
               onPressed: () {

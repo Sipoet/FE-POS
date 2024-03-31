@@ -23,6 +23,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
 
   late TabManager tabManager;
   late Flash flash;
+
   @override
   void initState() {
     final setting = context.read<Setting>();
@@ -232,7 +233,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               title: body['message'],
               messageType: MessageType.success,
             );
-
+            // Navigator.pop(context);
             Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
