@@ -6,61 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 export 'package:fe_pos/model/server.dart';
 
-// class AsyncDropdownFormField extends FormField<List<DropdownResult>?> {
-//   AsyncDropdownFormField({
-//     super.key,
-//     ValueChanged<List<DropdownResult>?>? onChanged,
-//     List<DropdownResult>? selected,
-//     String? path,
-//     String? attributeKey,
-//     BsSelectBoxController? controller,
-//     super.validator,
-//     bool multiple = false,
-//     Widget? label,
-//     Future Function(Server server, int page, String searchText)? request,
-//     super.autovalidateMode,
-//   }) : super(
-//           initialValue: selected ?? controller?.getSelectedAll(),
-//           builder: (state) {
-//             void onChangedHandler(List<DropdownResult>? value) {
-//               state.didChange(value);
-//               if (onChanged != null) {
-//                 onChanged(value);
-//               }
-//             }
-
-//             return Padding(
-//               padding: const EdgeInsets.symmetric(vertical: 8),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.stretch,
-//                 mainAxisSize: MainAxisSize.min,
-//                 children: [
-
-//                   AsyncDropdown(
-//                     selected: selected,
-//                     attributeKey: attributeKey,
-//                     path: path,
-//                     label: label,
-//                     multiple: multiple,
-//                     request: request,
-//                     controller: controller,
-//                     side: state.hasError
-//                         ? const BorderSide(color: Colors.red, width: 1)
-//                         : BorderSide(color: Colors.grey.shade300, width: 1),
-//                     onChanged: onChangedHandler,
-//                   ),
-//                   if (state.hasError) ...[
-//                     Text(
-//                       state.errorText!,
-//                       style: const TextStyle(fontSize: 15, color: Colors.red),
-//                     ),
-//                   ],
-//                 ],
-//               ),
-//             );
-//           },
-//         );
-// }
 class AsyncDropdownMultiple extends StatefulWidget {
   const AsyncDropdownMultiple(
       {super.key,
@@ -221,7 +166,7 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
         return server.get(widget.path!, queryParam: {
           'search_text': searchText,
           'page[page]': page.toString(),
-          'page[limit]': '100'
+          'page[limit]': '20'
         });
       };
 
@@ -241,8 +186,8 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
       selectedItem: widget.selected,
       compareFn: compareResult,
       clearButtonProps: const ClearButtonProps(isVisible: true),
-      popupProps:
-          const PopupProps.menu(showSearchBox: true, showSelectedItems: true),
+      popupProps: const PopupProps.menu(
+          showSearchBox: true, showSelectedItems: true, isFilterOnline: true),
       dropdownDecoratorProps: DropDownDecoratorProps(
           dropdownSearchDecoration: InputDecoration(
         label: widget.label,

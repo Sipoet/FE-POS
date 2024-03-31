@@ -88,7 +88,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                         return server.get('employees', queryParam: {
                           'field[employee]': 'code,name',
                           'search_text': searchText,
-                          'page[limit]': '100',
+                          'page[limit]': limit.toString(),
                         });
                       },
                     ),
