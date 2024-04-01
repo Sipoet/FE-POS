@@ -460,7 +460,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                           ]),
                           TableRow(children: [
                             const Text(
-                              "PPN :",
+                              "PPH :",
                               style: labelStyle,
                               textAlign: TextAlign.right,
                             ),

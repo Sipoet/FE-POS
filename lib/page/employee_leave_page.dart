@@ -16,7 +16,8 @@ class EmployeeLeavePage extends StatefulWidget {
   State<EmployeeLeavePage> createState() => _EmployeeLeavePageState();
 }
 
-class _EmployeeLeavePageState extends State<EmployeeLeavePage> {
+class _EmployeeLeavePageState extends State<EmployeeLeavePage>
+    with AutomaticKeepAliveClientMixin {
   final _source = CustomDataTableSource<EmployeeLeave>();
   late final Server server;
   bool _isDisplayTable = false;
@@ -26,6 +27,9 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage> {
   late Flash flash;
   late final Setting setting;
   Map _filter = {};
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -196,6 +200,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     _source.setActionButtons((employeeLeave, index) => <Widget>[
           IconButton(
               onPressed: () {

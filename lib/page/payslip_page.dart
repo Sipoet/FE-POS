@@ -108,15 +108,15 @@ class _PayslipPageState extends State<PayslipPage>
   void generatePayslip() {
     final tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Generate Payslip',
-          const GeneratePayslipFormPage(key: ValueKey('Generate Payslip')));
+      tabManager.addTab('Generate Slip Gaji',
+          const GeneratePayslipFormPage(key: ObjectKey('Generate Payslip')));
     });
   }
 
   void editForm(Payslip payslip) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Edit Payslip ${payslip.id}',
+      tabManager.addTab('Edit SLip Gaji ${payslip.id}',
           PayslipFormPage(key: ObjectKey(payslip), payslip: payslip));
     });
   }
@@ -160,7 +160,7 @@ class _PayslipPageState extends State<PayslipPage>
               flash.showBanner(
                   messageType: MessageType.success,
                   title: 'Sukses Hapus',
-                  description: 'Sukses Hapus payslip ${payslip.id}');
+                  description: 'Sukses Hapus Slip Gaji ${payslip.id}');
               refreshTable();
             }
           }, onError: (error) {
@@ -204,13 +204,13 @@ class _PayslipPageState extends State<PayslipPage>
               onPressed: () {
                 editForm(payslip);
               },
-              tooltip: 'Edit Payslip',
+              tooltip: 'Edit Slip Gaji',
               icon: const Icon(Icons.edit)),
           IconButton(
               onPressed: () {
                 destroyRecord(payslip);
               },
-              tooltip: 'Hapus Payslip',
+              tooltip: 'Hapus Slip Gaji',
               icon: const Icon(Icons.delete)),
         ]);
     return SingleChildScrollView(
@@ -259,28 +259,28 @@ class _PayslipPageState extends State<PayslipPage>
                       },
                       menuChildren: [
                         MenuItemButton(
-                          child: const Text('Cancel Payslip'),
+                          child: const Text('Cancel Slip Gaji'),
                           onPressed: () {
                             menuController.close();
                             actionSelected(cancelPayslip);
                           },
                         ),
                         MenuItemButton(
-                          child: const Text('confirm Payslip'),
+                          child: const Text('confirm Slip Gaji'),
                           onPressed: () {
                             menuController.close();
                             actionSelected(confirmPayslip);
                           },
                         ),
                         MenuItemButton(
-                          child: const Text('pay Payslip'),
+                          child: const Text('pay Slip Gaji'),
                           onPressed: () {
                             menuController.close();
                             actionSelected(payPayslip);
                           },
                         ),
                         MenuItemButton(
-                          child: const Text('Generate Payslip'),
+                          child: const Text('Generate Slip Gaji'),
                           onPressed: () {
                             menuController.close();
                             generatePayslip();

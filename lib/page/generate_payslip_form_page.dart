@@ -54,6 +54,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                 child: Column(
                   children: [
                     DateRangePicker(
+                      key: const ValueKey('generate_payslip-periode'),
                       label: const Text(
                         'Periode',
                         style: labelStyle,
@@ -69,6 +70,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                       height: 10,
                     ),
                     AsyncDropdownMultiple(
+                      key: const ValueKey('generate_payslip-karyawan'),
                       attributeKey: 'name',
                       multiple: true,
                       label: const Text(
@@ -76,7 +78,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                         style: labelStyle,
                       ),
                       onChanged: (values) {
-                        if (values == null || values.isEmpty) {
+                        if (values.isEmpty) {
                           _employeeIds = [];
                           return;
                         }
@@ -84,11 +86,11 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                             .map<String>((row) => row.toString())
                             .toList();
                       },
-                      request: (server, limit, searchText) {
+                      request: (server, page, searchText) {
                         return server.get('employees', queryParam: {
                           'field[employee]': 'code,name',
                           'search_text': searchText,
-                          'page[limit]': limit.toString(),
+                          'page[limit]': '20',
                         });
                       },
                     ),

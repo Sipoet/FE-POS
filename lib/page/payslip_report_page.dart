@@ -115,9 +115,8 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                           multiple: true,
                           path: 'employees',
                           attributeKey: 'name',
-                          onChanged: (value) => _employeeIds = value == null
-                              ? []
-                              : value.map<String>((e) => e.toString()).toList(),
+                          onChanged: (value) => _employeeIds =
+                              value.map<String>((e) => e.toString()).toList(),
                         ),
                       ),
                       const SizedBox(

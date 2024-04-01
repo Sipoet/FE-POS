@@ -165,7 +165,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                     child: AsyncDropdownMultiple(
                       label: const Text('Merek :', style: _filterLabelStyle),
                       key: const ValueKey('brandSelect'),
-                      onChanged: (value) => _brands = value ?? [],
+                      onChanged: (value) => _brands = value,
                       attributeKey: 'merek',
                       path: '/brands',
                     )),
@@ -176,7 +176,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                       label: const Text('Jenis/Departemen :',
                           style: _filterLabelStyle),
                       key: const ValueKey('brandSelect'),
-                      onChanged: (value) => _itemTypes = value ?? [],
+                      onChanged: (value) => _itemTypes = value,
                       attributeKey: 'jenis',
                       path: '/item_types',
                     )),
@@ -186,7 +186,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                   child: AsyncDropdownMultiple(
                     label: const Text('Supplier :', style: _filterLabelStyle),
                     key: const ValueKey('supplierSelect'),
-                    onChanged: (value) => _suppliers = value ?? [],
+                    onChanged: (value) => _suppliers = value,
                     attributeKey: 'nama',
                     path: '/suppliers',
                   ),
@@ -197,7 +197,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                   child: AsyncDropdownMultiple(
                     label: const Text('Item :', style: _filterLabelStyle),
                     key: const ValueKey('itemSelect'),
-                    onChanged: (value) => _items = value ?? [],
+                    onChanged: (value) => _items = value,
                     attributeKey: 'namaitem',
                     path: '/items',
                   ),

@@ -27,7 +27,7 @@ class AsyncDropdownMultiple extends StatefulWidget {
   final double? width;
   final List<DropdownResult> selecteds;
   final bool multiple;
-  final void Function(List<dynamic>?)? onChanged;
+  final void Function(List<dynamic>)? onChanged;
   final void Function(List<dynamic>?)? onSaved;
   final String? Function(List<DropdownResult>?)? validator;
   final Widget? label;
@@ -54,7 +54,7 @@ class _AsyncDropdownMultipleState extends State<AsyncDropdownMultiple> {
         return server.get(widget.path!, queryParam: {
           'search_text': searchText,
           'page[page]': page.toString(),
-          'page[limit]': '100'
+          'page[limit]': '20'
         });
       };
 
@@ -83,7 +83,7 @@ class _AsyncDropdownMultipleState extends State<AsyncDropdownMultiple> {
       selectedItems: widget.selecteds,
       clearButtonProps: const ClearButtonProps(isVisible: true),
       popupProps: const PopupPropsMultiSelection.menu(
-          showSearchBox: true, showSelectedItems: true),
+          showSearchBox: true, showSelectedItems: true, isFilterOnline: true),
       dropdownDecoratorProps: DropDownDecoratorProps(
           dropdownSearchDecoration: InputDecoration(
         label: widget.label,

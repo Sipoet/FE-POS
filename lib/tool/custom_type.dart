@@ -1,23 +1,14 @@
 class Date extends DateTime {
   Date(
-    int year, [
-    int month = 1,
-    int day = 1,
-    int hour = 0,
-    int minute = 0,
-    int second = 0,
-    int millisecond = 0,
-    int microsecond = 0,
-  ]) : super(
-          year,
-          month,
-          day,
-          hour,
-          minute,
-          second,
-          millisecond,
-          microsecond,
-        );
+    super.year, [
+    super.month = 1,
+    super.day = 1,
+    super.hour = 0,
+    super.minute = 0,
+    super.second = 0,
+    super.millisecond = 0,
+    super.microsecond = 0,
+  ]);
   static Date parse(String value) {
     var datetime = DateTime.parse(value);
     return Date.parsingDateTime(datetime);

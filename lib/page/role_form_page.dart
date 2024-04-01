@@ -205,12 +205,11 @@ class _RoleFormPageState extends State<RoleFormPage>
                                     width: 250,
                                     child: AsyncDropdownMultiple(
                                       multiple: true,
-                                      onChanged: (value) => accessAuthorize
-                                          .action = value
-                                              ?.map<String>(
+                                      onChanged: (value) =>
+                                          accessAuthorize.action = value
+                                              .map<String>(
                                                   (e) => e.getValueAsString())
-                                              .toList() ??
-                                          [],
+                                              .toList(),
                                       selecteds: accessAuthorize.action
                                           .map<DropdownResult>((action) =>
                                               DropdownResult(
@@ -295,9 +294,8 @@ class _RoleFormPageState extends State<RoleFormPage>
                                     multiple: true,
                                     onChanged: (value) => setState(() {
                                       columnAuthorize.column = value
-                                              ?.map<String>((e) => e.toString())
-                                              .toList() ??
-                                          [];
+                                          .map<String>((e) => e.toString())
+                                          .toList();
                                     }),
                                     selecteds: columnAuthorize.column
                                         .map<DropdownResult>((column) =>

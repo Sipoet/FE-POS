@@ -73,18 +73,18 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
       return '-';
     }
     switch (cell.runtimeType) {
-      case Date:
+      case const (Date):
         return _dateFormat(cell);
-      case DateTime:
+      case const (DateTime):
         return _datetimeFormat(cell);
-      case TimeOfDay:
+      case const (TimeOfDay):
         return _timeFormat(cell);
-      case Money:
+      case const (Money):
         return _moneyFormat(cell);
-      case double:
-      case int:
+      case const (double):
+      case const (int):
         return _numberFormat(cell);
-      case String:
+      case const (String):
         return cell;
       default:
         try {
