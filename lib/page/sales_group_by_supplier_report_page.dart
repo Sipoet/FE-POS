@@ -136,10 +136,11 @@ class _SalesGroupBySupplierReportPageState
             const SizedBox(height: 10),
             Wrap(
               direction: Axis.horizontal,
+              spacing: 10,
+              runSpacing: 10,
               children: [
-                Container(
-                    padding: const EdgeInsets.only(right: 10),
-                    constraints: const BoxConstraints(maxWidth: 350),
+                SizedBox(
+                    width: 350,
                     child: AsyncDropdownMultiple(
                       label: const Text('Merek :', style: _filterLabelStyle),
                       key: const ValueKey('brandSelect'),
@@ -147,9 +148,8 @@ class _SalesGroupBySupplierReportPageState
                       attributeKey: 'merek',
                       path: '/brands',
                     )),
-                Container(
-                    padding: const EdgeInsets.only(right: 10),
-                    constraints: const BoxConstraints(maxWidth: 350),
+                SizedBox(
+                    width: 350,
                     child: AsyncDropdownMultiple(
                       label: const Text('Jenis/Departemen :',
                           style: _filterLabelStyle),
@@ -158,9 +158,8 @@ class _SalesGroupBySupplierReportPageState
                       attributeKey: 'jenis',
                       path: '/item_types',
                     )),
-                Container(
-                  padding: const EdgeInsets.only(right: 10),
-                  constraints: const BoxConstraints(maxWidth: 350),
+                SizedBox(
+                  width: 350,
                   child: AsyncDropdownMultiple(
                     label: const Text('Supplier :', style: _filterLabelStyle),
                     key: const ValueKey('supplierSelect'),

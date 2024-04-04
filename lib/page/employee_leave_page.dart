@@ -198,6 +198,8 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
     }
   }
 
+  final menuController = MenuController();
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -252,12 +254,18 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
                       onSubmitted: searchChanged,
                     ),
                   ),
-                  SubmenuButton(menuChildren: [
-                    MenuItemButton(
-                      child: const Text('Tambah Cuti Karyawan'),
-                      onPressed: () => addForm(),
-                    ),
-                  ], child: const Icon(Icons.table_rows_rounded))
+                  SubmenuButton(
+                      controller: menuController,
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah Cuti Karyawan'),
+                          onPressed: () {
+                            menuController.close();
+                            addForm();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded))
                 ],
               ),
             ),

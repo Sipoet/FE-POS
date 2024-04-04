@@ -13,7 +13,8 @@ class MobileLayout extends StatefulWidget {
   State<MobileLayout> createState() => _MobileLayoutState();
 }
 
-class _MobileLayoutState extends State<MobileLayout> {
+class _MobileLayoutState extends State<MobileLayout>
+    with TickerProviderStateMixin {
   List<Widget> _menus = [];
   final List<String> disableClosedTabs = ['Home'];
 

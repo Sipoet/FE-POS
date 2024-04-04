@@ -25,6 +25,7 @@ class PayslipReport extends Model {
   int workDays;
   int late;
   int? id;
+  String? description;
   PayslipReport(
       {required this.startDate,
       required this.endDate,
@@ -46,6 +47,7 @@ class PayslipReport extends Model {
       this.late = 0,
       this.workDays = 0,
       this.debt = 0,
+      this.description,
       this.id});
 
   @override
@@ -73,6 +75,7 @@ class PayslipReport extends Model {
         'bank': bank,
         'bank_register_name': bankRegisterName,
         'bank_account': bankAccount,
+        'description': description,
       };
 
   @override
@@ -105,6 +108,7 @@ class PayslipReport extends Model {
     model.late = attributes['late'] ?? model.late;
     model.workDays = attributes['work_days'];
     model.totalDay = attributes['total_day'];
+    model.description = attributes['description'];
     model.employeeStartWorkingDate =
         Date.parse(attributes['employee_start_working_date']);
     model.debt = double.parse(attributes['debt'].toString());

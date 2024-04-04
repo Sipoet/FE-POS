@@ -133,6 +133,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       return null;
                     },
                   ),
+                  const SizedBox(height: 10),
                   AsyncDropdown(
                     key: const ValueKey('supplierSelect'),
                     selected: discount.supplierCode == null
@@ -159,6 +160,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       return null;
                     },
                   ),
+                  const SizedBox(height: 10),
                   AsyncDropdown(
                     key: const ValueKey('brandSelect'),
                     selected: discount.brandName == null
@@ -185,6 +187,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       return null;
                     },
                   ),
+                  const SizedBox(height: 10),
                   AsyncDropdown(
                     key: const ValueKey('itemSelect'),
                     selected: discount.itemCode == null
@@ -211,6 +214,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       return null;
                     },
                   ),
+                  const SizedBox(height: 10),
                   AsyncDropdown(
                     key: const ValueKey('blacklistItemTypeSelect'),
                     selected: discount.blacklistItemType == null
@@ -228,6 +232,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       discount.blacklistItemType = option?.value;
                     },
                   ),
+                  const SizedBox(height: 10),
                   AsyncDropdown(
                     key: const ValueKey('blacklistSupplierSelect'),
                     selected: discount.blacklistSupplierCode == null
@@ -245,6 +250,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       discount.blacklistSupplierCode = option?.value;
                     },
                   ),
+                  const SizedBox(height: 10),
                   AsyncDropdown(
                     key: const ValueKey('blacklistBrandSelect'),
                     selected: discount.blacklistBrandName == null
