@@ -10,7 +10,7 @@ class TabManager extends ChangeNotifier {
   TabManager(TickerProvider obj) {
     controller = TabController(
       vsync: obj,
-      length: 99,
+      length: 10,
       initialIndex: emptyIndex,
     );
   }
