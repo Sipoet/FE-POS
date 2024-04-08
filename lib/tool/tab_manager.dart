@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class TabManager extends ChangeNotifier {
-  List<String> tabs = List<String>.filled(99, '', growable: true);
+  List<String> tabs = List<String>.filled(10, '', growable: true);
   List<Widget> tabViews =
-      List<Widget>.filled(99, const SizedBox(), growable: true);
+      List<Widget>.filled(10, const SizedBox(), growable: true);
   late TabController controller;
 
   int emptyIndex = 0;
