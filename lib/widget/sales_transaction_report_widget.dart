@@ -144,6 +144,24 @@ class _SalesTransactionReportWidgetState
                 1: FixedColumnWidth(10)
               },
               children: [
+                TableRow(children: [
+                  Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: Text(
+                      'Omzet Kotor',
+                      style: labelStyle,
+                    ),
+                  ),
+                  const Text(':'),
+                  Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: Text(
+                      setting.moneyFormat(salesTransactionReport.totalSales),
+                      textAlign: TextAlign.right,
+                      style: valueStyle,
+                    ),
+                  )
+                ]),
                 TableRow(
                     decoration: BoxDecoration(
                         color: colorScheme.secondaryContainer,
@@ -154,7 +172,7 @@ class _SalesTransactionReportWidgetState
                       Padding(
                         padding: const EdgeInsets.all(5),
                         child: Text(
-                          'Total Penjualan',
+                          'Gross Profit',
                           style: labelStyle,
                         ),
                       ),
@@ -163,7 +181,7 @@ class _SalesTransactionReportWidgetState
                         padding: const EdgeInsets.all(5),
                         child: Text(
                           setting
-                              .moneyFormat(salesTransactionReport.totalSales),
+                              .moneyFormat(salesTransactionReport.grossProfit),
                           textAlign: TextAlign.right,
                           style: valueStyle,
                         ),

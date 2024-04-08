@@ -11,6 +11,7 @@ class SalesTransactionReport extends Model {
   Money totalOnline;
   Money totalDiscount;
   int totalTransaction;
+  Money grossProfit;
   List debitDetails = [];
   List creditDetails = [];
   SalesTransactionReport(
@@ -22,6 +23,7 @@ class SalesTransactionReport extends Model {
       this.totalQRIS = const Money(0.0),
       this.totalOnline = const Money(0.0),
       this.totalDiscount = const Money(0.0),
+      this.grossProfit = const Money(0.0),
       this.totalTransaction = 0,
       this.debitDetails = const [],
       this.creditDetails = const []});
@@ -42,6 +44,7 @@ class SalesTransactionReport extends Model {
       totalDiscount:
           Money.tryParse(attributes['discount_total']) ?? const Money(0),
       totalTransaction: attributes['num_of_transaction'] ?? 0,
+      grossProfit: Money.tryParse(attributes['gross_profit']) ?? const Money(0),
     );
   }
 
@@ -58,6 +61,7 @@ class SalesTransactionReport extends Model {
         'qris_total': totalQRIS,
         'discount_total': totalDiscount,
         'num_of_transaction': totalTransaction,
+        'gross_profit': grossProfit,
         'start_time': Date.parse(startDate.toIso8601String()),
         'end_time': Date.parse(endDate.toIso8601String()),
       };
