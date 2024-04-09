@@ -89,6 +89,7 @@ class _DateRangePickerState extends State<DateRangePicker> {
             firstDate: DateTime(DateTime.now().year - 5),
             lastDate: DateTime(DateTime.now().year + 100),
             initialDateRange: _dateRange,
+            locale: const Locale('id'),
           );
           if (pickedDateRange is! DateTimeRange) {
             return;
@@ -100,7 +101,7 @@ class _DateRangePickerState extends State<DateRangePicker> {
                     .copyWith(hour: 23, minute: 59, second: 59));
 
             _controller.text = _daterangeFormat();
-            if (widget.onChanged is Function) {
+            if (widget.onChanged != null) {
               widget.onChanged!.call(_dateRange);
             }
           });
