@@ -26,7 +26,7 @@ class _PayrollPageState extends State<PayrollPage>
   final cancelToken = CancelToken();
   late Flash flash;
   Map _filter = {};
-
+  final _menuController = MenuController();
   @override
   bool get wantKeepAlive => true;
 
@@ -235,12 +235,18 @@ class _PayrollPageState extends State<PayrollPage>
                       onSubmitted: searchChanged,
                     ),
                   ),
-                  SubmenuButton(menuChildren: [
-                    MenuItemButton(
-                      child: const Text('Tambah Payroll'),
-                      onPressed: () => addForm(),
-                    ),
-                  ], child: const Icon(Icons.table_rows_rounded))
+                  SubmenuButton(
+                      controller: _menuController,
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah Payroll'),
+                          onPressed: () {
+                            _menuController.close();
+                            addForm();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded))
                 ],
               ),
             ),

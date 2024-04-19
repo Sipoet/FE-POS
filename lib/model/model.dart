@@ -3,9 +3,9 @@ export 'package:fe_pos/tool/custom_type.dart';
 
 abstract class Model {
   // int? id;
-  // DateTime? createdAt;
-  // DateTime? updatedAt;
-  // Model({this.id});
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  Model({this.createdAt, this.updatedAt});
   Map<String, dynamic> toMap();
 
   Map<String, dynamic> toJson() {

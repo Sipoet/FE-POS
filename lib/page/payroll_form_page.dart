@@ -3,6 +3,7 @@ import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/payroll.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class PayrollFormPage extends StatefulWidget {
@@ -115,6 +116,13 @@ class _PayrollFormPageState extends State<PayrollFormPage>
     }, onError: (error, stackTrace) {
       server.defaultErrorResponse(context: context, error: error);
     });
+  }
+
+  TextEditingValue numberPattern(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    return RegExp(r"^\d*(\d\.)?\d*$").hasMatch(newValue.text)
+        ? newValue
+        : oldValue;
   }
 
   @override
@@ -302,6 +310,10 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                   initialValue:
                                       (payrollLine.variable1 ?? '').toString(),
                                   keyboardType: TextInputType.number,
+                                  inputFormatters: <TextInputFormatter>[
+                                    TextInputFormatter.withFunction(
+                                        numberPattern),
+                                  ],
                                   onChanged: (value) => payrollLine.variable1 =
                                       double.tryParse(value),
                                   onSaved: (value) => payrollLine.variable1 =
@@ -315,6 +327,10 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                   initialValue:
                                       (payrollLine.variable2 ?? '').toString(),
                                   keyboardType: TextInputType.number,
+                                  inputFormatters: <TextInputFormatter>[
+                                    TextInputFormatter.withFunction(
+                                        numberPattern),
+                                  ],
                                   onChanged: (value) => payrollLine.variable2 =
                                       double.tryParse(value),
                                   onSaved: (value) => payrollLine.variable2 =
@@ -328,6 +344,10 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                   initialValue:
                                       (payrollLine.variable3 ?? '').toString(),
                                   keyboardType: TextInputType.number,
+                                  inputFormatters: <TextInputFormatter>[
+                                    TextInputFormatter.withFunction(
+                                        numberPattern),
+                                  ],
                                   onChanged: (value) => payrollLine.variable3 =
                                       double.tryParse(value),
                                   onSaved: (value) => payrollLine.variable3 =
@@ -341,6 +361,10 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                   initialValue:
                                       (payrollLine.variable4 ?? '').toString(),
                                   keyboardType: TextInputType.number,
+                                  inputFormatters: <TextInputFormatter>[
+                                    TextInputFormatter.withFunction(
+                                        numberPattern),
+                                  ],
                                   onChanged: (value) => payrollLine.variable4 =
                                       double.tryParse(value),
                                   onSaved: (value) => payrollLine.variable4 =
@@ -354,6 +378,10 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                   initialValue:
                                       (payrollLine.variable5 ?? '').toString(),
                                   keyboardType: TextInputType.number,
+                                  inputFormatters: <TextInputFormatter>[
+                                    TextInputFormatter.withFunction(
+                                        numberPattern),
+                                  ],
                                   onChanged: (value) => payrollLine.variable5 =
                                       double.tryParse(value),
                                   onSaved: (value) => payrollLine.variable5 =

@@ -185,6 +185,8 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
     }
   }
 
+  final _menuController = MenuController();
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -232,12 +234,18 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
                       onSubmitted: searchChanged,
                     ),
                   ),
-                  SubmenuButton(menuChildren: [
-                    MenuItemButton(
-                      child: const Text('Upload Absensi Karyawan'),
-                      onPressed: () => massUploadAttendance(),
-                    ),
-                  ], child: const Icon(Icons.table_rows_rounded))
+                  SubmenuButton(
+                      controller: _menuController,
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Upload Absensi Karyawan'),
+                          onPressed: () {
+                            _menuController.close();
+                            massUploadAttendance();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded))
                 ],
               ),
             ),

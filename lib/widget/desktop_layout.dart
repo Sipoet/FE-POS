@@ -94,7 +94,8 @@ class _DesktopLayoutState extends State<DesktopLayout>
     // return TabBar(tabs: tabs);
   }
 
-  List<Widget> decorateMenus(List<Menu> fromMenus) {
+  List<Widget> decorateMenus(List<Menu> fromMenus,
+      {MenuController? parentMenuController}) {
     var tabManager = context.watch<TabManager>();
     return fromMenus.map<Widget>((menu) {
       if (menu.isNotAuthorize()) {
@@ -103,6 +104,7 @@ class _DesktopLayoutState extends State<DesktopLayout>
         return MenuItemButton(
           leadingIcon: Icon(menu.icon),
           onPressed: () {
+            parentMenuController?.close;
             setState(() {
               tabManager.addTab(menu.label, menu.page);
             });
@@ -110,9 +112,12 @@ class _DesktopLayoutState extends State<DesktopLayout>
           child: Text(menu.label),
         );
       } else {
+        final menuController = MenuController();
         return SubmenuButton(
+          controller: menuController,
           leadingIcon: Icon(menu.icon),
-          menuChildren: decorateMenus(menu.children),
+          menuChildren: decorateMenus(menu.children,
+              parentMenuController: menuController),
           child: Text(menu.label),
         );
       }

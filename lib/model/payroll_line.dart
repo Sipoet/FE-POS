@@ -93,10 +93,13 @@ enum PayrollType {
 
 enum PayrollFormula {
   basic,
-  fulltime,
+  fulltimeSchedule,
   overtimeHour,
   sickLeaveCut,
   annualLeaveCut,
+  unscheduledOvertimeHour,
+  hourlyDaily,
+  fulltimeHourPerDay,
   periodProportional;
 
   @override
@@ -113,6 +116,15 @@ enum PayrollFormula {
     if (this == annualLeaveCut) {
       return 'annual_leave_cut';
     }
+    if (this == hourlyDaily) {
+      return 'hourly_daily';
+    }
+    if (this == fulltimeSchedule) {
+      return 'fulltime_schedule';
+    }
+    if (this == fulltimeHourPerDay) {
+      return 'fulltime_hour_per_day';
+    }
     return super.toString().split('.').last;
   }
 
@@ -120,8 +132,8 @@ enum PayrollFormula {
     switch (this) {
       case basic:
         return "basic";
-      case fulltime:
-        return "fulltime";
+      case fulltimeSchedule:
+        return "Fulltime Schedule";
       case overtimeHour:
         return "Overtime";
       case sickLeaveCut:
@@ -130,6 +142,10 @@ enum PayrollFormula {
         return "berdasarkan jumlah cuti";
       case periodProportional:
         return "periode proportional";
+      case hourlyDaily:
+        return 'jam dalam hari per periode';
+      case fulltimeHourPerDay:
+        return 'fulltime_hour_per_day';
       default:
         throw 'invalid Payroll formula';
     }
@@ -141,14 +157,18 @@ enum PayrollFormula {
         return basic;
       case 'overtime_hour':
         return overtimeHour;
-      case 'fulltime':
-        return fulltime;
+      case 'fulltime_schedule':
+        return fulltimeSchedule;
       case 'period_proportional':
         return periodProportional;
       case 'annual_leave_cut':
         return annualLeaveCut;
       case 'sick_leave_cut':
         return sickLeaveCut;
+      case 'hourly_daily':
+        return hourlyDaily;
+      case 'fulltime_hour_per_day':
+        return fulltimeHourPerDay;
       default:
         throw 'invalid Payroll formula';
     }

@@ -14,6 +14,8 @@ class EmployeeAttendance extends Model {
       {required this.startTime,
       required this.endTime,
       required this.employee,
+      super.createdAt,
+      super.updatedAt,
       this.id});
 
   @override
@@ -25,6 +27,8 @@ class EmployeeAttendance extends Model {
         'date': date,
         'start_work': startWork,
         'end_work': endWork,
+        'created_at': createdAt,
+        'updated_at': updatedAt,
       };
 
   TimeOfDay get startWork => TimeOfDay.fromDateTime(startTime);
@@ -52,6 +56,8 @@ class EmployeeAttendance extends Model {
     model.id = int.parse(json['id']);
     model.startTime = DateTime.parse(attributes['start_time']);
     model.endTime = DateTime.parse(attributes['end_time']);
+    model.createdAt = DateTime.parse(attributes['created_at']);
+    model.updatedAt = DateTime.parse(attributes['updated_at']);
     model.employee = employee;
     return model;
   }

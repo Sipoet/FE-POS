@@ -25,6 +25,7 @@ class _EmployeePageState extends State<EmployeePage>
   List<Employee> employees = [];
   final cancelToken = CancelToken();
   late Flash flash;
+  final _menuController = MenuController();
   Map _filter = {};
 
   @override
@@ -294,20 +295,32 @@ class _EmployeePageState extends State<EmployeePage>
                       onSubmitted: searchChanged,
                     ),
                   ),
-                  SubmenuButton(menuChildren: [
-                    MenuItemButton(
-                      child: const Text('Tambah Karyawan'),
-                      onPressed: () => addForm(),
-                    ),
-                    MenuItemButton(
-                      child: const Text('Aktifkan Karyawan'),
-                      onPressed: () => activateSelected(),
-                    ),
-                    MenuItemButton(
-                      child: const Text('nonaktifkan Karyawan'),
-                      onPressed: () => deactivateSelected(),
-                    ),
-                  ], child: const Icon(Icons.table_rows_rounded))
+                  SubmenuButton(
+                      controller: _menuController,
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah Karyawan'),
+                          onPressed: () {
+                            _menuController.close();
+                            addForm();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('Aktifkan Karyawan'),
+                          onPressed: () {
+                            _menuController.close();
+                            activateSelected();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('nonaktifkan Karyawan'),
+                          onPressed: () {
+                            _menuController.close();
+                            deactivateSelected();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded))
                 ],
               ),
             ),

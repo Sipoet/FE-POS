@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:fe_pos/model/work_schedule.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
@@ -7,6 +6,7 @@ import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/date_picker.dart';
 import 'package:fe_pos/model/employee.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -581,6 +581,9 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                                         border: OutlineInputBorder()),
                                     initialValue: workSchedule.shift.toString(),
                                     keyboardType: TextInputType.number,
+                                    inputFormatters: <TextInputFormatter>[
+                                      FilteringTextInputFormatter.digitsOnly
+                                    ],
                                     onSaved: (value) => workSchedule.shift =
                                         int.parse(value ?? '1'),
                                     validator: (value) {

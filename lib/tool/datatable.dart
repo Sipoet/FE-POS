@@ -5,6 +5,12 @@ import 'package:intl/intl.dart';
 export 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
+extension ComparingTimeOfDay on TimeOfDay {
+  int compareTo(TimeOfDay val2) {
+    return toString().compareTo(val2.toString());
+  }
+}
+
 class CustomDataTableSource<T extends Model> extends DataTableSource {
   late List<TableColumn> columns;
   late List<T> sortedData = [];
@@ -135,6 +141,10 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
     sortedData.sort((T a, T b) {
       var cellA = a.toMap()[sortColumn.attributeKey] ?? '';
       var cellB = b.toMap()[sortColumn.attributeKey] ?? '';
+      if (cellA is TimeOfDay) {
+        cellA = cellA.toString();
+        cellB = cellB.toString();
+      }
       return cellA.compareTo(cellB) * (isAscending ? 1 : -1);
     });
     notifyListeners();

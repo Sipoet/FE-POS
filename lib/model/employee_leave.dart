@@ -72,6 +72,8 @@ class EmployeeLeave extends Model {
       {required this.leaveType,
       required this.date,
       required this.employee,
+      super.createdAt,
+      super.updatedAt,
       this.changeDate,
       this.changeShift,
       this.description,

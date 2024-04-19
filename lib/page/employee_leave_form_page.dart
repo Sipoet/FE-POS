@@ -4,6 +4,7 @@ import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/date_picker.dart';
 import 'package:fe_pos/model/employee_leave.dart';
+import 'package:flutter/services.dart';
 
 import 'package:provider/provider.dart';
 
@@ -207,6 +208,9 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                         ),
                         TextFormField(
                           keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
                           onSaved: (value) {
                             employeeLeave.changeShift =
                                 int.tryParse(value ?? '');

@@ -77,6 +77,8 @@ class Employee extends Model {
       this.imageCode,
       this.bankAccount,
       this.bankRegisterName,
+      super.createdAt,
+      super.updatedAt,
       this.schedules = const <WorkSchedule>[],
       this.status = EmployeeStatus.inactive});
 

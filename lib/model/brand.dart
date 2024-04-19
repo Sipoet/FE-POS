@@ -4,6 +4,7 @@ class Brand extends Model {
   String description;
   String name;
   String? id;
+
   Brand({required this.description, required this.name, this.id});
 
   @override
