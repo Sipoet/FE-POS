@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:fe_pos/tool/file_saver.dart';
+import 'package:open_file/open_file.dart';
 
 mixin AppUpdater<T extends StatefulWidget> on State<T> {
   bool _isDownloading = false;
@@ -71,15 +72,18 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
     final extFile = filename.split('.').last;
     fileSaver.downloadPath(filename, extFile).then((String? filePath) {
       if (filePath != null) {
-        _isDownloading = true;
+        setState(() {
+          _isDownloading = true;
+        });
         server
             .download('download_app/$platform', 'file', filePath)
             .then((value) {
           setState(() {
             _isDownloading = false;
           });
-
-          if (platform == 'windows') {
+          if (platform == 'ios' || platform == 'android') {
+            OpenFile.open(filePath);
+          } else if (platform == 'windows') {
             installApp(filePath);
           } else {
             Flash(context).showBanner(

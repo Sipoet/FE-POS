@@ -89,12 +89,12 @@ class _CustomDataTableState extends State<CustomDataTable> {
                       right: 0,
                       top: 0,
                       child: GestureDetector(
-                          onPanStart: (details) {
+                          onHorizontalDragStart: (details) {
                             setState(() {
                               tableColumn.initX = details.globalPosition.dx;
                             });
                           },
-                          onPanUpdate: (details) {
+                          onHorizontalDragUpdate: (details) {
                             final increment =
                                 details.globalPosition.dx - tableColumn.initX;
                             final newWidth = tableColumn.width + increment;

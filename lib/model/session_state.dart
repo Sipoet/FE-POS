@@ -29,7 +29,7 @@ class SessionState extends ChangeNotifier {
       return false;
     }
     try {
-      var response = await server.get('');
+      var response = await server.get('settings');
       return response.statusCode == 200;
     } catch (error) {
       return false;
