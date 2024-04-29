@@ -7,11 +7,11 @@ class TableFilterForm extends StatefulWidget {
   final List<TableColumn> columns;
   final Map<String, List<dynamic>> enums;
   final TableFilterFormController? controller;
-  final void Function(Map)? onSubmit;
+  final void Function(Map) onSubmit;
   const TableFilterForm(
       {super.key,
       this.enums = const {},
-      this.onSubmit,
+      required this.onSubmit,
       required this.columns,
       this.controller});
 
@@ -75,19 +75,29 @@ class _TableFilterFormState extends State<TableFilterForm> {
                       .map<Widget>((column) => formFilter(column))
                       .toList(),
                 ),
-                if (widget.onSubmit != null)
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: ElevatedButton(
-                        onPressed: () {
-                          if (_key.currentState!.validate() &&
-                              widget.onSubmit != null) {
-                            _key.currentState!.save();
-                            widget.onSubmit!(controller.decoratedFilter);
-                          }
-                        },
-                        child: const Text('Cari')),
-                  )
+                Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: ElevatedButton(
+                          onPressed: () {
+                            if (_key.currentState!.validate()) {
+                              _key.currentState!.save();
+                              widget.onSubmit(controller.decoratedFilter);
+                            }
+                          },
+                          child: const Text('Cari')),
+                    ),
+                    // Padding(
+                    //   padding: const EdgeInsets.all(10.0),
+                    //   child: ElevatedButton(
+                    //       onPressed: () {
+                    //         controller.removeAllFilter();
+                    //       },
+                    //       child: const Text('Hapus Filter')),
+                    // )
+                  ],
+                ),
               ],
             ),
           ),
@@ -155,10 +165,11 @@ class _TableFilterFormState extends State<TableFilterForm> {
         canRemove: true,
         onChanged: (value) {
           if (value == null) {
-            return;
+            controller.removeFilter(column.key);
+          } else {
+            controller.setFilter(
+                column.key, 'btw', decorateTimeRange(value, column.type));
           }
-          controller.setFilter(
-              column.key, 'btw', decorateTimeRange(value, column.type));
         },
       ),
     );
@@ -356,18 +367,23 @@ class _TableFilterFormState extends State<TableFilterForm> {
 }
 
 class TableFilterFormController extends ChangeNotifier {
-  Map<String, Map<String, dynamic>> filter = {};
+  Map<String, Map<String, dynamic>> _filter = {};
 
   void setFilter(String key, String comparison, dynamic value) {
-    if (filter[key] == null) {
-      filter[key] = {};
+    if (_filter[key] == null) {
+      _filter[key] = {};
     }
-    filter[key]![comparison] = value;
+    _filter[key]![comparison] = value;
     notifyListeners();
   }
 
   void removeFilter(String key) {
-    filter.remove(key);
+    _filter.remove(key);
+    notifyListeners();
+  }
+
+  void removeAllFilter() {
+    _filter = {};
     notifyListeners();
   }
 
@@ -375,7 +391,7 @@ class TableFilterFormController extends ChangeNotifier {
 
   Map _decoratedFilter() {
     Map newFilter = {};
-    filter.forEach((key, Map values) {
+    _filter.forEach((key, Map values) {
       values.forEach((comparison, value) {
         newFilter['filter[$key][$comparison]'] = value;
       });

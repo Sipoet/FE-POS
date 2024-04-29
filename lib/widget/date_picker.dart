@@ -90,10 +90,10 @@ class _DatePickerState extends State<DatePicker> with RestorationMixin {
   }
 
   void _selectDate(DateTime? newSelectedDate) {
+    if (widget.onChanged != null) {
+      widget.onChanged!(newSelectedDate);
+    }
     if (newSelectedDate != null) {
-      if (widget.onChanged != null) {
-        widget.onChanged!(newSelectedDate);
-      }
       setState(() {
         _selectedDate.value = newSelectedDate;
         _date = newSelectedDate;
@@ -124,21 +124,24 @@ class _DatePickerState extends State<DatePicker> with RestorationMixin {
                 label: widget.label, border: const OutlineInputBorder()),
             controller: _controller,
           ),
-          if (widget.canRemove)
-            Positioned(
-              top: 5,
-              right: 5,
-              child: IconButton(
-                  iconSize: 30,
-                  onPressed: () {
-                    _controller.text = '';
-                    _date = null;
-                    if (widget.onChanged != null) {
-                      widget.onChanged!(_date);
-                    }
-                  },
-                  icon: const Icon(Icons.close)),
-            )
+          Visibility(
+              visible: widget.canRemove && _date != null,
+              child: Positioned(
+                top: 1,
+                right: 5,
+                child: IconButton(
+                    iconSize: 30,
+                    onPressed: () {
+                      setState(() {
+                        _controller.text = '';
+                        _date = null;
+                      });
+                      if (widget.onChanged != null) {
+                        widget.onChanged!(_date);
+                      }
+                    },
+                    icon: const Icon(Icons.close)),
+              )),
         ]));
   }
 }

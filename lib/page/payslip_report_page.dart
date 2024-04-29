@@ -18,8 +18,14 @@ class PayslipReportPage extends StatefulWidget {
 class _PayslipReportPageState extends State<PayslipReportPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   final formKey = GlobalKey<FormState>();
-  DateTimeRange _dateRange =
-      DateTimeRange(start: DateTime.now(), end: DateTime.now());
+  DateTimeRange _dateRange = DateTimeRange(
+      start: DateTime.now().copyWith(
+          month: DateTime.now().month - 1,
+          day: 26,
+          hour: 0,
+          minute: 0,
+          second: 0),
+      end: DateTime.now().copyWith(day: 25, hour: 23, minute: 59, second: 59));
   final cancelToken = CancelToken();
   final _source = CustomDataTableSource<PayslipReport>();
   @override

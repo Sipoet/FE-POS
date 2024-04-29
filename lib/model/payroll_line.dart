@@ -23,7 +23,7 @@ enum PayrollGroup {
     if (value == 'deduction') {
       return deduction;
     }
-    throw 'invalid Payroll group';
+    throw 'invalid Payroll group $value';
   }
 
   String humanize() {
@@ -86,7 +86,7 @@ enum PayrollType {
       case 'tax':
         return tax;
       default:
-        throw 'invalid Payroll type';
+        throw 'invalid Payroll type $value';
     }
   }
 }
@@ -170,7 +170,7 @@ enum PayrollFormula {
       case 'fulltime_hour_per_day':
         return fulltimeHourPerDay;
       default:
-        throw 'invalid Payroll formula';
+        throw 'invalid Payroll formula $value';
     }
   }
 }

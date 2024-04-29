@@ -107,21 +107,24 @@ class _DateRangePickerState extends State<DateRangePicker> {
           });
         },
       ),
-      if (widget.canRemove)
-        Positioned(
-          top: 5,
-          right: 5,
-          child: IconButton(
-              iconSize: 30,
-              onPressed: () {
-                _controller.text = '';
-                _dateRange = null;
-                if (widget.onChanged != null) {
-                  widget.onChanged!(_dateRange);
-                }
-              },
-              icon: const Icon(Icons.close)),
-        )
+      Visibility(
+          visible: widget.canRemove && _dateRange != null,
+          child: Positioned(
+            top: 1,
+            right: 5,
+            child: IconButton(
+                iconSize: 30,
+                onPressed: () {
+                  setState(() {
+                    _controller.text = '';
+                    _dateRange = null;
+                  });
+                  if (widget.onChanged != null) {
+                    widget.onChanged!(_dateRange);
+                  }
+                },
+                icon: const Icon(Icons.close)),
+          )),
     ]);
   }
 }

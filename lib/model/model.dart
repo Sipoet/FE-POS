@@ -22,6 +22,11 @@ abstract class Model {
     return json;
   }
 
+  static void fromModel(Model model, Map attributes) {
+    model.createdAt = DateTime.tryParse(attributes['created_at'] ?? '');
+    model.updatedAt = DateTime.tryParse(attributes['updated_at'] ?? '');
+  }
+
   static T? findRelationData<T extends Model>(
       {required List included,
       Map? relation,

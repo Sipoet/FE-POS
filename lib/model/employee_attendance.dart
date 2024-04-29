@@ -56,8 +56,7 @@ class EmployeeAttendance extends Model {
     model.id = int.parse(json['id']);
     model.startTime = DateTime.parse(attributes['start_time']);
     model.endTime = DateTime.parse(attributes['end_time']);
-    model.createdAt = DateTime.parse(attributes['created_at']);
-    model.updatedAt = DateTime.parse(attributes['updated_at']);
+    Model.fromModel(model, attributes);
     model.employee = employee;
     return model;
   }
