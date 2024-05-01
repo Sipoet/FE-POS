@@ -27,6 +27,7 @@ class _DiscountPageState extends State<DiscountPage>
   final cancelToken = CancelToken();
   late Flash flash;
   Map _filter = {};
+  final _controller = MenuController();
 
   @override
   bool get wantKeepAlive => true;
@@ -294,24 +295,39 @@ class _DiscountPageState extends State<DiscountPage>
                       onSubmitted: searchChanged,
                     ),
                   ),
-                  SubmenuButton(menuChildren: [
-                    MenuItemButton(
-                      child: const Text('Tambah Diskon'),
-                      onPressed: () => addForm(),
-                    ),
-                    MenuItemButton(
-                      child: const Text('Refresh Semua promosi'),
-                      onPressed: () => refreshAllPromotion(),
-                    ),
-                    MenuItemButton(
-                      child: const Text('Hapus Semua Diskon lama'),
-                      onPressed: () => deleteAllOldDiscount(),
-                    ),
-                    MenuItemButton(
-                      child: const Text('Mass Upload'),
-                      onPressed: () => massUploadDiscount(),
-                    ),
-                  ], child: const Icon(Icons.table_rows_rounded))
+                  SubmenuButton(
+                      controller: _controller,
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah Diskon'),
+                          onPressed: () {
+                            _controller.close();
+                            addForm();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('Refresh Semua promosi'),
+                          onPressed: () {
+                            _controller.close();
+                            refreshAllPromotion();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('Hapus Semua Diskon lama'),
+                          onPressed: () {
+                            _controller.close();
+                            deleteAllOldDiscount();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('Mass Upload'),
+                          onPressed: () {
+                            _controller.close();
+                            massUploadDiscount();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded))
                 ],
               ),
             ),
