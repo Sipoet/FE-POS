@@ -107,6 +107,9 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       discount.code = value ?? '';
                     },
                   ),
+                  SizedBox(
+                    height: 10,
+                  ),
                   AsyncDropdown(
                     selected: discount.itemType == null
                         ? null
