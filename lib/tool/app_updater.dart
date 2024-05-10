@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:fe_pos/tool/file_saver.dart';
 import 'package:open_file/open_file.dart';
+import 'package:yaml/yaml.dart';
 
 mixin AppUpdater<T extends StatefulWidget> on State<T> {
   bool _isDownloading = false;
@@ -15,32 +16,58 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
     if (kIsWeb) {
       return;
     }
-    String platform = defaultTargetPlatform.toString().split('.').last;
+    TargetPlatform platform = defaultTargetPlatform;
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     final version = packageInfo.version;
-    server.get('check_update/$platform',
-        queryParam: {'client_version': version}).then((response) {
-      final filename = response.data['data']?['filename'];
-      if (response.statusCode == 200 && filename != null) {
-        showConfirmDialog(
-            onSubmit: () => downloadApp(server, platform, filename),
-            message:
-                'Versi terbaru aplikasi tersedia. apakah mau update ke terbaru?');
+    // final version = '0.1.4';
+    server.dio
+        .get(
+      'https://raw.githubusercontent.com/Sipoet/FE-POS/main/pubspec.yaml',
+    )
+        .then((response) {
+      if ([200, 302].contains(response.statusCode)) {
+        var doc = loadYaml(response.data);
+        final latestVersion = doc['version'];
+        if (isOlderVersion(version, latestVersion)) {
+          _showConfirmDialog(
+            onSubmit: () => downloadApp(server, platform),
+          );
+        }
       }
     },
-        onError: (error) =>
-            server.defaultErrorResponse(context: context, error: error));
+            onError: (error) =>
+                server.defaultErrorResponse(context: context, error: error));
   }
 
-  void showConfirmDialog(
-      {required Function onSubmit, String message = 'Apakah Anda Yakin'}) {
+  bool isOlderVersion(String localVersion, String remoteVersion) {
+    final localVersions =
+        localVersion.split('.').map<int>((e) => int.parse(e)).toList();
+    final remoteVersions =
+        remoteVersion.split('.').map<int>((e) => int.parse(e)).toList();
+    for (final (int index, int ver) in remoteVersions.indexed) {
+      print("latest version $ver  local version ${localVersions[index]}");
+      if (ver != localVersions[index]) {
+        return ver > localVersions[index];
+      }
+    }
+    return true;
+  }
+
+  void _showConfirmDialog({required Function onSubmit}) {
+    final colorScheme = Theme.of(context).colorScheme;
     AlertDialog alert = AlertDialog(
       title: const Text("Versi Terbaru"),
       content: Column(
         children: [
-          Text(message),
+          const Text(
+              'Versi terbaru aplikasi tersedia. apakah mau update ke terbaru?'),
           Visibility(
-              visible: _isDownloading, child: const Text('downloading..'))
+            visible: _isDownloading,
+            child: CircularProgressIndicator(
+              color: colorScheme.onPrimary,
+              backgroundColor: colorScheme.onPrimaryContainer,
+            ),
+          )
         ],
       ),
       actions: [
@@ -67,23 +94,30 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
     );
   }
 
-  void downloadApp(Server server, String platform, String filename) async {
+  final Map _downloadPath = {
+    TargetPlatform.android:
+        "https://raw.githubusercontent.com/Sipoet/FE-POS/main/src/android/Output/allegra-pos.apk",
+    TargetPlatform.windows:
+        "https://raw.githubusercontent.com/Sipoet/FE-POS/main/src/windows/Output/allegra-pos.exe"
+  };
+
+  void downloadApp(Server server, TargetPlatform platform) async {
     const fileSaver = FileSaver();
-    final extFile = filename.split('.').last;
-    fileSaver.downloadPath(filename, extFile).then((String? filePath) {
+    final path = _downloadPath[platform];
+    final extFile = path.split('.').last;
+    fileSaver.downloadPath('allegra-pos', extFile).then((String? filePath) {
       if (filePath != null) {
         setState(() {
           _isDownloading = true;
         });
-        server
-            .download('download_app/$platform', 'file', filePath)
-            .then((value) {
+        server.download(path, 'file', filePath).then((value) {
           setState(() {
             _isDownloading = false;
           });
-          if (platform == 'ios' || platform == 'android') {
+          if (platform == TargetPlatform.iOS ||
+              platform == TargetPlatform.android) {
             OpenFile.open(filePath);
-          } else if (platform == 'windows') {
+          } else if (platform == TargetPlatform.windows) {
             installApp(filePath);
           } else {
             Flash(context).showBanner(
