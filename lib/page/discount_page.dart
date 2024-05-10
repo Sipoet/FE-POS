@@ -1,7 +1,9 @@
 import 'package:fe_pos/model/discount.dart';
 import 'package:fe_pos/page/discount_form_page.dart';
 import 'package:fe_pos/page/discount_mass_upload_page.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/custom_data_table.dart';
@@ -18,7 +20,7 @@ class DiscountPage extends StatefulWidget {
 }
 
 class _DiscountPageState extends State<DiscountPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, DefaultResponse, LoadingPopup {
   final _source = CustomDataTableSource<Discount>();
   late final Server server;
   bool _isDisplayTable = false;
@@ -38,8 +40,8 @@ class _DiscountPageState extends State<DiscountPage>
     flash = Flash(context);
     final setting = context.read<Setting>();
     _source.columns = setting.tableColumn('discount');
-    refreshTable();
     super.initState();
+    Future.delayed(Duration.zero, () => refreshTable());
   }
 
   @override
@@ -58,12 +60,12 @@ class _DiscountPageState extends State<DiscountPage>
   }
 
   Future fetchDiscounts({int page = 1}) {
+    showLoadingPopup();
     String orderKey = _source.sortColumn?.sortKey ?? 'code';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
       'page[limit]': '100',
-      'order_key': orderKey,
       'sort': '${_source.isAscending ? '' : '-'}$orderKey',
     };
     _filter.forEach((key, value) {
@@ -95,12 +97,16 @@ class _DiscountPageState extends State<DiscountPage>
         }
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: []));
+                  context: context,
+                  error: error,
+                  valueWhenError: [])).whenComplete(() => hideLoadingPopup());
     } catch (e, trace) {
+      hideLoadingPopup();
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
           messageType: MessageType.failed);
+
       return Future(() => null);
     }
   }
@@ -123,10 +129,8 @@ class _DiscountPageState extends State<DiscountPage>
 
   void editForm(Discount discount) {
     var tabManager = context.read<TabManager>();
-    setState(() {
-      tabManager.addTab('Edit Discount ${discount.code}',
-          DiscountFormPage(key: ObjectKey(discount), discount: discount));
-    });
+    tabManager.addTab('Edit Discount ${discount.code}',
+        DiscountFormPage(key: ObjectKey(discount), discount: discount));
   }
 
   void showConfirmDeleteDialog(discount) {

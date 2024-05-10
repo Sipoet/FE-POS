@@ -1,4 +1,6 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +18,7 @@ class DiscountFormPage extends StatefulWidget {
 }
 
 class _DiscountFormPageState extends State<DiscountFormPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, LoadingPopup, DefaultResponse {
   late Flash flash;
 
   final _formKey = GlobalKey<FormState>();
@@ -24,31 +26,112 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final TextEditingController _discount2Controller;
   late final TextEditingController _discount3Controller;
   late final TextEditingController _discount4Controller;
+  late final Server server;
+  late FocusNode _focusNode;
+
   @override
   bool get wantKeepAlive => true;
 
   @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
+    server = context.read<Server>();
     _discount2Controller =
         TextEditingController(text: discount.discount2Nominal.toString());
     _discount3Controller =
         TextEditingController(text: discount.discount3Nominal.toString());
     _discount4Controller =
         TextEditingController(text: discount.discount4Nominal.toString());
-
     flash = Flash(context);
+    _focusNode = FocusNode();
     super.initState();
+    Future.delayed(Duration.zero, () {
+      if (discount.id == null) {
+        if (_focusNode.canRequestFocus) {
+          _focusNode.requestFocus();
+        }
+      } else {
+        fetchDiscount();
+      }
+    });
+  }
+
+  void fetchDiscount() {
+    showLoadingPopup();
+    server.get('/discounts/${discount.id}', queryParam: {
+      'include':
+          'discount_items,discount_suppliers,discount_item_types,discount_brands,discount_brands.brand,discount_item_types.item_type,discount_suppliers.supplier,discount_items.item'
+    }).then((response) {
+      if (response.statusCode == 200) {
+        var json = response.data['data'];
+        setState(() {
+          Discount.fromJson(json,
+              included: response.data['included'], model: discount);
+        });
+        _focusNode.requestFocus();
+      }
+    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
+        () => hideLoadingPopup());
   }
 
   void _submit() async {
     final server = context.read<Server>();
-    Map body = {'discount': discount};
+    Map body = {
+      'data': {
+        'type': 'discount',
+        'attributes': discount.toJson(),
+        'relationships': {
+          'discount_items': {
+            'data': discount.discountItems
+                .map<Map>((discountItem) => {
+                      'id': discountItem.id,
+                      'type': 'discount_item',
+                      'attributes': discountItem.toJson(),
+                    })
+                .toList(),
+          },
+          'discount_item_types': {
+            'data': discount.discountItemTypes
+                .map<Map>((discountItemType) => {
+                      'id': discountItemType.id,
+                      'type': 'discount_item_type',
+                      'attributes': discountItemType.toJson(),
+                    })
+                .toList(),
+          },
+          'discount_suppliers': {
+            'data': discount.discountSuppliers
+                .map<Map>((discountSupplier) => {
+                      'id': discountSupplier.id,
+                      'type': 'discount_supplier',
+                      'attributes': discountSupplier.toJson(),
+                    })
+                .toList(),
+          },
+          'discount_brands': {
+            'data': discount.discountBrands
+                .map<Map>((discountBrand) => {
+                      'id': discountBrand.id,
+                      'type': 'discount_brand',
+                      'attributes': discountBrand.toJson(),
+                    })
+                .toList(),
+          }
+        }
+      }
+    };
     Future request;
     if (discount.id == null) {
       request = server.post('discounts', body: body);
     } else {
       request = server.put('discounts/${discount.id}', body: body);
     }
+    showLoadingPopup();
     request.then((response) {
       if ([200, 201].contains(response.statusCode)) {
         var data = response.data['data'];
@@ -72,7 +155,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       }
     }, onError: (error, stackTrace) {
       server.defaultErrorResponse(context: context, error: error);
-    });
+    }).whenComplete(() => hideLoadingPopup());
   }
 
   @override
@@ -94,6 +177,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextFormField(
+                    focusNode: _focusNode,
                     decoration: const InputDecoration(
                       label: Text('kode diskon : ', style: labelStyle),
                       border: OutlineInputBorder(),
@@ -104,18 +188,14 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     },
                     readOnly: discount.id != null,
                     onSaved: (value) {
-                      discount.code = value ?? '';
+                      discount.code = value?.trim() ?? '';
                     },
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
-                  AsyncDropdown(
-                    selected: discount.itemType == null
-                        ? null
-                        : DropdownResult(
-                            value: discount.itemType,
-                            text: discount.itemType ?? ''),
+                  AsyncDropdownMultiple2<ItemType>(
+                    selecteds: discount.itemTypes,
                     key: const ValueKey('itemTypeSelect'),
                     path: '/item_types',
                     attributeKey: 'jenis',
@@ -123,152 +203,151 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       'Jenis/Departemen :',
                       style: labelStyle,
                     ),
+                    textOnSelected: (itemType) => itemType.name,
+                    textOnSearch: (itemType) =>
+                        '${itemType.name} - ${itemType.description}',
+                    converter: ItemType.fromJson,
                     onChanged: (option) {
-                      discount.itemType = option?.value;
+                      discount.itemTypes = option;
                     },
                     validator: (value) {
-                      if (discount.itemCode == null &&
-                          discount.itemType == null &&
-                          discount.brandName == null &&
-                          discount.supplierCode == null) {
+                      if (discount.items.isEmpty &&
+                          discount.itemTypes.isEmpty &&
+                          discount.brands.isEmpty &&
+                          discount.suppliers.isEmpty) {
                         return 'salah satu filter harus diisi';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 10),
-                  AsyncDropdown(
+                  AsyncDropdownMultiple2<Supplier>(
                     key: const ValueKey('supplierSelect'),
-                    selected: discount.supplierCode == null
-                        ? null
-                        : DropdownResult(
-                            value: discount.supplierCode,
-                            text: discount.supplierCode ?? ''),
+                    selecteds: discount.suppliers,
                     path: '/suppliers',
                     attributeKey: 'kode',
+                    textOnSelected: (supplier) => supplier.code,
+                    textOnSearch: (supplier) =>
+                        '${supplier.code} - ${supplier.name}',
+                    converter: Supplier.fromJson,
                     label: const Text(
                       'Supplier:',
                       style: labelStyle,
                     ),
                     onChanged: (option) {
-                      discount.supplierCode = option?.value;
+                      discount.suppliers = option;
                     },
                     validator: (value) {
-                      if (discount.itemCode == null &&
-                          discount.itemType == null &&
-                          discount.brandName == null &&
-                          discount.supplierCode == null) {
+                      if (discount.items.isEmpty &&
+                          discount.itemTypes.isEmpty &&
+                          discount.brands.isEmpty &&
+                          discount.suppliers.isEmpty) {
                         return 'salah satu filter harus diisi';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 10),
-                  AsyncDropdown(
+                  AsyncDropdownMultiple2<Brand>(
                     key: const ValueKey('brandSelect'),
-                    selected: discount.brandName == null
-                        ? null
-                        : DropdownResult(
-                            value: discount.brandName,
-                            text: discount.brandName ?? ''),
+                    selecteds: discount.brands,
                     path: '/brands',
                     attributeKey: 'merek',
+                    textOnSearch: (brand) => brand.name,
+                    converter: Brand.fromJson,
                     label: const Text(
                       'Merek:',
                       style: labelStyle,
                     ),
                     onChanged: (option) {
-                      discount.brandName = option?.value;
+                      discount.brands = option;
                     },
                     validator: (value) {
-                      if (discount.itemCode == null &&
-                          discount.itemType == null &&
-                          discount.brandName == null &&
-                          discount.supplierCode == null) {
+                      if (discount.items.isEmpty &&
+                          discount.itemTypes.isEmpty &&
+                          discount.brands.isEmpty &&
+                          discount.suppliers.isEmpty) {
                         return 'salah satu filter harus diisi';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 10),
-                  AsyncDropdown(
+                  AsyncDropdownMultiple2<Item>(
                     key: const ValueKey('itemSelect'),
-                    selected: discount.itemCode == null
-                        ? null
-                        : DropdownResult(
-                            value: discount.itemCode,
-                            text: discount.itemCode ?? ''),
+                    selecteds: discount.items,
                     path: '/items',
                     attributeKey: 'namaitem',
+                    textOnSelected: (item) => item.code,
+                    textOnSearch: (item) => "${item.code} - ${item.name}",
+                    converter: Item.fromJson,
                     label: const Text(
                       'Item:',
                       style: labelStyle,
                     ),
                     onChanged: (option) {
-                      discount.itemCode = option?.value;
+                      discount.items = option;
                     },
                     validator: (value) {
-                      if (discount.itemCode == null &&
-                          discount.itemType == null &&
-                          discount.brandName == null &&
-                          discount.supplierCode == null) {
+                      if (discount.items.isEmpty &&
+                          discount.itemTypes.isEmpty &&
+                          discount.brands.isEmpty &&
+                          discount.suppliers.isEmpty) {
                         return 'salah satu filter harus diisi';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 10),
-                  AsyncDropdown(
+                  AsyncDropdownMultiple2<ItemType>(
                     key: const ValueKey('blacklistItemTypeSelect'),
-                    selected: discount.blacklistItemType == null
-                        ? null
-                        : DropdownResult(
-                            value: discount.blacklistItemType,
-                            text: discount.blacklistItemType ?? ''),
+                    selecteds: discount.blacklistItemTypes,
                     path: '/item_types',
                     attributeKey: 'jenis',
+                    textOnSelected: (itemType) => itemType.name,
+                    textOnSearch: (itemType) =>
+                        '${itemType.name} - ${itemType.description}',
+                    converter: ItemType.fromJson,
                     label: const Text(
                       'Blacklist Jenis/Departemen :',
                       style: labelStyle,
                     ),
                     onChanged: (option) {
-                      discount.blacklistItemType = option?.value;
+                      discount.blacklistItemTypes = option;
                     },
                   ),
                   const SizedBox(height: 10),
-                  AsyncDropdown(
+                  AsyncDropdownMultiple2<Supplier>(
                     key: const ValueKey('blacklistSupplierSelect'),
-                    selected: discount.blacklistSupplierCode == null
-                        ? null
-                        : DropdownResult(
-                            value: discount.blacklistSupplierCode,
-                            text: discount.blacklistSupplierCode ?? ''),
+                    selecteds: discount.blacklistSuppliers,
                     path: '/suppliers',
                     attributeKey: 'kode',
+                    textOnSelected: (supplier) => supplier.code,
+                    textOnSearch: (supplier) =>
+                        '${supplier.code} - ${supplier.name}',
+                    converter: Supplier.fromJson,
                     label: const Text(
                       'Blacklist Supplier:',
                       style: labelStyle,
                     ),
                     onChanged: (option) {
-                      discount.blacklistSupplierCode = option?.value;
+                      discount.blacklistSuppliers = option;
                     },
                   ),
                   const SizedBox(height: 10),
-                  AsyncDropdown(
+                  AsyncDropdownMultiple2<Brand>(
                     key: const ValueKey('blacklistBrandSelect'),
-                    selected: discount.blacklistBrandName == null
-                        ? null
-                        : DropdownResult(
-                            value: discount.blacklistBrandName,
-                            text: discount.blacklistBrandName ?? ''),
+                    selecteds: discount.blacklistBrands,
                     path: '/brands',
                     attributeKey: 'merek',
+                    textOnSearch: (brand) => brand.name,
+                    converter: Brand.fromJson,
                     label: const Text(
                       'Blacklist Merek:',
                       style: labelStyle,
                     ),
                     onChanged: (option) {
-                      discount.blacklistBrandName = option?.value;
+                      discount.blacklistBrands = option;
                     },
                   ),
                   const Text(
@@ -476,7 +555,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     child: ElevatedButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            flash.show(const Text('Loading'), MessageType.info);
+                            _formKey.currentState!.save();
                             _submit();
                           }
                         },

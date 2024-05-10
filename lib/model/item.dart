@@ -40,37 +40,20 @@ class Item extends Model {
   factory Item.fromJson(Map<String, dynamic> json,
       {Item? model, List included = const []}) {
     var attributes = json['attributes'];
-    Supplier? supplier;
-    ItemType itemType = ItemType(name: '', description: '');
-    Brand? brand;
-    final supplierRelated = json['relationships']['supplier'];
-    final brandRelated = json['relationships']['brand'];
-    final itemTypeRelated = json['relationships']['item_type'];
-    if (included.isNotEmpty) {
-      if (supplierRelated != null) {
-        final supplierData = included.firstWhere((row) =>
-            row['type'] == supplierRelated['data']['type'] &&
-            row['id'] == supplierRelated['data']['id']);
-        if (supplierData != null) {
-          supplier = Supplier.fromJson(supplierData);
-        }
-      }
-      if (brandRelated != null) {
-        final brandData = included.firstWhere((row) =>
-            row['type'] == brandRelated['data']['type'] &&
-            row['id'] == brandRelated['data']['id']);
-        if (brandData != null) {
-          brand = Brand.fromJson(brandData);
-        }
-      }
-      if (itemTypeRelated != null) {
-        final itemTypeData = included.firstWhere((row) =>
-            row['type'] == itemTypeRelated['data']['type'] &&
-            row['id'] == itemTypeRelated['data']['id']);
+    Supplier? supplier = Model.findRelationData<Supplier>(
+        relation: json['relationships']['supplier'],
+        included: included,
+        convert: Supplier.fromJson);
+    ItemType itemType = Model.findRelationData<ItemType>(
+            relation: json['relationships']['item_type'],
+            included: included,
+            convert: ItemType.fromJson) ??
+        ItemType(name: '', description: '');
+    Brand? brand = Model.findRelationData<Brand>(
+        relation: json['relationships']['brand'],
+        included: included,
+        convert: Brand.fromJson);
 
-        itemType = ItemType.fromJson(itemTypeData);
-      }
-    }
     model ??= Item(code: '', name: '', itemType: itemType, itemTypeName: '');
     model.id = json['id'];
     model.code = attributes['kodeitem'];

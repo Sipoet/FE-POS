@@ -25,7 +25,8 @@ class Payroll extends Model {
       };
 
   @override
-  factory Payroll.fromJson(Map<String, dynamic> json, {Payroll? model}) {
+  factory Payroll.fromJson(Map<String, dynamic> json,
+      {Payroll? model, List included = const []}) {
     var attributes = json['attributes'];
     model ??= Payroll(name: '');
     model.id = int.parse(json['id']);
