@@ -1,5 +1,6 @@
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/model/item_sales_period_report.dart';
+import 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/custom_data_table.dart';
 import 'package:fe_pos/widget/date_range_picker.dart';
@@ -139,67 +140,73 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
             const SizedBox(height: 10),
             Wrap(
               direction: Axis.horizontal,
+              runSpacing: 10,
+              spacing: 10,
               children: [
-                Container(
-                  padding: const EdgeInsets.only(right: 10),
-                  width: 300,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Padding(
-                          padding: EdgeInsets.only(left: 5, bottom: 5),
-                          child: Text('Tanggal :', style: _filterLabelStyle)),
-                      DateRangePicker(
-                        initialDateRange: _dateRange,
-                        onChanged: (range) => _dateRange = range ??
-                            DateTimeRange(
-                                start: DateTime.now(), end: DateTime.now()),
-                      ),
-                    ],
+                SizedBox(
+                  width: 350,
+                  child: DateRangePicker(
+                    label: const Text('Tanggal :', style: _filterLabelStyle),
+                    initialDateRange: _dateRange,
+                    onChanged: (range) => _dateRange = range ??
+                        DateTimeRange(
+                            start: DateTime.now(), end: DateTime.now()),
                   ),
                 ),
                 Container(
-                    padding: const EdgeInsets.only(right: 10),
                     constraints: const BoxConstraints(maxWidth: 350),
-                    child: AsyncDropdownMultiple(
+                    child: AsyncDropdownMultiple2<Brand>(
                       label: const Text('Merek :', style: _filterLabelStyle),
                       key: const ValueKey('brandSelect'),
-                      onChanged: (value) => _brands = value,
+                      textOnSearch: (Brand brand) => brand.name,
+                      converter: Brand.fromJson,
                       attributeKey: 'merek',
                       path: '/brands',
+                      onChanged: (value) =>
+                          _brands = value.map<String>((e) => e.name).toList(),
                     )),
                 Container(
-                    padding: const EdgeInsets.only(right: 10),
                     constraints: const BoxConstraints(maxWidth: 350),
-                    child: AsyncDropdownMultiple(
+                    child: AsyncDropdownMultiple2<ItemType>(
                       label: const Text('Jenis/Departemen :',
                           style: _filterLabelStyle),
                       key: const ValueKey('brandSelect'),
-                      onChanged: (value) => _itemTypes = value,
+                      textOnSearch: (itemType) =>
+                          "${itemType.name} - ${itemType.description}",
+                      textOnSelected: (itemType) => itemType.name,
+                      converter: ItemType.fromJson,
                       attributeKey: 'jenis',
                       path: '/item_types',
+                      onChanged: (value) => _itemTypes =
+                          value.map<String>((e) => e.name).toList(),
                     )),
                 Container(
-                  padding: const EdgeInsets.only(right: 10),
                   constraints: const BoxConstraints(maxWidth: 350),
-                  child: AsyncDropdownMultiple(
+                  child: AsyncDropdownMultiple2<Supplier>(
                     label: const Text('Supplier :', style: _filterLabelStyle),
                     key: const ValueKey('supplierSelect'),
-                    onChanged: (value) => _suppliers = value,
                     attributeKey: 'nama',
                     path: '/suppliers',
+                    textOnSearch: (supplier) =>
+                        "${supplier.code} - ${supplier.name}",
+                    textOnSelected: (supplier) => supplier.code,
+                    converter: Supplier.fromJson,
+                    onChanged: (value) =>
+                        _suppliers = value.map<String>((e) => e.code).toList(),
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.only(right: 10),
                   constraints: const BoxConstraints(maxWidth: 350),
-                  child: AsyncDropdownMultiple(
+                  child: AsyncDropdownMultiple2(
                     label: const Text('Item :', style: _filterLabelStyle),
                     key: const ValueKey('itemSelect'),
-                    onChanged: (value) => _items = value,
                     attributeKey: 'namaitem',
                     path: '/items',
+                    textOnSearch: (item) => "${item.code} - ${item.name}",
+                    textOnSelected: (item) => item.code,
+                    converter: Item.fromJson,
+                    onChanged: (value) =>
+                        _items = value.map<String>((e) => e.code).toList(),
                   ),
                 ),
               ],

@@ -269,7 +269,7 @@ class AsyncDropdownMultiple2<T> extends StatefulWidget {
   final String? Function(List<T>?)? validator;
   final String Function(T) textOnSearch;
   final String Function(T)? textOnSelected;
-  final T Function(Map<String, dynamic>, {List included, T? model}) converter;
+  final T Function(Map<String, dynamic>, {List included}) converter;
   final Widget? label;
   final bool Function(T, T)? compareValue;
   final Future Function(Server server, int page, String searchText)? request;
@@ -340,6 +340,9 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
                       onPressed: () {
                         setState(() {
                           selectedItems.remove(selectedItem);
+                          if (widget.onChanged != null) {
+                            widget.onChanged!(selectedItems);
+                          }
                         });
                       },
                       icon: const Icon(Icons.close_rounded))
@@ -367,13 +370,16 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
             });
     if (response.statusCode == 200) {
       Map responseBody = response.data;
-      return convertToOptions(responseBody['data']);
+      return convertToOptions(
+          responseBody['data'], responseBody['included'] ?? []);
     } else {
       throw 'cant connect to server';
     }
   }
 
-  List<T> convertToOptions(List list) {
-    return list.map<T>((row) => widget.converter(row)).toList();
+  List<T> convertToOptions(List list, List relationships) {
+    return list
+        .map<T>((row) => widget.converter(row, included: relationships))
+        .toList();
   }
 }

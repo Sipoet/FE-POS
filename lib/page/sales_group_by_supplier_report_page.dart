@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/sales_group_by_supplier.dart';
+import 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/custom_data_table.dart';
@@ -141,31 +142,44 @@ class _SalesGroupBySupplierReportPageState
               children: [
                 SizedBox(
                     width: 350,
-                    child: AsyncDropdownMultiple(
+                    child: AsyncDropdownMultiple2<Brand>(
                       label: const Text('Merek :', style: _filterLabelStyle),
                       key: const ValueKey('brandSelect'),
-                      onChanged: (value) => _brands = value,
+                      textOnSearch: (Brand brand) => brand.name,
+                      converter: Brand.fromJson,
                       attributeKey: 'merek',
                       path: '/brands',
+                      onChanged: (value) =>
+                          _brands = value.map<String>((e) => e.name).toList(),
                     )),
                 SizedBox(
                     width: 350,
-                    child: AsyncDropdownMultiple(
+                    child: AsyncDropdownMultiple2<ItemType>(
                       label: const Text('Jenis/Departemen :',
                           style: _filterLabelStyle),
-                      key: const ValueKey('itemTypeSelect'),
-                      onChanged: (value) => _itemTypes = value,
+                      key: const ValueKey('brandSelect'),
+                      textOnSearch: (itemType) =>
+                          "${itemType.name} - ${itemType.description}",
+                      textOnSelected: (itemType) => itemType.name,
+                      converter: ItemType.fromJson,
                       attributeKey: 'jenis',
                       path: '/item_types',
+                      onChanged: (value) => _itemTypes =
+                          value.map<String>((e) => e.name).toList(),
                     )),
                 SizedBox(
                   width: 350,
-                  child: AsyncDropdownMultiple(
+                  child: AsyncDropdownMultiple2<Supplier>(
                     label: const Text('Supplier :', style: _filterLabelStyle),
                     key: const ValueKey('supplierSelect'),
                     attributeKey: 'nama',
-                    onChanged: (value) => _suppliers = value,
                     path: '/suppliers',
+                    textOnSearch: (supplier) =>
+                        "${supplier.code} - ${supplier.name}",
+                    textOnSelected: (supplier) => supplier.code,
+                    converter: Supplier.fromJson,
+                    onChanged: (value) =>
+                        _suppliers = value.map<String>((e) => e.code).toList(),
                   ),
                 ),
               ],

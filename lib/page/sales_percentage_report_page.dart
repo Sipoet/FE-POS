@@ -1,5 +1,7 @@
+import 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/model/item_sales_percentage_report.dart';
+import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/custom_data_table.dart';
@@ -16,7 +18,7 @@ class SalesPercentageReportPage extends StatefulWidget {
 }
 
 class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, LoadingPopup {
   static const TextStyle _filterLabelStyle =
       TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
   late Server server;
@@ -47,14 +49,13 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
   bool get wantKeepAlive => true;
 
   void _displayReport() async {
-    flash.show(
-      const Text('Dalam proses.'),
-      MessageType.info,
-    );
+    showLoadingPopup();
     _reportType = 'json';
-    _requestReport().then(_displayDatatable,
-        onError: ((error, stackTrace) =>
-            server.defaultErrorResponse(context: context, error: error)));
+    _requestReport()
+        .then(_displayDatatable,
+            onError: ((error, stackTrace) =>
+                server.defaultErrorResponse(context: context, error: error)))
+        .whenComplete(() => hideLoadingPopup());
   }
 
   void _downloadReport() async {
@@ -124,6 +125,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
       var models = data['data'].map<ItemSalesPercentageReport>((row) {
         return ItemSalesPercentageReport.fromJson(row);
       }).toList();
+      dataSource.paginatorController?.goToFirstPage();
       dataSource.setData(models);
       _isDisplayTable = true;
     });
@@ -150,56 +152,76 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
               key: _formKey,
               child: Wrap(
                 direction: Axis.horizontal,
+                runSpacing: 10,
+                spacing: 10,
                 children: [
                   Container(
                       padding: const EdgeInsets.only(right: 10),
                       constraints: const BoxConstraints(maxWidth: 350),
-                      child: AsyncDropdownMultiple(
+                      child: AsyncDropdownMultiple2<Brand>(
                         label: const Text('Merek :', style: _filterLabelStyle),
                         key: const ValueKey('brandSelect'),
+                        textOnSearch: (Brand brand) => brand.name,
+                        converter: Brand.fromJson,
                         attributeKey: 'merek',
                         path: '/brands',
-                        onSaved: (value) => _brands = value ?? [],
+                        onSaved: (value) => _brands =
+                            value?.map<String>((e) => e.name).toList() ?? [],
                       )),
                   Container(
                       padding: const EdgeInsets.only(right: 10),
                       constraints: const BoxConstraints(maxWidth: 350),
-                      child: AsyncDropdownMultiple(
+                      child: AsyncDropdownMultiple2<ItemType>(
                         label: const Text('Jenis/Departemen :',
                             style: _filterLabelStyle),
                         key: const ValueKey('brandSelect'),
+                        textOnSearch: (itemType) =>
+                            "${itemType.name} - ${itemType.description}",
+                        textOnSelected: (itemType) => itemType.name,
+                        converter: ItemType.fromJson,
                         attributeKey: 'jenis',
                         path: '/item_types',
-                        onSaved: (value) => _itemTypes = value ?? [],
+                        onSaved: (value) => _itemTypes =
+                            value?.map<String>((e) => e.name).toList() ?? [],
                       )),
                   Container(
                     padding: const EdgeInsets.only(right: 10),
                     constraints: const BoxConstraints(maxWidth: 350),
-                    child: AsyncDropdownMultiple(
+                    child: AsyncDropdownMultiple2<Supplier>(
                       label: const Text('Supplier :', style: _filterLabelStyle),
                       key: const ValueKey('supplierSelect'),
                       attributeKey: 'nama',
                       path: '/suppliers',
-                      onSaved: (value) => _suppliers = value ?? [],
+                      textOnSearch: (supplier) =>
+                          "${supplier.code} - ${supplier.name}",
+                      textOnSelected: (supplier) => supplier.code,
+                      converter: Supplier.fromJson,
+                      onSaved: (value) => _suppliers =
+                          value?.map<String>((e) => e.code).toList() ?? [],
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.only(right: 10),
                     constraints: const BoxConstraints(maxWidth: 350),
-                    child: AsyncDropdownMultiple(
+                    child: AsyncDropdownMultiple2(
                       label: const Text('Item :', style: _filterLabelStyle),
                       key: const ValueKey('itemSelect'),
                       attributeKey: 'namaitem',
                       path: '/items',
-                      onSaved: (value) => _items = value ?? [],
+                      textOnSearch: (item) => "${item.code} - ${item.name}",
+                      textOnSelected: (item) => item.code,
+                      converter: Item.fromJson,
+                      onSaved: (value) => _items =
+                          value?.map<String>((e) => e.code).toList() ?? [],
                     ),
                   ),
-                  Container(
+                  SizedBox(
                     width: 350,
-                    padding: const EdgeInsets.only(top: 10),
+                    height: 50,
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const Text(
                           'Stok Gudang:',
@@ -207,8 +229,10 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                         ),
                         SizedBox(
                           width: 110,
+                          height: 90,
                           child: DropdownButtonFormField(
                             decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.all(12),
                                 border: OutlineInputBorder()),
                             onChanged: (value) =>
                                 _warehouseStockComparison = value ?? '',
@@ -237,11 +261,13 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                         ),
                         SizedBox(
                             width: 80,
+                            height: 90,
                             child: TextFormField(
                                 keyboardType: TextInputType.number,
                                 onChanged: (value) =>
                                     _warehouseStockValue = value,
                                 decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.all(12),
                                     border: OutlineInputBorder()),
                                 key: const ValueKey('warehouseStock'),
                                 validator: (value) {
@@ -257,18 +283,20 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                       ],
                     ),
                   ),
-                  Container(
+                  SizedBox(
                     width: 350,
-                    padding: const EdgeInsets.only(top: 10),
+                    height: 50,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const Text('Stok Toko:', style: _filterLabelStyle),
                         SizedBox(
                           width: 110,
+                          height: 90,
                           child: DropdownButtonFormField(
                             decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.all(12),
                                 border: OutlineInputBorder()),
                             onChanged: (value) =>
                                 _storeStockComparison = value ?? '',
@@ -297,10 +325,12 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                         ),
                         SizedBox(
                             width: 80,
+                            height: 90,
                             child: TextFormField(
                                 onChanged: (value) => _storeStockValue = value,
                                 keyboardType: TextInputType.number,
                                 decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.all(12),
                                     border: OutlineInputBorder()),
                                 key: const ValueKey('storeStock'),
                                 validator: (value) {

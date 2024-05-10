@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/payslip_report.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/file_saver.dart';
@@ -113,16 +114,20 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                       ),
                       SizedBox(
                         width: 300,
-                        child: AsyncDropdownMultiple(
+                        child: AsyncDropdownMultiple2<Employee>(
                           label: const Text(
                             'Karyawan',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          multiple: true,
+                          textOnSearch: (employee) =>
+                              "${employee.code} - ${employee.name}",
+                          converter: (json, {included = const [], model}) =>
+                              Employee.fromJson(json, included: included),
                           path: 'employees',
                           attributeKey: 'name',
-                          onChanged: (value) => _employeeIds =
-                              value.map<String>((e) => e.toString()).toList(),
+                          onChanged: (value) => _employeeIds = value
+                              .map<String>((e) => e.id.toString())
+                              .toList(),
                         ),
                       ),
                       const SizedBox(
