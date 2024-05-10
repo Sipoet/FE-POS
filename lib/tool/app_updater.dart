@@ -45,7 +45,6 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
     final remoteVersions =
         remoteVersion.split('.').map<int>((e) => int.parse(e)).toList();
     for (final (int index, int ver) in remoteVersions.indexed) {
-      print("latest version $ver  local version ${localVersions[index]}");
       if (ver != localVersions[index]) {
         return ver > localVersions[index];
       }
