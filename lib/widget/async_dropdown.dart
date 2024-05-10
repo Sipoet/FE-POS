@@ -236,3 +236,144 @@ class DropdownResult {
 
   String get searchableText => customSearch ?? "$value $text";
 }
+
+class AsyncDropdownMultiple2<T> extends StatefulWidget {
+  const AsyncDropdownMultiple2(
+      {super.key,
+      this.path,
+      this.minCharSearch = 3,
+      this.multiple = false,
+      this.width,
+      this.onChanged,
+      this.request,
+      this.label,
+      this.attributeKey,
+      this.validator,
+      this.onSaved,
+      this.recordLimit = 50,
+      required this.textOnSearch,
+      this.textOnSelected,
+      this.compareValue,
+      required this.converter,
+      this.selecteds = const []});
+
+  final String? path;
+  final String? attributeKey;
+  final int minCharSearch;
+  final int recordLimit;
+  final double? width;
+  final List<T> selecteds;
+  final bool multiple;
+  final void Function(List<T>)? onChanged;
+  final void Function(List<T>?)? onSaved;
+  final String? Function(List<T>?)? validator;
+  final String Function(T) textOnSearch;
+  final String Function(T)? textOnSelected;
+  final T Function(Map<String, dynamic>, {List included, T? model}) converter;
+  final Widget? label;
+  final bool Function(T, T)? compareValue;
+  final Future Function(Server server, int page, String searchText)? request;
+
+  @override
+  State<AsyncDropdownMultiple2<T>> createState() =>
+      _AsyncDropdownMultiple2State<T>();
+}
+
+class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
+  final notFoundSign = const DropdownMenuEntry<String>(
+      label: 'Data tidak Ditemukan', value: '', enabled: false);
+  late final Server server;
+
+  @override
+  void initState() {
+    server = context.read<Server>();
+    super.initState();
+  }
+
+  Future Function(Server server, int page, String searchText) get request =>
+      widget.request ??
+      (Server server, int page, String searchText) {
+        return server.get(widget.path!, queryParam: {
+          'search_text': searchText,
+          'page[page]': page.toString(),
+          'page[limit]': widget.recordLimit.toString(),
+        });
+      };
+
+  bool compareResult(T a, T b) {
+    if (widget.compareValue == null) {
+      return widget.textOnSearch(a) == widget.textOnSearch(b);
+    } else {
+      return widget.compareValue!(a, b);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var colorScheme = Theme.of(context).colorScheme;
+    return DropdownSearch<T>.multiSelection(
+      asyncItems: getData,
+      onChanged: widget.onChanged,
+      onSaved: widget.onSaved,
+      validator: widget.validator,
+      compareFn: compareResult,
+      itemAsString: widget.textOnSearch,
+      selectedItems: widget.selecteds,
+      clearButtonProps: const ClearButtonProps(isVisible: true),
+      dropdownBuilder: (context, selectedItems) {
+        var textFormat = widget.textOnSelected ?? widget.textOnSearch;
+        return Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: selectedItems.map<Container>((selectedItem) {
+            return Container(
+              padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 5),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: const BorderRadius.all(Radius.elliptical(10, 10)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(child: SelectableText(textFormat(selectedItem))),
+                  IconButton(
+                      onPressed: () {
+                        setState(() {
+                          selectedItems.remove(selectedItem);
+                        });
+                      },
+                      icon: const Icon(Icons.close_rounded))
+                ],
+              ),
+            );
+          }).toList(),
+        );
+      },
+      popupProps: const PopupPropsMultiSelection.menu(
+          showSearchBox: true, showSelectedItems: true, isFilterOnline: true),
+      dropdownDecoratorProps: DropDownDecoratorProps(
+          dropdownSearchDecoration: InputDecoration(
+        label: widget.label,
+        border: const OutlineInputBorder(),
+      )),
+    );
+  }
+
+  Future<List<T>> getData(String filter) async {
+    var response = await request(server, 1, filter).onError(
+        (error, stackTrace) => {
+              server.defaultErrorResponse(
+                  context: context, error: error, valueWhenError: [])
+            });
+    if (response.statusCode == 200) {
+      Map responseBody = response.data;
+      return convertToOptions(responseBody['data']);
+    } else {
+      throw 'cant connect to server';
+    }
+  }
+
+  List<T> convertToOptions(List list) {
+    return list.map<T>((row) => widget.converter(row)).toList();
+  }
+}
