@@ -242,7 +242,6 @@ class AsyncDropdownMultiple2<T> extends StatefulWidget {
       {super.key,
       this.path,
       this.minCharSearch = 3,
-      this.multiple = false,
       this.width,
       this.onChanged,
       this.request,
@@ -250,6 +249,7 @@ class AsyncDropdownMultiple2<T> extends StatefulWidget {
       this.attributeKey,
       this.validator,
       this.onSaved,
+      this.selectedDisplayLimit = 6,
       this.recordLimit = 50,
       required this.textOnSearch,
       this.textOnSelected,
@@ -263,7 +263,7 @@ class AsyncDropdownMultiple2<T> extends StatefulWidget {
   final int recordLimit;
   final double? width;
   final List<T> selecteds;
-  final bool multiple;
+  final int selectedDisplayLimit;
   final void Function(List<T>)? onChanged;
   final void Function(List<T>?)? onSaved;
   final String? Function(List<T>?)? validator;
@@ -321,11 +321,18 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
       selectedItems: widget.selecteds,
       clearButtonProps: const ClearButtonProps(isVisible: true),
       dropdownBuilder: (context, selectedItems) {
-        var textFormat = widget.textOnSelected ?? widget.textOnSearch;
+        final textFormat = widget.textOnSelected ?? widget.textOnSearch;
+        final lengthItems = selectedItems.length <= widget.selectedDisplayLimit
+            ? selectedItems.length
+            : widget.selectedDisplayLimit + 1;
         return Wrap(
           spacing: 10,
           runSpacing: 10,
-          children: selectedItems.map<Container>((selectedItem) {
+          children: List<Widget>.generate(lengthItems, (index) {
+            if (index == widget.selectedDisplayLimit) {
+              return const Text('.....');
+            }
+            final selectedItem = selectedItems[index];
             return Container(
               padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 5),
               decoration: BoxDecoration(
