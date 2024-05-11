@@ -354,7 +354,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     'Tipe Kalkulasi:',
                     style: labelStyle,
                   ),
-                  Row(
+                  Wrap(
                     children: [
                       Radio<DiscountCalculationType>(
                         value: DiscountCalculationType.percentage,
@@ -372,14 +372,14 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                           });
                         },
                       ),
-                      const Text('percentage'),
+                      Text(DiscountCalculationType.percentage.humanize()),
                       Radio<DiscountCalculationType>(
                         value: DiscountCalculationType.nominal,
                         groupValue: discount.calculationType,
                         onChanged: (value) {
                           setState(() {
                             discount.calculationType =
-                                value ?? DiscountCalculationType.percentage;
+                                value ?? DiscountCalculationType.nominal;
                             _discount2Controller.text =
                                 discount.discount2Nominal.toString();
                             _discount3Controller.text =
@@ -393,7 +393,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                           });
                         },
                       ),
-                      const Text('nominal'),
+                      Text(DiscountCalculationType.nominal.humanize()),
                     ],
                   ),
                   Flexible(
@@ -529,6 +529,116 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     onChanged: ((value) =>
                         discount.discount4 = Percentage.tryParse(value)),
                   )),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const Text(
+                    'Tipe Diskon',
+                    style: labelStyle,
+                  ),
+                  Wrap(
+                    children: [
+                      Radio<DiscountType>(
+                        value: DiscountType.period,
+                        groupValue: discount.discountType,
+                        onChanged: (value) {
+                          setState(() {
+                            discount.discountType =
+                                value ?? DiscountType.period;
+                          });
+                        },
+                      ),
+                      Text(DiscountType.period.humanize()),
+                      Radio<DiscountType>(
+                        value: DiscountType.dayOfWeek,
+                        groupValue: discount.discountType,
+                        onChanged: (value) {
+                          setState(() {
+                            discount.discountType =
+                                value ?? DiscountType.dayOfWeek;
+                          });
+                        },
+                      ),
+                      Text(DiscountType.dayOfWeek.humanize()),
+                    ],
+                  ),
+                  Visibility(
+                    visible: discount.discountType == DiscountType.dayOfWeek,
+                    child: Wrap(
+                      children: [
+                        CheckboxListTile(
+                          title: const Text("Senin"),
+                          value: discount.week1,
+                          onChanged: (newValue) {
+                            setState(() {
+                              discount.week1 = newValue ?? false;
+                            });
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                        CheckboxListTile(
+                          title: const Text("Selasa"),
+                          value: discount.week2,
+                          onChanged: (newValue) {
+                            setState(() {
+                              discount.week2 = newValue ?? false;
+                            });
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                        CheckboxListTile(
+                          title: const Text("Rabu"),
+                          value: discount.week3,
+                          onChanged: (newValue) {
+                            setState(() {
+                              discount.week3 = newValue ?? false;
+                            });
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                        CheckboxListTile(
+                          title: const Text("Kamis"),
+                          value: discount.week4,
+                          onChanged: (newValue) {
+                            setState(() {
+                              discount.week4 = newValue ?? false;
+                            });
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                        CheckboxListTile(
+                          title: const Text("Jumat"),
+                          value: discount.week5,
+                          onChanged: (newValue) {
+                            setState(() {
+                              discount.week5 = newValue ?? false;
+                            });
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                        CheckboxListTile(
+                          title: const Text("Sabtu"),
+                          value: discount.week6,
+                          onChanged: (newValue) {
+                            setState(() {
+                              discount.week6 = newValue ?? false;
+                            });
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                        CheckboxListTile(
+                          title: const Text("Minggu"),
+                          value: discount.week7,
+                          onChanged: (newValue) {
+                            setState(() {
+                              discount.week7 = newValue ?? false;
+                            });
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(
                     height: 10,
                   ),

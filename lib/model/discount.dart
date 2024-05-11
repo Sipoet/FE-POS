@@ -42,6 +42,49 @@ enum DiscountCalculationType {
   }
 }
 
+enum DiscountType {
+  period,
+  // repeatedHourOnPeriod,
+  dayOfWeek;
+
+  @override
+  String toString() {
+    if (this == period) {
+      return 'period';
+    } else if (this == dayOfWeek) {
+      return 'day_of_week';
+    }
+    // else if (this == repeatedHourOnPeriod) {
+    //   return 'repeated_hour_on_period';
+    // }
+    return '';
+  }
+
+  factory DiscountType.convertFromString(String value) {
+    if (value == 'period') {
+      return period;
+    } else if (value == 'day_of_week') {
+      return dayOfWeek;
+    }
+    // else if (value == 'repeated_hour_on_period') {
+    //   return repeatedHourOnPeriod;
+    // }
+    throw '$value is not valid discount type';
+  }
+
+  String humanize() {
+    if (this == period) {
+      return 'Periode';
+    } else if (this == dayOfWeek) {
+      return 'Minggu';
+    }
+    // else if (this == repeatedHourOnPeriod) {
+    //   return 'Jam Tertentu';
+    // }
+    return '';
+  }
+}
+
 class Discount extends Model {
   String? itemCode;
   String? itemType;
@@ -64,6 +107,14 @@ class Discount extends Model {
   int? id;
   String code;
   int weight;
+  bool week1;
+  bool week2;
+  bool week3;
+  bool week4;
+  bool week5;
+  bool week6;
+  bool week7;
+  DiscountType discountType;
   Discount(
       {this.id,
       this.code = '',
@@ -79,6 +130,14 @@ class Discount extends Model {
       this.discount2,
       this.discount3,
       this.discount4,
+      this.week1 = false,
+      this.week2 = false,
+      this.week3 = false,
+      this.week4 = false,
+      this.week5 = false,
+      this.week6 = false,
+      this.week7 = false,
+      this.discountType = DiscountType.period,
       required this.startTime,
       required this.endTime,
       this.weight = 1});
@@ -100,6 +159,8 @@ class Discount extends Model {
     model.brandName = attributes['brand_name'];
     model.calculationType = DiscountCalculationType.convertFromString(
         attributes['calculation_type'].toString());
+    model.discountType =
+        DiscountType.convertFromString(attributes['discount_type'].toString());
     model.blacklistItemType = attributes['blacklist_item_type_name'];
     model.blacklistSupplierCode = attributes['blacklist_supplier_code'];
     model.blacklistBrandName = attributes['blacklist_brand_name'];
@@ -107,6 +168,13 @@ class Discount extends Model {
     model.discount2 = Percentage(attributes['discount2']);
     model.discount3 = Percentage(attributes['discount3']);
     model.discount4 = Percentage(attributes['discount4']);
+    model.week1 = attributes['week1'];
+    model.week2 = attributes['week2'];
+    model.week3 = attributes['week3'];
+    model.week4 = attributes['week4'];
+    model.week5 = attributes['week5'];
+    model.week6 = attributes['week6'];
+    model.week7 = attributes['week7'];
     final relationships = json['relationships'];
     model.discountItems = Model.findRelationsData<DiscountItem>(
         included: included,
@@ -242,6 +310,7 @@ class Discount extends Model {
         'brand.merek': brandName,
         'supplier.kode': supplierCode,
         'calculation_type': calculationType,
+        'discount_type': discountType,
         'blacklist_item_type.jenis': blacklistItemType,
         'blacklist_brand.merek': blacklistBrandName,
         'blacklist_supplier.kode': blacklistSupplierCode,
@@ -252,6 +321,13 @@ class Discount extends Model {
         'discount2': discount2,
         'discount3': discount3,
         'discount4': discount4,
+        'week1': week1,
+        'week2': week2,
+        'week3': week3,
+        'week4': week4,
+        'week5': week5,
+        'week6': week6,
+        'week7': week7,
         'start_time': startTime,
         'end_time': endTime,
         'weight': weight,

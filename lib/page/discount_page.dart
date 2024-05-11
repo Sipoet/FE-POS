@@ -269,7 +269,10 @@ class _DiscountPageState extends State<DiscountPage>
           children: [
             TableFilterForm(
               columns: _source.columns,
-              enums: const {'calculation_type': DiscountCalculationType.values},
+              enums: const {
+                'calculation_type': DiscountCalculationType.values,
+                'discount_type': DiscountType.values
+              },
               onSubmit: (value) {
                 _filter = value;
                 refreshTable();
