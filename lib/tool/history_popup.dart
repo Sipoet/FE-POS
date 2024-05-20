@@ -92,7 +92,7 @@ mixin HistoryPopup<T extends StatefulWidget> on State<T> {
     showDialog(
         context: context,
         builder: (context) {
-          return StatefulBuilder(builder: (context, setState) {
+          return StatefulBuilder(builder: (context, setStateDialog) {
             return SingleChildScrollView(
               scrollDirection: Axis.vertical,
               child: Center(
@@ -122,7 +122,7 @@ mixin HistoryPopup<T extends StatefulWidget> on State<T> {
                             style: labelStyle,
                           ),
                           onSort: (columnIndex, ascending) {
-                            setState(() {
+                            setStateDialog(() {
                               _source.sortData('created_at', ascending);
                               _sortColumnIndex = 0;
                             });
@@ -131,7 +131,7 @@ mixin HistoryPopup<T extends StatefulWidget> on State<T> {
                         DataColumn(
                           label: const Text('Pelaku', style: labelStyle),
                           onSort: (columnIndex, ascending) {
-                            setState(() {
+                            setStateDialog(() {
                               _source.sortData('actor', ascending);
                               _sortColumnIndex = 1;
                             });
