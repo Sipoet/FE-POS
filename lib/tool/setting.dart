@@ -46,6 +46,10 @@ class Setting extends ChangeNotifier {
     return DateFormat('dd/MM/y HH:mm', 'id_ID').format(date);
   }
 
+  String dateTimeLocalFormat(DateTime date) {
+    return DateFormat('dd/MM/y HH:mm', 'id_ID').format(date.toLocal());
+  }
+
   String moneyFormat(var value) {
     if (value is Money) {
       return NumberFormat.currency(locale: "en_US", symbol: value.symbol)

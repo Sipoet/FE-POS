@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/server.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/menu.dart';
 import 'package:provider/provider.dart';
@@ -38,12 +39,13 @@ class _MobileLayoutState extends State<MobileLayout>
   @override
   Widget build(BuildContext context) {
     var tabManager = context.read<TabManager>();
+    final server = context.read<Server>();
     return Scaffold(
       appBar: AppBar(
-        // title: const Text(
-        //   'Allegra POS',
-        //   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        // ),
+        title: Text(
+          'Allegra POS. SERVER: ${server.host}',
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
         bottom: TabBar(
           isScrollable: true,
           controller: tabManager.controller,

@@ -1,4 +1,6 @@
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/history_popup.dart';
+import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
@@ -17,7 +19,7 @@ class PayslipFormPage extends StatefulWidget {
 }
 
 class _PayslipFormPageState extends State<PayslipFormPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, HistoryPopup, LoadingPopup {
   late Flash flash;
   late final Setting setting;
   final _formKey = GlobalKey<FormState>();
@@ -32,11 +34,12 @@ class _PayslipFormPageState extends State<PayslipFormPage>
     flash = Flash(context);
     super.initState();
     if (payslip.id != null) {
-      fetchPayslip();
+      Future.delayed(Duration.zero, () => fetchPayslip());
     }
   }
 
   void fetchPayslip() {
+    showLoadingPopup();
     final server = context.read<Server>();
     server.get('payslips/${payslip.id}',
         queryParam: {'include': 'payslip_lines'}).then((response) {
@@ -54,7 +57,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
       }
     }, onError: (error) {
       server.defaultErrorResponse(context: context, error: error);
-    });
+    }).whenComplete(() => hideLoadingPopup());
   }
 
   void _submit() async {
@@ -132,6 +135,15 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Visibility(
+                    visible: payslip.id != null,
+                    child: ElevatedButton.icon(
+                        onPressed: () =>
+                            fetchHistoryByRecord('Payslip', payslip.id),
+                        label: const Text('Riwayat'),
+                        icon: const Icon(Icons.history)),
+                  ),
+                  const Divider(),
                   AsyncDropdown(
                     path: 'employees',
                     attributeKey: 'name',
@@ -418,13 +430,30 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                                       double.parse(value ?? ''),
                                   key: ValueKey("${payslipLine.id}-amount"),
                                 )),
-                                DataCell(ElevatedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      payslip.lines.remove(payslipLine);
-                                    });
-                                  },
-                                  child: const Text('Hapus'),
+                                DataCell(Row(
+                                  children: [
+                                    Visibility(
+                                      visible: payslipLine.id != null,
+                                      child: IconButton(
+                                        onPressed: () {
+                                          fetchHistoryByRecord(
+                                              'PayslipLine', payslipLine.id);
+                                        },
+                                        icon: const Icon(Icons.history),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          payslip.lines.remove(payslipLine);
+                                        });
+                                      },
+                                      child: const Text('Hapus'),
+                                    ),
+                                  ],
                                 ))
                               ]))
                           .toList(),

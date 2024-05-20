@@ -16,19 +16,10 @@ class LoadingPage extends StatefulWidget {
   State<LoadingPage> createState() => _LoadingPageState();
 }
 
-class _LoadingPageState extends State<LoadingPage>
-    with TickerProviderStateMixin {
-  late AnimationController controller;
+class _LoadingPageState extends State<LoadingPage> {
   late Setting setting;
   @override
   void initState() {
-    controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 5),
-    )..addListener(() {
-        setState(() {});
-      });
-    controller.repeat(reverse: true);
     checkPermission().then((_) {
       reroute();
     });
@@ -46,7 +37,6 @@ class _LoadingPageState extends State<LoadingPage>
         });
       }
     }).whenComplete(() {
-      controller.stop();
       Navigator.pushReplacement(context,
           MaterialPageRoute(builder: (context) => const FrameworkLayout()));
     });
@@ -67,13 +57,8 @@ class _LoadingPageState extends State<LoadingPage>
   }
 
   @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       body: Center(
         child: Padding(
@@ -85,9 +70,14 @@ class _LoadingPageState extends State<LoadingPage>
                 'Loading',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-              CircularProgressIndicator(
-                value: controller.value,
-                semanticsLabel: 'Circular progress indicator',
+              SizedBox(
+                width: 70,
+                height: 70,
+                child: CircularProgressIndicator(
+                  color: colorScheme.primary,
+                  backgroundColor: colorScheme.primaryContainer,
+                  semanticsLabel: 'Loading data',
+                ),
               ),
             ],
           ),
@@ -104,7 +94,6 @@ class _LoadingPageState extends State<LoadingPage>
       if (isLogin) {
         fetchSetting(server);
       } else {
-        controller.stop();
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (context) => const LoginPage()));
       }

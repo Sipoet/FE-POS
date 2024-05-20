@@ -350,6 +350,23 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       discount.blacklistBrands = option;
                     },
                   ),
+                  const SizedBox(height: 10),
+                  AsyncDropdownMultiple2<Item>(
+                    key: const ValueKey('blacklistItemSelect'),
+                    selecteds: discount.blacklistItems,
+                    path: '/items',
+                    attributeKey: 'namaitem',
+                    textOnSelected: (item) => item.code,
+                    textOnSearch: (item) => "${item.code} - ${item.name}",
+                    converter: Item.fromJson,
+                    label: const Text(
+                      'Item:',
+                      style: labelStyle,
+                    ),
+                    onChanged: (option) {
+                      discount.blacklistItems = option;
+                    },
+                  ),
                   const Text(
                     'Tipe Kalkulasi:',
                     style: labelStyle,

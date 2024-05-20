@@ -12,8 +12,8 @@ mixin LoadingPopup<T extends StatefulWidget> on State<T> {
               width: 50,
               height: 50,
               child: CircularProgressIndicator(
-                color: colorScheme.onPrimary,
-                backgroundColor: colorScheme.onPrimaryContainer,
+                color: colorScheme.primary,
+                backgroundColor: colorScheme.primaryContainer,
               ),
             ),
           );

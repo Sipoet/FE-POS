@@ -1,4 +1,5 @@
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,7 @@ class EmployeeLeaveFormPage extends StatefulWidget {
 }
 
 class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, HistoryPopup {
   late Flash flash;
 
   final _formKey = GlobalKey<FormState>();
@@ -88,6 +89,15 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Visibility(
+                    visible: employeeLeave.id != null,
+                    child: ElevatedButton.icon(
+                        onPressed: () => fetchHistoryByRecord(
+                            'EmployeeLeave', employeeLeave.id),
+                        label: const Text('Riwayat'),
+                        icon: const Icon(Icons.history)),
+                  ),
+                  const Divider(),
                   Flexible(
                     child: AsyncDropdown(
                       key: const ValueKey('employeeSelect'),

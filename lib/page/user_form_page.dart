@@ -1,4 +1,5 @@
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ class UserFormPage extends StatefulWidget {
 }
 
 class _UserFormPageState extends State<UserFormPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, HistoryPopup {
   late Flash flash;
 
   final _formKey = GlobalKey<FormState>();
@@ -85,6 +86,24 @@ class _UserFormPageState extends State<UserFormPage>
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Visibility(
+                    visible: user.id != null,
+                    child: Row(
+                      children: [
+                        ElevatedButton.icon(
+                            onPressed: () =>
+                                fetchHistoryByRecord('User', user.id),
+                            label: const Text('Riwayat'),
+                            icon: const Icon(Icons.history)),
+                        ElevatedButton.icon(
+                            onPressed: () => fetchHistoryByUser(user.id ?? 0),
+                            label: const Text('Aktivitas User'),
+                            icon: const Icon(Icons.history)),
+                      ],
+                    ),
+                  ),
+
+                  const Divider(),
                   TextFormField(
                     decoration: const InputDecoration(
                         labelText: 'Username',

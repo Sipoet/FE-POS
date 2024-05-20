@@ -1,5 +1,9 @@
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/history_popup.dart';
+import 'package:fe_pos/tool/loading_popup.dart';
+
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/payroll.dart';
@@ -15,7 +19,11 @@ class PayrollFormPage extends StatefulWidget {
 }
 
 class _PayrollFormPageState extends State<PayrollFormPage>
-    with AutomaticKeepAliveClientMixin {
+    with
+        AutomaticKeepAliveClientMixin,
+        LoadingPopup,
+        DefaultResponse,
+        HistoryPopup {
   late final Flash flash;
   final codeInputWidget = TextEditingController();
 
@@ -30,11 +38,15 @@ class _PayrollFormPageState extends State<PayrollFormPage>
     flash = Flash(context);
     super.initState();
     if (payroll.id != null) {
-      fetchPayroll();
+      Future.delayed(
+        Duration.zero,
+        () => fetchPayroll(),
+      );
     }
   }
 
   void fetchPayroll() {
+    showLoadingPopup();
     final server = context.read<Server>();
     server.get('payrolls/${payroll.id}',
         queryParam: {'include': 'payroll_lines'}).then((response) {
@@ -52,7 +64,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
       }
     }, onError: (error) {
       server.defaultErrorResponse(context: context, error: error);
-    });
+    }).whenComplete(() => hideLoadingPopup());
   }
 
   void duplicateRecord() {
@@ -144,6 +156,15 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Visibility(
+                    visible: payroll.id != null,
+                    child: ElevatedButton.icon(
+                        onPressed: () =>
+                            fetchHistoryByRecord('Payroll', payroll.id),
+                        label: const Text('Riwayat'),
+                        icon: const Icon(Icons.history)),
+                  ),
+                  const Divider(),
                   TextFormField(
                     decoration: const InputDecoration(
                         labelText: 'Nama',
@@ -174,7 +195,8 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                         border: OutlineInputBorder()),
                     initialValue: payroll.paidTimeOff.toString(),
                     onSaved: (newValue) {
-                      payroll.paidTimeOff = int.parse(newValue.toString());
+                      payroll.paidTimeOff =
+                          int.tryParse(newValue.toString()) ?? 0;
                     },
                     validator: (newValue) {
                       if (newValue == null || newValue.isEmpty) {
@@ -389,13 +411,30 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                   key: ValueKey(
                                       "${payrollLine.id ?? payrollLine.row}-variable5"),
                                 )),
-                                DataCell(ElevatedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      payroll.lines.remove(payrollLine);
-                                    });
-                                  },
-                                  child: const Text('Hapus'),
+                                DataCell(Row(
+                                  children: [
+                                    Visibility(
+                                      visible: payrollLine.id != null,
+                                      child: IconButton(
+                                        onPressed: () {
+                                          fetchHistoryByRecord(
+                                              'PayrollLine', payrollLine.id);
+                                        },
+                                        icon: const Icon(Icons.history),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          payroll.lines.remove(payrollLine);
+                                        });
+                                      },
+                                      icon: const Icon(Icons.close_rounded),
+                                    ),
+                                  ],
                                 )),
                               ]))
                           .toList(),

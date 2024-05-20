@@ -1,5 +1,7 @@
 import 'package:fe_pos/model/work_schedule.dart';
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/history_popup.dart';
+import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
@@ -19,7 +21,7 @@ class EmployeeFormPage extends StatefulWidget {
 }
 
 class _EmployeeFormPageState extends State<EmployeeFormPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, LoadingPopup, HistoryPopup {
   late Flash flash;
   final codeInputWidget = TextEditingController();
   final ImagePicker _picker = ImagePicker();
@@ -41,7 +43,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
       loadImage(employee.imageCode ?? '');
     }
     if (employee.id != null) {
-      fetchEmployee();
+      Future.delayed(Duration.zero, () => fetchEmployee());
     } else {
       employee.schedules = [];
     }
@@ -49,6 +51,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
   }
 
   void fetchEmployee() {
+    showLoadingPopup();
     final server = context.read<Server>();
     server.get('employees/${employee.id}',
         queryParam: {'include': 'work_schedules'}).then((response) {
@@ -66,7 +69,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
       }
     }, onError: (error) {
       server.defaultErrorResponse(context: context, error: error);
-    });
+    }).whenComplete(() => hideLoadingPopup());
   }
 
   Future? request;
@@ -187,6 +190,15 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Visibility(
+                    visible: employee.id != null,
+                    child: ElevatedButton.icon(
+                        onPressed: () =>
+                            fetchHistoryByRecord('Employee', employee.id),
+                        label: const Text('Riwayat'),
+                        icon: const Icon(Icons.history)),
+                  ),
+                  const Divider(),
                   TextFormField(
                     decoration: const InputDecoration(
                         labelText: 'Kode Karyawan',
@@ -645,13 +657,31 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                                                   value: activeWeek,
                                                   label: activeWeek.humanize()))
                                           .toList())),
-                                  DataCell(ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        employee.schedules.remove(workSchedule);
-                                      });
-                                    },
-                                    child: const Text('Hapus'),
+                                  DataCell(Row(
+                                    children: [
+                                      Visibility(
+                                        visible: workSchedule.id != null,
+                                        child: IconButton(
+                                          onPressed: () {
+                                            fetchHistoryByRecord('WorkSchedule',
+                                                workSchedule.id);
+                                          },
+                                          icon: const Icon(Icons.history),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            employee.schedules
+                                                .remove(workSchedule);
+                                          });
+                                        },
+                                        child: const Text('Hapus'),
+                                      ),
+                                    ],
                                   )),
                                 ]))
                             .toList()),
