@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class Setting extends ChangeNotifier {
-  Map<String, List<TableColumn>> tableColumns = {};
+  Map<String, Map<String, TableColumn>> tableColumns = {};
   Map<String, List<String>> menus = {};
   Setting();
 
@@ -15,27 +15,27 @@ class Setting extends ChangeNotifier {
 
   void setTableColumns(Map<String, dynamic> data) {
     for (final key in data.keys.toList()) {
-      tableColumns[key] = data[key]!
-          .map<TableColumn>((row) => TableColumn(
-              key: row['name'],
-              sortKey: row['sort_key'],
-              attributeKey: row['attribute_key'],
-              path: row['path'],
-              name: row['humanize_name'],
-              type: row['type'],
-              excelWidth: double.tryParse(row['width'].toString())))
-          .toList();
+      tableColumns[key] = {};
+      for (Map row in data[key]) {
+        final columnKey = row['name'];
+        tableColumns[key]![columnKey] = TableColumn(
+            key: row['name'],
+            sortKey: row['sort_key'],
+            attributeKey: row['attribute_key'],
+            path: row['path'],
+            name: row['humanize_name'],
+            type: row['type'],
+            excelWidth: double.tryParse(row['width'].toString()));
+      }
     }
   }
 
   String columnName(String tableName, String columnKey) {
-    return tableColumn(tableName)
-        .firstWhere((tableColumn) => tableColumn.key == columnKey)
-        .name;
+    return tableColumns[tableName]?[columnKey]?.name ?? '';
   }
 
   List<TableColumn> tableColumn(String key) {
-    return tableColumns[key] ?? [];
+    return tableColumns[key]?.values.toList() ?? [];
   }
 
   String dateFormat(DateTime date) {
@@ -65,5 +65,9 @@ class Setting extends ChangeNotifier {
   bool isAuthorize(String controllerName, String actionName) {
     return menus[controllerName] != null &&
         menus[controllerName]!.contains(actionName);
+  }
+
+  bool canShow(String tableName, String columnKey) {
+    return tableColumns[tableName]?[columnKey] != null;
   }
 }

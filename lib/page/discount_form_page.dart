@@ -1,5 +1,6 @@
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
@@ -18,7 +19,11 @@ class DiscountFormPage extends StatefulWidget {
 }
 
 class _DiscountFormPageState extends State<DiscountFormPage>
-    with AutomaticKeepAliveClientMixin, LoadingPopup, DefaultResponse {
+    with
+        AutomaticKeepAliveClientMixin,
+        LoadingPopup,
+        HistoryPopup,
+        DefaultResponse {
   late Flash flash;
 
   final _formKey = GlobalKey<FormState>();
@@ -176,6 +181,15 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Visibility(
+                    visible: discount.id != null,
+                    child: ElevatedButton.icon(
+                        onPressed: () =>
+                            fetchHistoryByRecord('Discount', discount.id),
+                        label: const Text('Riwayat'),
+                        icon: const Icon(Icons.history)),
+                  ),
+                  const Divider(),
                   TextFormField(
                     focusNode: _focusNode,
                     decoration: const InputDecoration(

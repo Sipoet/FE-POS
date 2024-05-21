@@ -66,6 +66,8 @@ class _DiscountPageState extends State<DiscountPage>
       'search_text': _searchText,
       'page[page]': page.toString(),
       'page[limit]': '100',
+      'include':
+          'discount_items,discount_suppliers,discount_item_types,discount_brands',
       'sort': '${_source.isAscending ? '' : '-'}$orderKey',
     };
     _filter.forEach((key, value) {
