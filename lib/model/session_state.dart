@@ -13,8 +13,9 @@ class SessionState extends ChangeNotifier {
       String? sessionString = await _storage.read(key: 'server');
       if (sessionString != null) {
         final sessionData = jsonDecode(sessionString);
-        server.host = sessionData['host'];
+        server.host = sessionData['host'] ?? '';
         server.jwt = sessionData['jwt'];
+        server.userName = sessionData['userName'] ?? '';
       }
       await server.setCert();
     } catch (error) {
@@ -53,6 +54,7 @@ class SessionState extends ChangeNotifier {
     }).then((response) {
       if (response.statusCode == 200) {
         server.jwt = response.headers.value('Authorization');
+        server.userName = username;
         saveSession(server);
         onSuccess(response);
       } else {
@@ -88,6 +90,10 @@ class SessionState extends ChangeNotifier {
   void saveSession(Server server) async {
     _storage.write(
         key: 'server',
-        value: jsonEncode({'host': server.host, 'jwt': server.jwt}));
+        value: jsonEncode({
+          'host': server.host,
+          'jwt': server.jwt,
+          'userName': server.userName
+        }));
   }
 }

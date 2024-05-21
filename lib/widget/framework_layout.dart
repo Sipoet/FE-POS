@@ -7,6 +7,7 @@ import 'package:fe_pos/page/all_page.dart';
 import 'package:fe_pos/page/home_page.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/model/menu.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 
@@ -23,6 +24,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
 
   late TabManager tabManager;
   late Flash flash;
+  String version = '';
 
   @override
   void initState() {
@@ -202,20 +204,38 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
     flash = Flash(context);
     tabManager = TabManager(this);
     tabManager.addTab('Home', const HomePage());
+    PackageInfo.fromPlatform().then((packageInfo) => setState(() {
+          version = packageInfo.version;
+        }));
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    final server = context.read<Server>();
+
     return MultiProvider(
         providers: [
           ChangeNotifierProvider<TabManager>(create: (_) => tabManager),
         ],
         child: LayoutBuilder(builder: (context, constraints) {
           if (constraints.maxWidth < 800.0 || constraints.maxHeight < 600.0) {
-            return MobileLayout(menuTree: menuTree, logout: _logout);
+            return MobileLayout(
+              menuTree: menuTree,
+              logout: _logout,
+              version: version,
+              userName: server.userName,
+              host: server.host,
+            );
           } else {
-            return DesktopLayout(menuTree: menuTree, logout: _logout);
+            return DesktopLayout(
+              menuTree: menuTree,
+              logout: _logout,
+              version: version,
+              userName: server.userName,
+              host: server.host,
+            );
           }
         }));
   }

@@ -11,15 +11,15 @@ import 'package:yaml/yaml.dart';
 
 mixin AppUpdater<T extends StatefulWidget> on State<T> {
   bool _isDownloading = false;
-
+  late String latestVersion;
+  late String localVersion;
   void checkUpdate(Server server) async {
     if (kIsWeb) {
       return;
     }
     TargetPlatform platform = defaultTargetPlatform;
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    final version = packageInfo.version;
-    // final version = '0.1.4';
+    localVersion = packageInfo.version;
     server.dio
         .get(
       'https://raw.githubusercontent.com/Sipoet/FE-POS/main/pubspec.yaml',
@@ -27,8 +27,8 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
         .then((response) {
       if ([200, 302].contains(response.statusCode)) {
         var doc = loadYaml(response.data);
-        final latestVersion = doc['version'];
-        if (isOlderVersion(version, latestVersion)) {
+        latestVersion = doc['version'];
+        if (isOlderVersion()) {
           _showConfirmDialog(
             onSubmit: () => downloadApp(server, platform),
           );
@@ -39,17 +39,18 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
                 server.defaultErrorResponse(context: context, error: error));
   }
 
-  bool isOlderVersion(String localVersion, String remoteVersion) {
+  bool isOlderVersion() {
     final localVersions =
         localVersion.split('.').map<int>((e) => int.parse(e)).toList();
-    final remoteVersions =
-        remoteVersion.split('.').map<int>((e) => int.parse(e)).toList();
-    for (final (int index, int ver) in remoteVersions.indexed) {
-      if (ver != localVersions[index]) {
-        return ver > localVersions[index];
+    final latestVersions =
+        latestVersion.split('.').map<int>((e) => int.parse(e)).toList();
+    for (final (int index, int ver) in latestVersions.indexed) {
+      if (ver == localVersions[index]) {
+        continue;
       }
+      return ver > localVersions[index];
     }
-    return true;
+    return false;
   }
 
   void _showConfirmDialog({required Function onSubmit}) {
@@ -63,8 +64,9 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
             title: const Text("Versi Terbaru"),
             content: Column(
               children: [
-                const Text(
-                    'Versi terbaru aplikasi tersedia. apakah mau update ke terbaru?'),
+                Text(
+                    'Versi terbaru($latestVersion) aplikasi tersedia. apakah mau update ke terbaru?'),
+                Text('versi saat ini: $localVersion'),
                 Visibility(
                   visible: _isDownloading,
                   child: CircularProgressIndicator(

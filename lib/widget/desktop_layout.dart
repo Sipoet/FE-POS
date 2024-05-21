@@ -1,4 +1,3 @@
-import 'package:fe_pos/model/server.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/menu.dart';
 import 'package:provider/provider.dart';
@@ -6,10 +5,18 @@ import 'package:fe_pos/tool/tab_manager.dart';
 
 class DesktopLayout extends StatefulWidget {
   const DesktopLayout(
-      {super.key, required this.menuTree, required this.logout});
+      {super.key,
+      required this.menuTree,
+      required this.logout,
+      required this.version,
+      required this.host,
+      required this.userName});
 
   final List<Menu> menuTree;
   final Function logout;
+  final String version;
+  final String userName;
+  final String host;
 
   @override
   State<DesktopLayout> createState() => _DesktopLayoutState();
@@ -22,7 +29,6 @@ class _DesktopLayoutState extends State<DesktopLayout>
   Widget build(BuildContext context) {
     var tabManager = context.read<TabManager>();
     var menus = decorateMenus(widget.menuTree);
-    final server = context.read<Server>();
     menus.add(
       MenuItemButton(
         leadingIcon: const Icon(Icons.power_settings_new),
@@ -39,7 +45,7 @@ class _DesktopLayoutState extends State<DesktopLayout>
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'Allegra POS. SERVER: ${server.host}.',
+            'Allegra POS | SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: ${widget.version}',
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           actions: menus,

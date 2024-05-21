@@ -13,6 +13,7 @@ import 'package:image_picker/image_picker.dart';
 class Server extends ChangeNotifier {
   String host;
   String jwt;
+  String userName;
   Dio dio = Dio(BaseOptions(
     connectTimeout: const Duration(seconds: 3),
     validateStatus: (int? status) {
@@ -23,7 +24,7 @@ class Server extends ChangeNotifier {
     },
   ));
 
-  Server({this.host = '192.168.1.11', this.jwt = ''}) {
+  Server({this.host = '192.168.1.11', this.jwt = '', this.userName = ''}) {
     if (kIsWeb) {
       host = Uri.base.host;
     }
@@ -32,7 +33,6 @@ class Server extends ChangeNotifier {
   Future setCert() async {
     if (kIsWeb) return;
     var certificate = await rootBundle.load('assets/certs/192.168.1.11.pem');
-
     dio.httpClientAdapter = IOHttpClientAdapter(
       createHttpClient: () {
         final SecurityContext context = SecurityContext.defaultContext;
