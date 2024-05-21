@@ -1,4 +1,4 @@
-FROM nginx:stable-alpine3.17-slim
+FROM nginx:1.26.0-alpine-slim
 
 RUN apk update
 # copy the info of the builded web app to nginx

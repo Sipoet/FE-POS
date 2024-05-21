@@ -53,42 +53,45 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
   }
 
   void _showConfirmDialog({required Function onSubmit}) {
-    final colorScheme = Theme.of(context).colorScheme;
-    AlertDialog alert = AlertDialog(
-      title: const Text("Versi Terbaru"),
-      content: Column(
-        children: [
-          const Text(
-              'Versi terbaru aplikasi tersedia. apakah mau update ke terbaru?'),
-          Visibility(
-            visible: _isDownloading,
-            child: CircularProgressIndicator(
-              color: colorScheme.onPrimary,
-              backgroundColor: colorScheme.onPrimaryContainer,
-            ),
-          )
-        ],
-      ),
-      actions: [
-        ElevatedButton(
-          child: const Text("Kembali"),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        ElevatedButton(
-          child: const Text("update sekarang"),
-          onPressed: () {
-            onSubmit();
-          },
-        ),
-      ],
-    );
     // show the dialog
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return alert;
+        return StatefulBuilder(builder: (context, setStateDialog) {
+          final colorScheme = Theme.of(context).colorScheme;
+          return AlertDialog(
+            title: const Text("Versi Terbaru"),
+            content: Column(
+              children: [
+                const Text(
+                    'Versi terbaru aplikasi tersedia. apakah mau update ke terbaru?'),
+                Visibility(
+                  visible: _isDownloading,
+                  child: CircularProgressIndicator(
+                    color: colorScheme.onPrimary,
+                    backgroundColor: colorScheme.onPrimaryContainer,
+                  ),
+                )
+              ],
+            ),
+            actions: [
+              ElevatedButton(
+                child: const Text("Kembali"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              ElevatedButton(
+                child: const Text("update sekarang"),
+                onPressed: () {
+                  setStateDialog(() {
+                    onSubmit();
+                  });
+                },
+              ),
+            ],
+          );
+        });
       },
     );
   }
@@ -100,40 +103,36 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
         "https://raw.githubusercontent.com/Sipoet/FE-POS/main/src/windows/Output/allegra-pos.exe"
   };
 
-  void downloadApp(Server server, TargetPlatform platform) async {
+  void downloadApp(Server server, TargetPlatform platform) {
+    _isDownloading = true;
     const fileSaver = FileSaver();
     final path = _downloadPath[platform];
     final extFile = path.split('.').last;
     fileSaver.downloadPath('allegra-pos', extFile).then((String? filePath) {
       if (filePath != null) {
-        setState(() {
-          _isDownloading = true;
-        });
-        server.download(path, 'file', filePath).then((value) {
-          setState(() {
-            _isDownloading = false;
-          });
+        server.dio.download(path, filePath).then((value) async {
           if (platform == TargetPlatform.iOS ||
               platform == TargetPlatform.android) {
-            OpenFile.open(filePath);
+            OpenFile.open(filePath)
+                .then((value) => Navigator.of(context).pop());
           } else if (platform == TargetPlatform.windows) {
-            installApp(filePath);
+            await installApp(filePath);
           } else {
             Flash(context).showBanner(
                 messageType: MessageType.success,
                 title: 'Sukses download APP',
                 description: 'file installer terinstall di $filePath');
           }
-
-          Navigator.of(context).pop();
         });
-      } else {
-        Navigator.of(context).pop();
       }
+    }).whenComplete(() {
+      _isDownloading = false;
     });
   }
 
-  void installApp(String filePath) {
-    Process.run(filePath, []).then((ProcessResult results) {});
+  Future installApp(String filePath) {
+    return Process.run(filePath, []).then((ProcessResult results) {
+      Navigator.of(context).pop();
+    });
   }
 }
