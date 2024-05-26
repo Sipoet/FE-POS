@@ -26,12 +26,14 @@ class SalesTransactionReport extends Model {
       this.grossProfit = const Money(0.0),
       this.totalTransaction = 0,
       this.debitDetails = const [],
-      this.creditDetails = const []});
+      this.creditDetails = const [],
+      super.id});
 
   @override
   factory SalesTransactionReport.fromJson(Map<String, dynamic> json) {
     var attributes = json['attributes'];
     return SalesTransactionReport(
+      id: "${attributes['start_time']}-${attributes['end_time']}",
       range: DateTimeRange(
           start: DateTime.parse(attributes['start_time']),
           end: DateTime.parse(attributes['end_time'])),

@@ -3,8 +3,7 @@ import 'package:fe_pos/model/model.dart';
 class Supplier extends Model {
   String code;
   String name;
-  String? id;
-  Supplier({required this.code, required this.name, this.id});
+  Supplier({required this.code, required this.name, super.id});
 
   @override
   Map<String, dynamic> toMap() => {

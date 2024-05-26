@@ -104,7 +104,7 @@ class Discount extends Model {
   List<DiscountBrand> discountBrands = [];
   List<DiscountItemType> discountItemTypes = [];
   List<DiscountSupplier> discountSuppliers = [];
-  int? id;
+
   String code;
   int weight;
   bool week1;
@@ -116,7 +116,7 @@ class Discount extends Model {
   bool week7;
   DiscountType discountType;
   Discount(
-      {this.id,
+      {super.id,
       this.code = '',
       this.itemCode,
       this.itemType,

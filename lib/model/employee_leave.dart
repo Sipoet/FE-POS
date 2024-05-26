@@ -67,7 +67,7 @@ class EmployeeLeave extends Model {
   String? description;
   Date? changeDate;
   int? changeShift;
-  int? id;
+
   EmployeeLeave(
       {required this.leaveType,
       required this.date,
@@ -77,7 +77,7 @@ class EmployeeLeave extends Model {
       this.changeDate,
       this.changeShift,
       this.description,
-      this.id});
+      super.id});
 
   @override
   Map<String, dynamic> toMap() => {

@@ -6,12 +6,11 @@ export 'package:fe_pos/tool/custom_type.dart';
 class Payroll extends Model {
   String name;
   int paidTimeOff;
-  int? id;
   String? description;
   List<PayrollLine> lines;
   Payroll({
     required this.name,
-    this.id,
+    super.id,
     this.paidTimeOff = 0,
     this.description,
     this.lines = const <PayrollLine>[],

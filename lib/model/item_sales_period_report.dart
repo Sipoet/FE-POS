@@ -1,7 +1,6 @@
 import 'package:fe_pos/model/model.dart';
 
 class ItemSalesPeriodReport extends Model {
-  String id;
   String itemCode;
   String itemName;
   String? itemTypeName;
@@ -16,7 +15,7 @@ class ItemSalesPeriodReport extends Model {
   Money salesTotal;
 
   ItemSalesPeriodReport({
-    required this.id,
+    required super.id,
     required this.itemCode,
     required this.itemName,
     required this.itemTypeName,

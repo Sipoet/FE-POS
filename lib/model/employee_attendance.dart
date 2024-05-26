@@ -9,14 +9,14 @@ class EmployeeAttendance extends Model {
   DateTime startTime;
   DateTime endTime;
   Employee employee;
-  int? id;
+
   EmployeeAttendance(
       {required this.startTime,
       required this.endTime,
       required this.employee,
       super.createdAt,
       super.updatedAt,
-      this.id});
+      super.id});
 
   @override
   Map<String, dynamic> toMap() => {

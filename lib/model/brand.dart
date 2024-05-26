@@ -3,9 +3,8 @@ import 'package:fe_pos/model/model.dart';
 class Brand extends Model {
   String description;
   String name;
-  String? id;
 
-  Brand({required this.description, required this.name, this.id});
+  Brand({required this.description, required this.name, super.id});
 
   @override
   Map<String, dynamic> toMap() => {

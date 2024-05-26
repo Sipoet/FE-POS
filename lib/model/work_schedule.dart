@@ -66,7 +66,6 @@ class WorkSchedule extends Model {
   String endWork;
   int shift;
   int dayOfWeek;
-  int? id;
   ActiveWeekWorkSchedule activeWeek;
   WorkSchedule(
       {required this.beginWork,
@@ -74,7 +73,7 @@ class WorkSchedule extends Model {
       this.dayOfWeek = 1,
       this.shift = 1,
       this.activeWeek = ActiveWeekWorkSchedule.allWeek,
-      this.id});
+      super.id});
 
   @override
   Map<String, dynamic> toMap() => {

@@ -24,7 +24,6 @@ class PayslipReport extends Model {
   double overtimeHour;
   int workDays;
   int late;
-  int? id;
   String? description;
   PayslipReport(
       {required this.startDate,
@@ -48,7 +47,7 @@ class PayslipReport extends Model {
       this.workDays = 0,
       this.debt = 0,
       this.description,
-      this.id});
+      super.id});
 
   @override
   Map<String, dynamic> toMap() => {

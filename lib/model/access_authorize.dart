@@ -4,8 +4,7 @@ export 'package:fe_pos/tool/custom_type.dart';
 class AccessAuthorize extends Model {
   String controller;
   List<String> action;
-  int? id;
-  AccessAuthorize({required this.controller, required this.action, this.id});
+  AccessAuthorize({required this.controller, required this.action, super.id});
 
   @override
   Map<String, dynamic> toMap() => {

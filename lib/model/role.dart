@@ -7,12 +7,11 @@ export 'package:fe_pos/tool/custom_type.dart';
 
 class Role extends Model {
   String name;
-  int? id;
   List<ColumnAuthorize> columnAuthorizes;
   List<AccessAuthorize> accessAuthorizes;
   Role(
       {required this.name,
-      this.id,
+      super.id,
       this.columnAuthorizes = const <ColumnAuthorize>[],
       this.accessAuthorizes = const <AccessAuthorize>[]});
 

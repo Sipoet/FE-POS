@@ -4,9 +4,9 @@ import 'package:fe_pos/model/model.dart';
 
 class DiscountSupplier extends Model {
   Supplier? supplier;
-  int? id;
+
   bool isExclude;
-  DiscountSupplier({this.id, this.supplier, this.isExclude = false});
+  DiscountSupplier({super.id, this.supplier, this.isExclude = false});
 
   @override
   factory DiscountSupplier.fromJson(Map<String, dynamic> json,

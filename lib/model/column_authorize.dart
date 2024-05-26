@@ -4,8 +4,8 @@ export 'package:fe_pos/tool/custom_type.dart';
 class ColumnAuthorize extends Model {
   String table;
   List<String> column;
-  int? id;
-  ColumnAuthorize({required this.table, required this.column, this.id});
+
+  ColumnAuthorize({required this.table, required this.column, super.id});
 
   @override
   Map<String, dynamic> toMap() => {

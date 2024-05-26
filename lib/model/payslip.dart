@@ -64,7 +64,6 @@ class Payslip extends Model {
   double overtimeHour;
   int workDays;
   int late;
-  int? id;
   List<PayslipLine> lines;
   Payslip(
       {required this.employee,
@@ -85,7 +84,7 @@ class Payslip extends Model {
       this.late = 0,
       this.workDays = 0,
       this.lines = const [],
-      this.id});
+      super.id});
 
   @override
   Map<String, dynamic> toMap() => {

@@ -3,8 +3,7 @@ import 'package:fe_pos/model/model.dart';
 class ItemType extends Model {
   String description;
   String name;
-  String? id;
-  ItemType({required this.description, required this.name, this.id});
+  ItemType({required this.description, required this.name, super.id});
 
   @override
   Map<String, dynamic> toMap() => {

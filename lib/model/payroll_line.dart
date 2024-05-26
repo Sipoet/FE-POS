@@ -185,10 +185,9 @@ class PayrollLine extends Model {
   double? variable4;
   double? variable5;
   int row;
-  int? id;
   String description;
   PayrollLine(
-      {this.id,
+      {super.id,
       this.row = 0,
       required this.group,
       this.payrollType,

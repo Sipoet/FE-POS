@@ -95,10 +95,9 @@ class PayslipLine extends Model {
   PayslipGroup group;
   PayslipType? payslipType;
   double amount;
-  int? id;
   String description;
   PayslipLine({
-    this.id,
+    super.id,
     required this.group,
     this.payslipType,
     this.description = '',

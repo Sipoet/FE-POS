@@ -1,7 +1,6 @@
 import 'package:fe_pos/model/model.dart';
 
 class ItemSalesPercentageReport extends Model {
-  String id;
   String itemCode;
   String itemName;
   String itemType;
@@ -22,7 +21,7 @@ class ItemSalesPercentageReport extends Model {
   DateTime? recentPurchaseDate;
 
   ItemSalesPercentageReport(
-      {required this.id,
+      {super.id,
       required this.itemCode,
       required this.itemName,
       required this.itemType,

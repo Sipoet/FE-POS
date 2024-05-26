@@ -5,11 +5,10 @@ class ActivityLog extends Model {
   String actor;
   String event;
   String description;
-  int? id;
   int itemId;
   String itemType;
   ActivityLog(
-      {this.id,
+      {super.id,
       super.createdAt,
       required this.itemId,
       required this.itemType,

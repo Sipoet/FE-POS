@@ -1,7 +1,6 @@
 import 'package:fe_pos/model/model.dart';
 
 class SalesGroupBySupplier extends Model {
-  String id;
   String? itemTypeName;
   String? supplierCode;
   String? supplierName;
@@ -12,7 +11,7 @@ class SalesGroupBySupplier extends Model {
   int stockLeft;
 
   SalesGroupBySupplier({
-    required this.id,
+    required super.id,
     required this.itemTypeName,
     required this.supplierCode,
     required this.supplierName,

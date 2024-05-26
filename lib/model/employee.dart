@@ -54,13 +54,13 @@ class Employee extends Model {
   String? bankAccount;
   String? description;
   String? bankRegisterName;
-  int? id;
+
   String? imageCode;
   String code;
   int shift;
   List<WorkSchedule> schedules;
   Employee(
-      {this.id,
+      {super.id,
       required this.code,
       required this.name,
       required this.role,
@@ -84,41 +84,44 @@ class Employee extends Model {
 
   @override
   factory Employee.fromJson(Map<String, dynamic> json,
-      {List included = const []}) {
+      {List included = const [], Employee? model}) {
     final attributes = json['attributes'];
+
     Payroll? payroll;
     Role role = Role(name: '');
+    model ??= Employee(
+        code: '', name: '', role: role, startWorkingDate: Date.today());
     if (included.isNotEmpty) {
-      payroll = Model.findRelationData<Payroll>(
+      model.payroll = Model.findRelationData<Payroll>(
           included: included,
           relation: json['relationships']['payroll'],
           convert: Payroll.fromJson);
-      role = Model.findRelationData<Role>(
+      model.role = Model.findRelationData<Role>(
               included: included,
               relation: json['relationships']['role'],
               convert: Role.fromJson) ??
           role;
     }
-    return Employee(
-        id: int.parse(json['id']),
-        code: attributes['code']?.trim(),
-        name: attributes['name']?.trim(),
-        payroll: payroll,
-        role: role,
-        status:
-            EmployeeStatus.convertFromString(attributes['status'].toString()),
-        startWorkingDate: Date.parse(attributes['start_working_date']),
-        endWorkingDate: Date.tryParse(attributes['end_working_date'] ?? ''),
-        debt: Money.parse(attributes['debt'] ?? 0),
-        idNumber: attributes['id_number'],
-        contactNumber: attributes['contact_number'],
-        address: attributes['address'],
-        bank: attributes['bank'],
-        bankAccount: attributes['bank_account'],
-        description: attributes['description'],
-        imageCode: attributes['image_code'],
-        shift: attributes['shift'],
-        bankRegisterName: attributes['bank_register_name']);
+    model.id = int.parse(json['id']);
+    model.code = attributes['code']?.trim();
+    model.name = attributes['name']?.trim();
+    model.payroll = payroll;
+    model.role = role;
+    model.status =
+        EmployeeStatus.convertFromString(attributes['status'].toString());
+    model.startWorkingDate = Date.parse(attributes['start_working_date']);
+    model.endWorkingDate = Date.tryParse(attributes['end_working_date'] ?? '');
+    model.debt = Money.parse(attributes['debt'] ?? 0);
+    model.idNumber = attributes['id_number'];
+    model.contactNumber = attributes['contact_number'];
+    model.address = attributes['address'];
+    model.bank = attributes['bank'];
+    model.bankAccount = attributes['bank_account'];
+    model.description = attributes['description'];
+    model.imageCode = attributes['image_code'];
+    model.shift = attributes['shift'];
+    model.bankRegisterName = attributes['bank_register_name'];
+    return model;
   }
 
   @override

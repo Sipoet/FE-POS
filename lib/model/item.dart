@@ -17,7 +17,6 @@ class Item extends Model {
   Supplier? supplier;
   ItemType itemType;
   Brand? brand;
-  String? id;
   Item(
       {required this.code,
       required this.name,
@@ -27,7 +26,7 @@ class Item extends Model {
       this.supplier,
       this.brand,
       required this.itemType,
-      this.id});
+      super.id});
 
   @override
   Map<String, dynamic> toMap() => {

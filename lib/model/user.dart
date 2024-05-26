@@ -9,8 +9,7 @@ class User extends Model {
   String? password;
   String? passwordConfirmation;
   Role role;
-  int? id;
-  User({required this.username, this.email, this.id, required this.role});
+  User({required this.username, this.email, super.id, required this.role});
 
   @override
   Map<String, dynamic> toMap() => {
