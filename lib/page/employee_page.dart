@@ -18,11 +18,9 @@ class EmployeePage extends StatefulWidget {
 
 class _EmployeePageState extends State<EmployeePage>
     with AutomaticKeepAliveClientMixin {
-  final _source = CustomDataTableSource<Employee>();
+  late final CustomAsyncDataTableSource<Employee> _source;
   late final Server server;
-  bool _isDisplayTable = false;
   String _searchText = '';
-  List<Employee> employees = [];
   final cancelToken = CancelToken();
   late Flash flash;
   final _menuController = MenuController();
@@ -36,36 +34,39 @@ class _EmployeePageState extends State<EmployeePage>
     server = context.read<Server>();
     flash = Flash(context);
     final setting = context.read<Setting>();
-    _source.columns = setting.tableColumn('employee');
-    refreshTable();
+    _source = CustomAsyncDataTableSource<Employee>(
+        actionButtons: actionButtons,
+        columns: setting.tableColumn('employee'),
+        fetchData: fetchEmployees);
     super.initState();
+    Future.delayed(Duration.zero, refreshTable);
   }
 
   @override
   void dispose() {
     cancelToken.cancel();
+    _source.dispose();
     super.dispose();
   }
 
   Future<void> refreshTable() async {
-    // clear table row
-    setState(() {
-      employees = [];
-      _isDisplayTable = false;
-    });
-    fetchEmployees(page: 1);
+    _source.refreshDataFromFirstPage();
   }
 
-  Future fetchEmployees({int page = 1}) {
-    String orderKey = _source.sortColumn?.sortKey ?? 'code';
+  Future<ResponseResult<Employee>> fetchEmployees(
+      {int page = 1,
+      int limit = 50,
+      TableColumn? sortColumn,
+      bool isAscending = true}) {
+    String orderKey = sortColumn?.sortKey ?? 'code';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
-      'page[limit]': '20',
+      'page[limit]': limit.toString(),
       'fields[role]': 'name',
       'fields[payroll]': 'name',
       'include': 'role,payroll',
-      'sort': '${_source.isAscending ? '' : '-'}$orderKey',
+      'sort': '${isAscending ? '' : '-'}$orderKey',
     };
     _filter.forEach((key, value) {
       param[key] = value;
@@ -81,20 +82,16 @@ class _EmployeePageState extends State<EmployeePage>
         if (responseBody['data'] is! List) {
           throw 'error: invalid data type ${response.data.toString()}';
         }
-        employees.addAll(responseBody['data']
+        final responsedModels = responseBody['data']
             .map<Employee>((json) =>
                 Employee.fromJson(json, included: responseBody['included']))
-            .toList());
+            .toList();
         setState(() {
-          _isDisplayTable = true;
-          _source.setData(employees);
+          // _source.setData(employees);
         });
-
-        flash.hide();
         int totalPages = responseBody['meta']?['total_pages'];
-        if (page < totalPages.toInt()) {
-          fetchEmployees(page: page + 1);
-        }
+        return ResponseResult<Employee>(
+            totalPages: totalPages, models: responsedModels);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));
@@ -103,7 +100,7 @@ class _EmployeePageState extends State<EmployeePage>
           title: e.toString(),
           description: trace.toString(),
           messageType: MessageType.failed);
-      return Future(() => null);
+      return Future(() => ResponseResult<Employee>(models: []));
     }
   }
 
@@ -158,7 +155,7 @@ class _EmployeePageState extends State<EmployeePage>
     );
   }
 
-  void toggleStatus(Employee employee, int index) {
+  void toggleStatus(Employee employee) {
     final statusPath =
         employee.status == EmployeeStatus.active ? 'deactivate' : 'activate';
     final statusName =
@@ -167,7 +164,12 @@ class _EmployeePageState extends State<EmployeePage>
         message: 'Apakah yakin $statusName ${employee.name}?',
         onSubmit: () {
           server.post('employees/${employee.id}/$statusPath').then((response) {
-            _source.updateData(index, employee);
+            setState(() {
+              employee.status = employee.status == EmployeeStatus.active
+                  ? EmployeeStatus.inactive
+                  : EmployeeStatus.active;
+            });
+
             flash.showBanner(
                 title: 'Sukses',
                 description: 'karyawan ${employee.code} sukses $statusName',
@@ -189,9 +191,9 @@ class _EmployeePageState extends State<EmployeePage>
           _source.selectedMap.forEach((int index, Employee employee) async {
             await server.post('employees/${employee.id}/activate').then(
                 (response) {
-              employee = Employee.fromJson(response.data['data']);
               setState(() {
-                _source.updateData(index, employee);
+                Employee.fromJson(response.data['data'], model: employee);
+                _source.refreshDatasource();
               });
             }, onError: (error, stack) {
               server.defaultErrorResponse(context: context, error: error);
@@ -211,8 +213,9 @@ class _EmployeePageState extends State<EmployeePage>
           _source.selectedMap.forEach((int index, Employee employee) async {
             await server.post('employees/${employee.id}/deactivate').then(
                 (response) {
-              employee = Employee.fromJson(response.data['data']);
-              _source.updateData(index, employee);
+              setState(() {
+                Employee.fromJson(response.data['data'], model: employee);
+              });
             }, onError: (error, stack) {
               server.defaultErrorResponse(context: context, error: error);
             });
@@ -234,30 +237,33 @@ class _EmployeePageState extends State<EmployeePage>
     }
   }
 
+  List<Widget> actionButtons(Employee employee, int index) {
+    return <Widget>[
+      IconButton(
+          onPressed: () {
+            editForm(employee);
+          },
+          tooltip: 'Edit karyawan',
+          icon: const Icon(Icons.edit)),
+      IconButton(
+        onPressed: () {
+          setState(() {
+            toggleStatus(employee);
+          });
+        },
+        tooltip: 'Aktivasi/deaktivasi karyawan',
+        icon: Icon(
+          Icons.lightbulb,
+          color:
+              employee.status == EmployeeStatus.active ? Colors.yellow : null,
+        ),
+      )
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.setActionButtons((employee, index) => <Widget>[
-          IconButton(
-              onPressed: () {
-                editForm(employee);
-              },
-              tooltip: 'Edit karyawan',
-              icon: const Icon(Icons.edit)),
-          IconButton(
-              onPressed: () {
-                toggleStatus(employee, index);
-              },
-              tooltip: 'Aktivasi/deaktivasi karyawan',
-              icon: employee.status == EmployeeStatus.active
-                  ? const Icon(
-                      Icons.lightbulb,
-                      color: Colors.yellow,
-                    )
-                  : const Icon(
-                      Icons.lightbulb,
-                    )),
-        ]);
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
@@ -324,15 +330,14 @@ class _EmployeePageState extends State<EmployeePage>
                 ],
               ),
             ),
-            if (_isDisplayTable)
-              SizedBox(
-                height: 600,
-                child: CustomDataTable(
-                  controller: _source,
-                  fixedLeftColumns: 2,
-                  showCheckboxColumn: true,
-                ),
+            SizedBox(
+              height: 600,
+              child: CustomDataTable(
+                controller: _source,
+                fixedLeftColumns: 2,
+                showCheckboxColumn: true,
               ),
+            ),
           ],
         ),
       ),

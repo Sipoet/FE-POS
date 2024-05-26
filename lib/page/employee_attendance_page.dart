@@ -18,9 +18,8 @@ class EmployeeAttendancePage extends StatefulWidget {
 
 class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
     with AutomaticKeepAliveClientMixin {
-  final _source = CustomDataTableSource<EmployeeAttendance>();
+  late final CustomAsyncDataTableSource<EmployeeAttendance> _source;
   late final Server server;
-  bool _isDisplayTable = false;
   String _searchText = '';
   List<EmployeeAttendance> employeeAttendances = [];
   final cancelToken = CancelToken();
@@ -36,9 +35,11 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
     server = context.read<Server>();
     flash = Flash(context);
     setting = context.read<Setting>();
-    _source.columns = setting.tableColumn('employeeAttendance');
-    refreshTable();
+    _source = CustomAsyncDataTableSource<EmployeeAttendance>(
+        columns: setting.tableColumn('employeeAttendance'),
+        fetchData: fetchEmployeeAttendances);
     super.initState();
+    Future.delayed(Duration.zero, refreshTable);
   }
 
   @override
@@ -49,24 +50,21 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
 
   Future<void> refreshTable() async {
     // clear table row
-    setState(() {
-      employeeAttendances = [];
-      _isDisplayTable = false;
-    });
-    fetchEmployeeAttendances(page: 1);
+    _source.refreshDataFromFirstPage();
   }
 
-  Future fetchEmployeeAttendances({int page = 1}) {
-    if (page > 3) {
-      return Future(() => null);
-    }
-    String orderKey = _source.sortColumn?.sortKey ?? 'employees.name';
+  Future<ResponseResult<EmployeeAttendance>> fetchEmployeeAttendances(
+      {int page = 1,
+      int limit = 100,
+      TableColumn? sortColumn,
+      bool isAscending = true}) {
+    String orderKey = sortColumn?.sortKey ?? 'employees.name';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
-      'page[limit]': '100',
+      'page[limit]': limit.toString(),
       'include': 'employee',
-      'sort': '${_source.isAscending ? '' : '-'}$orderKey',
+      'sort': '${isAscending ? '' : '-'}$orderKey',
     };
     _filter.forEach((key, value) {
       param[key] = value;
@@ -83,20 +81,16 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
         if (responseBody['data'] is! List) {
           throw 'error: invalid data type ${response.data.toString()}';
         }
-        employeeAttendances.addAll(responseBody['data']
+        final models = responseBody['data']
             .map<EmployeeAttendance>((json) => EmployeeAttendance.fromJson(json,
                 included: responseBody['included']))
-            .toList());
-        setState(() {
-          _isDisplayTable = true;
-          _source.setData(employeeAttendances);
-        });
+            .toList();
+        employeeAttendances.addAll(models);
 
         flash.hide();
         final totalPages = responseBody['meta']?['total_pages'];
-        if (page < totalPages.toInt()) {
-          fetchEmployeeAttendances(page: page + 1);
-        }
+        return ResponseResult<EmployeeAttendance>(
+            totalPages: totalPages, models: models);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));
@@ -105,7 +99,8 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
           title: e.toString(),
           description: trace.toString(),
           messageType: MessageType.failed);
-      return Future(() => null);
+      return Future(
+          () => ResponseResult<EmployeeAttendance>(totalPages: 0, models: []));
     }
   }
 
@@ -190,7 +185,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.setActionButtons((employeeAttendance, index) => <Widget>[
+    _source.actionButtons = ((employeeAttendance, index) => <Widget>[
           IconButton(
               onPressed: () {
                 destroyRecord(employeeAttendance);
@@ -249,16 +244,14 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
                 ],
               ),
             ),
-            Visibility(
-                visible: _isDisplayTable,
-                child: SizedBox(
-                  height: 600,
-                  child: CustomDataTable(
-                    controller: _source,
-                    fixedLeftColumns: 2,
-                    showCheckboxColumn: true,
-                  ),
-                )),
+            SizedBox(
+              height: 600,
+              child: CustomDataTable(
+                controller: _source,
+                fixedLeftColumns: 2,
+                showCheckboxColumn: true,
+              ),
+            ),
           ],
         ),
       ),

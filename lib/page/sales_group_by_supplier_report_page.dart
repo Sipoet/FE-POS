@@ -25,9 +25,8 @@ class _SalesGroupBySupplierReportPageState
   late Server server;
   String? _reportType;
   bool _isDisplayTable = false;
-  final dataSource = CustomDataTableSource<SalesGroupBySupplier>();
+  late final SyncDataTableSource<SalesGroupBySupplier> _source;
   late Flash flash;
-  late final Setting setting;
   List _brands = [];
   List _suppliers = [];
   List _itemTypes = [];
@@ -35,8 +34,10 @@ class _SalesGroupBySupplierReportPageState
   @override
   void initState() {
     server = context.read<Server>();
-    setting = context.read<Setting>();
+    final setting = context.read<Setting>();
     flash = Flash(context);
+    _source = SyncDataTableSource<SalesGroupBySupplier>(
+        columns: setting.tableColumn('salesGroupBySupplierReport'));
     super.initState();
   }
 
@@ -111,7 +112,7 @@ class _SalesGroupBySupplierReportPageState
       var rawData = data['data'].map<SalesGroupBySupplier>((row) {
         return SalesGroupBySupplier.fromJson(row);
       }).toList();
-      dataSource.setData(rawData);
+      _source.setData(rawData);
       _isDisplayTable = true;
     });
   }
@@ -123,8 +124,6 @@ class _SalesGroupBySupplierReportPageState
     double tableHeight =
         MediaQuery.of(context).size.height - padding.top - padding.bottom - 150;
     tableHeight = tableHeight > 600 ? 600 : tableHeight;
-
-    dataSource.columns = setting.tableColumn('salesGroupBySupplierReport');
 
     return SingleChildScrollView(
       child: Padding(
@@ -206,8 +205,8 @@ class _SalesGroupBySupplierReportPageState
               visible: _isDisplayTable,
               child: SizedBox(
                 height: tableHeight,
-                child: CustomDataTable(
-                  controller: dataSource,
+                child: SyncDataTable(
+                  controller: _source,
                   fixedLeftColumns: 3,
                 ),
               ),

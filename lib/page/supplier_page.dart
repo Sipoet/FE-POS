@@ -15,11 +15,9 @@ class SupplierPage extends StatefulWidget {
 }
 
 class _SupplierPageState extends State<SupplierPage> {
-  final _source = CustomDataTableSource<Supplier>();
+  late final CustomAsyncDataTableSource<Supplier> _source;
   late final Server server;
-  bool _isDisplayTable = false;
   String _searchText = '';
-  List<Supplier> suppliers = [];
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
@@ -30,9 +28,11 @@ class _SupplierPageState extends State<SupplierPage> {
     server = context.read<Server>();
     flash = Flash(context);
     setting = context.read<Setting>();
-    _source.columns = setting.tableColumn('ipos::Supplier');
-    refreshTable();
+    _source = CustomAsyncDataTableSource<Supplier>(
+        columns: setting.tableColumn('ipos::Supplier'),
+        fetchData: fetchSuppliers);
     super.initState();
+    Future.delayed(Duration.zero, refreshTable);
   }
 
   @override
@@ -42,24 +42,20 @@ class _SupplierPageState extends State<SupplierPage> {
   }
 
   Future<void> refreshTable() async {
-    // clear table row
-    setState(() {
-      suppliers = [];
-      _isDisplayTable = false;
-    });
-    fetchSuppliers(page: 1);
+    _source.refreshDatasource();
   }
 
-  Future fetchSuppliers({int page = 1}) {
-    if (page > 3) {
-      return Future(() => null);
-    }
-    String orderKey = _source.sortColumn?.sortKey ?? 'kode';
+  Future<ResponseResult<Supplier>> fetchSuppliers(
+      {int page = 1,
+      int limit = 100,
+      TableColumn? sortColumn,
+      bool isAscending = true}) {
+    String orderKey = sortColumn?.sortKey ?? 'kode';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
-      'page[limit]': '100',
-      'sort': '${_source.isAscending ? '' : '-'}$orderKey',
+      'page[limit]': limit.toString(),
+      'sort': '${isAscending ? '' : '-'}$orderKey',
     };
     _filter.forEach((key, value) {
       param[key] = value;
@@ -75,20 +71,12 @@ class _SupplierPageState extends State<SupplierPage> {
         if (responseBody['data'] is! List) {
           throw 'error: invalid data type ${response.data.toString()}';
         }
-        suppliers.addAll(responseBody['data']
+        final models = responseBody['data']
             .map<Supplier>((json) => Supplier.fromJson(json,
                 included: responseBody['included'] ?? []))
-            .toList());
-        setState(() {
-          _isDisplayTable = true;
-          _source.setData(suppliers);
-        });
-
-        flash.hide();
+            .toList();
         final totalPages = responseBody['meta']?['total_pages'];
-        if (page < totalPages.toInt()) {
-          fetchSuppliers(page: page + 1);
-        }
+        return ResponseResult<Supplier>(models: models, totalPages: totalPages);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));
@@ -97,7 +85,7 @@ class _SupplierPageState extends State<SupplierPage> {
           title: e.toString(),
           description: trace.toString(),
           messageType: MessageType.failed);
-      return Future(() => null);
+      return Future(() => ResponseResult<Supplier>(models: []));
     }
   }
 
@@ -186,15 +174,13 @@ class _SupplierPageState extends State<SupplierPage> {
                 ],
               ),
             ),
-            Visibility(
-                visible: _isDisplayTable,
-                child: SizedBox(
-                  height: 600,
-                  child: CustomDataTable(
-                    controller: _source,
-                    fixedLeftColumns: 0,
-                  ),
-                )),
+            SizedBox(
+              height: 600,
+              child: CustomDataTable(
+                controller: _source,
+                fixedLeftColumns: 0,
+              ),
+            ),
           ],
         ),
       ),

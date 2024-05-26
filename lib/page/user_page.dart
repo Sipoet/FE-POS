@@ -18,11 +18,9 @@ class UserPage extends StatefulWidget {
 
 class _UserPageState extends State<UserPage>
     with AutomaticKeepAliveClientMixin {
-  final _source = CustomDataTableSource<User>();
+  late final CustomAsyncDataTableSource<User> _source;
   late final Server server;
-  bool _isDisplayTable = false;
   String _searchText = '';
-  List<User> users = [];
   final cancelToken = CancelToken();
   late Flash flash;
   final _menuController = MenuController();
@@ -36,9 +34,10 @@ class _UserPageState extends State<UserPage>
     server = context.read<Server>();
     flash = Flash(context);
     final setting = context.read<Setting>();
-    _source.columns = setting.tableColumn('user');
-    refreshTable();
+    _source = CustomAsyncDataTableSource<User>(
+        columns: setting.tableColumn('user'), fetchData: fetchUsers);
     super.initState();
+    Future.delayed(Duration.zero, refreshTable);
   }
 
   @override
@@ -48,22 +47,21 @@ class _UserPageState extends State<UserPage>
   }
 
   Future<void> refreshTable() async {
-    // clear table row
-    setState(() {
-      users = [];
-      _isDisplayTable = false;
-    });
-    fetchUsers(page: 1);
+    _source.refreshDataFromFirstPage();
   }
 
-  Future fetchUsers({int page = 1}) {
-    String orderKey = _source.sortColumn?.sortKey ?? 'username';
+  Future<ResponseResult<User>> fetchUsers(
+      {int page = 1,
+      int limit = 100,
+      TableColumn? sortColumn,
+      bool isAscending = true}) {
+    String orderKey = sortColumn?.sortKey ?? 'username';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
-      'page[limit]': '100',
+      'page[limit]': limit.toString(),
       'include': 'role',
-      'sort': '${_source.isAscending ? '' : '-'}$orderKey',
+      'sort': '${isAscending ? '' : '-'}$orderKey',
     };
     _filter.forEach((key, value) {
       param[key] = value;
@@ -79,20 +77,13 @@ class _UserPageState extends State<UserPage>
         if (responseBody['data'] is! List) {
           throw 'error: invalid data type ${response.data.toString()}';
         }
-        users.addAll(responseBody['data']
+        final models = responseBody['data']
             .map<User>((json) =>
                 User.fromJson(json, included: responseBody['included']))
-            .toList());
-        setState(() {
-          _isDisplayTable = true;
-          _source.setData(users);
-        });
+            .toList();
 
-        flash.hide();
         int totalPages = responseBody['meta']?['total_pages'];
-        if (page < totalPages.toInt()) {
-          fetchUsers(page: page + 1);
-        }
+        return ResponseResult<User>(models: models, totalPages: totalPages);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));
@@ -101,7 +92,7 @@ class _UserPageState extends State<UserPage>
           title: e.toString(),
           description: trace.toString(),
           messageType: MessageType.failed);
-      return Future(() => null);
+      return Future(() => ResponseResult<User>(models: []));
     }
   }
 
@@ -188,7 +179,7 @@ class _UserPageState extends State<UserPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.setActionButtons((user, index) => <Widget>[
+    _source.actionButtons = ((user, int? index) => <Widget>[
           IconButton(
               onPressed: () {
                 editForm(user);
@@ -253,16 +244,13 @@ class _UserPageState extends State<UserPage>
                 ],
               ),
             ),
-            Visibility(
-              visible: _isDisplayTable,
-              child: SizedBox(
-                height: 600,
-                width: 825,
-                child: CustomDataTable(
-                  controller: _source,
-                  fixedLeftColumns: 2,
-                  showCheckboxColumn: true,
-                ),
+            SizedBox(
+              height: 600,
+              width: 825,
+              child: CustomDataTable(
+                controller: _source,
+                fixedLeftColumns: 2,
+                showCheckboxColumn: true,
               ),
             ),
           ],

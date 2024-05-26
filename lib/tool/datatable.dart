@@ -1,5 +1,6 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:fe_pos/model/model.dart';
+import 'package:fe_pos/widget/custom_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 export 'package:fe_pos/model/model.dart';
@@ -11,8 +12,15 @@ extension ComparingTimeOfDay on TimeOfDay {
   }
 }
 
-class CustomDataTableSource<T extends Model> extends DataTableSource {
-  late List<TableColumn> columns;
+class ResponseResult<T> {
+  int totalPages;
+  List<T> models;
+  ResponseResult({this.totalPages = 0, required this.models});
+}
+
+class CustomAsyncDataTableSource<T extends Model> extends AsyncDataTableSource
+    with TableDecorator<T> {
+  final List<TableColumn> columns;
   late List<T> sortedData = [];
   TableColumn? sortColumn;
   bool isAscending = true;
@@ -21,16 +29,93 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
   PaginatorController? paginatorController;
   bool isShowActions = false;
   List<T> get selected => selectedMap.values.toList();
+  int totalRows = 0;
 
-  DataCell decorateValue(jsonData, TableColumn column) {
-    final cell = jsonData[column.attributeKey];
-    final val = _formatData(cell);
-    return DataCell(Tooltip(
-      message: val,
-      triggerMode: TooltipTriggerMode.longPress,
-      child: _decorateCell(val, column.type),
-    ));
+  Future<ResponseResult<T>> Function(
+      {int page,
+      int limit,
+      TableColumn sortColumn,
+      bool isAscending}) fetchData;
+
+  CustomAsyncDataTableSource(
+      {required this.fetchData,
+      this.isShowActions = false,
+      this.isAscending = true,
+      this.sortColumn,
+      required this.columns,
+      this.actionButtons,
+      this.paginatorController});
+
+  void refreshDataFromFirstPage() {
+    if (paginatorController?.isAttached ?? false) {
+      paginatorController?.goToFirstPage();
+    }
+    refreshDatasource();
   }
+
+  bool get hasActionButton => actionButtons is Function;
+
+  void sortData(TableColumn sortColumn, bool isAscending) {
+    this.sortColumn = sortColumn;
+    this.isAscending = isAscending;
+    refreshDatasource();
+  }
+
+  @override
+  int get rowCount => totalRows;
+
+  @override
+  Future<AsyncRowsResponse> getRows(int startIndex, int count) {
+    final page = startIndex ~/ count + 1;
+    return fetchData(
+            page: page,
+            limit: count,
+            isAscending: this.isAscending,
+            sortColumn: this.sortColumn ?? this.columns[0])
+        .then((responseResult) {
+      totalRows = responseResult.totalPages * count;
+      List<DataRow> rows = [];
+      for (T model in responseResult.models) {
+        rows.add(DataRow(
+          key: ValueKey<dynamic>(model.id),
+          onSelectChanged: (value) {
+            if (value != null) {
+              setRowSelection(ValueKey<dynamic>(model.id), value);
+            }
+          },
+          cells: decorateModel(model,
+              columns: columns, actionButtons: actionButtons),
+        ));
+      }
+      return AsyncRowsResponse(totalRows, rows);
+    });
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get selectedRowCount => selectedMap.keys.length;
+}
+
+class SyncDataTableSource<T extends Model> extends DataTableSource
+    with TableDecorator<T> {
+  late List<T> sortedData = [];
+  final List<TableColumn> columns;
+  TableColumn? sortColumn;
+  bool isAscending;
+  Map<int, T> selectedMap = {};
+  PaginatorController? paginatorController;
+  bool isShowActions = false;
+  List<T> get selected => selectedMap.values.toList();
+  List<Widget> Function(T model, int? index)? actionButtons;
+
+  SyncDataTableSource(
+      {required this.columns,
+      this.isAscending = true,
+      this.sortColumn,
+      this.actionButtons,
+      this.paginatorController});
 
   void setActionButtons(value) {
     actionButtons = value;
@@ -45,6 +130,89 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
     notifyListeners();
   }
 
+  void setData(List<T> rawData) {
+    if (paginatorController?.isAttached ?? false) {
+      paginatorController?.goToFirstPage();
+    }
+    sortedData = rawData;
+
+    sortData(sortColumn ?? columns[0], isAscending);
+  }
+
+  void sortData(TableColumn sortColumn, bool isAscending) {
+    this.sortColumn = sortColumn;
+    this.isAscending = isAscending;
+    sortedData.sort((T a, T b) {
+      var cellA = a.toMap()[sortColumn.attributeKey] ?? '';
+      var cellB = b.toMap()[sortColumn.attributeKey] ?? '';
+      if (cellA is TimeOfDay) {
+        cellA = cellA.toString();
+        cellB = cellB.toString();
+      }
+      return cellA.compareTo(cellB) * (isAscending ? 1 : -1);
+    });
+    notifyListeners();
+  }
+
+  @override
+  int get rowCount => sortedData.length;
+
+  @override
+  DataRow? getRow(int index) {
+    T model = sortedData[index];
+    return DataRow.byIndex(
+      index: index,
+      selected: selectedMap.containsKey(index),
+      onSelectChanged: (bool? isSelected) {
+        if (isSelected == true) {
+          selectedMap[index] = model;
+        } else {
+          selectedMap.remove(index);
+        }
+        notifyListeners();
+      },
+      cells: decorateModel(model,
+          index: index, columns: columns, actionButtons: actionButtons),
+    );
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get selectedRowCount => 0;
+}
+
+class TableColumn {
+  double initX;
+  double width;
+  double? excelWidth;
+  String key;
+  String type;
+  String name;
+  String? path;
+  String attributeKey;
+  String sortKey;
+  bool canSort;
+
+  TableColumn(
+      {this.initX = 0,
+      this.width = 175,
+      this.excelWidth,
+      this.path,
+      required this.attributeKey,
+      this.type = 'string',
+      this.canSort = true,
+      required this.sortKey,
+      required this.key,
+      required this.name});
+
+  bool isNumeric() {
+    return ['float', 'decimal', 'int', 'money', 'percentage'].contains(type);
+  }
+}
+
+mixin TableDecorator<T extends Model> on DataTableSource {
   Widget _decorateCell(String val, String columnType) {
     switch (columnType) {
       // case 'image':
@@ -53,7 +221,7 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
       case 'date':
       case 'datetime':
         return Align(
-          alignment: Alignment.topLeft,
+          alignment: Alignment.centerLeft,
           child: Text(
             val,
             overflow: TextOverflow.ellipsis,
@@ -70,7 +238,7 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
               overflow: TextOverflow.ellipsis,
             ));
       default:
-        return Align(alignment: Alignment.topLeft, child: Text(val));
+        return Align(alignment: Alignment.centerLeft, child: Text(val));
     }
   }
 
@@ -126,34 +294,20 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
     return formated.format(number);
   }
 
-  void setData(List<T> rawData) {
-    if (paginatorController != null && paginatorController!.isAttached) {
-      paginatorController?.goToFirstPage();
-    }
-    sortedData = rawData;
-
-    sortData(sortColumn ?? columns[0], isAscending);
+  DataCell decorateValue(jsonData, TableColumn column) {
+    final cell = jsonData[column.attributeKey];
+    final val = _formatData(cell);
+    return DataCell(Tooltip(
+      message: val,
+      triggerMode: TooltipTriggerMode.longPress,
+      child: _decorateCell(val, column.type),
+    ));
   }
 
-  void sortData(TableColumn sortColumn, bool isAscending) {
-    this.sortColumn = sortColumn;
-    this.isAscending = isAscending;
-    sortedData.sort((T a, T b) {
-      var cellA = a.toMap()[sortColumn.attributeKey] ?? '';
-      var cellB = b.toMap()[sortColumn.attributeKey] ?? '';
-      if (cellA is TimeOfDay) {
-        cellA = cellA.toString();
-        cellB = cellB.toString();
-      }
-      return cellA.compareTo(cellB) * (isAscending ? 1 : -1);
-    });
-    notifyListeners();
-  }
-
-  @override
-  int get rowCount => sortedData.length;
-
-  List<DataCell> decorateModel(T model, int index) {
+  List<DataCell> decorateModel(T model,
+      {List<TableColumn> columns = const [],
+      int index = 0,
+      List<Widget> Function(T model, int index)? actionButtons}) {
     var jsonData = model.toMap();
     var rows = columns
         .map<DataCell>((column) => decorateValue(jsonData, column))
@@ -162,62 +316,9 @@ class CustomDataTableSource<T extends Model> extends DataTableSource {
       rows.add(DataCell(Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: actionButtons!(model, index),
+        children: actionButtons(model, index),
       )));
     }
     return rows;
-  }
-
-  @override
-  DataRow? getRow(int index) {
-    T model = sortedData[index];
-    return DataRow.byIndex(
-      index: index,
-      selected: selectedMap.containsKey(index),
-      onSelectChanged: (bool? isSelected) {
-        if (isSelected == true) {
-          selectedMap[index] = model;
-        } else {
-          selectedMap.remove(index);
-        }
-        notifyListeners();
-      },
-      cells: decorateModel(model, index),
-    );
-  }
-
-  @override
-  bool get isRowCountApproximate => false;
-
-  @override
-  int get selectedRowCount => 0;
-}
-
-class TableColumn {
-  double initX;
-  double width;
-  double? excelWidth;
-  String key;
-  String type;
-  String name;
-  String? path;
-  String attributeKey;
-  String sortKey;
-  bool canSort;
-
-  TableColumn(
-      {this.initX = 0,
-      this.width = 175,
-      this.excelWidth,
-      this.path,
-      required this.attributeKey,
-      this.type = 'string',
-      this.canSort = true,
-      required this.sortKey,
-      required this.key,
-      required this.name});
-
-  bool isNumeric() {
-    return ['float', 'decimal', 'int', 'money', 'percentage'].contains(type);
   }
 }

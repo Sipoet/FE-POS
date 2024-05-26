@@ -21,7 +21,7 @@ class _SalesTransactionReportPageState
   late Server server;
   bool _isDisplayTable = false;
   List requestControllers = [];
-  final dataSource = CustomDataTableSource<SalesTransactionReport>();
+  late final SyncDataTableSource<SalesTransactionReport> _source;
   late Flash flash;
 
   @override
@@ -34,7 +34,17 @@ class _SalesTransactionReportPageState
             .subtract(const Duration(days: 1))));
     flash = Flash(context);
     server = context.read<Server>();
+    var setting = context.read<Setting>();
+    _source = SyncDataTableSource<SalesTransactionReport>(
+        columns: setting.tableColumn('salesTransactionReport'));
+
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _source.dispose();
+    super.dispose();
   }
 
   Future _requestReport(DateTimeRange dateRange) async {
@@ -60,7 +70,7 @@ class _SalesTransactionReportPageState
         if (response.statusCode != 200) return;
         var data = response.data['data'];
         rows.add(SalesTransactionReport.fromJson(data));
-        dataSource.setData(rows);
+        _source.setData(rows);
       },
           onError: (error, trace) =>
               server.defaultErrorResponse(context: context, error: error));
@@ -85,8 +95,6 @@ class _SalesTransactionReportPageState
 
   @override
   Widget build(BuildContext context) {
-    var setting = context.read<Setting>();
-    dataSource.columns = setting.tableColumn('salesTransactionReport');
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -115,8 +123,8 @@ class _SalesTransactionReportPageState
             if (_isDisplayTable)
               SizedBox(
                 height: 600,
-                child: CustomDataTable(
-                  controller: dataSource,
+                child: SyncDataTable(
+                  controller: _source,
                   fixedLeftColumns: 1,
                 ),
               ),

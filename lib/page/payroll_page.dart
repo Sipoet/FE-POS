@@ -18,11 +18,9 @@ class PayrollPage extends StatefulWidget {
 
 class _PayrollPageState extends State<PayrollPage>
     with AutomaticKeepAliveClientMixin {
-  final _source = CustomDataTableSource<Payroll>();
+  late final CustomAsyncDataTableSource<Payroll> _source;
   late final Server server;
-  bool _isDisplayTable = false;
   String _searchText = '';
-  List<Payroll> payrolls = [];
   final cancelToken = CancelToken();
   late Flash flash;
   Map _filter = {};
@@ -35,33 +33,36 @@ class _PayrollPageState extends State<PayrollPage>
     server = context.read<Server>();
     flash = Flash(context);
     final setting = context.read<Setting>();
-    _source.columns = setting.tableColumn('payroll');
-    refreshTable();
+    _source = CustomAsyncDataTableSource<Payroll>(
+        columns: setting.tableColumn('payroll'), fetchData: fetchPayrolls);
+
     super.initState();
+    Future.delayed(Duration.zero, refreshTable);
   }
 
   @override
   void dispose() {
     cancelToken.cancel();
+    _source.dispose();
     super.dispose();
   }
 
   Future<void> refreshTable() async {
     // clear table row
-    setState(() {
-      payrolls = [];
-      _isDisplayTable = false;
-    });
-    fetchPayrolls(page: 1);
+    _source.refreshDataFromFirstPage();
   }
 
-  Future fetchPayrolls({int page = 1}) {
-    String orderKey = _source.sortColumn?.sortKey ?? 'name';
+  Future<ResponseResult<Payroll>> fetchPayrolls(
+      {int page = 1,
+      int limit = 100,
+      TableColumn? sortColumn,
+      bool isAscending = true}) {
+    String orderKey = sortColumn?.sortKey ?? 'name';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
-      'page[limit]': '100',
-      'sort': '${_source.isAscending ? '' : '-'}$orderKey',
+      'page[limit]': limit.toString(),
+      'sort': '${isAscending ? '' : '-'}$orderKey',
     };
     _filter.forEach((key, value) {
       param[key] = value;
@@ -77,19 +78,11 @@ class _PayrollPageState extends State<PayrollPage>
         if (responseBody['data'] is! List) {
           throw 'error: invalid data type ${response.data.toString()}';
         }
-        payrolls.addAll(responseBody['data']
+        final models = responseBody['data']
             .map<Payroll>((json) => Payroll.fromJson(json))
-            .toList());
-        setState(() {
-          _isDisplayTable = true;
-          _source.setData(payrolls);
-        });
-
-        flash.hide();
+            .toList();
         int totalPages = responseBody['meta']?['total_pages'];
-        if (page < totalPages.toInt()) {
-          fetchPayrolls(page: page + 1);
-        }
+        return ResponseResult<Payroll>(models: models, totalPages: totalPages);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));
@@ -98,7 +91,7 @@ class _PayrollPageState extends State<PayrollPage>
           title: e.toString(),
           description: trace.toString(),
           messageType: MessageType.failed);
-      return Future(() => null);
+      return Future(() => ResponseResult<Payroll>(models: []));
     }
   }
 
@@ -185,7 +178,7 @@ class _PayrollPageState extends State<PayrollPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.setActionButtons((payroll, index) => <Widget>[
+    _source.actionButtons = ((payroll, index) => <Widget>[
           IconButton(
               onPressed: () {
                 editForm(payroll);
@@ -250,16 +243,13 @@ class _PayrollPageState extends State<PayrollPage>
                 ],
               ),
             ),
-            Visibility(
-              visible: _isDisplayTable,
-              child: SizedBox(
-                height: 600,
-                width: 825,
-                child: CustomDataTable(
-                  controller: _source,
-                  fixedLeftColumns: 2,
-                  showCheckboxColumn: true,
-                ),
+            SizedBox(
+              height: 600,
+              width: 825,
+              child: CustomDataTable(
+                controller: _source,
+                fixedLeftColumns: 2,
+                showCheckboxColumn: true,
               ),
             ),
           ],

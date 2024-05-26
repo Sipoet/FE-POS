@@ -24,7 +24,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
   late Server server;
   String? _reportType;
   bool _isDisplayTable = false;
-  final _dataSource = CustomDataTableSource<ItemSalesPeriodReport>();
+  late final SyncDataTableSource<ItemSalesPeriodReport> _source;
   DateTimeRange _dateRange = DateTimeRange(
       start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
       end: DateTime.now().copyWith(hour: 23, minute: 59, second: 59));
@@ -37,6 +37,9 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
   void initState() {
     flash = Flash(context);
     server = context.read<Server>();
+    var setting = context.read<Setting>();
+    _source = SyncDataTableSource<ItemSalesPeriodReport>(
+        columns: setting.tableColumn('itemSalesPeriodReport'));
     super.initState();
   }
 
@@ -111,7 +114,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
       var rawData = data['data'].map<ItemSalesPeriodReport>((row) {
         return ItemSalesPeriodReport.fromJson(row);
       }).toList();
-      _dataSource.setData(rawData);
+      _source.setData(rawData);
       _isDisplayTable = true;
     });
   }
@@ -126,8 +129,6 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
     double tableHeight =
         MediaQuery.of(context).size.height - padding.top - padding.bottom - 150;
     tableHeight = tableHeight > 600 ? 600 : tableHeight;
-    var setting = context.read<Setting>();
-    _dataSource.columns = setting.tableColumn('itemSalesPeriodReport');
 
     return SingleChildScrollView(
       child: Padding(
@@ -232,8 +233,8 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
             if (_isDisplayTable)
               SizedBox(
                 height: tableHeight,
-                child: CustomDataTable(
-                  controller: _dataSource,
+                child: SyncDataTable(
+                  controller: _source,
                   fixedLeftColumns: 1,
                 ),
               ),

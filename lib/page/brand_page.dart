@@ -15,11 +15,10 @@ class BrandPage extends StatefulWidget {
 }
 
 class _BrandPageState extends State<BrandPage> {
-  final _source = CustomDataTableSource<Brand>();
+  late final CustomAsyncDataTableSource _source;
   late final Server server;
-  bool _isDisplayTable = false;
   String _searchText = '';
-  List<Brand> itemTypes = [];
+  List<Brand> brands = [];
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
@@ -30,9 +29,12 @@ class _BrandPageState extends State<BrandPage> {
     server = context.read<Server>();
     flash = Flash(context);
     setting = context.read<Setting>();
-    _source.columns = setting.tableColumn('ipos::Brand');
-    refreshTable();
+    _source = CustomAsyncDataTableSource<Brand>(
+      columns: setting.tableColumn('ipos::Brand'),
+      fetchData: fetchBrands,
+    );
     super.initState();
+    Future.delayed(Duration.zero, refreshTable);
   }
 
   @override
@@ -42,25 +44,21 @@ class _BrandPageState extends State<BrandPage> {
   }
 
   Future<void> refreshTable() async {
-    // clear table row
-    setState(() {
-      itemTypes = [];
-      _isDisplayTable = false;
-    });
-    fetchBrands(page: 1);
+    _source.refreshDataFromFirstPage();
   }
 
-  Future fetchBrands({int page = 1}) {
-    if (page > 3) {
-      return Future(() => null);
-    }
-    String orderKey = _source.sortColumn?.sortKey ?? 'merek';
+  Future<ResponseResult<Brand>> fetchBrands(
+      {int page = 1,
+      int limit = 100,
+      bool isAscending = false,
+      TableColumn? sortColumn}) {
+    String orderKey = sortColumn?.sortKey ?? 'merek';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
-      'page[limit]': '100',
+      'page[limit]': limit.toString(),
       'include': 'employee',
-      'sort': '${_source.isAscending ? '' : '-'}$orderKey',
+      'sort': '${isAscending ? '' : '-'}$orderKey',
     };
     _filter.forEach((key, value) {
       param[key] = value;
@@ -75,20 +73,13 @@ class _BrandPageState extends State<BrandPage> {
         if (responseBody['data'] is! List) {
           throw 'error: invalid data type ${response.data.toString()}';
         }
-        itemTypes.addAll(responseBody['data']
+        final models = responseBody['data']
             .map<Brand>((json) =>
                 Brand.fromJson(json, included: responseBody['included'] ?? []))
-            .toList());
-        setState(() {
-          _isDisplayTable = true;
-          _source.setData(itemTypes);
-        });
-
-        flash.hide();
+            .toList();
+        brands.addAll(models);
         final totalPages = responseBody['meta']?['total_pages'];
-        if (page < totalPages.toInt()) {
-          fetchBrands(page: page + 1);
-        }
+        return ResponseResult<Brand>(totalPages: totalPages, models: models);
       },
           onError: (error, stackTrace) => server.defaultErrorResponse(
               context: context, error: error, valueWhenError: []));
@@ -97,7 +88,7 @@ class _BrandPageState extends State<BrandPage> {
           title: e.toString(),
           description: trace.toString(),
           messageType: MessageType.failed);
-      return Future(() => null);
+      return Future(() => ResponseResult<Brand>(totalPages: 0, models: []));
     }
   }
 
@@ -186,15 +177,13 @@ class _BrandPageState extends State<BrandPage> {
                 ],
               ),
             ),
-            Visibility(
-                visible: _isDisplayTable,
-                child: SizedBox(
-                  height: 600,
-                  child: CustomDataTable(
-                    controller: _source,
-                    fixedLeftColumns: 0,
-                  ),
-                )),
+            SizedBox(
+              height: 600,
+              child: CustomDataTable(
+                controller: _source,
+                fixedLeftColumns: 0,
+              ),
+            ),
           ],
         ),
       ),

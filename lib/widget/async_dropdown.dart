@@ -308,6 +308,7 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
     }
   }
 
+  final _focusNode = FocusNode();
   @override
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
@@ -319,6 +320,14 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
       compareFn: compareResult,
       itemAsString: widget.textOnSearch,
       selectedItems: widget.selecteds,
+      onBeforePopupOpening: (selItems) async {
+        return Future.delayed(Duration.zero, () {
+          if (_focusNode.canRequestFocus) {
+            _focusNode.requestFocus();
+          }
+          return true;
+        });
+      },
       clearButtonProps: const ClearButtonProps(isVisible: true),
       dropdownBuilder: (context, selectedItems) {
         final textFormat = widget.textOnSelected ?? widget.textOnSearch;
@@ -359,8 +368,12 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
           }).toList(),
         );
       },
-      popupProps: const PopupPropsMultiSelection.menu(
-          showSearchBox: true, showSelectedItems: true, isFilterOnline: true),
+      popupProps: PopupPropsMultiSelection.menu(
+          searchFieldProps: TextFieldProps(focusNode: _focusNode),
+          onItemAdded: (selectedItems, addedItem) => _focusNode.requestFocus(),
+          showSearchBox: true,
+          showSelectedItems: true,
+          isFilterOnline: true),
       dropdownDecoratorProps: DropDownDecoratorProps(
           dropdownSearchDecoration: InputDecoration(
         label: widget.label,

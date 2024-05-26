@@ -374,7 +374,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     textOnSearch: (item) => "${item.code} - ${item.name}",
                     converter: Item.fromJson,
                     label: const Text(
-                      'Item:',
+                      'Blacklist Item:',
                       style: labelStyle,
                     ),
                     onChanged: (option) {

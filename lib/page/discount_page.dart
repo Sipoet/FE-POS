@@ -21,16 +21,13 @@ class DiscountPage extends StatefulWidget {
 
 class _DiscountPageState extends State<DiscountPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse, LoadingPopup {
-  final _source = CustomDataTableSource<Discount>();
   late final Server server;
-  bool _isDisplayTable = false;
   String _searchText = '';
-  List<Discount> discounts = [];
   final cancelToken = CancelToken();
   late Flash flash;
   Map _filter = {};
   final _controller = MenuController();
-
+  late final CustomAsyncDataTableSource<Discount> _source;
   @override
   bool get wantKeepAlive => true;
 
@@ -39,36 +36,38 @@ class _DiscountPageState extends State<DiscountPage>
     server = context.read<Server>();
     flash = Flash(context);
     final setting = context.read<Setting>();
-    _source.columns = setting.tableColumn('discount');
+    _source = CustomAsyncDataTableSource<Discount>(
+        columns: setting.tableColumn('discount'), fetchData: fetchDiscounts);
     super.initState();
-    Future.delayed(Duration.zero, () => refreshTable());
+    Future.delayed(Duration.zero, refreshTable);
   }
 
   @override
   void dispose() {
     cancelToken.cancel();
+    _source.dispose();
     super.dispose();
   }
 
   Future<void> refreshTable() async {
     // clear table row
-    setState(() {
-      discounts = [];
-      _isDisplayTable = false;
-    });
-    fetchDiscounts(page: 1);
+    _source.refreshDataFromFirstPage();
   }
 
-  Future fetchDiscounts({int page = 1}) {
-    showLoadingPopup();
-    String orderKey = _source.sortColumn?.sortKey ?? 'code';
+  Future<ResponseResult<Discount>> fetchDiscounts({
+    int page = 1,
+    int limit = 100,
+    TableColumn? sortColumn,
+    bool isAscending = true,
+  }) {
+    String orderKey = sortColumn?.sortKey ?? 'code';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
-      'page[limit]': '100',
+      'page[limit]': limit.toString(),
       'include':
           'discount_items,discount_suppliers,discount_item_types,discount_brands',
-      'sort': '${_source.isAscending ? '' : '-'}$orderKey',
+      'sort': '${isAscending ? '' : '-'}$orderKey',
     };
     _filter.forEach((key, value) {
       param[key] = value;
@@ -84,32 +83,21 @@ class _DiscountPageState extends State<DiscountPage>
         if (responseBody['data'] is! List) {
           throw 'error: invalid data type ${response.data.toString()}';
         }
-        discounts.addAll(responseBody['data']
+        final models = responseBody['data']
             .map<Discount>((json) => Discount.fromJson(json))
-            .toList());
-        setState(() {
-          _isDisplayTable = true;
-          _source.setData(discounts);
-        });
-
-        flash.hide();
+            .toList();
         int totalPages = responseBody['meta']?['total_pages'];
-        if (page < totalPages.toInt()) {
-          fetchDiscounts(page: page + 1);
-        }
+        return ResponseResult<Discount>(totalPages: totalPages, models: models);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
-                  context: context,
-                  error: error,
-                  valueWhenError: [])).whenComplete(() => hideLoadingPopup());
+                  context: context, error: error, valueWhenError: []));
     } catch (e, trace) {
-      hideLoadingPopup();
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
           messageType: MessageType.failed);
 
-      return Future(() => null);
+      return Future(() => ResponseResult<Discount>(models: []));
     }
   }
 
@@ -243,7 +231,7 @@ class _DiscountPageState extends State<DiscountPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.setActionButtons((discount, index) => [
+    _source.actionButtons = ((discount, index) => [
           IconButton(
               onPressed: () {
                 editForm(discount);
@@ -340,14 +328,13 @@ class _DiscountPageState extends State<DiscountPage>
                 ],
               ),
             ),
-            if (_isDisplayTable)
-              SizedBox(
-                height: 600,
-                child: CustomDataTable(
-                  controller: _source,
-                  fixedLeftColumns: 1,
-                ),
+            SizedBox(
+              height: 600,
+              child: CustomDataTable(
+                controller: _source,
+                fixedLeftColumns: 1,
               ),
+            ),
           ],
         ),
       ),

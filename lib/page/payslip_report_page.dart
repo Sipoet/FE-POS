@@ -28,14 +28,15 @@ class _PayslipReportPageState extends State<PayslipReportPage>
           second: 0),
       end: DateTime.now().copyWith(day: 25, hour: 23, minute: 59, second: 59));
   final cancelToken = CancelToken();
-  final _source = CustomDataTableSource<PayslipReport>();
+  late final SyncDataTableSource<PayslipReport> _source;
   @override
   bool get wantKeepAlive => true;
   List<String> _employeeIds = [];
   @override
   void initState() {
     final setting = context.read<Setting>();
-    _source.columns = setting.tableColumn('payslipReport');
+    _source = SyncDataTableSource<PayslipReport>(
+        columns: setting.tableColumn('payslipReport'));
     super.initState();
   }
 
@@ -165,7 +166,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                 visible: true,
                 child: SizedBox(
                   height: 600,
-                  child: CustomDataTable(
+                  child: SyncDataTable(
                     controller: _source,
                     fixedLeftColumns: 1,
                   ),

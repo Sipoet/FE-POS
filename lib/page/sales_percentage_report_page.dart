@@ -25,9 +25,8 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
   String? _reportType;
   bool _isDisplayTable = false;
   double minimumColumnWidth = 150;
-  final dataSource = CustomDataTableSource<ItemSalesPercentageReport>();
+  late final SyncDataTableSource<ItemSalesPercentageReport> _source;
   late Flash flash;
-  late final Setting setting;
   String _storeStockComparison = '';
   String _storeStockValue = '';
   String _warehouseStockComparison = '';
@@ -40,7 +39,9 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
   @override
   void initState() {
     server = context.read<Server>();
-    setting = context.read<Setting>();
+    final setting = context.read<Setting>();
+    _source = SyncDataTableSource<ItemSalesPercentageReport>(
+        columns: setting.tableColumn('itemSalesPercentageReport'));
     flash = Flash(context);
     super.initState();
   }
@@ -125,8 +126,8 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
       var models = data['data'].map<ItemSalesPercentageReport>((row) {
         return ItemSalesPercentageReport.fromJson(row);
       }).toList();
-      dataSource.paginatorController?.goToFirstPage();
-      dataSource.setData(models);
+      _source.paginatorController?.goToFirstPage();
+      _source.setData(models);
       _isDisplayTable = true;
     });
   }
@@ -138,7 +139,6 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
     final size = MediaQuery.of(context).size;
     double tableHeight = size.height - padding.top - padding.bottom - 150;
     tableHeight = tableHeight > 600 ? 600 : tableHeight;
-    dataSource.columns = setting.tableColumn('itemSalesPercentageReport');
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -381,8 +381,8 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
               visible: _isDisplayTable,
               child: SizedBox(
                 height: tableHeight,
-                child: CustomDataTable(
-                  controller: dataSource,
+                child: SyncDataTable(
+                  controller: _source,
                 ),
               ),
             ),

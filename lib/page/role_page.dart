@@ -18,11 +18,10 @@ class RolePage extends StatefulWidget {
 
 class _RolePageState extends State<RolePage>
     with AutomaticKeepAliveClientMixin {
-  final _source = CustomDataTableSource<Role>();
+  late final CustomAsyncDataTableSource<Role> _source;
   late final Server server;
-  bool _isDisplayTable = false;
+
   String _searchText = '';
-  List<Role> roles = [];
   final cancelToken = CancelToken();
   late Flash flash;
   Map _filter = {};
@@ -35,33 +34,34 @@ class _RolePageState extends State<RolePage>
     server = context.read<Server>();
     flash = Flash(context);
     final setting = context.read<Setting>();
-    _source.columns = setting.tableColumn('role');
-    refreshTable();
+    _source = CustomAsyncDataTableSource<Role>(
+        columns: setting.tableColumn('role'), fetchData: fetchRoles);
     super.initState();
+    Future.delayed(Duration.zero, refreshTable);
   }
 
   @override
   void dispose() {
     cancelToken.cancel();
+    _source.dispose();
     super.dispose();
   }
 
   Future<void> refreshTable() async {
-    // clear table row
-    setState(() {
-      roles = [];
-      _isDisplayTable = false;
-    });
-    fetchRoles(page: 1);
+    _source.refreshDataFromFirstPage();
   }
 
-  Future fetchRoles({int page = 1}) {
-    String orderKey = _source.sortColumn?.sortKey ?? 'name';
+  Future<ResponseResult<Role>> fetchRoles(
+      {int page = 1,
+      int limit = 100,
+      TableColumn? sortColumn,
+      bool isAscending = true}) {
+    String orderKey = sortColumn?.sortKey ?? 'name';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
-      'page[limit]': '100',
-      'sort': '${_source.isAscending ? '' : '-'}$orderKey',
+      'page[limit]': limit.toString(),
+      'sort': '${isAscending ? '' : '-'}$orderKey',
     };
     _filter.forEach((key, value) {
       param[key] = value;
@@ -77,19 +77,11 @@ class _RolePageState extends State<RolePage>
         if (responseBody['data'] is! List) {
           throw 'error: invalid data type ${response.data.toString()}';
         }
-        roles.addAll(responseBody['data']
+        final models = responseBody['data']
             .map<Role>((json) => Role.fromJson(json))
-            .toList());
-        setState(() {
-          _isDisplayTable = true;
-          _source.setData(roles);
-        });
-
-        flash.hide();
+            .toList();
         int totalPages = responseBody['meta']?['total_pages'];
-        if (page < totalPages.toInt()) {
-          fetchRoles(page: page + 1);
-        }
+        return ResponseResult<Role>(models: models, totalPages: totalPages);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));
@@ -98,7 +90,7 @@ class _RolePageState extends State<RolePage>
           title: e.toString(),
           description: trace.toString(),
           messageType: MessageType.failed);
-      return Future(() => null);
+      return Future(() => ResponseResult<Role>(models: []));
     }
   }
 
@@ -185,7 +177,7 @@ class _RolePageState extends State<RolePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.setActionButtons((role, index) => <Widget>[
+    _source.actionButtons = ((role, index) => <Widget>[
           IconButton(
               onPressed: () {
                 editForm(role);
@@ -244,16 +236,13 @@ class _RolePageState extends State<RolePage>
                 ],
               ),
             ),
-            Visibility(
-              visible: _isDisplayTable,
-              child: SizedBox(
-                height: 600,
-                width: 825,
-                child: CustomDataTable(
-                  controller: _source,
-                  fixedLeftColumns: 2,
-                  showCheckboxColumn: true,
-                ),
+            SizedBox(
+              height: 600,
+              width: 825,
+              child: CustomDataTable(
+                controller: _source,
+                fixedLeftColumns: 2,
+                showCheckboxColumn: true,
               ),
             ),
           ],

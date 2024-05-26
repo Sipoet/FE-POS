@@ -18,11 +18,9 @@ class EmployeeLeavePage extends StatefulWidget {
 
 class _EmployeeLeavePageState extends State<EmployeeLeavePage>
     with AutomaticKeepAliveClientMixin {
-  final _source = CustomDataTableSource<EmployeeLeave>();
+  late final CustomAsyncDataTableSource<EmployeeLeave> _source;
   late final Server server;
-  bool _isDisplayTable = false;
   String _searchText = '';
-  List<EmployeeLeave> employeeLeaves = [];
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
@@ -36,9 +34,11 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
     server = context.read<Server>();
     flash = Flash(context);
     setting = context.read<Setting>();
-    _source.columns = setting.tableColumn('employeeLeave');
-    refreshTable();
+    _source = CustomAsyncDataTableSource<EmployeeLeave>(
+        columns: setting.tableColumn('employeeLeave'),
+        fetchData: fetchEmployeeLeaves);
     super.initState();
+    Future.delayed(Duration.zero, refreshTable);
   }
 
   @override
@@ -48,22 +48,21 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
   }
 
   Future<void> refreshTable() async {
-    // clear table row
-    setState(() {
-      employeeLeaves = [];
-      _isDisplayTable = false;
-    });
-    fetchEmployeeLeaves(page: 1);
+    _source.refreshDataFromFirstPage();
   }
 
-  Future fetchEmployeeLeaves({int page = 1}) {
-    String orderKey = _source.sortColumn?.sortKey ?? 'employees.name';
+  Future<ResponseResult<EmployeeLeave>> fetchEmployeeLeaves(
+      {int page = 1,
+      int limit = 100,
+      TableColumn? sortColumn,
+      bool isAscending = true}) {
+    String orderKey = sortColumn?.sortKey ?? 'employees.name';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
-      'page[limit]': '100',
+      'page[limit]': limit.toString(),
       'include': 'employee',
-      'sort': '${_source.isAscending ? '' : '-'}$orderKey',
+      'sort': '${isAscending ? '' : '-'}$orderKey',
     };
     _filter.forEach((key, value) {
       param[key] = value;
@@ -79,20 +78,15 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
         if (responseBody['data'] is! List) {
           throw 'error: invalid data type ${response.data.toString()}';
         }
-        employeeLeaves.addAll(responseBody['data']
+        final models = responseBody['data']
             .map<EmployeeLeave>((json) => EmployeeLeave.fromJson(json,
                 included: responseBody['included']))
-            .toList());
-        setState(() {
-          _isDisplayTable = true;
-          _source.setData(employeeLeaves);
-        });
+            .toList();
 
         flash.hide();
         final totalPages = responseBody['meta']?['total_pages'];
-        if (page < totalPages.toInt()) {
-          fetchEmployeeLeaves(page: page + 1);
-        }
+        return ResponseResult<EmployeeLeave>(
+            totalPages: totalPages, models: models);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));
@@ -101,7 +95,8 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
           title: e.toString(),
           description: trace.toString(),
           messageType: MessageType.failed);
-      return Future(() => null);
+      return Future(
+          () => ResponseResult<EmployeeLeave>(models: [], totalPages: 0));
     }
   }
 
@@ -203,7 +198,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.setActionButtons((employeeLeave, index) => <Widget>[
+    _source.actionButtons = ((employeeLeave, index) => <Widget>[
           IconButton(
               onPressed: () {
                 editForm(employeeLeave);
@@ -269,16 +264,14 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
                 ],
               ),
             ),
-            Visibility(
-                visible: _isDisplayTable,
-                child: SizedBox(
-                  height: 600,
-                  child: CustomDataTable(
-                    controller: _source,
-                    fixedLeftColumns: 2,
-                    showCheckboxColumn: true,
-                  ),
-                )),
+            SizedBox(
+              height: 600,
+              child: CustomDataTable(
+                controller: _source,
+                fixedLeftColumns: 2,
+                showCheckboxColumn: true,
+              ),
+            ),
           ],
         ),
       ),

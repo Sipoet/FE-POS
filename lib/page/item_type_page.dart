@@ -15,11 +15,9 @@ class ItemTypePage extends StatefulWidget {
 }
 
 class _ItemTypePageState extends State<ItemTypePage> {
-  final _source = CustomDataTableSource<ItemType>();
+  late final CustomAsyncDataTableSource<ItemType> _source;
   late final Server server;
-  bool _isDisplayTable = false;
   String _searchText = '';
-  List<ItemType> itemTypes = [];
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
@@ -30,8 +28,10 @@ class _ItemTypePageState extends State<ItemTypePage> {
     server = context.read<Server>();
     flash = Flash(context);
     setting = context.read<Setting>();
-    _source.columns = setting.tableColumn('ipos::ItemType');
-    refreshTable();
+    _source = CustomAsyncDataTableSource<ItemType>(
+        columns: setting.tableColumn('ipos::ItemType'),
+        fetchData: fetchItemTypes);
+    Future.delayed(Duration.zero, refreshTable);
     super.initState();
   }
 
@@ -42,24 +42,20 @@ class _ItemTypePageState extends State<ItemTypePage> {
   }
 
   Future<void> refreshTable() async {
-    // clear table row
-    setState(() {
-      itemTypes = [];
-      _isDisplayTable = false;
-    });
-    fetchItemTypes(page: 1);
+    _source.refreshDataFromFirstPage();
   }
 
-  Future fetchItemTypes({int page = 1}) {
-    if (page > 3) {
-      return Future(() => null);
-    }
-    String orderKey = _source.sortColumn?.sortKey ?? 'jenis';
+  Future<ResponseResult<ItemType>> fetchItemTypes(
+      {int page = 1,
+      int limit = 100,
+      TableColumn? sortColumn,
+      bool isAscending = true}) {
+    String orderKey = sortColumn?.sortKey ?? 'jenis';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
-      'page[limit]': '100',
-      'sort': '${_source.isAscending ? '' : '-'}$orderKey',
+      'page[limit]': limit.toString(),
+      'sort': '${isAscending ? '' : '-'}$orderKey',
     };
     _filter.forEach((key, value) {
       param[key] = value;
@@ -75,20 +71,14 @@ class _ItemTypePageState extends State<ItemTypePage> {
         if (responseBody['data'] is! List) {
           throw 'error: invalid data type ${response.data.toString()}';
         }
-        itemTypes.addAll(responseBody['data']
+        final models = responseBody['data']
             .map<ItemType>((json) => ItemType.fromJson(json,
                 included: responseBody['included'] ?? []))
-            .toList());
-        setState(() {
-          _isDisplayTable = true;
-          _source.setData(itemTypes);
-        });
+            .toList();
 
         flash.hide();
         final totalPages = responseBody['meta']?['total_pages'];
-        if (page < totalPages.toInt()) {
-          fetchItemTypes(page: page + 1);
-        }
+        return ResponseResult<ItemType>(models: models, totalPages: totalPages);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));
@@ -97,7 +87,7 @@ class _ItemTypePageState extends State<ItemTypePage> {
           title: e.toString(),
           description: trace.toString(),
           messageType: MessageType.failed);
-      return Future(() => null);
+      return Future(() => ResponseResult<ItemType>(models: []));
     }
   }
 
@@ -186,15 +176,13 @@ class _ItemTypePageState extends State<ItemTypePage> {
                 ],
               ),
             ),
-            Visibility(
-                visible: _isDisplayTable,
-                child: SizedBox(
-                  height: 600,
-                  child: CustomDataTable(
-                    controller: _source,
-                    fixedLeftColumns: 0,
-                  ),
-                )),
+            SizedBox(
+              height: 600,
+              child: CustomDataTable(
+                controller: _source,
+                fixedLeftColumns: 0,
+              ),
+            ),
           ],
         ),
       ),
