@@ -43,7 +43,7 @@ class _PayrollPageState extends State<PayrollPage>
   @override
   void dispose() {
     cancelToken.cancel();
-    _source.dispose();
+    // _source.dispose();
     super.dispose();
   }
 

@@ -22,7 +22,7 @@ class PayslipReport extends Model {
   int knownAbsence;
   int unknownAbsence;
   double overtimeHour;
-  int workDays;
+  double workDays;
   int late;
   String? description;
   PayslipReport(
@@ -105,7 +105,7 @@ class PayslipReport extends Model {
     model.unknownAbsence = attributes['unknown_absence'];
     model.overtimeHour = double.parse(attributes['overtime_hour']);
     model.late = attributes['late'] ?? model.late;
-    model.workDays = attributes['work_days'];
+    model.workDays = double.parse(attributes['work_days']);
     model.totalDay = attributes['total_day'];
     model.description = attributes['description'];
     model.employeeStartWorkingDate =

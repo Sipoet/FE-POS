@@ -62,7 +62,7 @@ class Payslip extends Model {
   int unknownAbsence;
   int paidTimeOff;
   double overtimeHour;
-  int workDays;
+  double workDays;
   int late;
   List<PayslipLine> lines;
   Payslip(
@@ -151,7 +151,7 @@ class Payslip extends Model {
     model.paidTimeOff = attributes['paid_time_off'];
     model.overtimeHour = double.parse(attributes['overtime_hour']);
     model.late = attributes['late'];
-    model.workDays = attributes['work_days'];
+    model.workDays = double.parse(attributes['work_days']);
     return model;
   }
 }

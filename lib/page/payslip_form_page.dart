@@ -204,7 +204,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                         border: OutlineInputBorder()),
                     initialValue: payslip.workDays.toString(),
                     onSaved: (newValue) {
-                      payslip.workDays = int.parse(newValue.toString());
+                      payslip.workDays = double.parse(newValue.toString());
                     },
                     validator: (newValue) {
                       if (newValue == null || newValue.isEmpty) {
@@ -213,7 +213,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                       return null;
                     },
                     onChanged: (newValue) {
-                      payslip.workDays = int.parse(newValue.toString());
+                      payslip.workDays = double.parse(newValue.toString());
                     },
                   ),
                   const SizedBox(
