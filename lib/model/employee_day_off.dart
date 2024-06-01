@@ -1,7 +1,6 @@
 import 'package:fe_pos/model/model.dart';
-export 'package:fe_pos/tool/custom_type.dart';
 
-enum ActiveWeekWorkSchedule {
+enum ActiveWeekDayOff {
   allWeek,
   oddWeek,
   evenWeek,
@@ -26,7 +25,7 @@ enum ActiveWeekWorkSchedule {
     }
   }
 
-  static ActiveWeekWorkSchedule fromString(value) {
+  static ActiveWeekDayOff fromString(value) {
     switch (value) {
       case 'all_week':
         return allWeek;
@@ -61,41 +60,30 @@ enum ActiveWeekWorkSchedule {
   }
 }
 
-class WorkSchedule extends Model {
-  String beginWork;
-  String endWork;
-  int shift;
+class EmployeeDayOff extends Model {
   int dayOfWeek;
-  ActiveWeekWorkSchedule activeWeek;
-  WorkSchedule(
-      {required this.beginWork,
-      required this.endWork,
-      this.dayOfWeek = 1,
-      this.shift = 1,
-      this.activeWeek = ActiveWeekWorkSchedule.allWeek,
-      super.id});
+  ActiveWeekDayOff activeWeek;
+
+  EmployeeDayOff({
+    this.dayOfWeek = 1,
+    super.id,
+    this.activeWeek = ActiveWeekDayOff.allWeek,
+  });
 
   @override
   Map<String, dynamic> toMap() => {
-        'begin_work': beginWork,
-        'end_work': endWork,
-        'shift': shift,
-        'day_of_week': dayOfWeek,
         'active_week': activeWeek,
+        'day_of_week': dayOfWeek,
       };
 
   @override
-  factory WorkSchedule.fromJson(Map<String, dynamic> json,
-      {WorkSchedule? model, List included = const []}) {
+  factory EmployeeDayOff.fromJson(Map<String, dynamic> json,
+      {EmployeeDayOff? model, List included = const []}) {
     var attributes = json['attributes'];
-    model ??= WorkSchedule(beginWork: '', endWork: '');
+    model ??= EmployeeDayOff();
     model.id = int.parse(json['id']);
-    model.beginWork = attributes['begin_work'];
-    model.endWork = attributes['end_work'];
-    model.shift = attributes['shift'];
+    model.activeWeek = ActiveWeekDayOff.fromString(attributes['active_week']);
     model.dayOfWeek = attributes['day_of_week'];
-    model.activeWeek =
-        ActiveWeekWorkSchedule.fromString(attributes['active_week']);
     return model;
   }
 }

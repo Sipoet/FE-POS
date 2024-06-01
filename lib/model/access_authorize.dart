@@ -14,7 +14,7 @@ class AccessAuthorize extends Model {
 
   @override
   factory AccessAuthorize.fromJson(Map<String, dynamic> json,
-      {AccessAuthorize? model}) {
+      {AccessAuthorize? model, List included = const []}) {
     var attributes = json['attributes'];
     model ??= AccessAuthorize(controller: '', action: []);
     model.id = int.parse(json['id']);

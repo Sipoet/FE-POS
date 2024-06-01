@@ -15,7 +15,7 @@ class ColumnAuthorize extends Model {
 
   @override
   factory ColumnAuthorize.fromJson(Map<String, dynamic> json,
-      {ColumnAuthorize? model}) {
+      {ColumnAuthorize? model, List included = const []}) {
     var attributes = json['attributes'];
     model ??= ColumnAuthorize(table: '', column: []);
     model.id = int.parse(json['id']);

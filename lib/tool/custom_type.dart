@@ -27,7 +27,8 @@ class Date extends DateTime {
   @override
   String toIso8601String() {
     final value = super.toIso8601String();
-    return value.substring(0, 10);
+
+    return value.split('T')[0];
   }
 
   static Date parsingDateTime(DateTime value) {

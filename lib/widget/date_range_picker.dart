@@ -87,7 +87,7 @@ class _DateRangePickerState extends State<DateRangePicker> {
             initialEntryMode: DatePickerEntryMode.calendarOnly,
             context: context,
             firstDate: DateTime(DateTime.now().year - 5),
-            lastDate: DateTime(DateTime.now().year + 100),
+            lastDate: DateTime(99999, 12, 31, 23, 59, 59, 59),
             initialDateRange: _dateRange,
             locale: const Locale('id'),
           );

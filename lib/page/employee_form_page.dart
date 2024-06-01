@@ -1,4 +1,4 @@
-import 'package:fe_pos/model/work_schedule.dart';
+import 'package:fe_pos/model/employee_attendance.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -55,18 +55,13 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
   void fetchEmployee() {
     showLoadingPopup();
     final server = context.read<Server>();
-    server.get('employees/${employee.id}',
-        queryParam: {'include': 'work_schedules'}).then((response) {
+    server.get('employees/${employee.id}', queryParam: {
+      'include': 'work_schedules,employee_day_offs'
+    }).then((response) {
       if (response.statusCode == 200) {
-        final workSchedules = response.data['data']['relationships']
-            ['work_schedules']['data'] as List;
-        final relationshipsData = response.data['included'] as List;
         setState(() {
-          employee.schedules = workSchedules.map<WorkSchedule>((line) {
-            final json = relationshipsData.firstWhere((row) =>
-                row['type'] == line['type'] && row['id'] == line['id']);
-            return WorkSchedule.fromJson(json);
-          }).toList();
+          Employee.fromJson(response.data['data'],
+              included: response.data['included'], model: employee);
         });
       }
     }, onError: (error) {
@@ -90,6 +85,15 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                       'id': workSchedule.id,
                       'type': 'work_schedule',
                       'attributes': workSchedule.toJson()
+                    })
+                .toList()
+          },
+          'employee_day_offs': {
+            'data': employee.employeeDayOffs
+                .map<Map>((employeeDayOff) => {
+                      'id': employeeDayOff.id,
+                      'type': 'employee_day_off',
+                      'attributes': employeeDayOff.toJson()
                     })
                 .toList()
           },
@@ -118,7 +122,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
         var data = response.data;
         flash.showBanner(
             title: data['message'],
-            description: data['errors'].join('\n'),
+            description: (data['errors'] ?? []).join('\n'),
             messageType: MessageType.failed);
       }
     }, onError: (error, stackTrace) {
@@ -530,6 +534,41 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                     height: 10,
                   ),
                   Visibility(
+                    visible: setting.canShow('employee', 'marital_status'),
+                    child: DropdownMenu<EmployeeMaritalStatus>(
+                        initialSelection: employee.maritalStatus,
+                        onSelected: ((value) => employee.maritalStatus =
+                            value ?? EmployeeMaritalStatus.single),
+                        dropdownMenuEntries: EmployeeMaritalStatus.values
+                            .map<DropdownMenuEntry<EmployeeMaritalStatus>>(
+                                (maritalStatus) => DropdownMenuEntry(
+                                    value: maritalStatus,
+                                    label: maritalStatus.humanize()))
+                            .toList()),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Visibility(
+                    visible: setting.canShow('employee', 'tax_number'),
+                    child: TextFormField(
+                      decoration: const InputDecoration(
+                          labelText: 'NPWP',
+                          labelStyle: labelStyle,
+                          border: OutlineInputBorder()),
+                      initialValue: employee.taxNumber,
+                      onSaved: (newValue) {
+                        employee.taxNumber = newValue.toString();
+                      },
+                      onChanged: (newValue) {
+                        employee.taxNumber = newValue.toString();
+                      },
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Visibility(
                     visible: setting.canShow('employee', 'description'),
                     child: TextFormField(
                       decoration: const InputDecoration(
@@ -567,7 +606,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                       height: 200,
                     ),
                   const Text(
-                    "Jadwal Kerja",
+                    "Jadwal Libur Mingguan",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   SingleChildScrollView(
@@ -580,21 +619,6 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           const DataColumn(
                               label: Text(
                             'Hari',
-                            style: labelStyle,
-                          )),
-                          const DataColumn(
-                              label: Text(
-                            'Shift',
-                            style: labelStyle,
-                          )),
-                          const DataColumn(
-                              label: Text(
-                            'Mulai',
-                            style: labelStyle,
-                          )),
-                          const DataColumn(
-                              label: Text(
-                            'Akhir',
                             style: labelStyle,
                           )),
                           const DataColumn(
@@ -615,12 +639,12 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                             ),
                           )),
                         ],
-                        rows: employee.schedules
-                            .map<DataRow>((workSchedule) => DataRow(cells: [
+                        rows: employee.employeeDayOffs
+                            .map<DataRow>((employeeDayOff) => DataRow(cells: [
                                   DataCell(DropdownMenu<int>(
-                                    initialSelection: workSchedule.dayOfWeek,
+                                    initialSelection: employeeDayOff.dayOfWeek,
                                     onSelected: ((value) =>
-                                        workSchedule.dayOfWeek = value ?? 0),
+                                        employeeDayOff.dayOfWeek = value ?? 0),
                                     dropdownMenuEntries: const [
                                       DropdownMenuEntry(
                                           value: 1, label: 'Senin'),
@@ -638,71 +662,17 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                                           value: 7, label: 'Minggu'),
                                     ],
                                   )),
-                                  DataCell(TextFormField(
-                                    decoration: const InputDecoration(
-                                        border: OutlineInputBorder()),
-                                    initialValue: workSchedule.shift.toString(),
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: <TextInputFormatter>[
-                                      FilteringTextInputFormatter.digitsOnly
-                                    ],
-                                    onSaved: (value) => workSchedule.shift =
-                                        int.parse(value ?? '1'),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'harus diisi';
-                                      }
-                                      if (int.tryParse(value) == null) {
-                                        return 'tidak valid';
-                                      }
-                                      if (int.parse(value) <= 0) {
-                                        return 'harus lebih besar dari 0';
-                                      }
-                                      return null;
-                                    },
-                                    onChanged: (value) => workSchedule.shift =
-                                        int.tryParse(value) ?? 0,
-                                  )),
-                                  DataCell(TextFormField(
-                                    decoration: const InputDecoration(
-                                        border: OutlineInputBorder()),
-                                    initialValue: workSchedule.beginWork,
-                                    onSaved: (value) =>
-                                        workSchedule.beginWork = value ?? '',
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'harus diisi';
-                                      }
-                                      return null;
-                                    },
-                                    onChanged: (value) =>
-                                        workSchedule.beginWork = value,
-                                  )),
-                                  DataCell(TextFormField(
-                                    decoration: const InputDecoration(
-                                        border: OutlineInputBorder()),
-                                    initialValue: workSchedule.endWork,
-                                    onSaved: (value) =>
-                                        workSchedule.endWork = value ?? '',
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'harus diisi';
-                                      }
-                                      return null;
-                                    },
-                                    onChanged: (value) =>
-                                        workSchedule.endWork = value,
-                                  )),
-                                  DataCell(DropdownMenu<ActiveWeekWorkSchedule>(
-                                      initialSelection: workSchedule.activeWeek,
-                                      onSelected: ((value) =>
-                                          workSchedule.activeWeek = value ??
-                                              ActiveWeekWorkSchedule.allWeek),
-                                      dropdownMenuEntries: ActiveWeekWorkSchedule
+                                  DataCell(DropdownMenu<ActiveWeekDayOff>(
+                                      initialSelection:
+                                          employeeDayOff.activeWeek,
+                                      onSelected: ((value) => employeeDayOff
+                                              .activeWeek =
+                                          value ?? ActiveWeekDayOff.allWeek),
+                                      dropdownMenuEntries: ActiveWeekDayOff
                                           .values
                                           .map<
                                                   DropdownMenuEntry<
-                                                      ActiveWeekWorkSchedule>>(
+                                                      ActiveWeekDayOff>>(
                                               (activeWeek) => DropdownMenuEntry(
                                                   value: activeWeek,
                                                   label: activeWeek.humanize()))
@@ -710,11 +680,12 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                                   DataCell(Row(
                                     children: [
                                       Visibility(
-                                        visible: workSchedule.id != null,
+                                        visible: employeeDayOff.id != null,
                                         child: IconButton(
                                           onPressed: () {
-                                            fetchHistoryByRecord('WorkSchedule',
-                                                workSchedule.id);
+                                            fetchHistoryByRecord(
+                                                'EmployeeDayOff',
+                                                employeeDayOff.id);
                                           },
                                           icon: const Icon(Icons.history),
                                         ),
@@ -726,7 +697,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                                         onPressed: () {
                                           setState(() {
                                             employee.schedules
-                                                .remove(workSchedule);
+                                                .remove(employeeDayOff);
                                           });
                                         },
                                         child: const Text('Hapus'),
@@ -740,8 +711,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                     padding: const EdgeInsets.only(top: 10, bottom: 10),
                     child: ElevatedButton(
                         onPressed: () => setState(() {
-                              employee.schedules.add(
-                                  WorkSchedule(beginWork: '', endWork: ''));
+                              employee.employeeDayOffs.add(EmployeeDayOff());
                             }),
                         child: const Text('Tambah')),
                   ),

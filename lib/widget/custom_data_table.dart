@@ -67,6 +67,7 @@ class _CustomDataTableState extends State<CustomDataTable> {
     return AsyncPaginatedDataTable2(
       key: ObjectKey(widget.key),
       sortArrowAlwaysVisible: true,
+      showFirstLastButtons: true,
       source: _dataSource,
       actions: widget.actions,
       header: widget.header,
@@ -300,6 +301,7 @@ class _SyncDataTableState extends State<SyncDataTable> {
           widget.onPageChanged!(page);
         }
       },
+      showFirstLastButtons: true,
       onRowsPerPageChanged: (int? limit) {
         this.limit = limit ?? 10;
         _paginatorController.goToFirstPage();

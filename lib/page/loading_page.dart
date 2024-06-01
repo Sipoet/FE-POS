@@ -29,12 +29,25 @@ class _LoadingPageState extends State<LoadingPage> {
   void fetchSetting(Server server) async {
     setting = context.read<Setting>();
     server.get('settings').then((response) {
-      if (response.statusCode == 200) {
-        setting.setTableColumns(response.data['data']['table_columns']);
+      try {
+        if (response.statusCode == 200) {
+          setting.setTableColumns(response.data['data']['table_columns']);
 
-        response.data['data']['menus'].forEach((String key, value) {
-          setting.menus[key] = value.map<String>((e) => e.toString()).toList();
-        });
+          response.data['data']['menus'].forEach((String key, value) {
+            setting.menus[key] =
+                value.map<String>((e) => e.toString()).toList();
+          });
+        }
+      } catch (error) {
+        AlertDialog(
+          title: const Text('error'),
+          content: Text(error.toString()),
+          actions: [
+            ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('close'))
+          ],
+        );
       }
     }).whenComplete(() {
       Navigator.pushReplacement(context,
@@ -43,16 +56,28 @@ class _LoadingPageState extends State<LoadingPage> {
   }
 
   Future<void> checkPermission() async {
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      if (androidInfo.version.sdkInt >= 30) {
-        return;
+    try {
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+        if (androidInfo.version.sdkInt >= 30) {
+          return;
+        }
+        var status = await Permission.storage.status;
+        if (status.isDenied) {
+          await Permission.storage.request().isGranted;
+        }
       }
-      var status = await Permission.storage.status;
-      if (status.isDenied) {
-        await Permission.storage.request().isGranted;
-      }
+    } catch (error) {
+      AlertDialog(
+        title: const Text('error'),
+        content: Text(error.toString()),
+        actions: [
+          ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('close'))
+        ],
+      );
     }
   }
 
@@ -87,16 +112,28 @@ class _LoadingPageState extends State<LoadingPage> {
   }
 
   void reroute() {
-    initializeDateFormatting('id_ID', null);
-    SessionState sessionState = context.read<SessionState>();
-    Server server = context.read<Server>();
-    sessionState.fetchServerData(server).then((isLogin) {
-      if (isLogin) {
-        fetchSetting(server);
-      } else {
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const LoginPage()));
-      }
-    });
+    try {
+      initializeDateFormatting('id_ID', null);
+      SessionState sessionState = context.read<SessionState>();
+      Server server = context.read<Server>();
+      sessionState.fetchServerData(server).then((isLogin) {
+        if (isLogin) {
+          fetchSetting(server);
+        } else {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => const LoginPage()));
+        }
+      });
+    } catch (error) {
+      AlertDialog(
+        title: const Text('error'),
+        content: Text(error.toString()),
+        actions: [
+          ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('close'))
+        ],
+      );
+    }
   }
 }

@@ -271,7 +271,10 @@ class _EmployeePageState extends State<EmployeePage>
           children: [
             TableFilterForm(
               columns: _source.columns,
-              enums: const {'status': EmployeeStatus.values},
+              enums: const {
+                'status': EmployeeStatus.values,
+                'marital_status': EmployeeMaritalStatus.values
+              },
               onSubmit: (filter) {
                 _filter = filter;
                 refreshTable();
