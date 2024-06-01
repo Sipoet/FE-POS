@@ -68,8 +68,8 @@ class WorkSchedule extends Model {
   int dayOfWeek;
   ActiveWeekWorkSchedule activeWeek;
   WorkSchedule(
-      {required this.beginWork,
-      required this.endWork,
+      {this.beginWork = '',
+      this.endWork = '',
       this.dayOfWeek = 1,
       this.shift = 1,
       this.activeWeek = ActiveWeekWorkSchedule.allWeek,

@@ -3,7 +3,7 @@ import 'package:fe_pos/model/model.dart';
 class ItemType extends Model {
   String description;
   String name;
-  ItemType({required this.description, required this.name, super.id});
+  ItemType({this.description = '', this.name = '', super.id});
 
   @override
   Map<String, dynamic> toMap() => {
@@ -15,7 +15,7 @@ class ItemType extends Model {
   factory ItemType.fromJson(Map<String, dynamic> json,
       {ItemType? model, List included = const []}) {
     var attributes = json['attributes'];
-    model ??= ItemType(description: '', name: '');
+    model ??= ItemType();
     model.id = json['id'];
     model.description = attributes['ketjenis'];
     model.name = attributes['jenis'];

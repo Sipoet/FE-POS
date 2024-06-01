@@ -86,12 +86,14 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                             .map<String>((row) => row.toString())
                             .toList();
                       },
-                      request: (server, page, searchText) {
-                        return server.get('employees', queryParam: {
-                          'field[employee]': 'code,name',
-                          'search_text': searchText,
-                          'page[limit]': '20',
-                        });
+                      request: (server, page, searchText, cancelToken) {
+                        return server.get('employees',
+                            queryParam: {
+                              'field[employee]': 'code,name',
+                              'search_text': searchText,
+                              'page[limit]': '20',
+                            },
+                            cancelToken: cancelToken);
                       },
                     ),
                     const SizedBox(

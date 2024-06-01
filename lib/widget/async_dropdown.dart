@@ -31,7 +31,9 @@ class AsyncDropdownMultiple extends StatefulWidget {
   final void Function(List<dynamic>?)? onSaved;
   final String? Function(List<DropdownResult>?)? validator;
   final Widget? label;
-  final Future Function(Server server, int page, String searchText)? request;
+  final Future Function(
+          Server server, int page, String searchText, CancelToken cancelToken)?
+      request;
 
   @override
   State<AsyncDropdownMultiple> createState() => _AsyncDropdownMultipleState();
@@ -41,22 +43,35 @@ class _AsyncDropdownMultipleState extends State<AsyncDropdownMultiple> {
   final notFoundSign = const DropdownMenuEntry<String>(
       label: 'Data tidak Ditemukan', value: '', enabled: false);
   late final Server server;
-
+  CancelToken _cancelToken = CancelToken();
+  final _focusNode = FocusNode();
   @override
   void initState() {
     server = context.read<Server>();
     super.initState();
   }
 
-  Future Function(Server server, int page, String searchText) get request =>
-      widget.request ??
-      (Server server, int page, String searchText) {
-        return server.get(widget.path!, queryParam: {
-          'search_text': searchText,
-          'page[page]': page.toString(),
-          'page[limit]': '20'
-        });
-      };
+  @override
+  void dispose() {
+    _cancelToken.cancel();
+    super.dispose();
+  }
+
+  Future Function(
+          Server server, int page, String searchText, CancelToken cancelToken)
+      get request =>
+          widget.request ??
+          (Server server, int page, String searchText,
+              CancelToken cancelToken) {
+            _cancelToken = CancelToken();
+            return server.get(widget.path!,
+                queryParam: {
+                  'search_text': searchText,
+                  'page[page]': page.toString(),
+                  'page[limit]': '20'
+                },
+                cancelToken: _cancelToken);
+          };
 
   bool compareResult(DropdownResult a, DropdownResult b) {
     return a.text == b.text;
@@ -77,13 +92,26 @@ class _AsyncDropdownMultipleState extends State<AsyncDropdownMultiple> {
           widget.onSaved!(dropdownResults?.map((e) => e.value).toList());
         }
       },
+      onBeforePopupOpening: (selItems) {
+        return Future.delayed(Duration.zero, () {
+          if (_focusNode.canRequestFocus) {
+            _focusNode.requestFocus();
+          }
+          return true;
+        });
+      },
       validator: widget.validator,
       compareFn: compareResult,
       itemAsString: (item) => item.text,
       selectedItems: widget.selecteds,
       clearButtonProps: const ClearButtonProps(isVisible: true),
-      popupProps: const PopupPropsMultiSelection.menu(
-          showSearchBox: true, showSelectedItems: true, isFilterOnline: true),
+      popupProps: PopupPropsMultiSelection.menu(
+          searchFieldProps: TextFieldProps(
+            focusNode: _focusNode,
+          ),
+          showSearchBox: true,
+          showSelectedItems: true,
+          isFilterOnline: true),
       dropdownDecoratorProps: DropDownDecoratorProps(
           dropdownSearchDecoration: InputDecoration(
         label: widget.label,
@@ -93,7 +121,7 @@ class _AsyncDropdownMultipleState extends State<AsyncDropdownMultiple> {
   }
 
   Future<List<DropdownResult>> getData(String filter) async {
-    var response = await request(server, 1, filter).onError(
+    var response = await request(server, 1, filter, _cancelToken).onError(
         (error, stackTrace) => {
               server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: [])
@@ -143,7 +171,9 @@ class AsyncDropdown extends StatefulWidget {
   final void Function(DropdownResult?)? onSaved;
   final String? Function(DropdownResult?)? validator;
   final Widget? label;
-  final Future Function(Server server, int page, String searchText)? request;
+  final Future Function(
+          Server server, int page, String searchText, CancelToken cancelToken)?
+      request;
 
   @override
   State<AsyncDropdown> createState() => _AsyncDropdownState();
@@ -153,22 +183,35 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
   final notFoundSign = const DropdownMenuEntry<String>(
       label: 'Data tidak Ditemukan', value: '', enabled: false);
   late final Server server;
-
+  CancelToken _cancelToken = CancelToken();
+  final _focusNode = FocusNode();
   @override
   void initState() {
     server = context.read<Server>();
     super.initState();
   }
 
-  Future Function(Server server, int page, String searchText) get request =>
-      widget.request ??
-      (Server server, int page, String searchText) {
-        return server.get(widget.path!, queryParam: {
-          'search_text': searchText,
-          'page[page]': page.toString(),
-          'page[limit]': '20'
-        });
-      };
+  @override
+  void dispose() {
+    _cancelToken.cancel();
+    super.dispose();
+  }
+
+  Future Function(
+          Server server, int page, String searchText, CancelToken cancelToken)
+      get request =>
+          widget.request ??
+          (Server server, int page, String searchText,
+              CancelToken cancelToken) {
+            _cancelToken = CancelToken();
+            return server.get(widget.path!,
+                queryParam: {
+                  'search_text': searchText,
+                  'page[page]': page.toString(),
+                  'page[limit]': '20'
+                },
+                cancelToken: cancelToken);
+          };
 
   bool compareResult(DropdownResult a, DropdownResult b) {
     return a.text == b.text;
@@ -185,9 +228,22 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
       itemAsString: (item) => item.text,
       selectedItem: widget.selected,
       compareFn: compareResult,
+      onBeforePopupOpening: (selItems) {
+        return Future.delayed(Duration.zero, () {
+          if (_focusNode.canRequestFocus) {
+            _focusNode.requestFocus();
+          }
+          return true;
+        });
+      },
       clearButtonProps: const ClearButtonProps(isVisible: true),
-      popupProps: const PopupProps.menu(
-          showSearchBox: true, showSelectedItems: true, isFilterOnline: true),
+      popupProps: PopupProps.menu(
+          searchFieldProps: TextFieldProps(
+            focusNode: _focusNode,
+          ),
+          showSearchBox: true,
+          showSelectedItems: true,
+          isFilterOnline: true),
       dropdownDecoratorProps: DropDownDecoratorProps(
           dropdownSearchDecoration: InputDecoration(
         label: widget.label,
@@ -197,7 +253,7 @@ class _AsyncDropdownState extends State<AsyncDropdown> {
   }
 
   Future<List<DropdownResult>> getData(String filter) async {
-    var response = await request(server, 1, filter).onError(
+    var response = await request(server, 1, filter, _cancelToken).onError(
         (error, stackTrace) => {
               server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: [])
@@ -241,7 +297,7 @@ class AsyncDropdownMultiple2<T> extends StatefulWidget {
   const AsyncDropdownMultiple2(
       {super.key,
       this.path,
-      this.minCharSearch = 3,
+      this.delayedSearch = const Duration(milliseconds: 500),
       this.width,
       this.onChanged,
       this.request,
@@ -259,7 +315,7 @@ class AsyncDropdownMultiple2<T> extends StatefulWidget {
 
   final String? path;
   final String? attributeKey;
-  final int minCharSearch;
+  final Duration delayedSearch;
   final int recordLimit;
   final double? width;
   final List<T> selecteds;
@@ -272,7 +328,9 @@ class AsyncDropdownMultiple2<T> extends StatefulWidget {
   final T Function(Map<String, dynamic>, {List included}) converter;
   final Widget? label;
   final bool Function(T, T)? compareValue;
-  final Future Function(Server server, int page, String searchText)? request;
+  final Future Function(
+          Server server, int page, String searchText, CancelToken cancelToken)?
+      request;
 
   @override
   State<AsyncDropdownMultiple2<T>> createState() =>
@@ -283,6 +341,7 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
   final notFoundSign = const DropdownMenuEntry<String>(
       label: 'Data tidak Ditemukan', value: '', enabled: false);
   late final Server server;
+  CancelToken _cancelToken = CancelToken();
 
   @override
   void initState() {
@@ -290,15 +349,27 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
     super.initState();
   }
 
-  Future Function(Server server, int page, String searchText) get request =>
-      widget.request ??
-      (Server server, int page, String searchText) {
-        return server.get(widget.path!, queryParam: {
-          'search_text': searchText,
-          'page[page]': page.toString(),
-          'page[limit]': widget.recordLimit.toString(),
-        });
-      };
+  @override
+  void dispose() {
+    _cancelToken.cancel();
+    super.dispose();
+  }
+
+  Future Function(
+          Server server, int page, String searchText, CancelToken cancelToken)
+      get request =>
+          widget.request ??
+          (Server server, int page, String searchText,
+              CancelToken cancelToken) {
+            _cancelToken = CancelToken();
+            return server.get(widget.path!,
+                queryParam: {
+                  'search_text': searchText,
+                  'page[page]': page.toString(),
+                  'page[limit]': widget.recordLimit.toString(),
+                },
+                cancelToken: _cancelToken);
+          };
 
   bool compareResult(T a, T b) {
     if (widget.compareValue == null) {
@@ -320,7 +391,7 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
       compareFn: compareResult,
       itemAsString: widget.textOnSearch,
       selectedItems: widget.selecteds,
-      onBeforePopupOpening: (selItems) async {
+      onBeforePopupOpening: (selItems) {
         return Future.delayed(Duration.zero, () {
           if (_focusNode.canRequestFocus) {
             _focusNode.requestFocus();
@@ -369,6 +440,158 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
         );
       },
       popupProps: PopupPropsMultiSelection.menu(
+          searchDelay: widget.delayedSearch,
+          searchFieldProps: TextFieldProps(
+            focusNode: _focusNode,
+          ),
+          onItemAdded: (selectedItems, addedItem) => _focusNode.requestFocus(),
+          showSearchBox: true,
+          showSelectedItems: true,
+          isFilterOnline: true),
+      dropdownDecoratorProps: DropDownDecoratorProps(
+          dropdownSearchDecoration: InputDecoration(
+        label: widget.label,
+        border: const OutlineInputBorder(),
+      )),
+    );
+  }
+
+  Future<List<T>> getData(String filter) async {
+    var response = await request(server, 1, filter, _cancelToken).onError(
+        (error, stackTrace) => {
+              server.defaultErrorResponse(
+                  context: context, error: error, valueWhenError: [])
+            });
+    if (response.statusCode == 200) {
+      Map responseBody = response.data;
+      return convertToOptions(
+          responseBody['data'], responseBody['included'] ?? []);
+    } else {
+      throw 'cant connect to server';
+    }
+  }
+
+  List<T> convertToOptions(List list, List relationships) {
+    return list
+        .map<T>((row) => widget.converter(row, included: relationships))
+        .toList();
+  }
+}
+
+class AsyncDropdown2<T> extends StatefulWidget {
+  const AsyncDropdown2(
+      {super.key,
+      this.path,
+      this.delayedSearch = const Duration(milliseconds: 500),
+      this.width,
+      this.onChanged,
+      this.request,
+      this.label,
+      this.attributeKey,
+      this.validator,
+      this.onSaved,
+      this.selectedDisplayLimit = 6,
+      this.recordLimit = 50,
+      required this.textOnSearch,
+      this.textOnSelected,
+      this.compareValue,
+      required this.converter,
+      this.selected});
+
+  final String? path;
+  final String? attributeKey;
+  final Duration delayedSearch;
+  final int recordLimit;
+  final double? width;
+  final T? selected;
+  final int selectedDisplayLimit;
+  final void Function(T?)? onChanged;
+  final void Function(T?)? onSaved;
+  final String? Function(T?)? validator;
+  final String Function(T) textOnSearch;
+  final String Function(T)? textOnSelected;
+  final T Function(Map<String, dynamic>, {List included}) converter;
+  final Widget? label;
+  final bool Function(T, T)? compareValue;
+  final Future Function(
+          Server server, int page, String searchText, CancelToken cancelToken)?
+      request;
+
+  @override
+  State<AsyncDropdown2<T>> createState() => _AsyncDropdown2State<T>();
+}
+
+class _AsyncDropdown2State<T> extends State<AsyncDropdown2<T>> {
+  final notFoundSign = const DropdownMenuEntry<String>(
+      label: 'Data tidak Ditemukan', value: '', enabled: false);
+  late final Server server;
+  CancelToken _cancelToken = CancelToken();
+
+  @override
+  void initState() {
+    server = context.read<Server>();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _cancelToken.cancel();
+    super.dispose();
+  }
+
+  Future Function(
+          Server server, int page, String searchText, CancelToken cancelToken)
+      get request =>
+          widget.request ??
+          (Server server, int page, String searchText,
+              CancelToken cancelToken) {
+            _cancelToken = CancelToken();
+            return server.get(widget.path!,
+                queryParam: {
+                  'search_text': searchText,
+                  'page[page]': page.toString(),
+                  'page[limit]': widget.recordLimit.toString(),
+                },
+                cancelToken: _cancelToken);
+          };
+
+  bool compareResult(T a, T b) {
+    if (widget.compareValue == null) {
+      return widget.textOnSearch(a) == widget.textOnSearch(b);
+    } else {
+      return widget.compareValue!(a, b);
+    }
+  }
+
+  final _focusNode = FocusNode();
+  @override
+  Widget build(BuildContext context) {
+    final textFormat = widget.textOnSelected ?? widget.textOnSearch;
+    return DropdownSearch<T>(
+      asyncItems: getData,
+      onChanged: widget.onChanged,
+      onSaved: widget.onSaved,
+      validator: widget.validator,
+      compareFn: compareResult,
+      itemAsString: widget.textOnSearch,
+      selectedItem: widget.selected,
+      onBeforePopupOpening: (selItems) {
+        return Future.delayed(Duration.zero, () {
+          if (_focusNode.canRequestFocus) {
+            _focusNode.requestFocus();
+          }
+          return true;
+        });
+      },
+      clearButtonProps: const ClearButtonProps(isVisible: true),
+      dropdownBuilder: (context, selectedItem) {
+        if (selectedItem == null) {
+          return const SizedBox();
+        }
+        return SelectableText(textFormat(selectedItem));
+      },
+      popupProps: PopupPropsMultiSelection.menu(
+          searchDelay: widget.delayedSearch,
           searchFieldProps: TextFieldProps(focusNode: _focusNode),
           onItemAdded: (selectedItems, addedItem) => _focusNode.requestFocus(),
           showSearchBox: true,
@@ -383,7 +606,7 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
   }
 
   Future<List<T>> getData(String filter) async {
-    var response = await request(server, 1, filter).onError(
+    var response = await request(server, 1, filter, _cancelToken).onError(
         (error, stackTrace) => {
               server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: [])

@@ -12,7 +12,7 @@ class Role extends Model {
   List<AccessAuthorize> accessAuthorizes;
   List<RoleWorkSchedule> roleWorkSchedules;
   Role(
-      {required this.name,
+      {this.name = '',
       super.id,
       super.createdAt,
       super.updatedAt,

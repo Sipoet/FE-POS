@@ -238,13 +238,16 @@ class _TableFilterFormState extends State<TableFilterForm> {
       child: AsyncDropdownMultiple(
         label: Text(column.name, style: _labelStyle),
         multiple: true,
-        request: (server, page, searchText) =>
-            server.get(column.path ?? '', queryParam: {
-          'search_text': searchText,
-          'fields[${attributes[0]}]': attributes[1],
-          'page[page]': page.toString(),
-          'page[limit]': '100'
-        }),
+        request: (server, page, searchText, cancelToken) {
+          return server.get(column.path ?? '',
+              queryParam: {
+                'search_text': searchText,
+                'fields[${attributes[0]}]': attributes[1],
+                'page[page]': page.toString(),
+                'page[limit]': '100'
+              },
+              cancelToken: cancelToken);
+        },
         attributeKey: attributes[1],
         onSaved: (value) {
           if (value != null && value.isNotEmpty) {

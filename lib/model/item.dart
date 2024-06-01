@@ -18,15 +18,16 @@ class Item extends Model {
   ItemType itemType;
   Brand? brand;
   Item(
-      {required this.code,
-      required this.name,
-      required this.itemTypeName,
+      {this.code = '',
+      this.name = '',
+      this.itemTypeName = '',
       this.brandName,
       this.supplierCode,
       this.supplier,
       this.brand,
-      required this.itemType,
-      super.id});
+      ItemType? itemType,
+      super.id})
+      : itemType = itemType ?? ItemType();
 
   @override
   Map<String, dynamic> toMap() => {
@@ -42,30 +43,26 @@ class Item extends Model {
   factory Item.fromJson(Map<String, dynamic> json,
       {Item? model, List included = const []}) {
     var attributes = json['attributes'];
-    Supplier? supplier = Model.findRelationData<Supplier>(
-        relation: json['relationships']['supplier'],
-        included: included,
-        convert: Supplier.fromJson);
-    ItemType itemType = Model.findRelationData<ItemType>(
-            relation: json['relationships']['item_type'],
-            included: included,
-            convert: ItemType.fromJson) ??
-        ItemType(name: '', description: '');
-    Brand? brand = Model.findRelationData<Brand>(
-        relation: json['relationships']['brand'],
-        included: included,
-        convert: Brand.fromJson);
-
-    model ??= Item(code: '', name: '', itemType: itemType, itemTypeName: '');
+    model ??= Item();
     model.id = json['id'];
     model.code = attributes['kodeitem'];
     model.name = attributes['namaitem'];
     model.brandName = attributes['merek'];
     model.itemTypeName = attributes['jenis'];
     model.supplierCode = attributes['supplier1'];
-    model.supplier = supplier;
-    model.itemType = itemType;
-    model.brand = brand;
+    model.supplier = Model.findRelationData<Supplier>(
+        relation: json['relationships']['supplier'],
+        included: included,
+        convert: Supplier.fromJson);
+    model.itemType = Model.findRelationData<ItemType>(
+            relation: json['relationships']['item_type'],
+            included: included,
+            convert: ItemType.fromJson) ??
+        ItemType();
+    model.brand = Model.findRelationData<Brand>(
+        relation: json['relationships']['brand'],
+        included: included,
+        convert: Brand.fromJson);
     return model;
   }
 }

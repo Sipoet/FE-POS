@@ -514,15 +514,16 @@ class _RoleFormPageState extends State<RoleFormPage>
                                                       value: action,
                                                       text: action))
                                               .toList(),
-                                          request:
-                                              (server, offset, searchText) {
+                                          request: (server, offset, searchText,
+                                              cancelToken) {
                                             return server.get(
                                                 'roles/action_names',
                                                 queryParam: {
                                                   'search_text': searchText,
                                                   'controller_name':
                                                       accessAuthorize.controller
-                                                });
+                                                },
+                                                cancelToken: cancelToken);
                                           },
                                         ),
                                       )),
@@ -595,26 +596,30 @@ class _RoleFormPageState extends State<RoleFormPage>
                                     DataCell(SizedBox(
                                       width: 250,
                                       child: AsyncDropdownMultiple(
-                                        multiple: true,
-                                        onChanged: (value) => setState(() {
-                                          columnAuthorize.column = value
-                                              .map<String>((e) => e.toString())
-                                              .toList();
-                                        }),
-                                        selecteds: columnAuthorize.column
-                                            .map<DropdownResult>((column) =>
-                                                DropdownResult(
-                                                    value: column,
-                                                    text: column))
-                                            .toList(),
-                                        request: (server, offset, searchText) =>
-                                            server.get('roles/column_names',
+                                          multiple: true,
+                                          onChanged: (value) => setState(() {
+                                                columnAuthorize.column = value
+                                                    .map<String>(
+                                                        (e) => e.toString())
+                                                    .toList();
+                                              }),
+                                          selecteds: columnAuthorize.column
+                                              .map<DropdownResult>((column) =>
+                                                  DropdownResult(
+                                                      value: column,
+                                                      text: column))
+                                              .toList(),
+                                          request: (server, offset, searchText,
+                                              cancelToken) {
+                                            return server.get(
+                                                'roles/column_names',
                                                 queryParam: {
-                                              'search_text': searchText,
-                                              'table_name':
-                                                  columnAuthorize.table
-                                            }),
-                                      ),
+                                                  'search_text': searchText,
+                                                  'table_name':
+                                                      columnAuthorize.table
+                                                },
+                                                cancelToken: cancelToken);
+                                          }),
                                     )),
                                     DataCell(ElevatedButton(
                                       onPressed: () {

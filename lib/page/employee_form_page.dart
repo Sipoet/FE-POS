@@ -56,7 +56,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     showLoadingPopup();
     final server = context.read<Server>();
     server.get('employees/${employee.id}', queryParam: {
-      'include': 'work_schedules,employee_day_offs'
+      'include': 'work_schedules,employee_day_offs,payroll,role'
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
@@ -250,27 +250,24 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                     height: 10,
                   ),
                   Visibility(
-                    visible: setting.canShow('employee', 'role_id'),
+                    visible: setting.isAuthorize('role', 'index') &&
+                        setting.canShow('employee', 'role_id'),
                     child: Flexible(
-                      child: AsyncDropdown(
+                      child: AsyncDropdown2<Role>(
                         path: '/roles',
                         attributeKey: 'name',
                         label: const Text(
                           'Jabatan :',
                           style: labelStyle,
                         ),
-                        onChanged: (option) {
-                          employee.role.id = int.tryParse(option?.value ?? '');
-
-                          employee.role.name = option?.text ?? '';
+                        onChanged: (role) {
+                          employee.role = role ?? Role(name: '');
                         },
-                        selected: employee.role.id == null
-                            ? null
-                            : DropdownResult(
-                                value: employee.role.id,
-                                text: employee.role.name),
-                        validator: (value) {
-                          if (employee.role.id == null) {
+                        textOnSearch: (role) => role.name,
+                        converter: Role.fromJson,
+                        selected: employee.role,
+                        validator: (role) {
+                          if (role == null) {
                             return 'harus diisi';
                           }
                           return null;
@@ -315,38 +312,30 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                     height: 10,
                   ),
                   Visibility(
-                    visible: setting.isAuthorize('payroll', 'index') &&
-                        setting.canShow('employee', 'payroll_id'),
-                    child: AsyncDropdown(
-                      label: const Text(
-                        'Payroll',
-                        style: labelStyle,
-                      ),
-                      request: (server, offset, searchText) {
-                        return server.get('payrolls', queryParam: {
-                          'search_text': searchText,
-                          'field[payroll]': 'name',
-                          'page[offset]': offset.toString(),
-                        });
-                      },
-                      attributeKey: 'name',
-                      onChanged: (value) {
-                        if (value == null) {
-                          employee.payroll = null;
-                          return;
-                        }
-                        employee.payroll = Payroll(
-                          id: int.tryParse(value.value ?? ''),
-                          name: value.text,
-                        );
-                      },
-                      selected: employee.payroll == null
-                          ? null
-                          : DropdownResult(
-                              value: employee.payroll?.id,
-                              text: employee.payroll?.name ?? ''),
-                    ),
-                  ),
+                      visible: setting.isAuthorize('payroll', 'index') &&
+                          setting.canShow('employee', 'payroll_id'),
+                      child: AsyncDropdown2<Payroll>(
+                        label: const Text(
+                          'Payroll',
+                          style: labelStyle,
+                        ),
+                        request: (server, offset, searchText, cancelToken) {
+                          return server.get('payrolls',
+                              queryParam: {
+                                'search_text': searchText,
+                                'field[payroll]': 'name',
+                                'page[offset]': offset.toString(),
+                              },
+                              cancelToken: cancelToken);
+                        },
+                        textOnSearch: (payroll) => payroll.name,
+                        attributeKey: 'name',
+                        onChanged: (payroll) {
+                          employee.payroll = payroll;
+                        },
+                        converter: Payroll.fromJson,
+                        selected: employee.payroll,
+                      )),
                   const SizedBox(
                     height: 10,
                   ),

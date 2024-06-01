@@ -122,12 +122,12 @@ class Employee extends Model {
   EmployeeMaritalStatus maritalStatus;
   Employee(
       {super.id,
-      required this.code,
-      required this.name,
-      required this.role,
+      this.code = '',
+      this.name = '',
+      Role? role,
       this.payroll,
       this.debt = const Money(0),
-      required this.startWorkingDate,
+      Date? startWorkingDate,
       this.endWorkingDate,
       this.description,
       this.idNumber,
@@ -146,6 +146,8 @@ class Employee extends Model {
       List<EmployeeDayOff>? employeeDayOffs,
       this.status = EmployeeStatus.inactive})
       : schedules = schedules ?? <WorkSchedule>[],
+        startWorkingDate = startWorkingDate ?? Date.today(),
+        role = role ?? Role(),
         employeeDayOffs = employeeDayOffs ?? <EmployeeDayOff>[];
 
   @override
@@ -153,21 +155,18 @@ class Employee extends Model {
       {List included = const [], Employee? model}) {
     final attributes = json['attributes'];
 
-    Payroll? payroll;
-    Role role = Role(name: '');
-    model ??= Employee(
-        code: '', name: '', role: role, startWorkingDate: Date.today());
-    if (included.isNotEmpty) {
-      model.payroll = Model.findRelationData<Payroll>(
-          included: included,
-          relation: json['relationships']['payroll'],
-          convert: Payroll.fromJson);
-      model.role = Model.findRelationData<Role>(
-              included: included,
-              relation: json['relationships']['role'],
-              convert: Role.fromJson) ??
-          role;
-    }
+    model ??= Employee();
+
+    model.payroll = Model.findRelationData<Payroll>(
+        included: included,
+        relation: json['relationships']['payroll'],
+        convert: Payroll.fromJson);
+    model.role = Model.findRelationData<Role>(
+            included: included,
+            relation: json['relationships']['role'],
+            convert: Role.fromJson) ??
+        Role();
+
     Model.fromModel(model, attributes);
     model.employeeDayOffs = Model.findRelationsData<EmployeeDayOff>(
         relation: json['relationships']['employee_day_offs'],
@@ -183,8 +182,6 @@ class Employee extends Model {
     model.maritalStatus = EmployeeMaritalStatus.convertFromString(
         attributes['marital_status'] ??
             EmployeeMaritalStatus.single.toString());
-    model.payroll = payroll;
-    model.role = role;
     model.taxNumber = attributes['tax_number'];
     model.status =
         EmployeeStatus.convertFromString(attributes['status'].toString());

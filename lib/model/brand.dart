@@ -4,7 +4,7 @@ class Brand extends Model {
   String description;
   String name;
 
-  Brand({required this.description, required this.name, super.id});
+  Brand({this.description = '', this.name = '', super.id});
 
   @override
   Map<String, dynamic> toMap() => {
@@ -16,7 +16,7 @@ class Brand extends Model {
   factory Brand.fromJson(Map<String, dynamic> json,
       {Brand? model, List included = const []}) {
     var attributes = json['attributes'];
-    model ??= Brand(description: '', name: '');
+    model ??= Brand();
     model.id = json['id'];
     model.description = attributes['ketmerek'] ?? '';
     model.name = attributes['merek'];
