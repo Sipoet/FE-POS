@@ -3,7 +3,7 @@ import 'package:fe_pos/model/model.dart';
 class ItemSalesPercentageReport extends Model {
   String itemCode;
   String itemName;
-  String itemType;
+  String itemTypeName;
   String itemTypeDesc;
   String supplierCode;
   String supplierName;
@@ -25,7 +25,7 @@ class ItemSalesPercentageReport extends Model {
       {super.id,
       required this.itemCode,
       required this.itemName,
-      required this.itemType,
+      required this.itemTypeName,
       required this.itemTypeDesc,
       required this.supplierCode,
       required this.supplierName,
@@ -49,7 +49,7 @@ class ItemSalesPercentageReport extends Model {
         id: json['id'],
         itemCode: attributes['item_code'],
         itemName: attributes['item_name'],
-        itemType: attributes['item_type_name'],
+        itemTypeName: attributes['item_type_name'],
         itemTypeDesc: attributes['item_type_desc'],
         supplierCode: attributes['supplier_code'],
         supplierName: attributes['supplier_name'],
@@ -76,7 +76,7 @@ class ItemSalesPercentageReport extends Model {
   Map<String, dynamic> toMap() => {
         'item_code': itemCode,
         'item_name': itemName,
-        'item_type': itemType,
+        'item_type_name': itemTypeName,
         'item_type_desc': itemTypeDesc,
         'supplier_code': supplierCode,
         'supplier_name': supplierName,
