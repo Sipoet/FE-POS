@@ -405,6 +405,7 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
         final lengthItems = selectedItems.length <= widget.selectedDisplayLimit
             ? selectedItems.length
             : widget.selectedDisplayLimit + 1;
+
         return Wrap(
           spacing: 10,
           runSpacing: 10,

@@ -9,6 +9,9 @@ class SalesGroupBySupplier extends Model {
   int numberOfPurchase;
   int numberOfSales;
   int stockLeft;
+  Money salesTotal;
+  Money purchaseTotal;
+  Money grossProfit;
 
   SalesGroupBySupplier({
     required super.id,
@@ -20,6 +23,9 @@ class SalesGroupBySupplier extends Model {
     required this.numberOfPurchase,
     required this.numberOfSales,
     required this.stockLeft,
+    required this.salesTotal,
+    required this.purchaseTotal,
+    required this.grossProfit,
   });
 
   String get supplier => "$supplierCode - $supplierName";
@@ -37,6 +43,10 @@ class SalesGroupBySupplier extends Model {
       numberOfPurchase: attributes['number_of_purchase'],
       numberOfSales: attributes['number_of_sales'],
       stockLeft: attributes['stock_left'],
+      grossProfit: Money.tryParse(attributes['gross_profit']) ?? const Money(0),
+      salesTotal: Money.tryParse(attributes['sales_total']) ?? const Money(0),
+      purchaseTotal:
+          Money.tryParse(attributes['purchase_total']) ?? const Money(0),
     );
   }
 
@@ -51,6 +61,9 @@ class SalesGroupBySupplier extends Model {
         'number_of_purchase': numberOfPurchase,
         'number_of_sales': numberOfSales,
         'stock_left': stockLeft,
-        'supplier': supplier
+        'supplier': supplier,
+        'sales_total': salesTotal,
+        'purchase_total': purchaseTotal,
+        'gross_profit': grossProfit,
       };
 }

@@ -54,9 +54,18 @@ class Money {
   }
 
   static Money? tryParse(value) {
-    var val = double.tryParse(value);
-    if (val == null) return null;
-    return Money(val);
+    if (value is double) {
+      return Money(value);
+    } else if (value is int) {
+      return Money(value.toDouble());
+    } else if (value is String) {
+      var val = double.tryParse(value);
+      if (val == null) return null;
+      return Money(val);
+    } else if (value == null) {
+      return null;
+    }
+    return null;
   }
 
   @override

@@ -113,9 +113,9 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                   Menu(
                     icon: Icons.pages,
                     isClosed: true,
-                    label: 'Penjualan Per Supplier',
+                    label: 'Laporan Grup Penjualan',
                     isDisabled: !setting.isAuthorize(
-                        'itemSalesPercentageReport', 'groupBySupplier'),
+                        'itemSalesPercentageReport', 'groupedReport'),
                     pageFunct: () => const SalesGroupBySupplierReportPage(),
                     key: 'salesGroupBySupplierReport',
                   ),

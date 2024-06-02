@@ -157,7 +157,12 @@ class _LoginPageState extends State<LoginPage> with AppUpdater {
               flash.show(const Text('status 308'), MessageType.warning);
               return;
             }
-            String body = response?.data?['error'] ?? '';
+            String body = '';
+            if (response?.data is Map) {
+              body = response?.data?['error'] ?? '';
+            } else if (response?.data is String) {
+              body = response.data;
+            }
             flash.show(
                 Text(
                   body,
