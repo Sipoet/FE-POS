@@ -40,7 +40,7 @@ class _LoadingPageState extends State<LoadingPage> {
         }
       } catch (error) {
         AlertDialog(
-          title: const Text('error'),
+          title: const Text('Error'),
           content: Text(error.toString()),
           actions: [
             ElevatedButton(
@@ -70,7 +70,7 @@ class _LoadingPageState extends State<LoadingPage> {
       }
     } catch (error) {
       AlertDialog(
-        title: const Text('error'),
+        title: const Text('Error'),
         content: Text(error.toString()),
         actions: [
           ElevatedButton(
@@ -117,16 +117,30 @@ class _LoadingPageState extends State<LoadingPage> {
       SessionState sessionState = context.read<SessionState>();
       Server server = context.read<Server>();
       sessionState.fetchServerData(server).then((isLogin) {
-        if (isLogin) {
-          fetchSetting(server);
-        } else {
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => const LoginPage()));
+        try {
+          if (isLogin) {
+            fetchSetting(server);
+          } else {
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => const LoginPage()));
+          }
+        } catch (error) {
+          AlertDialog(
+            title: const Text('Error'),
+            content: Text(error.toString()),
+            actions: [
+              ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('close'))
+            ],
+          );
         }
-      });
+      },
+          onError: (error) =>
+              server.defaultErrorResponse(context: context, error: error));
     } catch (error) {
       AlertDialog(
-        title: const Text('error'),
+        title: const Text('Error'),
         content: Text(error.toString()),
         actions: [
           ElevatedButton(
