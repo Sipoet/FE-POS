@@ -13,6 +13,7 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
   bool _isDownloading = false;
   late String latestVersion;
   late String localVersion;
+  String _message = '';
   void checkUpdate(Server server) async {
     if (kIsWeb) {
       return;
@@ -29,9 +30,7 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
         var doc = loadYaml(response.data);
         latestVersion = doc['version'];
         if (isOlderVersion()) {
-          _showConfirmDialog(
-            onSubmit: () => downloadApp(server, platform),
-          );
+          _showConfirmDialog(server, platform);
         }
       }
     },
@@ -53,7 +52,7 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
     return false;
   }
 
-  void _showConfirmDialog({required Function onSubmit}) {
+  void _showConfirmDialog(Server server, TargetPlatform platform) {
     // show the dialog
     showDialog(
       context: context,
@@ -67,13 +66,20 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
                 Text(
                     'Versi terbaru($latestVersion) aplikasi tersedia. apakah mau update ke terbaru?'),
                 Text('versi saat ini: $localVersion'),
+                const SizedBox(
+                  height: 50,
+                ),
                 Visibility(
                   visible: _isDownloading,
                   child: CircularProgressIndicator(
                     color: colorScheme.onPrimary,
                     backgroundColor: colorScheme.onPrimaryContainer,
                   ),
-                )
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Text(_message),
               ],
             ),
             actions: [
@@ -87,7 +93,10 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
                 child: const Text("update sekarang"),
                 onPressed: () {
                   setStateDialog(() {
-                    onSubmit();
+                    _isDownloading = true;
+                  });
+                  Future.delayed(Duration.zero, () {
+                    downloadApp(server, platform, setStateDialog);
                   });
                 },
               ),
@@ -105,18 +114,38 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
         "https://raw.githubusercontent.com/Sipoet/FE-POS/main/src/windows/Output/allegra-pos.exe"
   };
 
-  void downloadApp(Server server, TargetPlatform platform) {
-    _isDownloading = true;
+  void downloadApp(Server server, TargetPlatform platform,
+      void Function(void Function()) setStateDialog) {
     const fileSaver = FileSaver();
     final path = _downloadPath[platform];
     final extFile = path.split('.').last;
     fileSaver.downloadPath('allegra-pos', extFile).then((String? filePath) {
       if (filePath != null) {
+        setStateDialog(
+          () {
+            _message = 'Downloading.';
+          },
+        );
         server.dio.download(path, filePath).then((value) async {
+          setStateDialog(
+            () {
+              _isDownloading = false;
+              _message = 'Download Complete.';
+            },
+          );
           if (platform == TargetPlatform.iOS ||
               platform == TargetPlatform.android) {
-            OpenFile.open(filePath)
-                .then((value) => Navigator.of(context).pop());
+            OpenFile.open(filePath).then((openFileResponse) {
+              if (openFileResponse.type != ResultType.done) {
+                debugPrint('====error open file ${openFileResponse.message}');
+                return;
+              } else {
+                debugPrint('====success open file');
+                Navigator.of(context).pop();
+              }
+            },
+                onError: (error) => server.defaultErrorResponse(
+                    context: context, error: error));
           } else if (platform == TargetPlatform.windows) {
             await installApp(filePath);
           } else {
@@ -125,9 +154,17 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
                 title: 'Sukses download APP',
                 description: 'file installer terinstall di $filePath');
           }
+        }, onError: (error) {
+          setStateDialog(() {
+            _message = 'gagal download installer';
+            _isDownloading = false;
+          });
+          server.defaultErrorResponse(context: context, error: error);
         });
       }
-    }).whenComplete(() {
+    }, onError: (error) {
+      _message = 'gagal cari lokasi download';
+      debugPrint(error.toString());
       _isDownloading = false;
     });
   }

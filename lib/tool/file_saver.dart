@@ -27,11 +27,8 @@ class FileSaver {
       Directory? dir = await getDownloadsDirectory();
       outputFile = "${dir?.path}/$filename";
     } else if (defaultTargetPlatform == TargetPlatform.android) {
-      Directory? dir = Directory('/storage/emulated/0/Download');
-      if (!dir.existsSync()) {
-        dir = await getExternalStorageDirectory();
-      }
-      outputFile = "${dir?.path}/$filename";
+      Directory dir = await getTemporaryDirectory();
+      outputFile = "${dir.path}/$filename";
     } else if ([
       TargetPlatform.linux,
       TargetPlatform.windows,
