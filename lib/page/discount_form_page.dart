@@ -208,7 +208,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   const SizedBox(
                     height: 10,
                   ),
-                  AsyncDropdownMultiple2<ItemType>(
+                  AsyncDropdownMultiple<ItemType>(
                     selecteds: discount.itemTypes,
                     key: const ValueKey('itemTypeSelect'),
                     path: '/item_types',
@@ -235,7 +235,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     },
                   ),
                   const SizedBox(height: 10),
-                  AsyncDropdownMultiple2<Supplier>(
+                  AsyncDropdownMultiple<Supplier>(
                     key: const ValueKey('supplierSelect'),
                     selecteds: discount.suppliers,
                     path: '/suppliers',
@@ -262,7 +262,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     },
                   ),
                   const SizedBox(height: 10),
-                  AsyncDropdownMultiple2<Brand>(
+                  AsyncDropdownMultiple<Brand>(
                     key: const ValueKey('brandSelect'),
                     selecteds: discount.brands,
                     path: '/brands',
@@ -287,7 +287,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     },
                   ),
                   const SizedBox(height: 10),
-                  AsyncDropdownMultiple2<Item>(
+                  AsyncDropdownMultiple<Item>(
                     key: const ValueKey('itemSelect'),
                     selecteds: discount.items,
                     path: '/items',
@@ -313,7 +313,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     },
                   ),
                   const SizedBox(height: 10),
-                  AsyncDropdownMultiple2<ItemType>(
+                  AsyncDropdownMultiple<ItemType>(
                     key: const ValueKey('blacklistItemTypeSelect'),
                     selecteds: discount.blacklistItemTypes,
                     path: '/item_types',
@@ -331,7 +331,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     },
                   ),
                   const SizedBox(height: 10),
-                  AsyncDropdownMultiple2<Supplier>(
+                  AsyncDropdownMultiple<Supplier>(
                     key: const ValueKey('blacklistSupplierSelect'),
                     selecteds: discount.blacklistSuppliers,
                     path: '/suppliers',
@@ -349,7 +349,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     },
                   ),
                   const SizedBox(height: 10),
-                  AsyncDropdownMultiple2<Brand>(
+                  AsyncDropdownMultiple<Brand>(
                     key: const ValueKey('blacklistBrandSelect'),
                     selecteds: discount.blacklistBrands,
                     path: '/brands',
@@ -365,7 +365,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     },
                   ),
                   const SizedBox(height: 10),
-                  AsyncDropdownMultiple2<Item>(
+                  AsyncDropdownMultiple<Item>(
                     key: const ValueKey('blacklistItemSelect'),
                     selecteds: discount.blacklistItems,
                     path: '/items',

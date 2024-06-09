@@ -1,5 +1,7 @@
 library all_page;
 
+export 'testing_page.dart';
+
 // report group
 export 'sales_percentage_report_page.dart';
 export 'sales_transaction_report_page.dart';

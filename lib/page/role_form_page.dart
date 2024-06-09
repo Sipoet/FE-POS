@@ -484,36 +484,30 @@ class _RoleFormPageState extends State<RoleFormPage>
                                     DataRow(cells: [
                                       DataCell(SizedBox(
                                         width: 250,
-                                        child: AsyncDropdown(
+                                        child: AsyncDropdown<String>(
                                             onChanged: (value) => setState(() {
                                                   accessAuthorize.controller =
-                                                      value?.value ?? '';
+                                                      value ?? '';
                                                 }),
-                                            selected: accessAuthorize
-                                                    .controller.isEmpty
-                                                ? null
-                                                : DropdownResult(
-                                                    value: accessAuthorize
-                                                        .controller,
-                                                    text: accessAuthorize
-                                                        .controller),
+                                            selected:
+                                                accessAuthorize.controller,
+                                            textOnSearch: (value) => value,
+                                            converter: (json,
+                                                    {List included =
+                                                        const []}) =>
+                                                json['id'].toString(),
                                             path: 'roles/controller_names'),
                                       )),
                                       DataCell(SizedBox(
                                         width: 250,
-                                        child: AsyncDropdownMultiple(
-                                          multiple: true,
+                                        child: AsyncDropdownMultiple<String>(
                                           onChanged: (value) =>
-                                              accessAuthorize.action = value
-                                                  .map<String>((e) =>
-                                                      e.getValueAsString())
-                                                  .toList(),
-                                          selecteds: accessAuthorize.action
-                                              .map<DropdownResult>((action) =>
-                                                  DropdownResult(
-                                                      value: action,
-                                                      text: action))
-                                              .toList(),
+                                              accessAuthorize.action = value,
+                                          selecteds: accessAuthorize.action,
+                                          textOnSearch: (value) => value,
+                                          converter: (json,
+                                                  {List included = const []}) =>
+                                              json['id'].toString(),
                                           request: (server, offset, searchText,
                                               cancelToken) {
                                             return server.get(
@@ -582,33 +576,27 @@ class _RoleFormPageState extends State<RoleFormPage>
                                   DataRow(cells: [
                                     DataCell(SizedBox(
                                       width: 250,
-                                      child: AsyncDropdown(
+                                      child: AsyncDropdown<String>(
+                                          textOnSearch: (value) => value,
                                           onChanged: (value) => columnAuthorize
-                                              .table = value?.value ?? '',
-                                          selected: columnAuthorize
-                                                  .table.isEmpty
-                                              ? null
-                                              : DropdownResult(
-                                                  value: columnAuthorize.table,
-                                                  text: columnAuthorize.table),
+                                              .table = value ?? '',
+                                          selected: columnAuthorize.table,
+                                          converter: (json,
+                                                  {List included = const []}) =>
+                                              json['id'].toString(),
                                           path: 'roles/table_names'),
                                     )),
                                     DataCell(SizedBox(
                                       width: 250,
-                                      child: AsyncDropdownMultiple(
-                                          multiple: true,
+                                      child: AsyncDropdownMultiple<String>(
                                           onChanged: (value) => setState(() {
-                                                columnAuthorize.column = value
-                                                    .map<String>(
-                                                        (e) => e.toString())
-                                                    .toList();
+                                                columnAuthorize.column = value;
                                               }),
-                                          selecteds: columnAuthorize.column
-                                              .map<DropdownResult>((column) =>
-                                                  DropdownResult(
-                                                      value: column,
-                                                      text: column))
-                                              .toList(),
+                                          selecteds: columnAuthorize.column,
+                                          textOnSearch: (value) => value,
+                                          converter: (json,
+                                                  {List included = const []}) =>
+                                              json['id'].toString(),
                                           request: (server, offset, searchText,
                                               cancelToken) {
                                             return server.get(

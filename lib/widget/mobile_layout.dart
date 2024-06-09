@@ -23,34 +23,61 @@ class MobileLayout extends StatefulWidget {
 
 class _MobileLayoutState extends State<MobileLayout>
     with TickerProviderStateMixin {
-  List<Widget> _menus = [];
   final List<String> disableClosedTabs = ['Home'];
+  late final List<Menu> _menus;
 
   @override
   void initState() {
-    _menus = widget.menuTree.toList().map<Widget>((menu) {
-      return decorateMenu(menu);
-    }).toList();
-    _menus.add(
-      ListTile(
-        leading: const Icon(Icons.power_settings_new),
-        onTap: () {
-          widget.logout();
-        },
-        title: const Text('Log Out'),
-      ),
-    );
+    _menus = List.from(widget.menuTree);
     super.initState();
+  }
+
+  List<Widget> listMenuNested(List<Menu> menus) {
+    List<Widget> container = [];
+    for (Menu menu in menus) {
+      if (menu.isNotAuthorize()) {
+        continue;
+      }
+      iconStatus[menu.key] = menu.isClosed;
+      container.add(decorateMenu(menu));
+      if (menu.children.isNotEmpty) {
+        if (menu.key == 'report') {
+          debugPrint('decorate ${menu.key} ${iconStatus[menu.key]}');
+        }
+        container.add(Visibility(
+          visible: iconStatus[menu.key] == false,
+          child: ListView(
+            padding: const EdgeInsets.only(left: 10),
+            physics: const ClampingScrollPhysics(),
+            shrinkWrap: true,
+            children: listMenuNested(menu.children),
+          ),
+        ));
+      }
+    }
+    return container;
   }
 
   @override
   Widget build(BuildContext context) {
     var tabManager = context.read<TabManager>();
+    final menuWidgets = listMenuNested(_menus);
+    menuWidgets.add(ListTile(
+      leading: const Icon(Icons.power_settings_new),
+      onTap: () {
+        widget.logout();
+      },
+      title: const Text('Log Out'),
+    ));
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Allegra POS | SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: ${widget.version}',
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        title: Tooltip(
+          message:
+              'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: ${widget.version} | Allegra POS',
+          child: Text(
+            'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: ${widget.version} | Allegra POS',
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
         ),
         bottom: TabBar(
           isScrollable: true,
@@ -64,29 +91,43 @@ class _MobileLayoutState extends State<MobileLayout>
             }
           },
           tabs: tabManager.tabs
-              .map<Widget>((header) => Row(
-                    children: [
-                      Text(
-                        header,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      if (header.isNotEmpty &&
-                          !disableClosedTabs.contains(header))
-                        IconButton(
-                            onPressed: () => setState(() {
-                                  tabManager.removeTab(header);
-                                }),
-                            icon: const Icon(Icons.close))
-                    ],
+              .map<Widget>((header) => SizedBox(
+                    height: 40,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          constraints: const BoxConstraints(maxWidth: 100),
+                          child: Tooltip(
+                            message: header,
+                            child: Text(
+                              header,
+                              overflow: TextOverflow.ellipsis,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: header.isNotEmpty &&
+                              !disableClosedTabs.contains(header),
+                          child: IconButton(
+                              onPressed: () => setState(() {
+                                    tabManager.removeTab(header);
+                                  }),
+                              icon: const Icon(Icons.close)),
+                        ),
+                      ],
+                    ),
                   ))
               .toList(),
         ),
       ),
       drawer: Drawer(
-          child: ListView.builder(
-        itemBuilder: (context, index) => _menus[index],
-        itemCount: _menus.length,
-      )),
+        child: ListView(
+          children: menuWidgets,
+        ),
+      ),
       body: TabBarView(
         physics: const NeverScrollableScrollPhysics(),
         controller: tabManager.controller,
@@ -95,10 +136,10 @@ class _MobileLayoutState extends State<MobileLayout>
     );
   }
 
+  Map<String, bool> iconStatus = {};
+
   Widget decorateMenu(Menu menu) {
-    if (menu.isNotAuthorize()) {
-      return const SizedBox();
-    } else if (menu.children.isEmpty) {
+    if (menu.children.isEmpty) {
       return ListTile(
         key: ValueKey(menu.key),
         leading: Icon(menu.icon),
@@ -119,22 +160,12 @@ class _MobileLayoutState extends State<MobileLayout>
         onTap: () {
           setState(() {
             menu.isClosed = !menu.isClosed;
-            int index = _menus.indexWhere((tile) {
-              return tile.key == ValueKey(menu.key);
-            });
-            if (menu.isClosed) {
-              int childrenCount = menu.children.length;
-              _menus.removeRange(index + 1, index + childrenCount + 1);
-            } else {
-              _menus.insertAll(index + 1,
-                  menu.children.map<Widget>((childMenu) {
-                return decorateMenu(childMenu);
-              }));
-            }
+            iconStatus[menu.key] = menu.isClosed;
           });
         },
-        trailing:
-            Icon(menu.isClosed ? Icons.arrow_drop_down : Icons.arrow_drop_up),
+        trailing: Icon(iconStatus[menu.key] == true
+            ? Icons.arrow_drop_down
+            : Icons.arrow_drop_up),
       );
     }
   }

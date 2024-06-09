@@ -158,7 +158,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                   Container(
                       padding: const EdgeInsets.only(right: 10),
                       constraints: const BoxConstraints(maxWidth: 350),
-                      child: AsyncDropdownMultiple2<Brand>(
+                      child: AsyncDropdownMultiple<Brand>(
                         label: const Text('Merek :', style: _filterLabelStyle),
                         key: const ValueKey('brandSelect'),
                         textOnSearch: (Brand brand) => brand.name,
@@ -171,7 +171,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                   Container(
                       padding: const EdgeInsets.only(right: 10),
                       constraints: const BoxConstraints(maxWidth: 350),
-                      child: AsyncDropdownMultiple2<ItemType>(
+                      child: AsyncDropdownMultiple<ItemType>(
                         label: const Text('Jenis/Departemen :',
                             style: _filterLabelStyle),
                         key: const ValueKey('brandSelect'),
@@ -187,7 +187,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                   Container(
                     padding: const EdgeInsets.only(right: 10),
                     constraints: const BoxConstraints(maxWidth: 350),
-                    child: AsyncDropdownMultiple2<Supplier>(
+                    child: AsyncDropdownMultiple<Supplier>(
                       label: const Text('Supplier :', style: _filterLabelStyle),
                       key: const ValueKey('supplierSelect'),
                       attributeKey: 'nama',
@@ -203,7 +203,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                   Container(
                     padding: const EdgeInsets.only(right: 10),
                     constraints: const BoxConstraints(maxWidth: 350),
-                    child: AsyncDropdownMultiple2(
+                    child: AsyncDropdownMultiple(
                       label: const Text('Item :', style: _filterLabelStyle),
                       key: const ValueKey('itemSelect'),
                       attributeKey: 'namaitem',

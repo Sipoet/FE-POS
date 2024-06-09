@@ -6,278 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 export 'package:fe_pos/model/server.dart';
 
-class AsyncDropdownMultiple extends StatefulWidget {
-  const AsyncDropdownMultiple(
-      {super.key,
-      this.path,
-      this.minCharSearch = 3,
-      this.multiple = false,
-      this.width,
-      this.onChanged,
-      this.request,
-      this.label,
-      this.attributeKey,
-      this.validator,
-      this.onSaved,
-      this.selecteds = const []});
-
-  final String? path;
-  final String? attributeKey;
-  final int minCharSearch;
-  final double? width;
-  final List<DropdownResult> selecteds;
-  final bool multiple;
-  final void Function(List<dynamic>)? onChanged;
-  final void Function(List<dynamic>?)? onSaved;
-  final String? Function(List<DropdownResult>?)? validator;
-  final Widget? label;
-  final Future Function(
-          Server server, int page, String searchText, CancelToken cancelToken)?
-      request;
-
-  @override
-  State<AsyncDropdownMultiple> createState() => _AsyncDropdownMultipleState();
-}
-
-class _AsyncDropdownMultipleState extends State<AsyncDropdownMultiple> {
-  final notFoundSign = const DropdownMenuEntry<String>(
-      label: 'Data tidak Ditemukan', value: '', enabled: false);
-  late final Server server;
-  CancelToken _cancelToken = CancelToken();
-  final _focusNode = FocusNode();
-  @override
-  void initState() {
-    server = context.read<Server>();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _cancelToken.cancel();
-    super.dispose();
-  }
-
-  Future Function(
-          Server server, int page, String searchText, CancelToken cancelToken)
-      get request =>
-          widget.request ??
-          (Server server, int page, String searchText,
-              CancelToken cancelToken) {
-            _cancelToken = CancelToken();
-            return server.get(widget.path!,
-                queryParam: {
-                  'search_text': searchText,
-                  'page[page]': page.toString(),
-                  'page[limit]': '20'
-                },
-                cancelToken: _cancelToken);
-          };
-
-  bool compareResult(DropdownResult a, DropdownResult b) {
-    return a.text == b.text;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // var colorScheme = Theme.of(context).colorScheme;
-    return DropdownSearch<DropdownResult>.multiSelection(
-      asyncItems: getData,
-      onChanged: (dropdownResults) {
-        if (widget.onChanged != null) {
-          widget.onChanged!(dropdownResults.map((e) => e.value).toList());
-        }
-      },
-      onSaved: (dropdownResults) {
-        if (widget.onSaved != null) {
-          widget.onSaved!(dropdownResults?.map((e) => e.value).toList());
-        }
-      },
-      onBeforePopupOpening: (selItems) {
-        return Future.delayed(Duration.zero, () {
-          if (_focusNode.canRequestFocus) {
-            _focusNode.requestFocus();
-          }
-          return true;
-        });
-      },
-      validator: widget.validator,
-      compareFn: compareResult,
-      itemAsString: (item) => item.text,
-      selectedItems: widget.selecteds,
-      clearButtonProps: const ClearButtonProps(isVisible: true),
-      popupProps: PopupPropsMultiSelection.menu(
-          searchFieldProps: TextFieldProps(
-            focusNode: _focusNode,
-          ),
-          showSearchBox: true,
-          showSelectedItems: true,
-          isFilterOnline: true),
-      dropdownDecoratorProps: DropDownDecoratorProps(
-          dropdownSearchDecoration: InputDecoration(
-        label: widget.label,
-        border: const OutlineInputBorder(),
-      )),
-    );
-  }
-
-  Future<List<DropdownResult>> getData(String filter) async {
-    var response = await request(server, 1, filter, _cancelToken).onError(
-        (error, stackTrace) => {
-              server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: [])
-            });
-    if (response.statusCode == 200) {
-      Map responseBody = response.data;
-      return convertToOptions(responseBody['data']);
-    } else {
-      throw 'cant connect to server';
-    }
-  }
-
-  List<DropdownResult> convertToOptions(List list) {
-    final nameOf = widget.attributeKey == null
-        ? (row) => row['name']
-        : (row) => row['attributes'][widget.attributeKey];
-
-    return list
-        .map<DropdownResult>((row) =>
-            DropdownResult(value: row['id'], raw: row, text: nameOf(row)))
-        .toList();
-  }
-}
-
-class AsyncDropdown extends StatefulWidget {
-  const AsyncDropdown(
-      {super.key,
-      this.path,
-      this.minCharSearch = 3,
-      this.multiple = false,
-      this.width,
-      this.onChanged,
-      this.request,
-      this.label,
-      this.attributeKey,
-      this.validator,
-      this.onSaved,
-      this.selected});
-
-  final String? path;
-  final String? attributeKey;
-  final int minCharSearch;
-  final double? width;
-  final DropdownResult? selected;
-  final bool multiple;
-  final void Function(DropdownResult?)? onChanged;
-  final void Function(DropdownResult?)? onSaved;
-  final String? Function(DropdownResult?)? validator;
-  final Widget? label;
-  final Future Function(
-          Server server, int page, String searchText, CancelToken cancelToken)?
-      request;
-
-  @override
-  State<AsyncDropdown> createState() => _AsyncDropdownState();
-}
-
-class _AsyncDropdownState extends State<AsyncDropdown> {
-  final notFoundSign = const DropdownMenuEntry<String>(
-      label: 'Data tidak Ditemukan', value: '', enabled: false);
-  late final Server server;
-  CancelToken _cancelToken = CancelToken();
-  final _focusNode = FocusNode();
-  @override
-  void initState() {
-    server = context.read<Server>();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _cancelToken.cancel();
-    super.dispose();
-  }
-
-  Future Function(
-          Server server, int page, String searchText, CancelToken cancelToken)
-      get request =>
-          widget.request ??
-          (Server server, int page, String searchText,
-              CancelToken cancelToken) {
-            _cancelToken = CancelToken();
-            return server.get(widget.path!,
-                queryParam: {
-                  'search_text': searchText,
-                  'page[page]': page.toString(),
-                  'page[limit]': '20'
-                },
-                cancelToken: cancelToken);
-          };
-
-  bool compareResult(DropdownResult a, DropdownResult b) {
-    return a.text == b.text;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // var colorScheme = Theme.of(context).colorScheme;
-    return DropdownSearch<DropdownResult>(
-      asyncItems: getData,
-      onChanged: widget.onChanged,
-      onSaved: widget.onSaved,
-      validator: widget.validator,
-      itemAsString: (item) => item.text,
-      selectedItem: widget.selected,
-      compareFn: compareResult,
-      onBeforePopupOpening: (selItems) {
-        return Future.delayed(Duration.zero, () {
-          if (_focusNode.canRequestFocus) {
-            _focusNode.requestFocus();
-          }
-          return true;
-        });
-      },
-      clearButtonProps: const ClearButtonProps(isVisible: true),
-      popupProps: PopupProps.menu(
-          searchFieldProps: TextFieldProps(
-            focusNode: _focusNode,
-          ),
-          showSearchBox: true,
-          showSelectedItems: true,
-          isFilterOnline: true),
-      dropdownDecoratorProps: DropDownDecoratorProps(
-          dropdownSearchDecoration: InputDecoration(
-        label: widget.label,
-        border: const OutlineInputBorder(),
-      )),
-    );
-  }
-
-  Future<List<DropdownResult>> getData(String filter) async {
-    var response = await request(server, 1, filter, _cancelToken).onError(
-        (error, stackTrace) => {
-              server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: [])
-            });
-    if (response.statusCode == 200) {
-      Map responseBody = response.data;
-      return convertToOptions(responseBody['data']);
-    } else {
-      throw 'cant connect to server';
-    }
-  }
-
-  List<DropdownResult> convertToOptions(List list) {
-    final nameOf = widget.attributeKey == null
-        ? (row) => row['name']
-        : (row) => row['attributes'][widget.attributeKey];
-
-    return list
-        .map<DropdownResult>((row) =>
-            DropdownResult(value: row['id'], raw: row, text: nameOf(row)))
-        .toList();
-  }
-}
-
 class DropdownResult {
   String text;
   dynamic value;
@@ -293,8 +21,8 @@ class DropdownResult {
   String get searchableText => customSearch ?? "$value $text";
 }
 
-class AsyncDropdownMultiple2<T> extends StatefulWidget {
-  const AsyncDropdownMultiple2(
+class AsyncDropdownMultiple<T extends Object> extends StatefulWidget {
+  const AsyncDropdownMultiple(
       {super.key,
       this.path,
       this.delayedSearch = const Duration(milliseconds: 500),
@@ -333,11 +61,12 @@ class AsyncDropdownMultiple2<T> extends StatefulWidget {
       request;
 
   @override
-  State<AsyncDropdownMultiple2<T>> createState() =>
-      _AsyncDropdownMultiple2State<T>();
+  State<AsyncDropdownMultiple<T>> createState() =>
+      _AsyncDropdownMultipleState<T>();
 }
 
-class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
+class _AsyncDropdownMultipleState<T extends Object>
+    extends State<AsyncDropdownMultiple<T>> {
   final notFoundSign = const DropdownMenuEntry<String>(
       label: 'Data tidak Ditemukan', value: '', enabled: false);
   late final Server server;
@@ -414,7 +143,7 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
               return const Text('.....');
             }
             final selectedItem = selectedItems[index];
-            return Container(
+            final pillWidget = Container(
               padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 5),
               decoration: BoxDecoration(
                 color: colorScheme.primaryContainer,
@@ -423,7 +152,15 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Flexible(child: SelectableText(textFormat(selectedItem))),
+                  Flexible(
+                      child: Text(
+                    textFormat(selectedItem),
+                    style: const TextStyle(
+                        decoration: TextDecoration.none,
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.black),
+                  )),
                   IconButton(
                       onPressed: () {
                         setState(() {
@@ -436,6 +173,26 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
                       icon: const Icon(Icons.close_rounded))
                 ],
               ),
+            );
+            return Draggable<T>(
+              data: selectedItem,
+              childWhenDragging: const SizedBox(
+                width: 10,
+              ),
+              feedback: pillWidget,
+              child: DragTarget<T>(builder: (
+                BuildContext context,
+                List<dynamic> accepted,
+                List<dynamic> rejected,
+              ) {
+                return pillWidget;
+              }, onAcceptWithDetails: (DragTargetDetails<T> details) {
+                setState(() {
+                  final index = selectedItems.indexOf(selectedItem);
+                  selectedItems.removeAt(selectedItems.indexOf(details.data));
+                  selectedItems.insert(index, details.data);
+                });
+              }),
             );
           }).toList(),
         );
@@ -479,8 +236,8 @@ class _AsyncDropdownMultiple2State<T> extends State<AsyncDropdownMultiple2<T>> {
   }
 }
 
-class AsyncDropdown2<T> extends StatefulWidget {
-  const AsyncDropdown2(
+class AsyncDropdown<T> extends StatefulWidget {
+  const AsyncDropdown(
       {super.key,
       this.path,
       this.delayedSearch = const Duration(milliseconds: 500),
@@ -519,10 +276,10 @@ class AsyncDropdown2<T> extends StatefulWidget {
       request;
 
   @override
-  State<AsyncDropdown2<T>> createState() => _AsyncDropdown2State<T>();
+  State<AsyncDropdown<T>> createState() => _AsyncDropdownState<T>();
 }
 
-class _AsyncDropdown2State<T> extends State<AsyncDropdown2<T>> {
+class _AsyncDropdownState<T> extends State<AsyncDropdown<T>> {
   final notFoundSign = const DropdownMenuEntry<String>(
       label: 'Data tidak Ditemukan', value: '', enabled: false);
   late final Server server;

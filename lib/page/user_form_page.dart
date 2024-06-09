@@ -1,5 +1,6 @@
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
+import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,7 @@ class UserFormPage extends StatefulWidget {
 class _UserFormPageState extends State<UserFormPage>
     with AutomaticKeepAliveClientMixin, HistoryPopup {
   late Flash flash;
-
+  late final Setting setting;
   final _formKey = GlobalKey<FormState>();
   User get user => widget.user;
 
@@ -28,6 +29,7 @@ class _UserFormPageState extends State<UserFormPage>
   @override
   void initState() {
     flash = Flash(context);
+    setting = context.read<Setting>();
     super.initState();
   }
 
@@ -102,7 +104,6 @@ class _UserFormPageState extends State<UserFormPage>
                       ],
                     ),
                   ),
-
                   const Divider(),
                   TextFormField(
                     decoration: const InputDecoration(
@@ -144,7 +145,8 @@ class _UserFormPageState extends State<UserFormPage>
                     height: 10,
                   ),
                   Flexible(
-                    child: AsyncDropdown(
+                    child: AsyncDropdown<Role>(
+                      converter: Role.fromJson,
                       key: const ValueKey('roleSelect'),
                       path: '/roles',
                       attributeKey: 'name',
@@ -152,44 +154,49 @@ class _UserFormPageState extends State<UserFormPage>
                         'Jabatan :',
                         style: labelStyle,
                       ),
-                      onChanged: (option) {
-                        user.role.id = int.tryParse(option?.value ?? '');
-                        user.role.name = option?.text ?? '';
+                      onChanged: (role) {
+                        user.role = role ?? Role();
                       },
-                      selected: DropdownResult(
-                          value: user.role.id, text: user.role.name),
+                      textOnSearch: (role) => role.name,
+                      selected: user.role,
                       validator: (value) {
-                        if (user.role.id == null) {
+                        if (user.role.id == null || value == null) {
                           return 'harus diisi';
                         }
                         return null;
                       },
                     ),
                   ),
-                  // const Text(
-                  //   'Status:',
-                  //   style: labelStyle,
-                  // ),
-                  // RadioListTile<UserStatus>(
-                  //   title: const Text('Inactive'),
-                  //   value: UserStatus.inactive,
-                  //   groupValue: user.status,
-                  //   onChanged: (value) {
-                  //     setState(() {
-                  //       user.status = value ?? UserStatus.inactive;
-                  //     });
-                  //   },
-                  // ),
-                  // RadioListTile<UserStatus>(
-                  //   title: const Text('Active'),
-                  //   value: UserStatus.active,
-                  //   groupValue: user.status,
-                  //   onChanged: (value) {
-                  //     setState(() {
-                  //       user.status = value ?? UserStatus.inactive;
-                  //     });
-                  //   },
-                  // ),
+                  Visibility(
+                      visible: setting.canShow('user', 'status'),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Status:',
+                            style: labelStyle,
+                          ),
+                          RadioListTile<UserStatus>(
+                            title: const Text('Inactive'),
+                            value: UserStatus.inactive,
+                            groupValue: user.status,
+                            onChanged: (value) {
+                              setState(() {
+                                user.status = value ?? UserStatus.inactive;
+                              });
+                            },
+                          ),
+                          RadioListTile<UserStatus>(
+                            title: const Text('Active'),
+                            value: UserStatus.active,
+                            groupValue: user.status,
+                            onChanged: (value) {
+                              setState(() {
+                                user.status = value ?? UserStatus.inactive;
+                              });
+                            },
+                          ),
+                        ],
+                      )),
                   const SizedBox(
                     height: 10,
                   ),

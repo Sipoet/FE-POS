@@ -206,7 +206,7 @@ class _SalesGroupBySupplierReportPageState
                       )),
                   SizedBox(
                       width: 350,
-                      child: AsyncDropdownMultiple2<Brand>(
+                      child: AsyncDropdownMultiple<Brand>(
                         label: const Text('Merek :', style: _filterLabelStyle),
                         key: const ValueKey('brandSelect'),
                         textOnSearch: (Brand brand) => brand.name,
@@ -219,7 +219,7 @@ class _SalesGroupBySupplierReportPageState
                       )),
                   SizedBox(
                       width: 350,
-                      child: AsyncDropdownMultiple2<ItemType>(
+                      child: AsyncDropdownMultiple<ItemType>(
                         label: const Text('Jenis/Departemen :',
                             style: _filterLabelStyle),
                         key: const ValueKey('itemTypeSelect'),
@@ -235,7 +235,7 @@ class _SalesGroupBySupplierReportPageState
                       )),
                   SizedBox(
                     width: 350,
-                    child: AsyncDropdownMultiple2<Supplier>(
+                    child: AsyncDropdownMultiple<Supplier>(
                       label: const Text('Supplier :', style: _filterLabelStyle),
                       key: const ValueKey('supplierSelect'),
                       attributeKey: 'nama',

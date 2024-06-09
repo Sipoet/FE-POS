@@ -99,24 +99,21 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                   ),
                   const Divider(),
                   Flexible(
-                    child: AsyncDropdown(
+                    child: AsyncDropdown<Employee>(
                       key: const ValueKey('employeeSelect'),
                       path: '/employees',
                       attributeKey: 'name',
+                      textOnSearch: (employee) =>
+                          "${employee.code} - ${employee.name}",
+                      converter: Employee.fromJson,
                       label: const Text(
                         'Nama Karyawan :',
                         style: labelStyle,
                       ),
-                      onChanged: (option) {
-                        employeeLeave.employee.id =
-                            int.tryParse(option?.value ?? '');
-                        employeeLeave.employee.name = option?.text ?? '';
+                      onChanged: (employee) {
+                        employeeLeave.employee = employee ?? Employee();
                       },
-                      selected: employeeLeave.employee.id == null
-                          ? null
-                          : DropdownResult(
-                              value: employeeLeave.employee.id,
-                              text: employeeLeave.employee.name),
+                      selected: employeeLeave.employee,
                       validator: (value) {
                         if (employeeLeave.employee.id == null) {
                           return 'harus diisi';

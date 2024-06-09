@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -144,15 +145,16 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                         icon: const Icon(Icons.history)),
                   ),
                   const Divider(),
-                  AsyncDropdown(
+                  AsyncDropdown<Employee>(
                     path: 'employees',
                     attributeKey: 'name',
                     onChanged: (value) {
-                      payslip.employee.id = int.parse(value?.value ?? '');
+                      payslip.employee = value ?? Employee();
                     },
-                    selected: DropdownResult(
-                        value: payslip.employee.id,
-                        text: payslip.employee.name),
+                    converter: Employee.fromJson,
+                    selected: payslip.employee,
+                    textOnSearch: (employee) =>
+                        "${employee.code} - ${employee.name}",
                     width: 200,
                   ),
                   const SizedBox(

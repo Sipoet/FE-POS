@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/payslip.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
@@ -69,23 +70,21 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                     const SizedBox(
                       height: 10,
                     ),
-                    AsyncDropdownMultiple(
+                    AsyncDropdownMultiple<Employee>(
                       key: const ValueKey('generate_payslip-karyawan'),
                       attributeKey: 'name',
-                      multiple: true,
                       label: const Text(
                         'Nama Karyawan',
                         style: labelStyle,
                       ),
                       onChanged: (values) {
-                        if (values.isEmpty) {
-                          _employeeIds = [];
-                          return;
-                        }
-                        _employeeIds = values
-                            .map<String>((row) => row.toString())
-                            .toList();
+                        _employeeIds =
+                            values.map<String>((e) => e.id.toString()).toList();
                       },
+                      textOnSearch: (employee) =>
+                          "${employee.code} - ${employee.name}",
+                      textOnSelected: (employee) => employee.code,
+                      converter: Employee.fromJson,
                       request: (server, page, searchText, cancelToken) {
                         return server.get('employees',
                             queryParam: {

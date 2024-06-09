@@ -1,6 +1,7 @@
 import 'package:fe_pos/tool/app_updater.dart';
 
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/framework_layout.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with AppUpdater {
+class _LoginPageState extends State<LoginPage> with AppUpdater, LoadingPopup {
   final _formKey = GlobalKey<FormState>();
   String _host = '';
   String _username = '';
@@ -105,7 +106,7 @@ class _LoginPageState extends State<LoginPage> with AppUpdater {
                   onFieldSubmitted: (value) {
                     // Validate returns true if the form is valid, or false otherwise.
                     if (_formKey.currentState!.validate()) {
-                      flash.show(const Text('Loading'), MessageType.info);
+                      _formKey.currentState!.save();
                       _submit();
                     }
                   },
@@ -119,7 +120,7 @@ class _LoginPageState extends State<LoginPage> with AppUpdater {
                       onPressed: () {
                         // Validate returns true if the form is valid, or false otherwise.
                         if (_formKey.currentState!.validate()) {
-                          flash.show(const Text('Loading'), MessageType.info);
+                          _formKey.currentState!.save();
                           _submit();
                         }
                       },
@@ -134,47 +135,51 @@ class _LoginPageState extends State<LoginPage> with AppUpdater {
   }
 
   void _submit() async {
+    showLoadingPopup();
     SessionState sessionState = context.read<SessionState>();
     Server server = context.read<Server>();
     _formKey.currentState?.save();
     try {
-      sessionState.login(
-          server: server,
-          host: _host,
-          context: context,
-          username: _username,
-          password: _password,
-          onSuccess: (response) {
-            fetchSetting(server);
-            flash.hide();
-            var body = response.data;
-            flash.showBanner(
-                title: body['message'], messageType: MessageType.success);
-          },
-          onFailed: (response) {
-            flash.hide();
-            if (response.statusCode == 308) {
-              flash.show(const Text('status 308'), MessageType.warning);
-              return;
-            }
-            String body = '';
-            if (response?.data is Map) {
-              body = response?.data?['error'] ?? '';
-            } else if (response?.data is String) {
-              body = response.data;
-            }
-            flash.show(
-                Text(
-                  body,
-                ),
-                MessageType.failed);
-          });
+      sessionState
+          .login(
+              server: server,
+              host: _host,
+              context: context,
+              username: _username,
+              password: _password,
+              onSuccess: (response) {
+                fetchSetting(server);
+                flash.hide();
+                var body = response.data;
+                flash.showBanner(
+                    title: body['message'], messageType: MessageType.success);
+              },
+              onFailed: (response) {
+                flash.hide();
+                if (response.statusCode == 308) {
+                  flash.show(const Text('status 308'), MessageType.warning);
+                  return;
+                }
+                String body = '';
+                if (response?.data is Map) {
+                  body = response?.data?['error'] ?? '';
+                } else if (response?.data is String) {
+                  body = response.data;
+                }
+                flash.show(
+                    Text(
+                      body,
+                    ),
+                    MessageType.failed);
+              })
+          .whenComplete(() => hideLoadingPopup());
     } catch (error) {
       flash.show(
           Text(
             error.toString(),
           ),
           MessageType.failed);
+      hideLoadingPopup();
     }
   }
 

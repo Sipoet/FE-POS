@@ -44,9 +44,13 @@ class _DesktopLayoutState extends State<DesktopLayout>
       ],
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            'Allegra POS | SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: ${widget.version}',
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          title: Tooltip(
+            message:
+                'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: ${widget.version} | Allegra POS',
+            child: Text(
+              'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: ${widget.version} | Allegra POS',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
           ),
           actions: menus,
           bottom: TabBar(
@@ -62,20 +66,32 @@ class _DesktopLayoutState extends State<DesktopLayout>
               }
             },
             tabs: tabManager.tabs
-                .map<Widget>((header) => Row(
-                      children: [
-                        Text(
-                          header,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        if (header.isNotEmpty &&
-                            !disableClosedTabs.contains(header))
-                          IconButton(
-                              onPressed: () => setState(() {
-                                    tabManager.removeTab(header);
-                                  }),
-                              icon: const Icon(Icons.close))
-                      ],
+                .map<Widget>((header) => SizedBox(
+                      height: 40,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            constraints: const BoxConstraints(maxWidth: 100),
+                            child: Tooltip(
+                              message: header,
+                              child: Text(
+                                header,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                          if (header.isNotEmpty &&
+                              !disableClosedTabs.contains(header))
+                            IconButton(
+                                onPressed: () => setState(() {
+                                      tabManager.removeTab(header);
+                                    }),
+                                icon: const Icon(Icons.close))
+                        ],
+                      ),
                     ))
                 .toList(),
           ),

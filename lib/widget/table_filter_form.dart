@@ -232,12 +232,16 @@ class _TableFilterFormState extends State<TableFilterForm> {
 
   Widget linkFilter(TableColumn column) {
     final attributes = column.attributeKey.split('.');
-    return SizedBox(
+    final attributeKey = attributes.length > 1 ? attributes[1] : 'name';
+    return Container(
       width: 300,
-      height: 90,
-      child: AsyncDropdownMultiple(
+      constraints: const BoxConstraints(minHeight: 90),
+      child: AsyncDropdownMultiple<Map>(
+        converter: (json, {List included = const []}) => json,
+        textOnSearch: (value) =>
+            "${value['id'].toString()} - ${value[attributeKey]}",
+        textOnSelected: (value) => value['id'].toString(),
         label: Text(column.name, style: _labelStyle),
-        multiple: true,
         request: (server, page, searchText, cancelToken) {
           return server.get(column.path ?? '',
               queryParam: {
@@ -251,8 +255,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
         attributeKey: attributes[1],
         onSaved: (value) {
           if (value != null && value.isNotEmpty) {
-            final decoratedValue =
-                value.map<String>((e) => e.toString()).toList().join(',');
+            final decoratedValue = value.join(',');
             controller.setFilter(column.key, 'eq', decoratedValue);
           } else {
             controller.removeFilter(column.key);

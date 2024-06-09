@@ -115,7 +115,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                       ),
                       SizedBox(
                         width: 300,
-                        child: AsyncDropdownMultiple2<Employee>(
+                        child: AsyncDropdownMultiple<Employee>(
                           label: const Text(
                             'Karyawan',
                             style: TextStyle(fontWeight: FontWeight.bold),

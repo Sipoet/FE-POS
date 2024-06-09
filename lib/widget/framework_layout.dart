@@ -37,6 +37,12 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           pageFunct: () => const HomePage(),
           key: 'home'),
       Menu(
+          icon: Icons.home,
+          isClosed: true,
+          label: 'TEST',
+          pageFunct: () => const TestingPage(),
+          key: 'test'),
+      Menu(
           icon: Icons.payment_sharp,
           isClosed: true,
           label: 'HRD',
@@ -78,20 +84,20 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           key: 'report',
           children: [
             Menu(
+              icon: Icons.card_giftcard,
+              isClosed: true,
+              label: 'Laporan item',
+              isDisabled:
+                  !setting.isAuthorize('itemSalesPercentageReport', 'index'),
+              pageFunct: () => const SalesPercentageReportPage(),
+              key: 'salesPercentageReport',
+            ),
+            Menu(
                 icon: Icons.money,
                 isClosed: true,
                 label: 'Laporan Penjualan',
                 key: 'salesReport',
                 children: [
-                  Menu(
-                    icon: Icons.pages,
-                    isClosed: true,
-                    label: 'Penjualan persentase per item',
-                    isDisabled: !setting.isAuthorize(
-                        'itemSalesPercentageReport', 'index'),
-                    pageFunct: () => const SalesPercentageReportPage(),
-                    key: 'salesPercentageReport',
-                  ),
                   Menu(
                     icon: Icons.pages,
                     isClosed: true,
@@ -121,7 +127,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                   ),
                 ]),
             Menu(
-              icon: Icons.money,
+              icon: Icons.people,
               isClosed: true,
               label: 'Laporan Slip Gaji',
               key: 'payslipReport',
