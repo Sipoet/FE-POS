@@ -36,12 +36,12 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           label: 'Home',
           pageFunct: () => const HomePage(),
           key: 'home'),
-      Menu(
-          icon: Icons.home,
-          isClosed: true,
-          label: 'TEST',
-          pageFunct: () => const TestingPage(),
-          key: 'test'),
+      // Menu(
+      //     icon: Icons.home,
+      //     isClosed: true,
+      //     label: 'TEST',
+      //     pageFunct: () => const TestingPage(),
+      //     key: 'test'),
       Menu(
           icon: Icons.payment_sharp,
           isClosed: true,

@@ -7,6 +7,7 @@ import 'package:fe_pos/widget/framework_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/foundation.dart';
 
 class LoginPage extends StatefulWidget {
@@ -21,12 +22,15 @@ class _LoginPageState extends State<LoginPage> with AppUpdater, LoadingPopup {
   String _host = '';
   String _username = '';
   String _password = '';
+  String version = '';
   late final Flash flash;
   @override
   void initState() {
     flash = Flash(context);
     Server server = context.read<Server>();
-
+    PackageInfo.fromPlatform().then((packageInfo) => setState(() {
+          version = packageInfo.version;
+        }));
     checkUpdate(server);
     super.initState();
   }
@@ -36,7 +40,7 @@ class _LoginPageState extends State<LoginPage> with AppUpdater, LoadingPopup {
     final server = context.read<Server>();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
+        title: Text('Login | VERSION: $version'),
       ),
       body: Center(
           child: Container(

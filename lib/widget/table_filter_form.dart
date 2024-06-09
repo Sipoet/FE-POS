@@ -239,7 +239,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
       child: AsyncDropdownMultiple<Map>(
         converter: (json, {List included = const []}) => json,
         textOnSearch: (value) =>
-            "${value['id'].toString()} - ${value[attributeKey]}",
+            "${value['id'].toString()} - ${value['attributes'][attributeKey]}",
         textOnSelected: (value) => value['id'].toString(),
         label: Text(column.name, style: _labelStyle),
         request: (server, page, searchText, cancelToken) {
@@ -255,7 +255,8 @@ class _TableFilterFormState extends State<TableFilterForm> {
         attributeKey: attributes[1],
         onSaved: (value) {
           if (value != null && value.isNotEmpty) {
-            final decoratedValue = value.join(',');
+            final decoratedValue =
+                value.map<String>((e) => e['id'].toString()).join(',');
             controller.setFilter(column.key, 'eq', decoratedValue);
           } else {
             controller.removeFilter(column.key);
