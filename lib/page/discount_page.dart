@@ -330,7 +330,7 @@ class _DiscountPageState extends State<DiscountPage>
             ),
             SizedBox(
               height: 600,
-              child: CustomDataTable(
+              child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 1,
               ),

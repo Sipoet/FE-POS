@@ -8,11 +8,15 @@ class TableFilterForm extends StatefulWidget {
   final Map<String, List<dynamic>> enums;
   final TableFilterFormController? controller;
   final void Function(Map) onSubmit;
+  final void Function(Map)? onDownload;
+  final bool showCanopy;
   const TableFilterForm(
       {super.key,
       this.enums = const {},
       required this.onSubmit,
+      this.onDownload,
       required this.columns,
+      this.showCanopy = true,
       this.controller});
 
   @override
@@ -32,6 +36,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
 
   @override
   void initState() {
+    isShowFilter = !widget.showCanopy;
     controller = widget.controller ?? TableFilterFormController();
     super.initState();
   }
@@ -46,21 +51,28 @@ class _TableFilterFormState extends State<TableFilterForm> {
           "Filter",
           style: _labelStyle,
         ),
-        Directionality(
-          textDirection: TextDirection.rtl,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              setState(() {
-                isShowFilter = !isShowFilter;
-              });
-            },
-            icon: Icon(isShowFilter ? Icons.expand_more : Icons.expand_less),
-            label: const Divider(),
-          ),
-        ),
-        const SizedBox(
-          height: 10,
-        ),
+        Visibility(
+            visible: widget.showCanopy,
+            child: Column(
+              children: [
+                Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        isShowFilter = !isShowFilter;
+                      });
+                    },
+                    icon: Icon(
+                        isShowFilter ? Icons.expand_more : Icons.expand_less),
+                    label: const Divider(),
+                  ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+              ],
+            )),
         Visibility(
           visible: isShowFilter,
           child: Form(
@@ -69,13 +81,15 @@ class _TableFilterFormState extends State<TableFilterForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Wrap(
-                  runSpacing: 10.0,
+                  runSpacing: 5.0,
                   spacing: 10.0,
                   children: widget.columns
+                      .where((element) => element.canFilter)
                       .map<Widget>((column) => formFilter(column))
                       .toList(),
                 ),
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(10.0),
@@ -87,6 +101,20 @@ class _TableFilterFormState extends State<TableFilterForm> {
                             }
                           },
                           child: const Text('Cari')),
+                    ),
+                    Visibility(
+                      visible: widget.onDownload != null,
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: ElevatedButton(
+                            onPressed: () {
+                              if (_key.currentState!.validate()) {
+                                _key.currentState!.save();
+                                widget.onDownload!(controller.decoratedFilter);
+                              }
+                            },
+                            child: const Text('Download')),
+                      ),
                     ),
                     // Padding(
                     //   padding: const EdgeInsets.all(10.0),
@@ -290,82 +318,72 @@ class _TableFilterFormState extends State<TableFilterForm> {
 
     return SizedBox(
       height: 90,
-      width: _numComparison[column.key] == 'btw' ? 440 : 310,
-      child: Stack(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Positioned(
-            left: 0,
-            child: DropdownMenu<String>(
-                width: 130,
-                onSelected: (value) {
-                  setState(() {
-                    _numComparison[column.key] = value;
-                  });
-                },
-                inputDecorationTheme: const InputDecorationTheme(
-                  border: OutlineInputBorder(),
+          DropdownMenu<String>(
+              width: 170,
+              onSelected: (value) {
+                setState(() {
+                  _numComparison[column.key] = value;
+                });
+              },
+              inputDecorationTheme: const InputDecorationTheme(
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.all(12),
+              ),
+              controller: _textController['${column.key}-cmpr'],
+              label: Text(column.name, style: _labelStyle),
+              dropdownMenuEntries: const [
+                DropdownMenuEntry(value: '', label: ''),
+                DropdownMenuEntry(value: 'eq', label: 'sama'),
+                DropdownMenuEntry(value: 'not', label: 'bukan'),
+                DropdownMenuEntry(value: 'gt', label: '>'),
+                DropdownMenuEntry(value: 'gte', label: '>='),
+                DropdownMenuEntry(value: 'lt', label: '<'),
+                DropdownMenuEntry(value: 'lte', label: '<='),
+                DropdownMenuEntry(value: 'btw', label: 'antara'),
+              ]),
+          SizedBox(
+            width: 130,
+            child: TextFormField(
+              key: ValueKey('${column.key}-value1'),
+              keyboardType: TextInputType.number,
+              onSaved: (value) {
+                comparisonChanged(column);
+              },
+              controller: _textController['${column.key}-val1'],
+              decoration: const InputDecoration(
                   contentPadding: EdgeInsets.all(12),
-                ),
-                controller: _textController['${column.key}-cmpr'],
-                label: Text(column.name, style: _labelStyle),
-                dropdownMenuEntries: const [
-                  DropdownMenuEntry(value: '', label: ''),
-                  DropdownMenuEntry(value: 'eq', label: 'sama'),
-                  DropdownMenuEntry(value: 'not', label: 'bukan'),
-                  DropdownMenuEntry(value: 'gt', label: '>'),
-                  DropdownMenuEntry(value: 'gte', label: '>='),
-                  DropdownMenuEntry(value: 'lt', label: '<'),
-                  DropdownMenuEntry(value: 'lte', label: '<='),
-                  DropdownMenuEntry(value: 'btw', label: 'antara'),
-                ]),
+                  border: OutlineInputBorder()),
+            ),
           ),
-          Positioned(
-            left: 130,
+          Visibility(
+            visible: _numComparison[column.key] == 'btw',
             child: SizedBox(
               width: 130,
               child: TextFormField(
-                key: ValueKey('${column.key}-value1'),
+                key: ValueKey('${column.key}-value2'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) {
                   comparisonChanged(column);
                 },
-                controller: _textController['${column.key}-val1'],
+                controller: _textController['${column.key}-val2'],
                 decoration: const InputDecoration(
                     contentPadding: EdgeInsets.all(12),
                     border: OutlineInputBorder()),
               ),
             ),
           ),
-          if (_numComparison[column.key] == 'btw')
-            Positioned(
-              left: 260,
-              child: SizedBox(
-                width: 130,
-                child: TextFormField(
-                  key: ValueKey('${column.key}-value2'),
-                  keyboardType: TextInputType.number,
-                  onSaved: (value) {
-                    comparisonChanged(column);
-                  },
-                  controller: _textController['${column.key}-val2'],
-                  decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.all(12),
-                      border: OutlineInputBorder()),
-                ),
-              ),
-            ),
-          Positioned(
-            right: 0,
-            top: 5,
-            child: IconButton.filled(
-              onPressed: () {
-                _textController['${column.key}-val1'].text = '';
-                _textController['${column.key}-val2'].text = '';
-                _textController['${column.key}-cmpr'].text = '';
-              },
-              icon: const Icon(Icons.close),
-              // color: colorScheme.primary,
-            ),
+          IconButton.filled(
+            onPressed: () {
+              _textController['${column.key}-val1'].text = '';
+              _textController['${column.key}-val2'].text = '';
+              _textController['${column.key}-cmpr'].text = '';
+            },
+            icon: const Icon(Icons.close),
+            // color: colorScheme.primary,
           )
         ],
       ),

@@ -246,7 +246,7 @@ class _PayrollPageState extends State<PayrollPage>
             SizedBox(
               height: 600,
               width: 825,
-              child: CustomDataTable(
+              child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 2,
                 showCheckboxColumn: true,

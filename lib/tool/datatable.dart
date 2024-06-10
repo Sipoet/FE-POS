@@ -194,6 +194,7 @@ class TableColumn {
   String attributeKey;
   String sortKey;
   bool canSort;
+  bool canFilter;
 
   TableColumn(
       {this.initX = 0,
@@ -203,6 +204,7 @@ class TableColumn {
       required this.attributeKey,
       this.type = 'string',
       this.canSort = true,
+      this.canFilter = true,
       required this.sortKey,
       required this.key,
       required this.name});
@@ -217,7 +219,7 @@ mixin TableDecorator<T extends Model> on DataTableSource {
     switch (columnType) {
       // case 'image':
       // return Image.network('assets/${val}')
-      // case 'link':
+      case 'link':
       case 'date':
       case 'datetime':
         return Align(
@@ -295,7 +297,7 @@ mixin TableDecorator<T extends Model> on DataTableSource {
   }
 
   DataCell decorateValue(jsonData, TableColumn column) {
-    final cell = jsonData[column.attributeKey];
+    final cell = jsonData[column.attributeKey] ?? jsonData[column.key];
     final val = _formatData(cell);
     return DataCell(Tooltip(
       message: val,

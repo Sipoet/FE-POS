@@ -178,7 +178,7 @@ class _ItemTypePageState extends State<ItemTypePage> {
             ),
             SizedBox(
               height: 600,
-              child: CustomDataTable(
+              child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 0,
               ),

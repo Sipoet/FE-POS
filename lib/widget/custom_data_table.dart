@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/datatable.dart';
 export 'package:fe_pos/tool/datatable.dart';
 
-class CustomDataTable extends StatefulWidget {
+class CustomAsyncDataTable extends StatefulWidget {
   final CustomAsyncDataTableSource controller;
   final int fixedLeftColumns;
   final List<Widget>? actions;
   final Widget? header;
   final bool showCheckboxColumn;
   final void Function(int)? onPageChanged;
-  const CustomDataTable({
+  const CustomAsyncDataTable({
     super.key,
     required this.controller,
     this.onPageChanged,
@@ -22,10 +22,10 @@ class CustomDataTable extends StatefulWidget {
   });
 
   @override
-  State<CustomDataTable> createState() => _CustomDataTableState();
+  State<CustomAsyncDataTable> createState() => _CustomAsyncDataTableState();
 }
 
-class _CustomDataTableState extends State<CustomDataTable> {
+class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
   int _sortColumnIndex = 0;
   int page = 1;
   int limit = 10;

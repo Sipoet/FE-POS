@@ -246,7 +246,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
             ),
             SizedBox(
               height: 600,
-              child: CustomDataTable(
+              child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 2,
                 showCheckboxColumn: true,

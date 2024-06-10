@@ -7,7 +7,7 @@ class ItemSalesPercentageReport extends Model {
   String itemTypeDesc;
   String supplierCode;
   String supplierName;
-  String brand;
+  String brandName;
   Percentage percentageSales;
   Money sellPrice;
   Money avgBuyPrice;
@@ -29,7 +29,7 @@ class ItemSalesPercentageReport extends Model {
       required this.itemTypeDesc,
       required this.supplierCode,
       required this.supplierName,
-      required this.brand,
+      required this.brandName,
       required this.storeStock,
       required this.warehouseStock,
       required this.percentageSales,
@@ -43,7 +43,8 @@ class ItemSalesPercentageReport extends Model {
       required this.grossProfit,
       this.recentPurchaseDate});
   @override
-  factory ItemSalesPercentageReport.fromJson(Map<String, dynamic> json) {
+  factory ItemSalesPercentageReport.fromJson(Map<String, dynamic> json,
+      {List included = const []}) {
     var attributes = json['attributes'];
     return ItemSalesPercentageReport(
         id: json['id'],
@@ -55,7 +56,7 @@ class ItemSalesPercentageReport extends Model {
         supplierName: attributes['supplier_name'],
         storeStock: attributes['store_stock'],
         warehouseStock: attributes['warehouse_stock'],
-        brand: attributes['brand_name'] ?? '',
+        brandName: attributes['brand_name'] ?? '',
         percentageSales: Percentage(attributes['percentage_sales']),
         sellPrice: Money.tryParse(attributes['sell_price']) ?? const Money(0),
         avgBuyPrice:
@@ -82,7 +83,8 @@ class ItemSalesPercentageReport extends Model {
         'supplier_name': supplierName,
         'store_stock': storeStock,
         'warehouse_stock': warehouseStock,
-        'brand': brand,
+        'brand': brandName,
+        'brand_name': brandName,
         'percentage_sales': percentageSales,
         'sell_price': sellPrice,
         'avg_buy_price': avgBuyPrice,

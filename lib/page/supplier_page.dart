@@ -176,7 +176,7 @@ class _SupplierPageState extends State<SupplierPage> {
             ),
             SizedBox(
               height: 600,
-              child: CustomDataTable(
+              child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 0,
               ),

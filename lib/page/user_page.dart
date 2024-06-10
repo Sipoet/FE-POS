@@ -247,7 +247,7 @@ class _UserPageState extends State<UserPage>
             SizedBox(
               height: 600,
               width: 825,
-              child: CustomDataTable(
+              child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 2,
                 showCheckboxColumn: true,
