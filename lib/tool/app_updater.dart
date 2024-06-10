@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:fe_pos/tool/file_saver.dart';
 import 'package:open_file/open_file.dart';
@@ -119,6 +121,7 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
     const fileSaver = FileSaver();
     final path = _downloadPath[platform];
     final extFile = path.split('.').last;
+    DartPluginRegistrant.ensureInitialized();
     fileSaver.downloadPath('allegra-pos', extFile).then((String? filePath) {
       if (filePath != null) {
         setStateDialog(
@@ -126,16 +129,25 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
             _message = 'Downloading.';
           },
         );
-        server.dio.download(path, filePath).then((value) async {
+        server.dio.download(path, filePath,
+            onReceiveProgress: (actualBytes, int totalBytes) {
+          final progress = (actualBytes / totalBytes * 100).floor().toString();
+          setStateDialog(() {
+            _message = 'Downloading. $progress%';
+          });
+        }).then((value) async {
           setStateDialog(
             () {
               _isDownloading = false;
               _message = 'Download Complete.';
             },
           );
-          if (platform == TargetPlatform.iOS ||
-              platform == TargetPlatform.android) {
-            OpenFile.open(filePath).then((openFileResponse) {
+          if (platform == TargetPlatform.android ||
+              platform == TargetPlatform.iOS) {
+            final type = platform == TargetPlatform.android
+                ? 'application/vnd.android.package-archive'
+                : null;
+            OpenFile.open(filePath, type: type).then((openFileResponse) {
               if (openFileResponse.type != ResultType.done) {
                 debugPrint('====error open file ${openFileResponse.message}');
                 return;
@@ -167,6 +179,13 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
       debugPrint(error.toString());
       _isDownloading = false;
     });
+  }
+
+  Future<int?> installApk(filePath) async {
+    const platformChannel = MethodChannel('android_package_installer');
+    final result =
+        await platformChannel.invokeMethod<int>('installApk', filePath);
+    return result;
   }
 
   Future installApp(String filePath) {

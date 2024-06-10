@@ -57,16 +57,23 @@ class _LoadingPageState extends State<LoadingPage> {
 
   Future<void> checkPermission() async {
     try {
+      List<Permission> permissions = [];
       if (defaultTargetPlatform == TargetPlatform.android) {
         DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
         AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-        if (androidInfo.version.sdkInt >= 30) {
-          return;
+        permissions.addAll([
+          Permission.requestInstallPackages,
+        ]);
+        if (androidInfo.version.sdkInt <= 32) {
+          permissions.add(Permission.storage);
+        } else {
+          // permissions.add(Permission.photos);
         }
-        var status = await Permission.storage.status;
-        if (status.isDenied) {
-          await Permission.storage.request().isGranted;
-        }
+      } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+        permissions.addAll([Permission.mediaLibrary, Permission.photos]);
+      }
+      for (Permission permission in permissions) {
+        _requestPermission(permission);
       }
     } catch (error) {
       AlertDialog(
@@ -78,6 +85,14 @@ class _LoadingPageState extends State<LoadingPage> {
               child: const Text('close'))
         ],
       );
+    }
+  }
+
+  Future _requestPermission(Permission permission) async {
+    debugPrint('===cek permission ${permission.toString()}');
+    final status = await permission.status;
+    if (status.isDenied || status.isPermanentlyDenied) {
+      await permission.request().isGranted;
     }
   }
 
