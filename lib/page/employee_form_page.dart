@@ -54,8 +54,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
 
   void fetchEmployee() {
     showLoadingPopup();
-    final server = context.read<Server>();
-    server.get('employees/${employee.id}', queryParam: {
+    _server.get('employees/${employee.id}', queryParam: {
       'include': 'work_schedules,employee_day_offs,payroll,role'
     }).then((response) {
       if (response.statusCode == 200) {
@@ -65,7 +64,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
         });
       }
     }, onError: (error) {
-      server.defaultErrorResponse(context: context, error: error);
+      _server.defaultErrorResponse(context: context, error: error);
     }).whenComplete(() => hideLoadingPopup());
   }
 

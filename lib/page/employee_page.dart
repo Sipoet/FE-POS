@@ -91,7 +91,9 @@ class _EmployeePageState extends State<EmployeePage>
         });
         int totalPages = responseBody['meta']?['total_pages'];
         return ResponseResult<Employee>(
-            totalPages: totalPages, models: responsedModels);
+            totalPages: totalPages,
+            totalRows: responseBody['meta']?['total_rows'],
+            models: responsedModels);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));

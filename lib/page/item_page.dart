@@ -78,7 +78,10 @@ class _ItemPageState extends State<ItemPage> {
                 Item.fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         final totalPages = responseBody['meta']?['total_pages'];
-        return ResponseResult<Item>(totalPages: totalPages, models: models);
+        return ResponseResult<Item>(
+            totalPages: totalPages,
+            totalRows: responseBody['meta']?['total_rows'],
+            models: models);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));
@@ -89,36 +92,6 @@ class _ItemPageState extends State<ItemPage> {
           messageType: MessageType.failed);
       throw 'error';
     }
-  }
-
-  void showConfirmDialog(
-      {required Function onSubmit, String message = 'Apakah Anda Yakin?'}) {
-    AlertDialog alert = AlertDialog(
-      title: const Text("Konfirmasi"),
-      content: Text(message),
-      actions: [
-        ElevatedButton(
-          child: const Text("Kembali"),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        ElevatedButton(
-          child: const Text("Submit"),
-          onPressed: () {
-            onSubmit();
-            Navigator.of(context).pop();
-          },
-        ),
-      ],
-    );
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
   }
 
   void searchChanged(value) {

@@ -38,6 +38,10 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
   @override
   void initState() {
     _dataSource.paginatorController = _paginatorController;
+    if (_dataSource.sortColumn != null) {
+      _sortColumnIndex = _dataSource.columns.indexOf(_dataSource.sortColumn!);
+      _sortAscending = _dataSource.isAscending;
+    }
     super.initState();
   }
 
@@ -66,6 +70,7 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
     }
     return AsyncPaginatedDataTable2(
       key: ObjectKey(widget.key),
+      scrollController: ScrollController(keepScrollOffset: false),
       sortArrowAlwaysVisible: true,
       showFirstLastButtons: true,
       source: _dataSource,
@@ -145,12 +150,13 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
         if (widget.onPageChanged != null) {
           widget.onPageChanged!(page);
         }
-        _dataSource.getRows((page - 1) * limit, limit);
+        // _dataSource.getRows((page - 1) * limit, limit);
       },
       onRowsPerPageChanged: (int? limit) {
         this.limit = limit ?? 10;
         _paginatorController.goToFirstPage();
       },
+      pageSyncApproach: PageSyncApproach.goToLast,
       availableRowsPerPage: const [10, 20, 50, 100],
       headingRowColor: MaterialStateProperty.resolveWith<Color?>(
           (Set<MaterialState> states) {
@@ -194,6 +200,10 @@ class _SyncDataTableState extends State<SyncDataTable> {
   @override
   void initState() {
     _dataSource.paginatorController = _paginatorController;
+    if (_dataSource.sortColumn != null) {
+      _sortColumnIndex = _dataSource.columns.indexOf(_dataSource.sortColumn!);
+      _sortAscending = _dataSource.isAscending;
+    }
     super.initState();
   }
 
@@ -223,6 +233,7 @@ class _SyncDataTableState extends State<SyncDataTable> {
     return PaginatedDataTable2(
       key: ObjectKey(widget.key),
       sortArrowAlwaysVisible: true,
+      scrollController: ScrollController(keepScrollOffset: false),
       source: _dataSource,
       actions: widget.actions,
       header: widget.header,

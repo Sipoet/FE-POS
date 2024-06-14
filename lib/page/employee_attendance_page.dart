@@ -90,7 +90,9 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
         flash.hide();
         final totalPages = responseBody['meta']?['total_pages'];
         return ResponseResult<EmployeeAttendance>(
-            totalPages: totalPages, models: models);
+            totalPages: totalPages,
+            totalRows: responseBody['meta']?['total_rows'],
+            models: models);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));

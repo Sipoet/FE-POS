@@ -79,7 +79,10 @@ class _BrandPageState extends State<BrandPage> {
             .toList();
         brands.addAll(models);
         final totalPages = responseBody['meta']?['total_pages'];
-        return ResponseResult<Brand>(totalPages: totalPages, models: models);
+        return ResponseResult<Brand>(
+            totalPages: totalPages,
+            totalRows: responseBody['meta']?['total_rows'],
+            models: models);
       },
           onError: (error, stackTrace) => server.defaultErrorResponse(
               context: context, error: error, valueWhenError: []));

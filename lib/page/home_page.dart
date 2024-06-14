@@ -33,21 +33,21 @@ class _HomePageState extends State<HomePage>
         SalesTransactionReportWidget(
           controller: controller,
         ),
-      if (setting.isAuthorize('itemSale', 'transactionReport'))
+      if (setting.isAuthorize('saleItem', 'transactionReport'))
         ItemSalesTransactionReportWidget(
             key: const ValueKey('brand'),
             controller: controller,
             groupKey: 'brand',
             limit: '5',
             label: 'Merek Terjual Terbanyak'),
-      if (setting.isAuthorize('itemSale', 'transactionReport'))
+      if (setting.isAuthorize('saleItem', 'transactionReport'))
         ItemSalesTransactionReportWidget(
             key: const ValueKey('item_type'),
             controller: controller,
             groupKey: 'item_type',
             limit: '5',
             label: 'Departemen Terjual Terbanyak'),
-      if (setting.isAuthorize('itemSale', 'transactionReport'))
+      if (setting.isAuthorize('saleItem', 'transactionReport'))
         ItemSalesTransactionReportWidget(
             key: const ValueKey('supplier'),
             groupKey: 'supplier',

@@ -14,8 +14,9 @@ extension ComparingTimeOfDay on TimeOfDay {
 
 class ResponseResult<T> {
   int totalPages;
+  int? totalRows;
   List<T> models;
-  ResponseResult({this.totalPages = 0, required this.models});
+  ResponseResult({this.totalPages = 0, this.totalRows, required this.models});
 }
 
 class CustomAsyncDataTableSource<T extends Model> extends AsyncDataTableSource
@@ -73,7 +74,8 @@ class CustomAsyncDataTableSource<T extends Model> extends AsyncDataTableSource
             isAscending: this.isAscending,
             sortColumn: this.sortColumn ?? this.columns[0])
         .then((responseResult) {
-      totalRows = responseResult.totalPages * count;
+      totalRows =
+          responseResult.totalRows ?? (responseResult.totalPages * count);
       List<DataRow> rows = [];
       for (T model in responseResult.models) {
         rows.add(DataRow(
@@ -286,9 +288,15 @@ mixin TableDecorator<T extends Model> on DataTableSource {
     return formated.format(data.toUtc());
   }
 
-  static String _moneyFormat(number) {
-    return NumberFormat.currency(locale: "en_US", symbol: number.symbol)
-        .format(number.value);
+  static String _moneyFormat(dynamic value) {
+    if (value is Money) {
+      return NumberFormat.currency(
+              locale: "en_US", symbol: value.symbol, decimalDigits: 1)
+          .format(value.value);
+    }
+    return NumberFormat.currency(
+            locale: "en_US", symbol: "Rp", decimalDigits: 1)
+        .format(value);
   }
 
   static String _numberFormat(number) {
