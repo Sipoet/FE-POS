@@ -74,7 +74,7 @@ class _ItemSalesTransactionReportWidgetState
   void refreshReport() {
     _controller.forward();
     final server = context.read<Server>();
-    server.get('item_sales/transaction_report',
+    server.get('sale_items/transaction_report',
         cancelToken: cancelToken,
         queryParam: {
           'group_key': widget.groupKey,

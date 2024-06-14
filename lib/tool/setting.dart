@@ -51,12 +51,15 @@ class Setting extends ChangeNotifier {
     return DateFormat('dd/MM/y HH:mm', 'id_ID').format(date.toLocal());
   }
 
-  String moneyFormat(var value) {
+  String moneyFormat(dynamic value) {
     if (value is Money) {
-      return NumberFormat.currency(locale: "en_US", symbol: value.symbol)
+      return NumberFormat.currency(
+              locale: "en_US", symbol: value.symbol, decimalDigits: 1)
           .format(value.value);
     }
-    return NumberFormat.currency(locale: "en_US", symbol: "Rp").format(value);
+    return NumberFormat.currency(
+            locale: "en_US", symbol: "Rp", decimalDigits: 1)
+        .format(value);
   }
 
   String numberFormat(number) {
