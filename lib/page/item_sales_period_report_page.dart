@@ -66,7 +66,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
   }
 
   Future _requestReport({int? page, int? per}) async {
-    return server.get('item_sales/period_report',
+    return server.get('sale_items/period_report',
         queryParam: {
           'suppliers[]': _suppliers,
           'brands[]': _brands,
