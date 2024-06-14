@@ -134,6 +134,65 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               pageFunct: () => const PayslipReportPage(),
             ),
           ]),
+
+      Menu(
+          icon: Icons.shopping_cart,
+          label: 'Penjualan',
+          key: 'sales',
+          children: [
+            Menu(
+                icon: Icons.card_membership_rounded,
+                label: 'Metode Pembayaran',
+                pageFunct: () => const PaymentMethodPage(),
+                key: 'payment_method'),
+            Menu(
+                icon: Icons.shopping_cart,
+                label: 'Penjualan',
+                key: 'sales',
+                pageFunct: () => const SalePage()),
+            Menu(
+              icon: Icons.shopping_bag,
+              label: 'Detail Penjualan Item',
+              key: 'purchase',
+              pageFunct: () => const SaleItemPage(),
+            )
+          ]),
+      Menu(
+          icon: Icons.shopping_bag,
+          label: 'Pembelian',
+          key: 'purchase',
+          children: [
+            Menu(
+              icon: Icons.shopping_bag,
+              label: 'Pembelian',
+              key: 'purchase',
+              pageFunct: () => const PurchasePage(),
+            ),
+            Menu(
+              icon: Icons.shopping_bag,
+              label: 'Detail Pembelian Item',
+              key: 'purchase',
+              pageFunct: () => const PurchaseItemPage(),
+            )
+          ]),
+      Menu(
+          icon: Icons.inventory,
+          label: 'Persediaan',
+          children: [
+            Menu(
+              icon: Icons.shopping_bag,
+              label: 'Transfer Item',
+              key: 'transfer',
+              pageFunct: () => const TransferPage(),
+            ),
+            Menu(
+              icon: Icons.shopping_bag,
+              label: 'Detail Transfer Item',
+              key: 'purchase',
+              pageFunct: () => const TransferItemPage(),
+            )
+          ],
+          key: 'inventory'),
       Menu(
           icon: Icons.table_chart,
           isClosed: true,

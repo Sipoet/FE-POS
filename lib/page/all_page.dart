@@ -26,3 +26,18 @@ export 'payroll_page.dart';
 export 'payslip_page.dart';
 export 'employee_attendance_page.dart';
 export 'employee_leave_page.dart';
+
+// sale
+export 'cashier_session_page.dart';
+export 'edc_settlement_form_page.dart';
+export 'payment_method_page.dart';
+export 'sale_page.dart';
+export 'sale_item_page.dart';
+
+// purchase
+export 'purchase_page.dart';
+export 'purchase_item_page.dart';
+
+// inventory
+export 'transfer_page.dart';
+export 'transfer_item_page.dart';

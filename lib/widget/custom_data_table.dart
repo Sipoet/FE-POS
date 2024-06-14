@@ -70,7 +70,6 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
     }
     return AsyncPaginatedDataTable2(
       key: ObjectKey(widget.key),
-      scrollController: ScrollController(keepScrollOffset: false),
       sortArrowAlwaysVisible: true,
       showFirstLastButtons: true,
       source: _dataSource,
@@ -233,7 +232,6 @@ class _SyncDataTableState extends State<SyncDataTable> {
     return PaginatedDataTable2(
       key: ObjectKey(widget.key),
       sortArrowAlwaysVisible: true,
-      scrollController: ScrollController(keepScrollOffset: false),
       source: _dataSource,
       actions: widget.actions,
       header: widget.header,
