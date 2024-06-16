@@ -25,11 +25,13 @@ class Purchase extends Model {
   String? bankCode;
   String location;
   String destLocation;
+  String supplierCode;
   Purchase(
       {this.userName = '',
       this.description = '',
       this.totalItem = 0,
       this.code = '',
+      this.supplierCode = '',
       this.orderCode,
       this.subtotal = const Money(0),
       this.grandtotal = const Money(0),
@@ -74,7 +76,8 @@ class Purchase extends Model {
         'notransaksi': code,
         'notrsorder': orderCode,
         'kodekantor': location,
-        'kantortujuan': destLocation
+        'kantortujuan': destLocation,
+        'kodesupel': supplierCode,
       };
 
   @override
@@ -116,6 +119,7 @@ class Purchase extends Model {
     model.location = attributes['kodekantor'];
     model.destLocation = attributes['kantortujuan'];
     model.bankCode = attributes['bank_code'];
+    model.supplierCode = attributes['kodesupel'];
     return model;
   }
 }

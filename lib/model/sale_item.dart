@@ -25,6 +25,9 @@ class SaleItem extends Model {
   String promoUom;
   Money cogs;
   String? saleCode;
+  String? brandName;
+  String? supplierCode;
+  String? itemTypeName;
   SaleItem(
       {Item? item,
       super.id,
@@ -35,6 +38,9 @@ class SaleItem extends Model {
       this.uom = '',
       super.createdAt,
       super.updatedAt,
+      this.itemTypeName,
+      this.brandName,
+      this.supplierCode,
       this.subtotal = const Money(0),
       this.discountAmount1 = 0,
       this.discountPercentage2 = const Percentage(0),
@@ -72,6 +78,12 @@ class SaleItem extends Model {
         'itempromo': promoItemCode,
         'satuanpromo': promoUom,
         'hppdasar': cogs,
+        'item.jenis': itemTypeName,
+        'item.supplier1': supplierCode,
+        'item.merek': brandName,
+        'item_type_name': itemTypeName,
+        'supplier_code': supplierCode,
+        'brand_name': brandName,
       };
 
   @override
@@ -109,6 +121,9 @@ class SaleItem extends Model {
     model.promoItemCode = attributes['itempromo'];
     model.promoUom = attributes['satuanpromo'];
     model.saleCode = attributes['notransaksi'];
+    model.itemTypeName = attributes['item_type_name'];
+    model.supplierCode = attributes['supplier_code'];
+    model.brandName = attributes['brand_name'];
     model.freeQuantity = double.tryParse(attributes['jmlgratis']) ?? 0;
     model.cogs = Money.parse(attributes['hppdasar']);
     Model.fromModel(model, attributes);

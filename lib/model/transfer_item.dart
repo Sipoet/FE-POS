@@ -16,6 +16,9 @@ class TransferItem extends Model {
   String? productionCode;
   String? detinfo;
   String? transferCode;
+  String? brandName;
+  String? supplierCode;
+  String? itemTypeName;
   TransferItem(
       {Item? item,
       super.id,
@@ -25,6 +28,9 @@ class TransferItem extends Model {
       this.uom = '',
       this.detinfo,
       this.transferCode,
+      this.itemTypeName,
+      this.brandName,
+      this.supplierCode,
       this.conversionQuantity = 0,
       super.createdAt,
       super.updatedAt,
@@ -47,6 +53,12 @@ class TransferItem extends Model {
         'kodeprod': productionCode,
         'cogs': cogs,
         'notransaksi': transferCode,
+        'item.jenis': itemTypeName,
+        'item.supplier1': supplierCode,
+        'item.merek': brandName,
+        'item_type_name': itemTypeName,
+        'supplier_code': supplierCode,
+        'brand_name': brandName,
       };
 
   @override
@@ -74,6 +86,9 @@ class TransferItem extends Model {
     model.detinfo = attributes['detinfo'] ?? 0;
     model.cogs = Money.parse(attributes['hppdasar'] ?? '0');
     model.transferCode = attributes['notransaksi'];
+    model.itemTypeName = attributes['item_type_name'];
+    model.supplierCode = attributes['supplier_code'];
+    model.brandName = attributes['brand_name'];
     Model.fromModel(model, attributes);
     return model;
   }

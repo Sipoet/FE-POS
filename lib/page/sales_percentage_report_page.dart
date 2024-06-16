@@ -56,9 +56,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
             return ItemSalesPercentageReport.fromJson(row);
           }).toList();
           return ResponseResult(
-              models: models,
-              totalPages: data['meta']['total_pages'],
-              totalRows: data['meta']['total_rows']);
+              models: models, totalRows: data['meta']['total_rows']);
         }, onError: ((error, stackTrace) {
           server.defaultErrorResponse(context: context, error: error);
           return Future(

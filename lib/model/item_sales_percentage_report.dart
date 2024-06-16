@@ -14,6 +14,7 @@ class ItemSalesPercentageReport extends Model {
   int numberOfSales;
   int storeStock;
   int warehouseStock;
+  int stockLeft;
   Money salesTotal;
   int numberOfPurchase;
   Money purchaseTotal;
@@ -40,6 +41,7 @@ class ItemSalesPercentageReport extends Model {
       required this.numberOfPurchase,
       required this.purchaseTotal,
       required this.itemOut,
+      this.stockLeft = 0,
       required this.grossProfit,
       this.recentPurchaseDate});
   @override
@@ -57,6 +59,7 @@ class ItemSalesPercentageReport extends Model {
         storeStock: attributes['store_stock'],
         warehouseStock: attributes['warehouse_stock'],
         brandName: attributes['brand_name'] ?? '',
+        stockLeft: int.tryParse(attributes['stock_left']) ?? 0,
         percentageSales: Percentage(attributes['percentage_sales']),
         sellPrice: Money.tryParse(attributes['sell_price']) ?? const Money(0),
         avgBuyPrice:
@@ -95,5 +98,6 @@ class ItemSalesPercentageReport extends Model {
         'recent_purchase_date': recentPurchaseDate,
         'item_out': itemOut,
         'gross_profit': grossProfit,
+        'stock_left': stockLeft,
       };
 }

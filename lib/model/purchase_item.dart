@@ -23,6 +23,9 @@ class PurchaseItem extends Model {
   DateTime? expiredDate;
   String? productionCode;
   String? purchaseCode;
+  String? brandName;
+  String? supplierCode;
+  String? itemTypeName;
   PurchaseItem(
       {Item? item,
       super.id,
@@ -34,6 +37,9 @@ class PurchaseItem extends Model {
       this.uom = '',
       super.createdAt,
       super.updatedAt,
+      this.itemTypeName,
+      this.brandName,
+      this.supplierCode,
       this.subtotal = const Money(0),
       this.discountAmount1 = 0,
       this.discountPercentage2 = const Percentage(0),
@@ -68,6 +74,12 @@ class PurchaseItem extends Model {
         'kodeprod': productionCode,
         'hppdasar': cogs,
         'notransaksi': purchaseCode,
+        'item.jenis': itemTypeName,
+        'item.supplier1': supplierCode,
+        'item.merek': brandName,
+        'item_type_name': itemTypeName,
+        'supplier_code': supplierCode,
+        'brand_name': brandName,
       };
 
   @override
@@ -101,6 +113,9 @@ class PurchaseItem extends Model {
     model.expiredDate = DateTime.tryParse(attributes['tglexp'] ?? '');
     model.orderQuantity = double.tryParse(attributes['jmlpesan'] ?? '') ?? 0;
     model.cogs = Money.parse(attributes['hppdasar']);
+    model.itemTypeName = attributes['item_type_name'];
+    model.supplierCode = attributes['supplier_code'];
+    model.brandName = attributes['brand_name'];
     model.purchaseCode = attributes['notransaksi'];
     Model.fromModel(model, attributes);
     return model;
