@@ -88,11 +88,9 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
         employeeAttendances.addAll(models);
 
         flash.hide();
-        final totalPages = responseBody['meta']?['total_pages'];
+        final totalRows = responseBody['meta']?['total_rows'];
         return ResponseResult<EmployeeAttendance>(
-            totalPages: totalPages,
-            totalRows: responseBody['meta']?['total_rows'],
-            models: models);
+            totalRows: totalRows, models: models);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));
@@ -102,7 +100,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
           description: trace.toString(),
           messageType: MessageType.failed);
       return Future(
-          () => ResponseResult<EmployeeAttendance>(totalPages: 0, models: []));
+          () => ResponseResult<EmployeeAttendance>(totalRows: 0, models: []));
     }
   }
 

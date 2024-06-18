@@ -84,8 +84,8 @@ class _PayslipPageState extends State<PayslipPage>
                 Payslip.fromJson(json, included: responseBody['included']))
             .toList();
 
-        int totalPages = responseBody['meta']?['total_pages'];
-        return ResponseResult<Payslip>(models: models, totalPages: totalPages);
+        int totalRows = responseBody['meta']?['total_rows'];
+        return ResponseResult<Payslip>(models: models, totalRows: totalRows);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));

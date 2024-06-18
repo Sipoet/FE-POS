@@ -13,10 +13,9 @@ extension ComparingTimeOfDay on TimeOfDay {
 }
 
 class ResponseResult<T> {
-  int totalPages;
-  int? totalRows;
+  int totalRows;
   List<T> models;
-  ResponseResult({this.totalPages = 0, this.totalRows, required this.models});
+  ResponseResult({this.totalRows = 0, required this.models});
 }
 
 class CustomAsyncDataTableSource<T extends Model> extends AsyncDataTableSource
@@ -74,8 +73,7 @@ class CustomAsyncDataTableSource<T extends Model> extends AsyncDataTableSource
             isAscending: this.isAscending,
             sortColumn: this.sortColumn ?? this.columns[0])
         .then((responseResult) {
-      totalRows =
-          responseResult.totalRows ?? (responseResult.totalPages * count);
+      totalRows = responseResult.totalRows;
       List<DataRow> rows = [];
       for (T model in responseResult.models) {
         rows.add(DataRow(

@@ -7,14 +7,14 @@ class ItemSalesPercentageReport extends Model {
   String itemTypeDesc;
   String supplierCode;
   String supplierName;
-  String brandName;
+  String? brandName;
   Percentage percentageSales;
   Money sellPrice;
   Money avgBuyPrice;
   int numberOfSales;
   int storeStock;
   int warehouseStock;
-  int stockLeft;
+  double stockLeft;
   Money salesTotal;
   int numberOfPurchase;
   Money purchaseTotal;
@@ -30,7 +30,7 @@ class ItemSalesPercentageReport extends Model {
       required this.itemTypeDesc,
       required this.supplierCode,
       required this.supplierName,
-      required this.brandName,
+      this.brandName,
       required this.storeStock,
       required this.warehouseStock,
       required this.percentageSales,
@@ -59,7 +59,7 @@ class ItemSalesPercentageReport extends Model {
         storeStock: attributes['store_stock'],
         warehouseStock: attributes['warehouse_stock'],
         brandName: attributes['brand_name'] ?? '',
-        stockLeft: int.tryParse(attributes['stock_left']) ?? 0,
+        stockLeft: double.tryParse(attributes['stock_left']) ?? 0,
         percentageSales: Percentage(attributes['percentage_sales']),
         sellPrice: Money.tryParse(attributes['sell_price']) ?? const Money(0),
         avgBuyPrice:

@@ -77,11 +77,8 @@ class _ItemPageState extends State<ItemPage> {
             .map<Item>((json) =>
                 Item.fromJson(json, included: responseBody['included'] ?? []))
             .toList();
-        final totalPages = responseBody['meta']?['total_pages'];
-        return ResponseResult<Item>(
-            totalPages: totalPages,
-            totalRows: responseBody['meta']?['total_rows'],
-            models: models);
+        final totalRows = responseBody['meta']?['total_rows'];
+        return ResponseResult<Item>(totalRows: totalRows, models: models);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));

@@ -84,11 +84,9 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
             .toList();
 
         flash.hide();
-        final totalPages = responseBody['meta']?['total_pages'];
+        final totalRows = responseBody['meta']?['total_rows'];
         return ResponseResult<EmployeeLeave>(
-            totalPages: totalPages,
-            totalRows: responseBody['meta']?['total_rows'],
-            models: models);
+            totalRows: totalRows, models: models);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));
@@ -98,7 +96,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
           description: trace.toString(),
           messageType: MessageType.failed);
       return Future(
-          () => ResponseResult<EmployeeLeave>(models: [], totalPages: 0));
+          () => ResponseResult<EmployeeLeave>(models: [], totalRows: 0));
     }
   }
 

@@ -80,8 +80,8 @@ class _RolePageState extends State<RolePage>
         final models = responseBody['data']
             .map<Role>((json) => Role.fromJson(json))
             .toList();
-        int totalPages = responseBody['meta']?['total_pages'];
-        return ResponseResult<Role>(models: models, totalPages: totalPages);
+        int totalRows = responseBody['meta']?['total_rows'];
+        return ResponseResult<Role>(models: models, totalRows: totalRows);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));

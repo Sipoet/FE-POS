@@ -89,11 +89,9 @@ class _EmployeePageState extends State<EmployeePage>
         setState(() {
           // _source.setData(employees);
         });
-        int totalPages = responseBody['meta']?['total_pages'];
+        int totalRows = responseBody['meta']?['total_rows'];
         return ResponseResult<Employee>(
-            totalPages: totalPages,
-            totalRows: responseBody['meta']?['total_rows'],
-            models: responsedModels);
+            totalRows: totalRows, models: responsedModels);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));

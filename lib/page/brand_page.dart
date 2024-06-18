@@ -78,11 +78,8 @@ class _BrandPageState extends State<BrandPage> {
                 Brand.fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         brands.addAll(models);
-        final totalPages = responseBody['meta']?['total_pages'];
-        return ResponseResult<Brand>(
-            totalPages: totalPages,
-            totalRows: responseBody['meta']?['total_rows'],
-            models: models);
+        final totalRows = responseBody['meta']?['total_rows'];
+        return ResponseResult<Brand>(totalRows: totalRows, models: models);
       },
           onError: (error, stackTrace) => server.defaultErrorResponse(
               context: context, error: error, valueWhenError: []));
@@ -91,7 +88,7 @@ class _BrandPageState extends State<BrandPage> {
           title: e.toString(),
           description: trace.toString(),
           messageType: MessageType.failed);
-      return Future(() => ResponseResult<Brand>(totalPages: 0, models: []));
+      return Future(() => ResponseResult<Brand>(totalRows: 0, models: []));
     }
   }
 

@@ -77,8 +77,8 @@ class _ItemTypePageState extends State<ItemTypePage> {
             .toList();
 
         flash.hide();
-        final totalPages = responseBody['meta']?['total_pages'];
-        return ResponseResult<ItemType>(models: models, totalPages: totalPages);
+        final totalRows = responseBody['meta']?['total_rows'];
+        return ResponseResult<ItemType>(models: models, totalRows: totalRows);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));

@@ -81,8 +81,8 @@ class _PayrollPageState extends State<PayrollPage>
         final models = responseBody['data']
             .map<Payroll>((json) => Payroll.fromJson(json))
             .toList();
-        int totalPages = responseBody['meta']?['total_pages'];
-        return ResponseResult<Payroll>(models: models, totalPages: totalPages);
+        int totalRows = responseBody['meta']?['total_rows'];
+        return ResponseResult<Payroll>(models: models, totalRows: totalRows);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));

@@ -44,19 +44,25 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                 sortColumn: sortColumn,
                 isAscending: isAscending)
             .then((response) {
-          if (response.statusCode != 200) {
+          try {
+            if (response.statusCode != 200) {
+              return ResponseResult<ItemSalesPercentageReport>(
+                  totalRows: 0, models: []);
+            }
+            var data = response.data;
+            setState(() {
+              _isDisplayTable = true;
+            });
+            final models = data['data'].map<ItemSalesPercentageReport>((row) {
+              return ItemSalesPercentageReport.fromJson(row);
+            }).toList();
             return ResponseResult<ItemSalesPercentageReport>(
-                totalPages: 0, models: []);
+                models: models, totalRows: data['meta']['total_rows']);
+          } catch (error) {
+            server.defaultErrorResponse(context: context, error: error);
+            return ResponseResult<ItemSalesPercentageReport>(
+                totalRows: 0, models: []);
           }
-          var data = response.data;
-          setState(() {
-            _isDisplayTable = true;
-          });
-          final models = data['data'].map<ItemSalesPercentageReport>((row) {
-            return ItemSalesPercentageReport.fromJson(row);
-          }).toList();
-          return ResponseResult(
-              models: models, totalRows: data['meta']['total_rows']);
         }, onError: ((error, stackTrace) {
           server.defaultErrorResponse(context: context, error: error);
           return Future(
