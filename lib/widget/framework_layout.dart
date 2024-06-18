@@ -112,7 +112,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     isClosed: true,
                     label: 'Item Penjualan Periode',
                     isDisabled:
-                        !setting.isAuthorize('itemSale', 'periodReport'),
+                        !setting.isAuthorize('saleItem', 'periodReport'),
                     pageFunct: () => const ItemSalesPeriodReportPage(),
                     key: 'itemSalesPeriodReport',
                   ),
@@ -149,11 +149,13 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 icon: Icons.shopping_cart,
                 label: 'Penjualan',
                 key: 'sales',
+                isDisabled: !setting.isAuthorize('sale', 'index'),
                 pageFunct: () => const SalePage()),
             Menu(
               icon: Icons.shopping_bag,
               label: 'Detail Penjualan Item',
               key: 'purchase',
+              isDisabled: !setting.isAuthorize('saleItem', 'index'),
               pageFunct: () => const SaleItemPage(),
             )
           ]),

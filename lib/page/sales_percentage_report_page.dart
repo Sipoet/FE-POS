@@ -58,8 +58,9 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
             }).toList();
             return ResponseResult<ItemSalesPercentageReport>(
                 models: models, totalRows: data['meta']['total_rows']);
-          } catch (error) {
-            server.defaultErrorResponse(context: context, error: error);
+          } catch (error, stackTrace) {
+            debugPrint(error.toString());
+            debugPrint(stackTrace.toString());
             return ResponseResult<ItemSalesPercentageReport>(
                 totalRows: 0, models: []);
           }

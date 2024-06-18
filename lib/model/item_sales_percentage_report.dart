@@ -59,7 +59,7 @@ class ItemSalesPercentageReport extends Model {
         storeStock: attributes['store_stock'],
         warehouseStock: attributes['warehouse_stock'],
         brandName: attributes['brand_name'] ?? '',
-        stockLeft: double.tryParse(attributes['stock_left']) ?? 0,
+        stockLeft: double.tryParse(attributes['stock_left'].toString()) ?? 0,
         percentageSales: Percentage(attributes['percentage_sales']),
         sellPrice: Money.tryParse(attributes['sell_price']) ?? const Money(0),
         avgBuyPrice:
