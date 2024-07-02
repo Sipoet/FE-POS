@@ -26,6 +26,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
   late final Server _server;
   late final Flash flash;
   late Setting _setting;
+  final _focusNode = FocusNode();
   late final GeneratePayslipDatatableSource _source;
   @override
   bool get wantKeepAlive => true;
@@ -37,6 +38,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
     flash = Flash(context);
     _source = GeneratePayslipDatatableSource(setting: _setting);
     super.initState();
+    Future.delayed(Duration.zero, () => _focusNode.requestFocus());
   }
 
   @override
@@ -55,6 +57,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                 child: Column(
                   children: [
                     DateRangePicker(
+                      focusNode: _focusNode,
                       key: const ValueKey('generate_payslip-periode'),
                       label: const Text(
                         'Periode',

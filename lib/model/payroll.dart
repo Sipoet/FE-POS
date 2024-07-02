@@ -13,8 +13,8 @@ class Payroll extends Model {
     super.id,
     this.paidTimeOff = 0,
     this.description,
-    this.lines = const <PayrollLine>[],
-  });
+    List<PayrollLine>? lines,
+  }) : lines = lines ?? <PayrollLine>[];
 
   @override
   Map<String, dynamic> toMap() => {
@@ -32,6 +32,10 @@ class Payroll extends Model {
     model.name = attributes['name'];
     model.paidTimeOff = attributes['paid_time_off'];
     model.description = attributes['description'];
+    model.lines = Model.findRelationsData<PayrollLine>(
+        included: included,
+        relation: json['relationships']?['payroll_lines'],
+        convert: PayrollLine.fromJson);
     return model;
   }
 }

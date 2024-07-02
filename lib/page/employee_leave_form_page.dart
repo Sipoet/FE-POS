@@ -162,6 +162,11 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                       onSelected: (value) => setState(() {
                             employeeLeave.leaveType =
                                 value ?? LeaveType.annualLeave;
+                            if (employeeLeave.leaveType !=
+                                LeaveType.changeDay) {
+                              employeeLeave.changeDate = null;
+                              employeeLeave.changeShift = null;
+                            }
                           }),
                       initialSelection: employeeLeave.leaveType,
                       dropdownMenuEntries: LeaveType.values
@@ -261,9 +266,6 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                     onChanged: (newValue) {
                       employeeLeave.description = newValue.toString();
                     },
-                  ),
-                  const SizedBox(
-                    height: 10,
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 10, bottom: 10),

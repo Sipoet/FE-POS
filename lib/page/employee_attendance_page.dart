@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/employee_attendance.dart';
 import 'package:fe_pos/page/employee_attendance_form_page.dart';
+import 'package:fe_pos/page/employee_attendance_mass_upload_page.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -109,8 +110,20 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
     setState(() {
       tabManager.addTab(
           'Mass Upload Absensi Karyawan',
-          const EmployeeAttendanceFormPage(
+          const EmployeeAttendanceMassUploadPage(
             key: ObjectKey('EmployeeAttendanceMassUploadFormPage'),
+          ));
+    });
+  }
+
+  void editRecord(employeeAttendance) {
+    var tabManager = context.read<TabManager>();
+    setState(() {
+      tabManager.addTab(
+          'Edit Absensi Karyawan',
+          EmployeeAttendanceFormPage(
+            employeeAttendance: employeeAttendance,
+            key: const ObjectKey('EmployeeAttendanceFormPage'),
           ));
     });
   }
@@ -186,6 +199,12 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
   Widget build(BuildContext context) {
     super.build(context);
     _source.actionButtons = ((employeeAttendance, index) => <Widget>[
+          IconButton(
+              onPressed: () {
+                editRecord(employeeAttendance);
+              },
+              tooltip: 'Edit Absensi Karyawan',
+              icon: const Icon(Icons.edit)),
           IconButton(
               onPressed: () {
                 destroyRecord(employeeAttendance);

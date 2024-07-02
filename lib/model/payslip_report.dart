@@ -16,6 +16,7 @@ class PayslipReport extends Model {
   double attendanceIncentive;
   double otherIncentive;
   double overtimeIncentive;
+  double commission;
   double debt;
   int totalDay;
   int sickLeave;
@@ -42,6 +43,7 @@ class PayslipReport extends Model {
       this.sickLeave = 0,
       this.knownAbsence = 0,
       this.unknownAbsence = 0,
+      this.commission = 0,
       this.overtimeHour = 0,
       this.late = 0,
       this.workDays = 0,
@@ -75,6 +77,7 @@ class PayslipReport extends Model {
         'bank_register_name': bankRegisterName,
         'bank_account': bankAccount,
         'description': description,
+        'commission': commission
       };
 
   @override
@@ -92,25 +95,30 @@ class PayslipReport extends Model {
     model.startDate = Date.parse(attributes['start_date']);
     model.endDate = Date.parse(attributes['end_date']);
 
-    model.baseSalary = double.parse(attributes['base_salary'].toString());
-    model.nettSalary = double.parse(attributes['nett_salary']);
+    model.baseSalary =
+        double.tryParse(attributes['base_salary'].toString()) ?? 0;
+    model.nettSalary =
+        double.tryParse(attributes['nett_salary'].toString()) ?? 0;
     model.employeeId = attributes['employee_id'];
     model.employeeName = attributes['employee_name'];
     model.bank = attributes['bank'];
     model.bankAccount = attributes['bank_account'];
     model.bankRegisterName = attributes['bank_register_name'];
-    model.taxAmount = double.parse(attributes['tax_amount']);
+    model.taxAmount = double.tryParse(attributes['tax_amount'].toString()) ?? 0;
     model.sickLeave = attributes['sick_leave'];
     model.knownAbsence = attributes['known_absence'];
     model.unknownAbsence = attributes['unknown_absence'];
-    model.overtimeHour = double.parse(attributes['overtime_hour']);
+    model.overtimeHour =
+        double.tryParse(attributes['overtime_hour'].toString()) ?? 0;
     model.late = attributes['late'] ?? model.late;
-    model.workDays = double.parse(attributes['work_days']);
+    model.workDays = double.tryParse(attributes['work_days'].toString()) ?? 0;
+    model.commission =
+        double.tryParse(attributes['commission'].toString()) ?? 0;
     model.totalDay = attributes['total_day'];
     model.description = attributes['description'];
     model.employeeStartWorkingDate =
         Date.parse(attributes['employee_start_working_date']);
-    model.debt = double.parse(attributes['debt'].toString());
+    model.debt = double.tryParse(attributes['debt'].toString()) ?? 0;
     model.positionalIncentive =
         double.parse(attributes['positional_incentive'].toString());
     model.attendanceIncentive =

@@ -1,6 +1,5 @@
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/employee.dart';
-import 'package:flutter/material.dart';
 export 'package:fe_pos/model/employee.dart';
 
 export 'package:fe_pos/tool/custom_type.dart';
@@ -9,11 +8,14 @@ class EmployeeAttendance extends Model {
   DateTime startTime;
   DateTime endTime;
   Employee employee;
-
+  bool isLate;
+  int shift;
   EmployeeAttendance(
       {required this.startTime,
       required this.endTime,
       required this.employee,
+      this.shift = 1,
+      this.isLate = false,
       super.createdAt,
       super.updatedAt,
       super.id});
@@ -29,10 +31,12 @@ class EmployeeAttendance extends Model {
         'end_work': endWork,
         'created_at': createdAt,
         'updated_at': updatedAt,
+        'is_late': isLate,
+        'shift': shift,
       };
 
-  TimeOfDay get startWork => TimeOfDay.fromDateTime(startTime);
-  TimeOfDay get endWork => TimeOfDay.fromDateTime(endTime);
+  TimeDay get startWork => TimeDay.fromDateTime(startTime);
+  TimeDay get endWork => TimeDay.fromDateTime(endTime);
   Date get date => Date.parsingDateTime(startTime);
   @override
   factory EmployeeAttendance.fromJson(Map<String, dynamic> json,
@@ -58,6 +62,8 @@ class EmployeeAttendance extends Model {
     model.endTime = DateTime.parse(attributes['end_time']);
     Model.fromModel(model, attributes);
     model.employee = employee;
+    model.isLate = attributes['is_late'] ?? false;
+    model.shift = attributes['shift'];
     return model;
   }
 }

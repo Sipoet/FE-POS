@@ -1,8 +1,8 @@
 import 'package:fe_pos/model/model.dart';
 
 class RoleWorkSchedule extends Model {
-  String beginWork;
-  String endWork;
+  TimeDay beginWork;
+  TimeDay endWork;
   int shift;
   int dayOfWeek;
   int level;
@@ -10,8 +10,8 @@ class RoleWorkSchedule extends Model {
   Date endActiveAt;
   String groupName;
   RoleWorkSchedule(
-      {required this.beginWork,
-      required this.endWork,
+      {TimeDay? beginWork,
+      TimeDay? endWork,
       Date? beginActiveAt,
       Date? endActiveAt,
       this.groupName = '',
@@ -20,12 +20,14 @@ class RoleWorkSchedule extends Model {
       this.level = 1,
       super.id})
       : beginActiveAt = beginActiveAt ?? Date.today(),
-        endActiveAt = endActiveAt ?? Date.today();
+        endActiveAt = endActiveAt ?? Date.today(),
+        beginWork = beginWork ?? TimeDay.now(),
+        endWork = endWork ?? TimeDay.now();
 
   @override
   Map<String, dynamic> toMap() => {
-        'begin_work': beginWork,
-        'end_work': endWork,
+        'begin_work': beginWork.format24Hour(),
+        'end_work': endWork.format24Hour(),
         'shift': shift,
         'day_of_week': dayOfWeek,
         'group_name': groupName,
@@ -38,10 +40,10 @@ class RoleWorkSchedule extends Model {
   factory RoleWorkSchedule.fromJson(Map<String, dynamic> json,
       {RoleWorkSchedule? model, List included = const []}) {
     var attributes = json['attributes'];
-    model ??= RoleWorkSchedule(beginWork: '', endWork: '');
+    model ??= RoleWorkSchedule();
     model.id = int.parse(json['id']);
-    model.beginWork = attributes['begin_work'];
-    model.endWork = attributes['end_work'];
+    model.beginWork = TimeDay.parse(attributes['begin_work']);
+    model.endWork = TimeDay.parse(attributes['end_work']);
     model.shift = attributes['shift'];
     model.dayOfWeek = attributes['day_of_week'];
     model.groupName = attributes['group_name'];

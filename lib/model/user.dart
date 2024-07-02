@@ -47,8 +47,9 @@ class User extends Model {
       {required this.username,
       this.email,
       super.id,
-      required this.role,
-      this.status = UserStatus.inactive});
+      Role? role,
+      this.status = UserStatus.inactive})
+      : role = role ?? Role();
 
   @override
   Map<String, dynamic> toMap() => {
@@ -70,12 +71,12 @@ class User extends Model {
         relation: json['relationships']['role'],
         convert: Role.fromJson);
 
-    model ??= User(username: '', role: Role(name: ''));
-    model.id = int.parse(json['id']);
-    model.username = attributes['username'];
+    model ??= User(username: '');
+    model.id = json['id'];
+    model.username = attributes['username'] ?? '';
     model.email = attributes['email'];
-    model.status =
-        UserStatus.convertFromString(attributes['status']?.toString());
+    // model.status =
+    //     UserStatus.convertFromString(attributes['status']?.toString());
     model.role = role ?? model.role;
     return model;
   }

@@ -97,10 +97,10 @@ enum PayrollFormula {
   overtimeHour,
   sickLeaveCut,
   annualLeaveCut,
-  unscheduledOvertimeHour,
   hourlyDaily,
   fulltimeHourPerDay,
-  periodProportional;
+  periodProportional,
+  proportionalCommission;
 
   @override
   String toString() {
@@ -125,6 +125,10 @@ enum PayrollFormula {
     if (this == fulltimeHourPerDay) {
       return 'fulltime_hour_per_day';
     }
+    if (this == proportionalCommission) {
+      return 'proportional_commission';
+    }
+
     return super.toString().split('.').last;
   }
 
@@ -146,6 +150,8 @@ enum PayrollFormula {
         return 'jam dalam hari per periode';
       case fulltimeHourPerDay:
         return 'fulltime_hour_per_day';
+      case proportionalCommission:
+        return 'Komisi Proporsional';
       default:
         throw 'invalid Payroll formula';
     }
@@ -169,6 +175,8 @@ enum PayrollFormula {
         return hourlyDaily;
       case 'fulltime_hour_per_day':
         return fulltimeHourPerDay;
+      case 'proportional_commission':
+        return proportionalCommission;
       default:
         throw 'invalid Payroll formula $value';
     }
@@ -189,15 +197,17 @@ class PayrollLine extends Model {
   PayrollLine(
       {super.id,
       this.row = 0,
-      required this.group,
+      PayrollGroup? group,
       this.payrollType,
-      required this.formula,
+      PayrollFormula? formula,
       this.description = '',
       this.variable2,
       this.variable3,
       this.variable4,
       this.variable5,
-      this.variable1});
+      this.variable1})
+      : formula = formula ?? PayrollFormula.basic,
+        group = group ?? PayrollGroup.earning;
 
   @override
   Map<String, dynamic> toMap() => {
@@ -215,7 +225,7 @@ class PayrollLine extends Model {
 
   @override
   factory PayrollLine.fromJson(Map<String, dynamic> json,
-      {PayrollLine? model}) {
+      {PayrollLine? model, List included = const []}) {
     var attributes = json['attributes'];
     model ??=
         PayrollLine(group: PayrollGroup.earning, formula: PayrollFormula.basic);
