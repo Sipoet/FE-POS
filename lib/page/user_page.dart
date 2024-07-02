@@ -200,6 +200,7 @@ class _UserPageState extends State<UserPage>
           children: [
             TableFilterForm(
               columns: _source.columns,
+              enums: const {'status': UserStatus.values},
               onSubmit: (filter) {
                 _filter = filter;
                 refreshTable();

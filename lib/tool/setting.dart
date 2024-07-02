@@ -47,6 +47,10 @@ class Setting extends ChangeNotifier {
     return DateFormat('dd/MM/y HH:mm', 'id_ID').format(date);
   }
 
+  String timeFormat(TimeOfDay time) {
+    return "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
+  }
+
   String dateTimeLocalFormat(DateTime date) {
     return DateFormat('dd/MM/y HH:mm', 'id_ID').format(date.toLocal());
   }

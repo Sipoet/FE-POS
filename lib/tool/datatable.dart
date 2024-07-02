@@ -253,7 +253,7 @@ mixin TableDecorator<T extends Model> on DataTableSource {
         return _dateFormat(cell);
       case const (DateTime):
         return _datetimeFormat(cell);
-      case const (TimeOfDay):
+      case const (TimeDay):
         return _timeFormat(cell);
       case const (Money):
         return _moneyFormat(cell);
@@ -271,9 +271,8 @@ mixin TableDecorator<T extends Model> on DataTableSource {
     }
   }
 
-  static String _timeFormat(TimeOfDay data) {
-    var formated = NumberFormat("00", "en_US");
-    return "${formated.format(data.hour)}:${formated.format(data.minute)}";
+  static String _timeFormat(TimeDay data) {
+    return data.format24Hour();
   }
 
   static String _dateFormat(DateTime data) {

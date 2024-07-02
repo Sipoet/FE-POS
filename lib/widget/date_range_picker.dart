@@ -11,6 +11,7 @@ class DateRangePicker extends StatefulWidget {
       this.initialDateRange,
       this.onChanged,
       this.controller,
+      this.focusNode,
       this.canRemove = false,
       this.format = 'dd/MM/y'});
   final Widget? label;
@@ -20,6 +21,7 @@ class DateRangePicker extends StatefulWidget {
   final String format;
   final bool enabled;
   final bool canRemove;
+  final FocusNode? focusNode;
   final Function(DateTimeRange? range)? onChanged;
   final PickerController? controller;
   @override
@@ -65,6 +67,7 @@ class _DateRangePickerState extends State<DateRangePicker> {
     var colorScheme = Theme.of(context).colorScheme;
     return Stack(children: [
       TextFormField(
+        focusNode: widget.focusNode,
         readOnly: true,
         style: widget.textStyle,
         decoration: InputDecoration(
@@ -84,7 +87,7 @@ class _DateRangePickerState extends State<DateRangePicker> {
           if (!widget.enabled) return;
           DateTimeRange? pickedDateRange = await showDateRangePicker(
             barrierColor: colorScheme.outline,
-            initialEntryMode: DatePickerEntryMode.calendarOnly,
+            initialEntryMode: DatePickerEntryMode.calendar,
             context: context,
             firstDate: DateTime(DateTime.now().year - 5),
             lastDate: DateTime(99999, 12, 31, 23, 59, 59, 59),

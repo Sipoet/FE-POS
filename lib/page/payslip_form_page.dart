@@ -378,23 +378,23 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                       ],
                       rows: payslip.lines
                           .map<DataRow>((payslipLine) => DataRow(cells: [
-                                DataCell(DropdownMenu<PayslipGroup>(
+                                DataCell(DropdownMenu<PayrollGroup>(
                                   initialSelection: payslipLine.group,
                                   onSelected: (value) => payslipLine.group =
-                                      value ?? PayslipGroup.earning,
-                                  dropdownMenuEntries: PayslipGroup.values
-                                      .map<DropdownMenuEntry<PayslipGroup>>(
+                                      value ?? PayrollGroup.earning,
+                                  dropdownMenuEntries: PayrollGroup.values
+                                      .map<DropdownMenuEntry<PayrollGroup>>(
                                           (value) => DropdownMenuEntry(
                                               value: value,
                                               label: value.toString()))
                                       .toList(),
                                 )),
-                                DataCell(DropdownMenu<PayslipType>(
+                                DataCell(DropdownMenu<PayrollType>(
                                   initialSelection: payslipLine.payslipType,
                                   onSelected: (value) =>
                                       payslipLine.payslipType = value,
-                                  dropdownMenuEntries: PayslipType.values
-                                      .map<DropdownMenuEntry<PayslipType>>(
+                                  dropdownMenuEntries: PayrollType.values
+                                      .map<DropdownMenuEntry<PayrollType>>(
                                           (value) => DropdownMenuEntry(
                                               value: value,
                                               label: value.toString()))
@@ -466,7 +466,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                     child: ElevatedButton(
                         onPressed: () => setState(() {
                               payslip.lines.add(PayslipLine(
-                                group: PayslipGroup.earning,
+                                group: PayrollGroup.earning,
                                 amount: 0,
                               ));
                             }),

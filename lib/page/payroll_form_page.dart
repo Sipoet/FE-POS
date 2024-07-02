@@ -51,15 +51,10 @@ class _PayrollFormPageState extends State<PayrollFormPage>
     server.get('payrolls/${payroll.id}',
         queryParam: {'include': 'payroll_lines'}).then((response) {
       if (response.statusCode == 200) {
-        final payrollLines = response.data['data']['relationships']
-            ['payroll_lines']['data'] as List;
-        final relationshipsData = response.data['included'] as List;
+        final jsonData = response.data;
         setState(() {
-          payroll.lines = payrollLines.map<PayrollLine>((line) {
-            final json = relationshipsData.firstWhere((row) =>
-                row['type'] == line['type'] && row['id'] == line['id']);
-            return PayrollLine.fromJson(json);
-          }).toList();
+          Payroll.fromJson(jsonData['data'],
+              model: payroll, included: jsonData['included']);
         });
       }
     }, onError: (error) {
@@ -280,7 +275,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                       .map<DropdownMenuEntry<PayrollGroup>>(
                                           (value) => DropdownMenuEntry(
                                               value: value,
-                                              label: value.toString()))
+                                              label: value.humanize()))
                                       .toList(),
                                 )),
                                 DataCell(DropdownMenu<PayrollType>(
@@ -291,7 +286,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                       .map<DropdownMenuEntry<PayrollType>>(
                                           (value) => DropdownMenuEntry(
                                               value: value,
-                                              label: value.toString()))
+                                              label: value.humanize()))
                                       .toList(),
                                 )),
                                 DataCell(DropdownMenu<PayrollFormula>(
@@ -302,7 +297,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                       .map<DropdownMenuEntry<PayrollFormula>>(
                                           (value) => DropdownMenuEntry(
                                               value: value,
-                                              label: value.toString()))
+                                              label: value.humanize()))
                                       .toList(),
                                 )),
                                 DataCell(SizedBox(
@@ -444,10 +439,8 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                     padding: const EdgeInsets.only(top: 10),
                     child: ElevatedButton(
                         onPressed: () => setState(() {
-                              payroll.lines.add(PayrollLine(
-                                  group: PayrollGroup.earning,
-                                  formula: PayrollFormula.basic,
-                                  row: payroll.lines.length));
+                              payroll.lines
+                                  .add(PayrollLine(row: payroll.lines.length));
                             }),
                         child: const Text('Tambah')),
                   ),

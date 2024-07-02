@@ -74,7 +74,7 @@ class _DatePickerState extends State<DatePicker> with RestorationMixin {
         return DatePickerDialog(
           initialDate: DateTime.fromMillisecondsSinceEpoch(arguments! as int),
           restorationId: 'date_picker_dialog',
-          initialEntryMode: DatePickerEntryMode.calendarOnly,
+          initialEntryMode: DatePickerEntryMode.calendar,
           firstDate: DateTime(2022),
           lastDate: DateTime(9999),
         );

@@ -5,6 +5,7 @@ import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_picker.dart';
+import 'package:fe_pos/widget/time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/role.dart';
 import 'package:flutter/services.dart';
@@ -104,12 +105,10 @@ class _RoleFormPageState extends State<RoleFormPage>
       if ([200, 201].contains(response.statusCode)) {
         var data = response.data['data'];
         setState(() {
-          role.id = int.tryParse(data['id']);
-          role.name = data['attributes']['name'];
+          Role.fromJson(data, included: response.data['included'], model: role);
           var tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(widget, 'Edit role ${role.name}');
         });
-        fetchRole();
         flash.show(const Text('Berhasil disimpan'), MessageType.success);
       } else if (response.statusCode == 409) {
         var data = response.data;
@@ -121,6 +120,13 @@ class _RoleFormPageState extends State<RoleFormPage>
     }, onError: (error, stackTrace) {
       server.defaultErrorResponse(context: context, error: error);
     });
+  }
+
+  List<RoleWorkSchedule> workScheduleByGroup(
+      GroupWorkSchedule groupWorkSchedule) {
+    return role.roleWorkSchedules
+        .where((line) => line.groupName == groupWorkSchedule.groupName)
+        .toList();
   }
 
   List<Widget> workScheduleForms(
@@ -196,56 +202,6 @@ class _RoleFormPageState extends State<RoleFormPage>
               roleWorkSchedule.endActiveAt = groupWorkSchedule.endActiveAt;
             }
           },
-        ),
-        const SizedBox(
-          height: 10,
-        ),
-        ElevatedButton(
-            onPressed: () {
-              final groupName = "Jadwal Baru ${group.keys.length.toString()}";
-              setState(() {
-                role.roleWorkSchedules.addAll([
-                  RoleWorkSchedule(
-                      groupName: groupName,
-                      beginWork: '08:00',
-                      endWork: '22:00',
-                      dayOfWeek: 1),
-                  RoleWorkSchedule(
-                      groupName: groupName,
-                      beginWork: '08:00',
-                      endWork: '22:00',
-                      dayOfWeek: 2),
-                  RoleWorkSchedule(
-                      groupName: groupName,
-                      beginWork: '08:00',
-                      endWork: '22:00',
-                      dayOfWeek: 3),
-                  RoleWorkSchedule(
-                      groupName: groupName,
-                      beginWork: '08:00',
-                      endWork: '22:00',
-                      dayOfWeek: 4),
-                  RoleWorkSchedule(
-                      groupName: groupName,
-                      beginWork: '08:00',
-                      endWork: '22:00',
-                      dayOfWeek: 5),
-                  RoleWorkSchedule(
-                      groupName: groupName,
-                      beginWork: '08:00',
-                      endWork: '22:00',
-                      dayOfWeek: 6),
-                  RoleWorkSchedule(
-                      groupName: groupName,
-                      beginWork: '08:00',
-                      endWork: '22:00',
-                      dayOfWeek: 7),
-                ]);
-              });
-            },
-            child: const Text('Tambah Group Jadwal')),
-        const SizedBox(
-          height: 10,
         ),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -328,36 +284,34 @@ class _RoleFormPageState extends State<RoleFormPage>
                           onChanged: (value) =>
                               roleWorkSchedule.shift = int.tryParse(value) ?? 0,
                         )),
-                        DataCell(TextFormField(
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder()),
-                          initialValue: roleWorkSchedule.beginWork,
-                          onSaved: (value) =>
-                              roleWorkSchedule.beginWork = value ?? '',
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'harus diisi';
-                            }
-                            return null;
-                          },
-                          onChanged: (value) =>
-                              roleWorkSchedule.beginWork = value,
-                        )),
-                        DataCell(TextFormField(
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder()),
-                          initialValue: roleWorkSchedule.endWork,
-                          onSaved: (value) =>
-                              roleWorkSchedule.endWork = value ?? '',
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'harus diisi';
-                            }
-                            return null;
-                          },
-                          onChanged: (value) =>
-                              roleWorkSchedule.endWork = value,
-                        )),
+                        DataCell(
+                          TimePicker(
+                            initialValue: roleWorkSchedule.beginWork,
+                            onSaved: (value) => roleWorkSchedule.beginWork =
+                                value ?? roleWorkSchedule.beginWork,
+                            labelString: 'Mulai Kerja',
+                            validator: (value) {
+                              if (value == null) {
+                                return 'harus diisi';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        DataCell(
+                          TimePicker(
+                            initialValue: roleWorkSchedule.endWork,
+                            onSaved: (value) => roleWorkSchedule.endWork =
+                                value ?? roleWorkSchedule.endWork,
+                            labelString: 'Akhir Kerja',
+                            validator: (value) {
+                              if (value == null) {
+                                return 'harus diisi';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
                         DataCell(Row(
                           children: [
                             Visibility(
@@ -386,6 +340,20 @@ class _RoleFormPageState extends State<RoleFormPage>
                         )),
                       ]))
                   .toList()),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 10, bottom: 10),
+          child: ElevatedButton(
+              onPressed: () => setState(() {
+                    role.roleWorkSchedules.add(RoleWorkSchedule(
+                        groupName: groupWorkSchedule.groupName,
+                        level: groupWorkSchedule.level,
+                        beginActiveAt: groupWorkSchedule.beginActiveAt,
+                        endActiveAt: groupWorkSchedule.endActiveAt,
+                        beginWork: const TimeDay(hour: 8, minute: 0),
+                        endWork: const TimeDay(hour: 22, minute: 0)));
+                  }),
+              child: const Text('Tambah')),
         ),
       ]);
     }
@@ -453,7 +421,7 @@ class _RoleFormPageState extends State<RoleFormPage>
                         scrollDirection: Axis.horizontal,
                         child: DataTable(
                             dataRowMinHeight: 60,
-                            dataRowMaxHeight: 150,
+                            dataRowMaxHeight: 250,
                             showBottomBorder: true,
                             columns: [
                               const DataColumn(
@@ -483,7 +451,7 @@ class _RoleFormPageState extends State<RoleFormPage>
                                 .map<DataRow>((accessAuthorize) =>
                                     DataRow(cells: [
                                       DataCell(SizedBox(
-                                        width: 250,
+                                        width: 350,
                                         child: AsyncDropdown<String>(
                                             onChanged: (value) => setState(() {
                                                   accessAuthorize.controller =
@@ -499,7 +467,7 @@ class _RoleFormPageState extends State<RoleFormPage>
                                             path: 'roles/controller_names'),
                                       )),
                                       DataCell(SizedBox(
-                                        width: 250,
+                                        width: 350,
                                         child: AsyncDropdownMultiple<String>(
                                           onChanged: (value) =>
                                               accessAuthorize.action = value,
@@ -551,7 +519,7 @@ class _RoleFormPageState extends State<RoleFormPage>
                         scrollDirection: Axis.horizontal,
                         child: DataTable(
                           dataRowMinHeight: 60,
-                          dataRowMaxHeight: 150,
+                          dataRowMaxHeight: 250,
                           showBottomBorder: true,
                           columns: [
                             const DataColumn(
@@ -575,7 +543,7 @@ class _RoleFormPageState extends State<RoleFormPage>
                               .map<DataRow>((columnAuthorize) =>
                                   DataRow(cells: [
                                     DataCell(SizedBox(
-                                      width: 250,
+                                      width: 350,
                                       child: AsyncDropdown<String>(
                                           textOnSearch: (value) => value,
                                           onChanged: (value) => columnAuthorize
@@ -587,7 +555,7 @@ class _RoleFormPageState extends State<RoleFormPage>
                                           path: 'roles/table_names'),
                                     )),
                                     DataCell(SizedBox(
-                                      width: 250,
+                                      width: 350,
                                       child: AsyncDropdownMultiple<String>(
                                           onChanged: (value) => setState(() {
                                                 columnAuthorize.column = value;
@@ -636,18 +604,76 @@ class _RoleFormPageState extends State<RoleFormPage>
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
+                      ElevatedButton(
+                          onPressed: () {
+                            final newLength = groupWorkSchedule.keys.length + 1;
+                            final groupName =
+                                "Jadwal Baru ${newLength.toString()}";
+                            setState(() {
+                              role.roleWorkSchedules.addAll([
+                                RoleWorkSchedule(
+                                    beginActiveAt: Date.today(),
+                                    endActiveAt: Date.today(),
+                                    groupName: groupName,
+                                    beginWork:
+                                        const TimeDay(hour: 8, minute: 0),
+                                    endWork: const TimeDay(hour: 22, minute: 0),
+                                    dayOfWeek: 1),
+                                RoleWorkSchedule(
+                                    beginActiveAt: Date.today(),
+                                    endActiveAt: Date.today(),
+                                    groupName: groupName,
+                                    beginWork:
+                                        const TimeDay(hour: 8, minute: 0),
+                                    endWork: const TimeDay(hour: 22, minute: 0),
+                                    dayOfWeek: 2),
+                                RoleWorkSchedule(
+                                    beginActiveAt: Date.today(),
+                                    endActiveAt: Date.today(),
+                                    groupName: groupName,
+                                    beginWork:
+                                        const TimeDay(hour: 8, minute: 0),
+                                    endWork: const TimeDay(hour: 22, minute: 0),
+                                    dayOfWeek: 3),
+                                RoleWorkSchedule(
+                                    beginActiveAt: Date.today(),
+                                    endActiveAt: Date.today(),
+                                    groupName: groupName,
+                                    beginWork:
+                                        const TimeDay(hour: 8, minute: 0),
+                                    endWork: const TimeDay(hour: 22, minute: 0),
+                                    dayOfWeek: 4),
+                                RoleWorkSchedule(
+                                    beginActiveAt: Date.today(),
+                                    endActiveAt: Date.today(),
+                                    groupName: groupName,
+                                    beginWork:
+                                        const TimeDay(hour: 8, minute: 0),
+                                    endWork: const TimeDay(hour: 22, minute: 0),
+                                    dayOfWeek: 5),
+                                RoleWorkSchedule(
+                                    beginActiveAt: Date.today(),
+                                    endActiveAt: Date.today(),
+                                    groupName: groupName,
+                                    beginWork:
+                                        const TimeDay(hour: 8, minute: 0),
+                                    endWork: const TimeDay(hour: 22, minute: 0),
+                                    dayOfWeek: 6),
+                                RoleWorkSchedule(
+                                    beginActiveAt: Date.today(),
+                                    endActiveAt: Date.today(),
+                                    groupName: groupName,
+                                    beginWork:
+                                        const TimeDay(hour: 8, minute: 0),
+                                    endWork: const TimeDay(hour: 22, minute: 0),
+                                    dayOfWeek: 7),
+                              ]);
+                            });
+                          },
+                          child: const Text('Tambah Group Jadwal')),
                     ] +
                     workScheduleForms(groupWorkSchedule) +
                     [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10, bottom: 10),
-                        child: ElevatedButton(
-                            onPressed: () => setState(() {
-                                  role.roleWorkSchedules.add(RoleWorkSchedule(
-                                      beginWork: '', endWork: ''));
-                                }),
-                            child: const Text('Tambah')),
-                      ),
                       Padding(
                         padding: const EdgeInsets.only(top: 10, bottom: 10),
                         child: ElevatedButton(
