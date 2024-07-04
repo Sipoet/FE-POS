@@ -99,7 +99,7 @@ mixin HistoryPopup<T extends StatefulWidget> on State<T> {
                 child: Padding(
                   padding: const EdgeInsets.all(30.0),
                   child: Container(
-                    decoration: BoxDecoration(color: colorScheme.background),
+                    decoration: BoxDecoration(color: colorScheme.surface),
                     padding: const EdgeInsets.all(10),
                     child: PaginatedDataTable(
                       header: Align(

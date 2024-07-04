@@ -157,8 +157,8 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
       },
       pageSyncApproach: PageSyncApproach.goToLast,
       availableRowsPerPage: const [10, 20, 50, 100],
-      headingRowColor: MaterialStateProperty.resolveWith<Color?>(
-          (Set<MaterialState> states) {
+      headingRowColor:
+          WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
         return colorScheme.secondaryContainer.withOpacity(0.08);
       }),
     );
@@ -316,8 +316,8 @@ class _SyncDataTableState extends State<SyncDataTable> {
         _paginatorController.goToFirstPage();
       },
       availableRowsPerPage: const [10, 20, 50, 100],
-      headingRowColor: MaterialStateProperty.resolveWith<Color?>(
-          (Set<MaterialState> states) {
+      headingRowColor:
+          WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
         return colorScheme.secondaryContainer.withOpacity(0.08);
       }),
     );

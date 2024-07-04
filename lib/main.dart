@@ -45,6 +45,7 @@ class AllegraPos extends StatelessWidget {
           Locale('en'),
           Locale('id'),
         ],
+        locale: const Locale('id'),
         home: const LoadingPage(),
       ),
     );

@@ -66,7 +66,8 @@ class _HomePageState extends State<HomePage>
   void arrangeDate(String rangeType) {
     var startTime = DateTime.now().copyWith(hour: 0, minute: 0, second: 0);
     var endTime = DateTime.now()
-        .copyWith(hour: 23, minute: 59, second: 59, millisecond: 999);
+        .copyWith(hour: 6, minute: 59, second: 59, millisecond: 999)
+        .add(const Duration(days: 1));
     switch (rangeType) {
       case 'yesterday':
         startTime = startTime.subtract(const Duration(days: 1));
@@ -116,12 +117,11 @@ class _HomePageState extends State<HomePage>
                     border: OutlineInputBorder(),
                   ),
                   menuStyle: MenuStyle(
-                      backgroundColor: MaterialStatePropertyAll(
+                      backgroundColor: WidgetStatePropertyAll(
                           colorScheme.secondaryContainer),
-                      surfaceTintColor: MaterialStatePropertyAll(
+                      surfaceTintColor: WidgetStatePropertyAll(
                           colorScheme.onSecondaryContainer),
-                      shadowColor:
-                          MaterialStatePropertyAll(colorScheme.outline)),
+                      shadowColor: WidgetStatePropertyAll(colorScheme.outline)),
                   textStyle: TextStyle(
                       fontSize: 16, color: colorScheme.onPrimaryContainer),
                   enableSearch: false,

@@ -103,7 +103,7 @@ class _DesktopLayoutState extends State<DesktopLayout>
 
   Widget bodyWidget() {
     return Container(
-      color: Theme.of(context).colorScheme.background,
+      color: Theme.of(context).colorScheme.surface,
       child: tabWidget(),
     );
   }
