@@ -1,6 +1,7 @@
 import 'package:fe_pos/tool/datatable.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
-import 'package:fe_pos/widget/date_range_picker.dart';
+import 'package:fe_pos/widget/date_range_form_field.dart';
+
 import 'package:flutter/material.dart';
 
 class TableFilterForm extends StatefulWidget {
@@ -145,6 +146,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
       case 'percentage':
         return numberFilter(column);
       case 'date':
+        return dateFilter(column, datePickerOnly: true);
       case 'datetime':
         return dateFilter(column);
       case 'enum':
@@ -183,12 +185,14 @@ class _TableFilterFormState extends State<TableFilterForm> {
     }
   }
 
-  Widget dateFilter(TableColumn column) {
+  Widget dateFilter(TableColumn column, {bool datePickerOnly = false}) {
     return SizedBox(
       width: 300,
       height: 90,
-      child: DateRangePicker(
+      child: DateRangeFormField(
+        datePickerOnly: datePickerOnly,
         label: Text(column.name, style: _labelStyle),
+        helpText: column.name,
         key: ValueKey(column.key),
         canRemove: true,
         onChanged: (value) {

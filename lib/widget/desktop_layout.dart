@@ -52,7 +52,7 @@ class _DesktopLayoutState extends State<DesktopLayout>
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ),
-          actions: [MenuBar(children: menus)],
+          actions: [MenuBar(style: const MenuStyle(), children: menus)],
           bottom: TabBar(
             isScrollable: true,
             controller: tabManager.controller,

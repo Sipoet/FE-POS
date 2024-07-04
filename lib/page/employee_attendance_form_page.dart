@@ -1,8 +1,8 @@
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
-import 'package:fe_pos/widget/date_picker.dart';
-import 'package:fe_pos/widget/time_picker.dart';
+import 'package:fe_pos/widget/date_form_field.dart';
+import 'package:fe_pos/widget/time_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/employee_attendance.dart';
 
@@ -84,8 +84,11 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: DatePicker(
+                      child: DateFormField(
                         initialValue: employeeAttendance.date,
+                        label: const Text('Tanggal', style: labelStyle),
+                        helpText: 'Tanggal',
+                        datePickerOnly: true,
                         onSaved: (value) {
                           if (value != null) {
                             employeeAttendance.startTime =
@@ -102,11 +105,12 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
                         },
                       ),
                     ),
-                    TimePicker(
+                    TimeFormField(
                         label: const Text(
                           'Jam Masuk',
                           style: labelStyle,
                         ),
+                        helpText: 'Jam Masuk',
                         onSaved: (value) {
                           if (value != null) {
                             employeeAttendance.startTime =
@@ -115,11 +119,12 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
                           }
                         },
                         initialValue: employeeAttendance.startWork),
-                    TimePicker(
+                    TimeFormField(
                         label: const Text(
                           'Jam Keluar',
                           style: labelStyle,
                         ),
+                        helpText: 'Jam Keluar',
                         onSaved: (value) {
                           if (value != null) {
                             employeeAttendance.endTime =

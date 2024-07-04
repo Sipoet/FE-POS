@@ -3,7 +3,7 @@ import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/widget/sales_transaction_report_widget.dart';
 import 'package:fe_pos/widget/item_sales_transaction_report_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:fe_pos/widget/date_range_picker.dart';
+import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:provider/provider.dart';
 
@@ -158,7 +158,7 @@ class _HomePageState extends State<HomePage>
                 ),
                 Container(
                   constraints: const BoxConstraints(maxWidth: 350),
-                  child: DateRangePicker(
+                  child: DateRangeFormField(
                     enabled: _isCustom,
                     textStyle: const TextStyle(
                         fontSize: 16, fontStyle: FontStyle.italic),

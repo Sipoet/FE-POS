@@ -5,7 +5,7 @@ import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
-import 'package:fe_pos/widget/date_picker.dart';
+import 'package:fe_pos/widget/date_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/payslip.dart';
 
@@ -160,7 +160,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                   const SizedBox(
                     height: 10,
                   ),
-                  DatePicker(
+                  DateFormField(
                       label: const Text('Tanggal Mulai'),
                       onChanged: (value) {
                         if (value != null) {
@@ -168,7 +168,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                         }
                       },
                       initialValue: payslip.startDate),
-                  DatePicker(
+                  DateFormField(
                       label: const Text('Tanggal Akhir'),
                       onChanged: (value) {
                         if (value != null) {

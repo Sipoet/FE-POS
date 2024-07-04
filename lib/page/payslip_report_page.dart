@@ -5,7 +5,7 @@ import 'package:fe_pos/tool/file_saver.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/custom_data_table.dart';
-import 'package:fe_pos/widget/date_range_picker.dart';
+import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -100,7 +100,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                     children: [
                       SizedBox(
                         width: 300,
-                        child: DateRangePicker(
+                        child: DateRangeFormField(
                           label: const Text(
                             'Periode',
                             style: TextStyle(fontWeight: FontWeight.bold),

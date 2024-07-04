@@ -7,7 +7,7 @@ import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 
 import 'package:flutter/material.dart';
-import 'package:fe_pos/widget/date_picker.dart';
+import 'package:fe_pos/widget/date_form_field.dart';
 import 'package:fe_pos/model/employee.dart';
 import 'package:flutter/services.dart';
 
@@ -340,7 +340,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   ),
                   Visibility(
                     visible: setting.canShow('employee', 'start_working_date'),
-                    child: DatePicker(
+                    child: DateFormField(
                         label: const Text(
                           'Tanggal Mulai Kerja',
                           style: labelStyle,
@@ -371,7 +371,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   ),
                   Visibility(
                     visible: setting.canShow('employee', 'end_working_date'),
-                    child: DatePicker(
+                    child: DateFormField(
                         label: const Text(
                           'Tanggal terakhir Kerja',
                           style: labelStyle,

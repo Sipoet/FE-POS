@@ -4,8 +4,8 @@ import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
-import 'package:fe_pos/widget/date_range_picker.dart';
-import 'package:fe_pos/widget/time_picker.dart';
+import 'package:fe_pos/widget/date_range_form_field.dart';
+import 'package:fe_pos/widget/time_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/role.dart';
 import 'package:flutter/services.dart';
@@ -186,7 +186,7 @@ class _RoleFormPageState extends State<RoleFormPage>
         const SizedBox(
           height: 10,
         ),
-        DateRangePicker(
+        DateRangeFormField(
           initialDateRange: DateTimeRange(
               start: groupWorkSchedule.beginActiveAt,
               end: groupWorkSchedule.endActiveAt),
@@ -285,11 +285,11 @@ class _RoleFormPageState extends State<RoleFormPage>
                               roleWorkSchedule.shift = int.tryParse(value) ?? 0,
                         )),
                         DataCell(
-                          TimePicker(
+                          TimeFormField(
                             initialValue: roleWorkSchedule.beginWork,
                             onSaved: (value) => roleWorkSchedule.beginWork =
                                 value ?? roleWorkSchedule.beginWork,
-                            labelString: 'Mulai Kerja',
+                            helpText: 'Mulai Kerja',
                             validator: (value) {
                               if (value == null) {
                                 return 'harus diisi';
@@ -299,11 +299,11 @@ class _RoleFormPageState extends State<RoleFormPage>
                           ),
                         ),
                         DataCell(
-                          TimePicker(
+                          TimeFormField(
                             initialValue: roleWorkSchedule.endWork,
                             onSaved: (value) => roleWorkSchedule.endWork =
                                 value ?? roleWorkSchedule.endWork,
-                            labelString: 'Akhir Kerja',
+                            helpText: 'Akhir Kerja',
                             validator: (value) {
                               if (value == null) {
                                 return 'harus diisi';

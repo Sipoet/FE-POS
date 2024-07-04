@@ -3,7 +3,7 @@ import 'package:fe_pos/model/payslip.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
-import 'package:fe_pos/widget/date_range_picker.dart';
+import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -56,7 +56,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                 constraints: BoxConstraints.loose(const Size.fromWidth(600)),
                 child: Column(
                   children: [
-                    DateRangePicker(
+                    DateRangeFormField(
                       focusNode: _focusNode,
                       key: const ValueKey('generate_payslip-periode'),
                       label: const Text(

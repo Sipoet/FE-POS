@@ -3,7 +3,7 @@ import 'package:fe_pos/model/item_sales_period_report.dart';
 import 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/custom_data_table.dart';
-import 'package:fe_pos/widget/date_range_picker.dart';
+import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:provider/provider.dart';
@@ -146,7 +146,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
               children: [
                 SizedBox(
                   width: 350,
-                  child: DateRangePicker(
+                  child: DateRangeFormField(
                     label: const Text('Tanggal :', style: _filterLabelStyle),
                     initialDateRange: _dateRange,
                     onChanged: (range) => _dateRange = range ??

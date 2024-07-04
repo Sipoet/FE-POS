@@ -3,7 +3,7 @@ import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
-import 'package:fe_pos/widget/date_picker.dart';
+import 'package:fe_pos/widget/date_form_field.dart';
 import 'package:fe_pos/model/employee_leave.dart';
 import 'package:flutter/services.dart';
 
@@ -125,7 +125,9 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                   const SizedBox(
                     height: 10,
                   ),
-                  DatePicker(
+                  DateFormField(
+                      datePickerOnly: true,
+                      helpText: 'Tanggal Cuti',
                       label: const Text(
                         'Tanggal Cuti',
                         style: labelStyle,
@@ -182,11 +184,13 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                     visible: employeeLeave.leaveType == LeaveType.changeDay,
                     child: Column(
                       children: [
-                        DatePicker(
+                        DateFormField(
                             label: const Text(
                               'Tanggal Ganti Hari',
                               style: labelStyle,
                             ),
+                            datePickerOnly: true,
+                            helpText: 'Tanggal Ganti Hari',
                             onSaved: (newValue) {
                               if (newValue == null) {
                                 employeeLeave.changeDate = null;

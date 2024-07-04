@@ -5,7 +5,7 @@ import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
-import 'package:fe_pos/widget/date_range_picker.dart';
+import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/model/discount.dart';
 
 import 'package:provider/provider.dart';
@@ -674,7 +674,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     height: 10,
                   ),
                   Flexible(
-                    child: DateRangePicker(
+                    child: DateRangeFormField(
                       initialDateRange: DateTimeRange(
                           start: discount.startTime, end: discount.endTime),
                       label: const Text(
