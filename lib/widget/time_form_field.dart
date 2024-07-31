@@ -7,6 +7,7 @@ class TimeFormField extends StatefulWidget {
   final TimeDay? firstDate;
   final TimeDay? lastDate;
   final bool canRemove;
+  final FocusNode? focusNode;
   final String? helpText;
   final void Function(TimeDay?)? onSaved;
   final void Function(TimeDay? date)? onChanged;
@@ -18,6 +19,7 @@ class TimeFormField extends StatefulWidget {
       this.lastDate,
       this.onSaved,
       this.helpText,
+      this.focusNode,
       this.onChanged,
       this.validator,
       this.canRemove = false,
@@ -61,7 +63,7 @@ class _TimeFormFieldState extends State<TimeFormField> {
   void _showDialog() {
     showTimePicker(
       context: context,
-      initialTime: _date ?? TimeDay.now(),
+      initialTime: _date ?? TimeOfDay.now(),
       helpText: widget.helpText,
       hourLabelText: 'Jam',
       minuteLabelText: 'Menit',
@@ -82,6 +84,7 @@ class _TimeFormFieldState extends State<TimeFormField> {
             onTap: () {
               _showDialog();
             },
+            focusNode: widget.focusNode,
             readOnly: true,
             validator: (value) {
               if (widget.validator == null) {

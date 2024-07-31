@@ -1,6 +1,7 @@
 import 'package:fe_pos/model/employee_attendance.dart';
 import 'package:fe_pos/page/employee_attendance_form_page.dart';
 import 'package:fe_pos/page/employee_attendance_mass_upload_page.dart';
+import 'package:fe_pos/page/mass_update_allowed_overtime_form_page.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -112,6 +113,17 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
           'Mass Upload Absensi Karyawan',
           const EmployeeAttendanceMassUploadPage(
             key: ObjectKey('EmployeeAttendanceMassUploadFormPage'),
+          ));
+    });
+  }
+
+  void massUpdateAttendance() {
+    var tabManager = context.read<TabManager>();
+    setState(() {
+      tabManager.addTab(
+          'Mass Update Overtime Absensi Karyawan',
+          const MassUpdateAllowedOvertimeFormPage(
+            key: ObjectKey('MassUpdateAllowedOvertimeFormPage'),
           ));
     });
   }
@@ -256,6 +268,14 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
                           onPressed: () {
                             _menuController.close();
                             massUploadAttendance();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text(
+                              'Mass Update Overtime Absensi Karyawan'),
+                          onPressed: () {
+                            _menuController.close();
+                            massUpdateAttendance();
                           },
                         ),
                       ],

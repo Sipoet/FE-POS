@@ -24,7 +24,6 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
     with AutomaticKeepAliveClientMixin {
   late Server _server;
   final _formKey = GlobalKey<FormState>();
-  List<bool> selected = [];
   late final Flash flash;
 
   EmployeeAttendance get employeeAttendance => widget.employeeAttendance;
@@ -161,6 +160,12 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
                         value: employeeAttendance.isLate,
                         onChanged: (val) => setState(() {
                               employeeAttendance.isLate = val ?? false;
+                            })),
+                    CheckboxListTile(
+                        title: const Text('Boleh Overtime?'),
+                        value: employeeAttendance.allowOvertime,
+                        onChanged: (val) => setState(() {
+                              employeeAttendance.allowOvertime = val ?? false;
                             })),
                     Padding(
                       padding: const EdgeInsets.only(top: 10, bottom: 10),

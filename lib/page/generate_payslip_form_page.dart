@@ -1,6 +1,7 @@
 import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/payslip.dart';
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
@@ -16,7 +17,7 @@ class GeneratePayslipFormPage extends StatefulWidget {
 }
 
 class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, LoadingPopup {
   DateTime startDate = DateTime.now().copyWith(
       month: DateTime.now().month - 1, day: 26, hour: 0, minute: 0, second: 0);
   DateTime endDate =
@@ -58,6 +59,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                   children: [
                     DateRangeFormField(
                       focusNode: _focusNode,
+                      datePickerOnly: true,
                       key: const ValueKey('generate_payslip-periode'),
                       label: const Text(
                         'Periode',
@@ -218,6 +220,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
   }
 
   void _generatePayslip() async {
+    showLoadingPopup();
     _server.post('payslips/generate_payslip', body: {
       'employee_ids': _employeeIds,
       'start_date': startDate.toIso8601String(),
@@ -232,10 +235,6 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
               .toList();
           _source.setData(payslip);
         });
-        flash.showBanner(
-            messageType: MessageType.success,
-            title: 'Sukses',
-            description: 'Sukses buat slip gaji');
       } else {
         flash.showBanner(
             messageType: MessageType.failed,
@@ -244,8 +243,9 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
       }
       response.data['data'];
     },
-        onError: (error) =>
-            _server.defaultErrorResponse(context: context, error: error));
+        onError: (error) => _server.defaultErrorResponse(
+            context: context,
+            error: error)).whenComplete(() => hideLoadingPopup());
   }
 }
 

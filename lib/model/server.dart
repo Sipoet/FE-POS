@@ -7,7 +7,6 @@ export 'package:dio/dio.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:image_picker/image_picker.dart';
 
 class Server extends ChangeNotifier {
@@ -32,12 +31,10 @@ class Server extends ChangeNotifier {
 
   Future setCert() async {
     if (kIsWeb) return;
-    var certificate = await rootBundle.load('assets/certs/192.168.1.11.pem');
     dio.httpClientAdapter = IOHttpClientAdapter(
       createHttpClient: () {
         final SecurityContext context = SecurityContext.defaultContext;
-        context.setTrustedCertificatesBytes(certificate.buffer.asUint8List(),
-            password: 'allegrakss123456789');
+
         final HttpClient client = HttpClient(context: context);
         client.badCertificateCallback =
             (X509Certificate cert, String host, int port) => true;

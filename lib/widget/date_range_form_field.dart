@@ -72,6 +72,8 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
 
   void _openDialog() {
     final colorScheme = Theme.of(context).colorScheme;
+    final maxDate = DateTime(99999, 12, 31, 23, 59, 59, 59);
+
     showOmniDateTimeRangePicker(
       barrierColor: colorScheme.outline,
       context: context,
@@ -83,7 +85,9 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
       startWidget: const Text('Mulai'),
       endWidget: const Text('Akhir'),
       startFirstDate: DateTime(DateTime.now().year - 5),
-      startLastDate: DateTime(99999, 12, 31, 23, 59, 59, 59),
+      startLastDate: maxDate,
+      endFirstDate: DateTime(DateTime.now().year - 5),
+      endLastDate: maxDate,
       startInitialDate: _dateRange?.start,
       endInitialDate: _dateRange?.end,
     ).then(

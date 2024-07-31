@@ -17,6 +17,11 @@ class TimeDay extends TimeOfDay {
     return TimeDay(hour: time.hour, minute: time.minute);
   }
 
+  @override
+  String toJson() {
+    return format24Hour();
+  }
+
   String format24Hour({bool showSecond = false, String separator = ':'}) {
     List<String> part = [
       hour.toString().padLeft(2, '0'),
@@ -71,6 +76,11 @@ class Date extends DateTime {
   }
 
   @override
+  String toJson() {
+    return toIso8601String();
+  }
+
+  @override
   String toIso8601String() {
     final value = super.toIso8601String();
 
@@ -86,7 +96,8 @@ class Date extends DateTime {
 class Money {
   final double value;
   final String symbol;
-  const Money(this.value, {this.symbol = 'Rp'});
+  final double rate;
+  const Money(this.value, {this.symbol = 'Rp', this.rate = 1});
   Money operator +(var other) {
     if (other is Money) {
       return Money(value + other.value, symbol: symbol);

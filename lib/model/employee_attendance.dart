@@ -9,6 +9,7 @@ class EmployeeAttendance extends Model {
   DateTime endTime;
   Employee employee;
   bool isLate;
+  bool allowOvertime;
   int shift;
   EmployeeAttendance(
       {required this.startTime,
@@ -18,6 +19,7 @@ class EmployeeAttendance extends Model {
       this.isLate = false,
       super.createdAt,
       super.updatedAt,
+      this.allowOvertime = false,
       super.id});
 
   @override
@@ -33,6 +35,7 @@ class EmployeeAttendance extends Model {
         'updated_at': updatedAt,
         'is_late': isLate,
         'shift': shift,
+        'allow_overtime': allowOvertime,
       };
 
   TimeDay get startWork => TimeDay.fromDateTime(startTime);
@@ -63,6 +66,7 @@ class EmployeeAttendance extends Model {
     Model.fromModel(model, attributes);
     model.employee = employee;
     model.isLate = attributes['is_late'] ?? false;
+    model.allowOvertime = attributes['allow_overtime'] ?? false;
     model.shift = attributes['shift'];
     return model;
   }

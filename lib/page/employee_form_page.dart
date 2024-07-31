@@ -208,7 +208,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                     visible: setting.canShow('employee', 'code'),
                     child: TextFormField(
                       decoration: const InputDecoration(
-                          labelText: 'Kode Karyawan',
+                          labelText: 'Nama di Mesin Absensi Karyawan',
                           labelStyle: labelStyle,
                           border: OutlineInputBorder()),
                       onSaved: (newValue) {
@@ -345,6 +345,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           'Tanggal Mulai Kerja',
                           style: labelStyle,
                         ),
+                        datePickerOnly: true,
                         onSaved: (newValue) {
                           if (newValue == null) {
                             return;
@@ -376,6 +377,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           'Tanggal terakhir Kerja',
                           style: labelStyle,
                         ),
+                        datePickerOnly: true,
                         onSaved: (newValue) {
                           employee.endWorkingDate = newValue == null
                               ? null

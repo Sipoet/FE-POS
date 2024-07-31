@@ -1,4 +1,5 @@
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/employee_attendance.dart';
 import 'package:fe_pos/model/session_state.dart';
@@ -19,11 +20,11 @@ class EmployeeAttendanceMassUploadPage extends StatefulWidget {
 
 class _EmployeeAttendanceMassUploadPageState
     extends State<EmployeeAttendanceMassUploadPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, LoadingPopup {
   late Server _server;
   late Setting _setting;
   late final EmployeeAttendanceMassUploadDatatableSource _source;
-
+  final _focusNode = FocusNode();
   List<bool> selected = [];
   @override
   void initState() {
@@ -31,6 +32,7 @@ class _EmployeeAttendanceMassUploadPageState
     _setting = context.read<Setting>();
     _source = EmployeeAttendanceMassUploadDatatableSource(setting: _setting);
     super.initState();
+    Future.delayed(Duration.zero, () => _focusNode.requestFocus());
   }
 
   @override
@@ -55,6 +57,7 @@ class _EmployeeAttendanceMassUploadPageState
                 onPressed: () {
                   pickFile();
                 },
+                focusNode: _focusNode,
                 child: const Text('Pilih file')),
           ),
           Visibility(
@@ -71,67 +74,103 @@ class _EmployeeAttendanceMassUploadPageState
                 const SizedBox(
                   height: 10,
                 ),
-                PaginatedDataTable(
-                  showFirstLastButtons: true,
-                  rowsPerPage: 30,
-                  showCheckboxColumn: false,
-                  sortAscending: _source.isAscending,
-                  sortColumnIndex: _source.sortColumn,
-                  columns: [
-                    DataColumn(
-                      label: const Text('Nama Karyawan', style: headerStyle),
-                      onSort: (columnIndex, isAscending) {
-                        final num = isAscending ? 1 : -1;
-                        _source.rows.sort((a, b) =>
-                            a.employee.name.compareTo(b.employee.name) * num);
-                        setState(() {
-                          _source.sortColumn = columnIndex;
-                          _source.isAscending = isAscending;
-                          _source.setData(_source.rows);
-                        });
-                      },
+                Center(
+                  child: SizedBox(
+                    width: 1100,
+                    child: PaginatedDataTable(
+                      showFirstLastButtons: true,
+                      rowsPerPage: 30,
+                      showCheckboxColumn: false,
+                      sortAscending: _source.isAscending,
+                      sortColumnIndex: _source.sortColumn,
+                      columns: [
+                        DataColumn(
+                          label:
+                              const Text('Nama Karyawan', style: headerStyle),
+                          onSort: (columnIndex, isAscending) {
+                            final num = isAscending ? 1 : -1;
+                            _source.rows.sort((a, b) =>
+                                a.employee.name.compareTo(b.employee.name) *
+                                num);
+                            setState(() {
+                              _source.sortColumn = columnIndex;
+                              _source.isAscending = isAscending;
+                              _source.setData(_source.rows);
+                            });
+                          },
+                        ),
+                        DataColumn(
+                          label: const Text('Tanggal', style: headerStyle),
+                          onSort: (columnIndex, isAscending) {
+                            final num = isAscending ? 1 : -1;
+                            _source.rows
+                                .sort((a, b) => a.date.compareTo(b.date) * num);
+                            setState(() {
+                              _source.sortColumn = columnIndex;
+                              _source.isAscending = isAscending;
+                              _source.setData(_source.rows);
+                            });
+                          },
+                        ),
+                        DataColumn(
+                          label: const Text('Shift', style: headerStyle),
+                          onSort: (columnIndex, isAscending) {
+                            final num = isAscending ? 1 : -1;
+                            _source.rows.sort(
+                                (a, b) => a.shift.compareTo(b.shift) * num);
+                            setState(() {
+                              _source.sortColumn = columnIndex;
+                              _source.isAscending = isAscending;
+                              _source.setData(_source.rows);
+                            });
+                          },
+                        ),
+                        DataColumn(
+                          label: const Text('Jam Masuk', style: headerStyle),
+                          onSort: (columnIndex, isAscending) {
+                            final num = isAscending ? 1 : -1;
+                            _source.rows.sort((a, b) =>
+                                a.startTime.compareTo(b.startTime) * num);
+                            setState(() {
+                              _source.sortColumn = columnIndex;
+                              _source.isAscending = isAscending;
+                              _source.setData(_source.rows);
+                            });
+                          },
+                        ),
+                        DataColumn(
+                          label: const Text('Jam Keluar', style: headerStyle),
+                          onSort: (columnIndex, isAscending) {
+                            final num = isAscending ? 1 : -1;
+                            _source.rows.sort(
+                                (a, b) => a.endTime.compareTo(b.endTime) * num);
+                            setState(() {
+                              _source.sortColumn = columnIndex;
+                              _source.isAscending = isAscending;
+                              _source.setData(_source.rows);
+                            });
+                          },
+                        ),
+                        DataColumn(
+                          label: const Text('Terlambat?', style: headerStyle),
+                          onSort: (columnIndex, isAscending) {
+                            final num = isAscending ? 1 : -1;
+                            _source.rows.sort((a, b) =>
+                                a.isLate
+                                    .toString()
+                                    .compareTo(b.isLate.toString()) *
+                                num);
+                            setState(() {
+                              _source.sortColumn = columnIndex;
+                              _source.isAscending = isAscending;
+                              _source.setData(_source.rows);
+                            });
+                          },
+                        ),
+                      ],
+                      source: _source,
                     ),
-                    DataColumn(
-                      label: const Text('Tanggal', style: headerStyle),
-                      onSort: (columnIndex, isAscending) {
-                        final num = isAscending ? 1 : -1;
-                        _source.rows
-                            .sort((a, b) => a.date.compareTo(b.date) * num);
-                        setState(() {
-                          _source.sortColumn = columnIndex;
-                          _source.isAscending = isAscending;
-                          _source.setData(_source.rows);
-                        });
-                      },
-                    ),
-                    DataColumn(
-                      label: const Text('Jam Masuk', style: headerStyle),
-                      onSort: (columnIndex, isAscending) {
-                        final num = isAscending ? 1 : -1;
-                        _source.rows.sort(
-                            (a, b) => a.startTime.compareTo(b.startTime) * num);
-                        setState(() {
-                          _source.sortColumn = columnIndex;
-                          _source.isAscending = isAscending;
-                          _source.setData(_source.rows);
-                        });
-                      },
-                    ),
-                    DataColumn(
-                      label: const Text('Jam Keluar', style: headerStyle),
-                      onSort: (columnIndex, isAscending) {
-                        final num = isAscending ? 1 : -1;
-                        _source.rows.sort(
-                            (a, b) => a.endTime.compareTo(b.endTime) * num);
-                        setState(() {
-                          _source.sortColumn = columnIndex;
-                          _source.isAscending = isAscending;
-                          _source.setData(_source.rows);
-                        });
-                      },
-                    ),
-                  ],
-                  source: _source,
+                  ),
                 ),
               ],
             ),
@@ -185,7 +224,7 @@ class _EmployeeAttendanceMassUploadPageState
       return;
     }
     final file = XFile(result.files.single.path!);
-
+    showLoadingPopup();
     _server.upload('employee_attendances/mass_upload', file).then((response) {
       if (response.statusCode == 201) {
         final responseBody = response.data['data'] as List;
@@ -206,7 +245,7 @@ class _EmployeeAttendanceMassUploadPageState
       }
     }, onError: (error) {
       _server.defaultErrorResponse(context: context, error: error);
-    });
+    }).whenComplete(() => hideLoadingPopup());
   }
 }
 
@@ -253,10 +292,12 @@ class EmployeeAttendanceMassUploadDatatableSource extends DataTableSource {
     return <DataCell>[
       DataCell(SelectableText(employeeAttendance.employee.name)),
       DataCell(SelectableText(setting.dateFormat(employeeAttendance.date))),
+      DataCell(SelectableText(employeeAttendance.shift.toString())),
       DataCell(
           SelectableText(setting.dateTimeFormat(employeeAttendance.startTime))),
       DataCell(
           SelectableText(setting.dateTimeFormat(employeeAttendance.endTime))),
+      DataCell(SelectableText(employeeAttendance.isLate.toString())),
     ];
   }
 

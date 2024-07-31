@@ -33,6 +33,7 @@ class AsyncDropdownMultiple<T extends Object> extends StatefulWidget {
       this.attributeKey,
       this.validator,
       this.onSaved,
+      this.focusNode,
       this.selectedDisplayLimit = 6,
       this.recordLimit = 50,
       required this.textOnSearch,
@@ -48,6 +49,7 @@ class AsyncDropdownMultiple<T extends Object> extends StatefulWidget {
   final double? width;
   final List<T> selecteds;
   final int selectedDisplayLimit;
+  final FocusNode? focusNode;
   final void Function(List<T>)? onChanged;
   final void Function(List<T>?)? onSaved;
   final String? Function(List<T>?)? validator;
@@ -75,6 +77,7 @@ class _AsyncDropdownMultipleState<T extends Object>
   @override
   void initState() {
     server = context.read<Server>();
+    _focusNode = widget.focusNode ?? FocusNode();
     super.initState();
   }
 
@@ -108,7 +111,7 @@ class _AsyncDropdownMultipleState<T extends Object>
     }
   }
 
-  final _focusNode = FocusNode();
+  late final FocusNode _focusNode;
   @override
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
@@ -240,6 +243,7 @@ class AsyncDropdown<T> extends StatefulWidget {
   const AsyncDropdown(
       {super.key,
       this.path,
+      this.allowClear = true,
       this.delayedSearch = const Duration(milliseconds: 500),
       this.width,
       this.onChanged,
@@ -248,6 +252,7 @@ class AsyncDropdown<T> extends StatefulWidget {
       this.attributeKey,
       this.validator,
       this.onSaved,
+      this.focusNode,
       this.selectedDisplayLimit = 6,
       this.recordLimit = 50,
       required this.textOnSearch,
@@ -262,6 +267,8 @@ class AsyncDropdown<T> extends StatefulWidget {
   final int recordLimit;
   final double? width;
   final T? selected;
+  final bool allowClear;
+  final FocusNode? focusNode;
   final int selectedDisplayLimit;
   final void Function(T?)? onChanged;
   final void Function(T?)? onSaved;
@@ -284,10 +291,12 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>> {
       label: 'Data tidak Ditemukan', value: '', enabled: false);
   late final Server server;
   CancelToken _cancelToken = CancelToken();
+  late final FocusNode _focusNode;
 
   @override
   void initState() {
     server = context.read<Server>();
+    _focusNode = widget.focusNode ?? FocusNode();
     super.initState();
   }
 
@@ -321,7 +330,6 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>> {
     }
   }
 
-  final _focusNode = FocusNode();
   @override
   Widget build(BuildContext context) {
     final textFormat = widget.textOnSelected ?? widget.textOnSearch;
@@ -341,7 +349,7 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>> {
           return true;
         });
       },
-      clearButtonProps: const ClearButtonProps(isVisible: true),
+      clearButtonProps: ClearButtonProps(isVisible: widget.allowClear),
       dropdownBuilder: (context, selectedItem) {
         if (selectedItem == null) {
           return const SizedBox();

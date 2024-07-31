@@ -10,6 +10,7 @@ class DateFormField extends StatefulWidget {
   final DateTime? lastDate;
   final bool canRemove;
   final bool datePickerOnly;
+  final FocusNode? focusNode;
   final void Function(DateTime?)? onSaved;
   final void Function(DateTime? date)? onChanged;
   final String? Function(DateTime?)? validator;
@@ -21,6 +22,7 @@ class DateFormField extends StatefulWidget {
       this.lastDate,
       this.helpText,
       this.onSaved,
+      this.focusNode,
       this.onChanged,
       this.validator,
       this.canRemove = false,
@@ -114,6 +116,7 @@ class _DateFormFieldState extends State<DateFormField> {
             onTap: () {
               _openDialog();
             },
+            focusNode: widget.focusNode,
             readOnly: true,
             validator: (value) {
               if (widget.validator == null) {
