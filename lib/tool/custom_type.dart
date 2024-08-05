@@ -17,7 +17,6 @@ class TimeDay extends TimeOfDay {
     return TimeDay(hour: time.hour, minute: time.minute);
   }
 
-  @override
   String toJson() {
     return format24Hour();
   }
@@ -75,7 +74,6 @@ class Date extends DateTime {
     return parsingDateTime(DateTime.now());
   }
 
-  @override
   String toJson() {
     return toIso8601String();
   }

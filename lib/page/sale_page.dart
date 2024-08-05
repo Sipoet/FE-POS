@@ -83,7 +83,8 @@ class _SalePageState extends State<SalePage>
             .map<Sale>((json) =>
                 Sale.fromJson(json, included: responseBody['included'] ?? []))
             .toList();
-        final totalRows = responseBody['meta']?['total_rows'];
+        final totalRows =
+            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<Sale>(totalRows: totalRows, models: models);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(

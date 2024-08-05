@@ -75,7 +75,8 @@ class _SupplierPageState extends State<SupplierPage> {
             .map<Supplier>((json) => Supplier.fromJson(json,
                 included: responseBody['included'] ?? []))
             .toList();
-        final totalRows = responseBody['meta']?['total_rows'];
+        final totalRows =
+            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<Supplier>(models: models, totalRows: totalRows);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(

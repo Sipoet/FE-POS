@@ -84,7 +84,8 @@ class _PurchasePageState extends State<PurchasePage>
             .map<Purchase>((json) => Purchase.fromJson(json,
                 included: responseBody['included'] ?? []))
             .toList();
-        final totalRows = responseBody['meta']?['total_rows'];
+        final totalRows =
+            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<Purchase>(totalRows: totalRows, models: models);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(

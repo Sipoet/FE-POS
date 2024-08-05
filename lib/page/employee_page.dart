@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/page/employee_form_page.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -17,7 +18,7 @@ class EmployeePage extends StatefulWidget {
 }
 
 class _EmployeePageState extends State<EmployeePage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final CustomAsyncDataTableSource<Employee> _source;
   late final Server server;
   String _searchText = '';
@@ -58,20 +59,21 @@ class _EmployeePageState extends State<EmployeePage>
       int limit = 50,
       TableColumn? sortColumn,
       bool isAscending = true}) {
-    String orderKey = sortColumn?.sortKey ?? 'code';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'fields[role]': 'name',
-      'fields[payroll]': 'name',
-      'include': 'role,payroll',
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-    };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
     try {
+      String orderKey = sortColumn?.sortKey ?? 'code';
+      Map<String, dynamic> param = {
+        'search_text': _searchText,
+        'page[page]': page.toString(),
+        'page[limit]': limit.toString(),
+        'fields[role]': 'name',
+        'fields[payroll]': 'name',
+        'include': 'role,payroll',
+        'sort': '${isAscending ? '' : '-'}$orderKey',
+      };
+      _filter.forEach((key, value) {
+        param[key] = value;
+      });
+
       return server
           .get('employees', queryParam: param, cancelToken: cancelToken)
           .then((response) {
@@ -82,16 +84,20 @@ class _EmployeePageState extends State<EmployeePage>
         if (responseBody['data'] is! List) {
           throw 'error: invalid data type ${response.data.toString()}';
         }
-        final responsedModels = responseBody['data']
-            .map<Employee>((json) =>
-                Employee.fromJson(json, included: responseBody['included']))
-            .toList();
-        setState(() {
-          // _source.setData(employees);
-        });
-        int totalRows = responseBody['meta']?['total_rows'];
-        return ResponseResult<Employee>(
-            totalRows: totalRows, models: responsedModels);
+        try {
+          final responsedModels = responseBody['data']
+              .map<Employee>((json) =>
+                  Employee.fromJson(json, included: responseBody['included']))
+              .toList();
+          int totalRows = responseBody['meta']?['total_rows'] ??
+              responseBody['data'].length;
+          return ResponseResult<Employee>(
+              totalRows: totalRows, models: responsedModels);
+        } catch (error, stackTrace) {
+          debugPrint(error.toString());
+          debugPrint(stackTrace.toString());
+          return ResponseResult<Employee>(totalRows: 0, models: []);
+        }
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(
                   context: context, error: error, valueWhenError: []));

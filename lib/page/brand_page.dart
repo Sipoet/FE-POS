@@ -78,7 +78,8 @@ class _BrandPageState extends State<BrandPage> {
                 Brand.fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         brands.addAll(models);
-        final totalRows = responseBody['meta']?['total_rows'];
+        final totalRows =
+            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<Brand>(totalRows: totalRows, models: models);
       },
           onError: (error, stackTrace) => server.defaultErrorResponse(

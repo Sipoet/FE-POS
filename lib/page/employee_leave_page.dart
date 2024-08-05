@@ -84,7 +84,8 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
             .toList();
 
         flash.hide();
-        final totalRows = responseBody['meta']?['total_rows'];
+        final totalRows =
+            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<EmployeeLeave>(
             totalRows: totalRows, models: models);
       },

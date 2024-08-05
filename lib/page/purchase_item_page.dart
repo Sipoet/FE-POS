@@ -84,7 +84,8 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
             .map<PurchaseItem>((json) => PurchaseItem.fromJson(json,
                 included: responseBody['included'] ?? []))
             .toList();
-        final totalRows = responseBody['meta']?['total_rows'];
+        final totalRows =
+            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<PurchaseItem>(
             totalRows: totalRows, models: models);
       },

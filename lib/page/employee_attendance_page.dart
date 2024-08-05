@@ -90,7 +90,8 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
         employeeAttendances.addAll(models);
 
         flash.hide();
-        final totalRows = responseBody['meta']?['total_rows'];
+        final totalRows =
+            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<EmployeeAttendance>(
             totalRows: totalRows, models: models);
       },

@@ -88,7 +88,8 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
         setState(() {
           // _source.setData(employees);
         });
-        int totalRows = responseBody['meta']?['total_rows'];
+        int totalRows =
+            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<PaymentMethod>(
             totalRows: totalRows, models: responsedModels);
       },

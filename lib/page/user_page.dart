@@ -82,7 +82,8 @@ class _UserPageState extends State<UserPage>
                 User.fromJson(json, included: responseBody['included']))
             .toList();
 
-        int totalRows = responseBody['meta']?['total_rows'];
+        int totalRows =
+            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<User>(models: models, totalRows: totalRows);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(

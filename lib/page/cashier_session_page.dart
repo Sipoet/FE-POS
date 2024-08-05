@@ -1,0 +1,88 @@
+import 'package:fe_pos/model/cashier_session.dart';
+import 'package:fe_pos/model/server.dart';
+import 'package:fe_pos/page/edc_settlement_form_page.dart';
+import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+class CashierSessionPage extends StatefulWidget {
+  const CashierSessionPage({super.key});
+
+  @override
+  State<CashierSessionPage> createState() => _CashierSessionPageState();
+}
+
+class _CashierSessionPageState extends State<CashierSessionPage>
+    with DefaultResponse {
+  final _menuController = MenuController();
+  late final TabManager tabManager;
+  late final Server server;
+  CashierSession cashierSession = CashierSession();
+  @override
+  void initState() {
+    tabManager = context.read<TabManager>();
+    server = context.read<Server>();
+    super.initState();
+    _fetchCashierSessionToday();
+  }
+
+  void _fetchCashierSessionToday() {
+    server
+        .get(
+      'cashier_sessions/today',
+    )
+        .then((response) {
+      if (response.statusCode == 200) {
+        final json = response.data;
+        cashierSession =
+            CashierSession.fromJson(json['data'], included: json['included']);
+      }
+    }, onError: (error) => defaultErrorResponse(error: error));
+  }
+
+  void openTodayEdcSettlement() {
+    tabManager.addTab(
+        "EDC Settlement hari ini",
+        EdcSettlementFormPage(
+          key: ObjectKey(cashierSession),
+          cashierSession: cashierSession,
+        ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+        child: Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text("Sesi Kasir Hari Ini"),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              SubmenuButton(
+                  controller: _menuController,
+                  menuChildren: [
+                    MenuItemButton(
+                      onPressed: () {
+                        _menuController.close();
+                        openTodayEdcSettlement();
+                      },
+                      child: const Text('EDC Settlement Hari ini'),
+                    ),
+                    MenuItemButton(
+                      onPressed: () {
+                        _menuController.close();
+                      },
+                      child: const Text('Tambah Kas Keluar'),
+                    ),
+                  ],
+                  child: const Icon(Icons.table_rows_rounded))
+            ],
+          )
+        ],
+      ),
+    ));
+  }
+}

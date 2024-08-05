@@ -29,7 +29,6 @@ export 'employee_leave_page.dart';
 
 // sale
 export 'cashier_session_page.dart';
-export 'edc_settlement_form_page.dart';
 export 'payment_method_page.dart';
 export 'sale_page.dart';
 export 'sale_item_page.dart';
@@ -41,3 +40,7 @@ export 'purchase_item_page.dart';
 // inventory
 export 'transfer_page.dart';
 export 'transfer_item_page.dart';
+
+// finance
+export 'payment_type_page.dart';
+export 'payment_provider_page.dart';

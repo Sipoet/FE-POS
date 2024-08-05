@@ -86,7 +86,8 @@ class _DiscountPageState extends State<DiscountPage>
         final models = responseBody['data']
             .map<Discount>((json) => Discount.fromJson(json))
             .toList();
-        int totalRows = responseBody['meta']?['total_rows'];
+        int totalRows =
+            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<Discount>(totalRows: totalRows, models: models);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(

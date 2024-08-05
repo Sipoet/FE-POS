@@ -84,7 +84,8 @@ class _TransferPageState extends State<TransferPage>
             .map<Transfer>((json) => Transfer.fromJson(json,
                 included: responseBody['included'] ?? []))
             .toList();
-        final totalRows = responseBody['meta']?['total_rows'];
+        final totalRows =
+            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<Transfer>(totalRows: totalRows, models: models);
       },
               onError: (error, stackTrace) => server.defaultErrorResponse(

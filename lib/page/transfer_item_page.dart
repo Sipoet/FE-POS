@@ -84,7 +84,8 @@ class _TransferItemPageState extends State<TransferItemPage>
             .map<TransferItem>((json) => TransferItem.fromJson(json,
                 included: responseBody['included'] ?? []))
             .toList();
-        final totalRows = responseBody['meta']?['total_rows'];
+        final totalRows =
+            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<TransferItem>(
             totalRows: totalRows, models: models);
       },

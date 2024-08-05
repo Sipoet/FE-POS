@@ -140,25 +140,48 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           label: 'Penjualan',
           key: 'sales',
           children: [
-            Menu(
-                icon: Icons.card_membership_rounded,
-                label: 'Metode Pembayaran',
-                pageFunct: () => const PaymentMethodPage(),
-                key: 'payment_method'),
+            // Menu(
+            //     icon: Icons.card_membership_rounded,
+            //     label: 'Metode Pembayaran',
+            //     pageFunct: () => const PaymentMethodPage(),
+            //     key: 'payment_method'),
             Menu(
                 icon: Icons.shopping_cart,
                 label: 'Penjualan',
-                key: 'sales',
+                key: 'sale',
                 isDisabled: !setting.isAuthorize('sale', 'index'),
                 pageFunct: () => const SalePage()),
             Menu(
               icon: Icons.shopping_bag,
               label: 'Detail Penjualan Item',
-              key: 'purchase',
+              key: 'sale_item',
               isDisabled: !setting.isAuthorize('saleItem', 'index'),
               pageFunct: () => const SaleItemPage(),
-            )
+            ),
           ]),
+      Menu(icon: Icons.money, label: 'Keuangan', key: 'finance', children: [
+        Menu(
+          icon: Icons.shopping_bag,
+          label: 'Tipe Pembayaran',
+          key: 'payment_type',
+          isDisabled: !setting.isAuthorize('paymentType', 'index'),
+          pageFunct: () => const PaymentTypePage(),
+        ),
+        Menu(
+          icon: Icons.shopping_bag,
+          label: 'Payment Provider',
+          key: 'payment_provider',
+          isDisabled: !setting.isAuthorize('paymentProvider', 'index'),
+          pageFunct: () => const PaymentProviderPage(),
+        ),
+        Menu(
+          icon: Icons.shopping_bag,
+          label: 'Sesi Kasir',
+          key: 'cashier_session',
+          isDisabled: !setting.isAuthorize('cashierSession', 'index'),
+          pageFunct: () => const CashierSessionPage(),
+        )
+      ]),
       Menu(
           icon: Icons.shopping_bag,
           label: 'Pembelian',
