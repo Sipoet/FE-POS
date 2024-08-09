@@ -239,7 +239,7 @@ class _RolePageState extends State<RolePage>
             ),
             SizedBox(
               height: 600,
-              width: 825,
+              width: 900,
               child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 2,

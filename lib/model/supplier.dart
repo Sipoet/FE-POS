@@ -5,13 +5,17 @@ class Supplier extends Model {
   String name;
   String? bank;
   String? account;
+  String? email;
   String? accountRegisterName;
   String? address;
   String? city;
   String? description;
+  String? contact;
   Supplier({
     this.code = '',
     this.name = '',
+    this.contact,
+    this.email,
     super.id,
     this.bank,
     this.account,
@@ -29,6 +33,7 @@ class Supplier extends Model {
         'norek': account,
         'atasnama': accountRegisterName,
         'alamat': address,
+        'kontak': contact,
         'kota': city,
         'keterangan': description,
       };
@@ -45,6 +50,8 @@ class Supplier extends Model {
     model.account = attributes['norek'];
     model.accountRegisterName = attributes['atasnama'];
     model.address = attributes['alamat'];
+    model.contact = attributes['kontak'];
+    model.email = attributes['email'];
     model.city = attributes['kota'];
     model.description = attributes['keterangan'];
     return model;

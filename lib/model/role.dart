@@ -26,6 +26,8 @@ class Role extends Model {
   @override
   Map<String, dynamic> toMap() => {
         'name': name,
+        'created_at': createdAt,
+        'updated_at': updatedAt,
       };
 
   @override

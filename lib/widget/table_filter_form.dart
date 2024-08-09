@@ -82,7 +82,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Wrap(
-                  runSpacing: 5.0,
+                  runSpacing: 10.0,
                   spacing: 10.0,
                   children: widget.columns
                       .where((element) => element.canFilter)
@@ -188,7 +188,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
   Widget dateFilter(TableColumn column, {bool datePickerOnly = false}) {
     return SizedBox(
       width: 300,
-      height: 90,
+      height: 50,
       child: DateRangeFormField(
         datePickerOnly: datePickerOnly,
         label: Text(column.name, style: _labelStyle),
@@ -237,7 +237,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
   Widget textFilter(TableColumn column) {
     return SizedBox(
       width: 300,
-      height: 90,
+      height: 50,
       child: TextFormField(
         key: ValueKey(column.key),
         onSaved: (newValue) {
@@ -267,7 +267,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
     final attributeKey = attributes.length > 1 ? attributes[1] : 'name';
     return Container(
       width: 300,
-      constraints: const BoxConstraints(minHeight: 90),
+      constraints: const BoxConstraints(minHeight: 50),
       child: AsyncDropdownMultiple<Map>(
         converter: (json, {List included = const []}) => json,
         textOnSearch: (value) =>
@@ -386,6 +386,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
               _textController['${column.key}-val1'].text = '';
               _textController['${column.key}-val2'].text = '';
               _textController['${column.key}-cmpr'].text = '';
+              controller.removeFilter(column.key);
             },
             icon: const Icon(Icons.close),
             // color: colorScheme.primary,

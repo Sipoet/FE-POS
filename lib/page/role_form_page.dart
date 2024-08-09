@@ -24,7 +24,7 @@ class _RoleFormPageState extends State<RoleFormPage>
     with AutomaticKeepAliveClientMixin, HistoryPopup, LoadingPopup {
   late final Flash flash;
   final codeInputWidget = TextEditingController();
-
+  final focusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
   Role get role => widget.role;
 
@@ -54,7 +54,10 @@ class _RoleFormPageState extends State<RoleFormPage>
       }
     }, onError: (error) {
       server.defaultErrorResponse(context: context, error: error);
-    }).whenComplete(() => hideLoadingPopup());
+    }).whenComplete(() {
+      hideLoadingPopup();
+      focusNode.requestFocus();
+    });
   }
 
   void _submit() async {
@@ -187,6 +190,7 @@ class _RoleFormPageState extends State<RoleFormPage>
           height: 10,
         ),
         DateRangeFormField(
+          datePickerOnly: true,
           initialDateRange: DateTimeRange(
               start: groupWorkSchedule.beginActiveAt,
               end: groupWorkSchedule.endActiveAt),
@@ -228,6 +232,11 @@ class _RoleFormPageState extends State<RoleFormPage>
                 const DataColumn(
                     label: Text(
                   'Akhir',
+                  style: labelStyle,
+                )),
+                const DataColumn(
+                    label: Text(
+                  'Fleksibel?',
                   style: labelStyle,
                 )),
                 DataColumn(
@@ -312,6 +321,11 @@ class _RoleFormPageState extends State<RoleFormPage>
                             },
                           ),
                         ),
+                        DataCell(Checkbox(
+                            value: roleWorkSchedule.isFlexible,
+                            onChanged: (value) => setState(() {
+                                  roleWorkSchedule.isFlexible = value ?? false;
+                                }))),
                         DataCell(Row(
                           children: [
                             Visibility(
@@ -391,6 +405,7 @@ class _RoleFormPageState extends State<RoleFormPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                       TextFormField(
+                        focusNode: focusNode,
                         decoration: const InputDecoration(
                             labelText: 'Nama',
                             labelStyle: labelStyle,
@@ -702,9 +717,11 @@ class GroupWorkSchedule {
   Date beginActiveAt;
   Date endActiveAt;
   int level;
+  bool isFlexible;
   GroupWorkSchedule(
       {this.level = 1,
       this.groupName = '',
+      this.isFlexible = false,
       Date? beginActiveAt,
       Date? endActiveAt})
       : beginActiveAt = beginActiveAt ?? Date.today(),
