@@ -15,5 +15,9 @@ class PaymentType extends Model {
     return model;
   }
   @override
-  Map<String, dynamic> toMap() => {};
+  Map<String, dynamic> toMap() => {
+        'name': name,
+        'created_at': createdAt,
+        'updated_at': updatedAt,
+      };
 }

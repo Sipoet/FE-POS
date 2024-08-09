@@ -69,7 +69,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
     });
     try {
       return server
-          .get('paymentTypes', queryParam: param, cancelToken: cancelToken)
+          .get('payment_types', queryParam: param, cancelToken: cancelToken)
           .then((response) {
         if (response.statusCode != 200) {
           throw 'error: ${response.data.toString()}';
@@ -103,7 +103,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'New PaymentType',
+          'Tipe Pembayaran Baru',
           PaymentTypeFormPage(
               key: ObjectKey(paymentType), paymentType: paymentType));
     });
@@ -113,7 +113,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Edit PaymentType ${paymentType.name}',
+          'Edit Tipe Pembayaran ${paymentType.name}',
           PaymentTypeFormPage(
               key: ObjectKey(paymentType), paymentType: paymentType));
     });

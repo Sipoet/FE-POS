@@ -64,16 +64,16 @@ class _PaymentTypeFormPageState extends State<PaymentTypeFormPage>
     };
     Future request;
     if (paymentType.id == null) {
-      request = server.post('paymentTypes', body: body);
+      request = server.post('payment_types', body: body);
     } else {
-      request = server.put('paymentTypes/${paymentType.id}', body: body);
+      request = server.put('payment_types/${paymentType.id}', body: body);
     }
     request.then((response) {
       if ([200, 201].contains(response.statusCode)) {
         var data = response.data['data'];
         setState(() {
           PaymentType.fromJson(data,
-              included: response.data['included'], model: paymentType);
+              included: response.data['included'] ?? [], model: paymentType);
           var tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(
               widget, 'Edit paymentType ${paymentType.name}');
