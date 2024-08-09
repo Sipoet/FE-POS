@@ -25,6 +25,7 @@ class Setting extends ChangeNotifier {
             path: row['path'],
             name: row['humanize_name'],
             type: row['type'],
+            width: row['pixel_width'] ?? 175,
             canFilter: row['can_filter'] ?? true,
             excelWidth: double.tryParse(row['width'].toString()));
       }

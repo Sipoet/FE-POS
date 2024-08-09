@@ -198,7 +198,7 @@ class TableColumn {
 
   TableColumn(
       {this.initX = 0,
-      this.width = 175,
+      required this.width,
       this.excelWidth,
       this.path,
       required this.attributeKey,
