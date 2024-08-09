@@ -9,6 +9,7 @@ class RoleWorkSchedule extends Model {
   Date beginActiveAt;
   Date endActiveAt;
   String groupName;
+  bool isFlexible;
   RoleWorkSchedule(
       {TimeDay? beginWork,
       TimeDay? endWork,
@@ -18,6 +19,7 @@ class RoleWorkSchedule extends Model {
       this.dayOfWeek = 1,
       this.shift = 1,
       this.level = 1,
+      this.isFlexible = false,
       super.id})
       : beginActiveAt = beginActiveAt ?? Date.today(),
         endActiveAt = endActiveAt ?? Date.today(),
@@ -34,6 +36,7 @@ class RoleWorkSchedule extends Model {
         'begin_active_at': beginActiveAt,
         'end_active_at': endActiveAt,
         'level': level,
+        'is_flexible': isFlexible,
       };
 
   @override
@@ -52,6 +55,7 @@ class RoleWorkSchedule extends Model {
         model.beginActiveAt;
     model.endActiveAt =
         Date.tryParse(attributes['end_active_at'] ?? '') ?? model.endActiveAt;
+    model.isFlexible = attributes['is_flexible'];
     return model;
   }
 }
