@@ -62,12 +62,18 @@ class _HomePageState extends State<HomePage>
 
   @override
   bool get wantKeepAlive => true;
-
+  int separateHourWithinDay = 7;
   void arrangeDate(String rangeType) {
-    var startTime = DateTime.now().copyWith(hour: 0, minute: 0, second: 0);
-    var endTime = DateTime.now()
-        .copyWith(hour: 6, minute: 59, second: 59, millisecond: 999)
-        .add(const Duration(days: 1));
+    final now = DateTime.now();
+
+    var startTime = DateTime.now()
+        .copyWith(hour: separateHourWithinDay, minute: 0, second: 0);
+    if (now.hour < separateHourWithinDay) {
+      startTime = startTime.subtract(const Duration(days: 1));
+    }
+    var endTime = startTime
+        .add(const Duration(days: 1))
+        .subtract(const Duration(seconds: 1));
     switch (rangeType) {
       case 'yesterday':
         startTime = startTime.subtract(const Duration(days: 1));

@@ -153,7 +153,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
     showConfirmDialog(
         message: 'Apakah anda yakin hapus ${paymentType.name}?',
         onSubmit: () {
-          server.delete('/paymentTypes/${paymentType.id}').then((response) {
+          server.delete('/payment_types/${paymentType.id}').then((response) {
             if (response.statusCode == 200) {
               flash.showBanner(
                   messageType: MessageType.success,

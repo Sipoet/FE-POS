@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/cashier_session.dart';
 import 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:fe_pos/model/payment_provider.dart';
@@ -12,12 +13,12 @@ class EdcSettlement extends Model {
   Money diffAmount;
   String merchantId;
   String terminalId;
-  dynamic cashierSessionId;
+  CashierSession? cashierSession;
   EdcSettlement({
     super.id,
     super.createdAt,
     super.updatedAt,
-    this.cashierSessionId,
+    this.cashierSession,
     this.amount = const Money(0),
     this.diffAmount = const Money(0),
     this.merchantId = '',
@@ -29,8 +30,10 @@ class EdcSettlement extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'payment_provider.code': paymentProvider.code,
+        'payment_provider.name': paymentProvider.name,
         'payment_type.name': paymentType.name,
+        'payment_type_id': paymentTypeId,
+        'payment_provider_id': paymentProviderId,
         'amount': amount,
         'diff_amount': diffAmount,
         'merchant_id': merchantId,
@@ -38,6 +41,9 @@ class EdcSettlement extends Model {
         'cashier_session_id': cashierSessionId,
       };
 
+  dynamic get paymentProviderId => paymentProvider.id;
+  dynamic get cashierSessionId => cashierSession?.id;
+  dynamic get paymentTypeId => paymentType.id;
   @override
   factory EdcSettlement.fromJson(Map<String, dynamic> json,
       {EdcSettlement? model, List included = const []}) {
@@ -48,8 +54,20 @@ class EdcSettlement extends Model {
     model.terminalId = attributes['terminal_id'];
     model.amount = Money.parse(attributes['amount']);
     model.diffAmount = Money.parse(attributes['diff_amount']);
-    model.cashierSessionId = attributes['cashier_session_id'];
-
+    model.paymentType = Model.findRelationData<PaymentType>(
+            included: included,
+            convert: PaymentType.fromJson,
+            relation: json['relationships']?['payment_type']) ??
+        model.paymentType;
+    model.paymentProvider = Model.findRelationData<PaymentProvider>(
+            included: included,
+            convert: PaymentProvider.fromJson,
+            relation: json['relationships']?['payment_provider']) ??
+        model.paymentProvider;
+    model.cashierSession = Model.findRelationData<CashierSession>(
+        included: included,
+        convert: CashierSession.fromJson,
+        relation: json['relationships']?['cashier_session']);
     return model;
   }
 }

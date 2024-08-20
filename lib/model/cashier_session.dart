@@ -2,48 +2,29 @@ import 'package:fe_pos/model/edc_settlement.dart';
 import 'package:fe_pos/model/model.dart';
 
 class CashierSession extends Model {
-  DateTime startTime;
-  DateTime endTime;
-  Money totalCashIn;
-  Money totalCashOut;
-  Money totalDebit;
-  Money totalCredit;
-  Money totalQris;
-  Money totalEmoney;
-  Money totalTransfer;
-  Money totalOtherIn;
+  Date date;
+  Money totalIn;
+  Money totalOut;
   List<EdcSettlement> edcSettlements;
   CashierSession(
-      {DateTime? startTime,
+      {Date? date,
       DateTime? endTime,
       super.id,
-      this.totalCashIn = const Money(0),
-      this.totalCashOut = const Money(0),
-      this.totalDebit = const Money(0),
-      this.totalCredit = const Money(0),
-      this.totalQris = const Money(0),
-      this.totalEmoney = const Money(0),
-      this.totalTransfer = const Money(0),
-      this.totalOtherIn = const Money(0),
+      this.totalIn = const Money(0),
+      this.totalOut = const Money(0),
       List<EdcSettlement>? edcSettlements,
       super.createdAt,
       super.updatedAt})
-      : startTime = startTime ?? DateTime.now(),
-        endTime = endTime ?? DateTime.now(),
+      : date = date ?? Date.today(),
         edcSettlements = edcSettlements ?? <EdcSettlement>[];
 
   @override
   Map<String, dynamic> toMap() => {
-        'start_time': startTime,
-        'end_time': endTime,
-        'total_cash_in': totalCashIn,
-        'total_cash_out': totalCashOut,
-        'total_debit': totalDebit,
-        'total_credit': totalCredit,
-        'total_qris': totalQris,
-        'total_emoney': totalEmoney,
-        'total_transfer': totalTransfer,
-        'total_other_in': totalOtherIn,
+        'date': date,
+        'total_in': totalIn,
+        'total_out': totalOut,
+        'created_at': createdAt,
+        'updated_at': updatedAt,
       };
 
   @override
@@ -53,16 +34,10 @@ class CashierSession extends Model {
     model ??= CashierSession();
     model.id = json['id'];
     Model.fromModel(model, attributes);
-    model.startTime = DateTime.parse(attributes['start_time']);
-    model.endTime = DateTime.parse(attributes['end_time']);
-    model.totalCashIn = Money.parse(attributes['total_cash_in']);
-    model.totalCashOut = Money.parse(attributes['total_cash_out']);
-    model.totalDebit = Money.parse(attributes['total_debit']);
-    model.totalCredit = Money.parse(attributes['total_credit']);
-    model.totalQris = Money.parse(attributes['total_qris']);
-    model.totalEmoney = Money.parse(attributes['total_emoney']);
-    model.totalTransfer = Money.parse(attributes['total_transfer']);
-    model.totalOtherIn = Money.parse(attributes['total_other_in']);
+    model.date = Date.parse(attributes['date']);
+
+    model.totalIn = Money.parse(attributes['total_in']);
+    model.totalOut = Money.parse(attributes['total_out']);
     return model;
   }
 }

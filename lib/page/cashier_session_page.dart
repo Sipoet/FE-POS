@@ -14,11 +14,15 @@ class CashierSessionPage extends StatefulWidget {
 }
 
 class _CashierSessionPageState extends State<CashierSessionPage>
-    with DefaultResponse {
+    with DefaultResponse, AutomaticKeepAliveClientMixin {
   final _menuController = MenuController();
   late final TabManager tabManager;
   late final Server server;
   CashierSession cashierSession = CashierSession();
+
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   void initState() {
     tabManager = context.read<TabManager>();
@@ -35,8 +39,8 @@ class _CashierSessionPageState extends State<CashierSessionPage>
         .then((response) {
       if (response.statusCode == 200) {
         final json = response.data;
-        cashierSession =
-            CashierSession.fromJson(json['data'], included: json['included']);
+        cashierSession = CashierSession.fromJson(json['data'],
+            included: json['included'] ?? []);
       }
     }, onError: (error) => defaultErrorResponse(error: error));
   }
@@ -52,6 +56,7 @@ class _CashierSessionPageState extends State<CashierSessionPage>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return SingleChildScrollView(
         child: Center(
       child: Column(

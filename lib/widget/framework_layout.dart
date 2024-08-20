@@ -131,32 +131,8 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               isClosed: true,
               label: 'Laporan Slip Gaji',
               key: 'payslipReport',
+              isDisabled: !setting.isAuthorize('payslip', 'report'),
               pageFunct: () => const PayslipReportPage(),
-            ),
-          ]),
-
-      Menu(
-          icon: Icons.shopping_cart,
-          label: 'Penjualan',
-          key: 'sales',
-          children: [
-            // Menu(
-            //     icon: Icons.card_membership_rounded,
-            //     label: 'Metode Pembayaran',
-            //     pageFunct: () => const PaymentMethodPage(),
-            //     key: 'payment_method'),
-            Menu(
-                icon: Icons.shopping_cart,
-                label: 'Penjualan',
-                key: 'sale',
-                isDisabled: !setting.isAuthorize('sale', 'index'),
-                pageFunct: () => const SalePage()),
-            Menu(
-              icon: Icons.shopping_bag,
-              label: 'Detail Penjualan Item',
-              key: 'sale_item',
-              isDisabled: !setting.isAuthorize('saleItem', 'index'),
-              pageFunct: () => const SaleItemPage(),
             ),
           ]),
       Menu(icon: Icons.money, label: 'Keuangan', key: 'finance', children: [
@@ -183,6 +159,31 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
         )
       ]),
       Menu(
+          icon: Icons.shopping_cart,
+          label: 'Penjualan',
+          key: 'sales',
+          children: [
+            // Menu(
+            //     icon: Icons.card_membership_rounded,
+            //     label: 'Metode Pembayaran',
+            //     pageFunct: () => const PaymentMethodPage(),
+            //     key: 'payment_method'),
+            Menu(
+                icon: Icons.shopping_cart,
+                label: 'Penjualan',
+                key: 'sale',
+                isDisabled: !setting.isAuthorize('sale', 'index'),
+                pageFunct: () => const SalePage()),
+            Menu(
+              icon: Icons.shopping_bag,
+              label: 'Detail Penjualan Item',
+              key: 'sale_item',
+              isDisabled: !setting.isAuthorize('saleItem', 'index'),
+              pageFunct: () => const SaleItemPage(),
+            ),
+          ]),
+
+      Menu(
           icon: Icons.shopping_bag,
           label: 'Pembelian',
           key: 'purchase',
@@ -190,6 +191,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             Menu(
               icon: Icons.shopping_bag,
               label: 'Pembelian',
+              isDisabled: !setting.isAuthorize('purchase', 'index'),
               key: 'purchase',
               pageFunct: () => const PurchasePage(),
             ),
@@ -197,6 +199,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               icon: Icons.shopping_bag,
               label: 'Detail Pembelian Item',
               key: 'purchase',
+              isDisabled: !setting.isAuthorize('purchaseItem', 'index'),
               pageFunct: () => const PurchaseItemPage(),
             )
           ]),
@@ -208,12 +211,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               icon: Icons.shopping_bag,
               label: 'Transfer Item',
               key: 'transfer',
+              isDisabled: !setting.isAuthorize('transfer', 'index'),
               pageFunct: () => const TransferPage(),
             ),
             Menu(
               icon: Icons.shopping_bag,
               label: 'Detail Transfer Item',
               key: 'purchase',
+              isDisabled: !setting.isAuthorize('transferItem', 'index'),
               pageFunct: () => const TransferItemPage(),
             )
           ],

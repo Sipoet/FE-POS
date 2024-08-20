@@ -28,6 +28,7 @@ class SaleItem extends Model {
   String? brandName;
   String? supplierCode;
   String? itemTypeName;
+  String? itemName;
   SaleItem(
       {Item? item,
       super.id,
@@ -36,6 +37,7 @@ class SaleItem extends Model {
       this.quantity = 0,
       this.price = const Money(0),
       this.uom = '',
+      this.itemName,
       super.createdAt,
       super.updatedAt,
       this.itemTypeName,
@@ -60,6 +62,7 @@ class SaleItem extends Model {
   @override
   Map<String, dynamic> toMap() => {
         'kodeitem': itemCode,
+        'item.namaitem': itemName,
         'jumlah': quantity,
         'nobaris': row,
         'harga': price,
@@ -124,6 +127,7 @@ class SaleItem extends Model {
     model.itemTypeName = attributes['item_type_name'];
     model.supplierCode = attributes['supplier_code'];
     model.brandName = attributes['brand_name'];
+    model.itemName = attributes['item_name'];
     model.freeQuantity = double.tryParse(attributes['jmlgratis']) ?? 0;
     model.cogs = Money.parse(attributes['hppdasar']);
     Model.fromModel(model, attributes);

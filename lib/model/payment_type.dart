@@ -11,6 +11,7 @@ class PaymentType extends Model {
 
     model ??= PaymentType();
     model.id = json['id'];
+    Model.fromModel(model, attributes);
     model.name = attributes['name'];
     return model;
   }
