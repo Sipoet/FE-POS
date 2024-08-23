@@ -115,7 +115,6 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
         )),
       );
     }
-    debugPrint("header length:${header.length}");
     return header;
   }
 
@@ -253,6 +252,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
               padding: const EdgeInsets.all(10.0),
               child: DropdownMenu<EdcSettlementStatus>(
                 width: 220,
+                initialSelection: edcSettlement.status,
                 onSelected: (value) =>
                     edcSettlement.status = value ?? edcSettlement.status,
                 dropdownMenuEntries: EdcSettlementStatus.values
@@ -264,7 +264,6 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
             ),
           ));
     }
-    debugPrint("row length:${rows.length}");
     return TableRow(children: rows);
   }
 

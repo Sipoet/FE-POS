@@ -3,22 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class Setting extends ChangeNotifier {
-  Map<String, Map<String, TableColumn>> tableColumns = {};
+  Map<String, Map<String, TableColumn>> _tableColumns = {};
   Map<String, List<String>> menus = {};
   Setting();
 
   void removeSetting() {
-    tableColumns = {};
+    _tableColumns = {};
     menus = {};
     notifyListeners();
   }
 
   void setTableColumns(Map<String, dynamic> data) {
     for (final key in data.keys.toList()) {
-      tableColumns[key] = {};
+      _tableColumns[key] = {};
       for (Map row in data[key]) {
         final columnKey = row['name'];
-        tableColumns[key]![columnKey] = TableColumn(
+        _tableColumns[key]![columnKey] = TableColumn(
             key: row['name'],
             sortKey: row['sort_key'],
             attributeKey: row['attribute_key'],
@@ -33,11 +33,11 @@ class Setting extends ChangeNotifier {
   }
 
   String columnName(String tableName, String columnKey) {
-    return tableColumns[tableName]?[columnKey]?.name ?? '';
+    return _tableColumns[tableName]?[columnKey]?.name ?? '';
   }
 
   List<TableColumn> tableColumn(String key) {
-    return tableColumns[key]?.values.toList() ?? [];
+    return _tableColumns[key]?.values.toList() ?? [];
   }
 
   String dateFormat(DateTime date) {
@@ -77,6 +77,6 @@ class Setting extends ChangeNotifier {
   }
 
   bool canShow(String tableName, String columnKey) {
-    return tableColumns[tableName]?[columnKey] != null;
+    return _tableColumns[tableName]?[columnKey] != null;
   }
 }

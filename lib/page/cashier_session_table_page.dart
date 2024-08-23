@@ -39,10 +39,15 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
     server = context.read<Server>();
     flash = Flash(context);
     final setting = context.read<Setting>();
+    final tableColumns = setting.tableColumn('cashierSession');
     _source = CustomAsyncDataTableSource<CashierSession>(
         actionButtons: actionButtons,
-        columns: setting.tableColumn('cashierSession'),
+        columns: tableColumns,
         fetchData: fetchCashierSessions);
+    _source.isAscending = false;
+    _source.sortColumn =
+        tableColumns.firstWhere((tableColumn) => tableColumn.key == 'date') ??
+            _source.sortColumn;
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
