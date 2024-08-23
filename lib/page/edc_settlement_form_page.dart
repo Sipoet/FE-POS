@@ -65,7 +65,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
 
   List<TableCell> _headerTable() {
     const headerStyle = TextStyle(fontWeight: FontWeight.bold, fontSize: 16);
-    return [
+    List<TableCell> header = [
       TableCell(
           child: Padding(
         padding: const EdgeInsets.all(5.0),
@@ -104,12 +104,25 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
         child: Text('Action', style: headerStyle),
       )),
     ];
+    if (setting.canShow('edcSettlement', 'status')) {
+      header.insert(
+        header.length - 1,
+        TableCell(
+            child: Padding(
+          padding: const EdgeInsets.all(5),
+          child: Text(setting.columnName('edcSettlement', 'status'),
+              style: headerStyle),
+        )),
+      );
+    }
+    debugPrint("header length:${header.length}");
+    return header;
   }
 
   TableRow _rowForm(EdcSettlement edcSettlement) {
     final textController =
         TextEditingController(text: edcSettlement.merchantId.toString());
-    return TableRow(children: [
+    List<TableCell> rows = [
       TableCell(
           child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -231,7 +244,28 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
           ],
         ),
       )),
-    ]);
+    ];
+    if (setting.canShow('edcSettlement', 'status')) {
+      rows.insert(
+          rows.length - 1,
+          TableCell(
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: DropdownMenu<EdcSettlementStatus>(
+                width: 220,
+                onSelected: (value) =>
+                    edcSettlement.status = value ?? edcSettlement.status,
+                dropdownMenuEntries: EdcSettlementStatus.values
+                    .map<DropdownMenuEntry<EdcSettlementStatus>>((status) =>
+                        DropdownMenuEntry<EdcSettlementStatus>(
+                            value: status, label: status.humanize()))
+                    .toList(),
+              ),
+            ),
+          ));
+    }
+    debugPrint("row length:${rows.length}");
+    return TableRow(children: rows);
   }
 
   void _removeEdcSettlement(EdcSettlement edcSettlement) {
@@ -342,6 +376,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Center(
@@ -369,7 +404,8 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
                           2: FixedColumnWidth(250),
                           3: FixedColumnWidth(250),
                           4: FixedColumnWidth(250),
-                          5: FixedColumnWidth(100),
+                          5: FixedColumnWidth(250),
+                          6: FixedColumnWidth(100),
                         },
                         children: [
                               TableRow(

@@ -6,6 +6,39 @@ import 'package:fe_pos/model/payment_type.dart';
 export 'package:fe_pos/model/payment_provider.dart';
 export 'package:fe_pos/model/payment_type.dart';
 
+enum EdcSettlementStatus {
+  draft,
+  verified;
+
+  @override
+  String toString() {
+    if (this == draft) {
+      return 'draft';
+    } else if (this == verified) {
+      return 'verified';
+    }
+    return '';
+  }
+
+  factory EdcSettlementStatus.convertFromString(String value) {
+    if (value == 'draft') {
+      return draft;
+    } else if (value == 'verified') {
+      return verified;
+    }
+    throw '$value is not valid employee status';
+  }
+
+  String humanize() {
+    if (this == draft) {
+      return 'Draft';
+    } else if (this == verified) {
+      return 'Verified';
+    }
+    return '';
+  }
+}
+
 class EdcSettlement extends Model {
   PaymentProvider paymentProvider;
   PaymentType paymentType;
@@ -13,12 +46,14 @@ class EdcSettlement extends Model {
   Money diffAmount;
   String merchantId;
   String terminalId;
+  EdcSettlementStatus status;
   CashierSession? cashierSession;
   EdcSettlement({
     super.id,
     super.createdAt,
     super.updatedAt,
     this.cashierSession,
+    this.status = EdcSettlementStatus.draft,
     this.amount = const Money(0),
     this.diffAmount = const Money(0),
     this.merchantId = '',
@@ -39,6 +74,7 @@ class EdcSettlement extends Model {
         'merchant_id': merchantId,
         'terminal_id': terminalId,
         'cashier_session_id': cashierSessionId,
+        'status': status,
       };
 
   dynamic get paymentProviderId => paymentProvider.id;
@@ -53,6 +89,7 @@ class EdcSettlement extends Model {
     model.merchantId = attributes['merchant_id'] ?? '';
     model.terminalId = attributes['terminal_id'];
     model.amount = Money.parse(attributes['amount']);
+    model.status = EdcSettlementStatus.convertFromString(attributes['status']);
     model.diffAmount = Money.parse(attributes['diff_amount']);
     model.paymentType = Model.findRelationData<PaymentType>(
             included: included,
