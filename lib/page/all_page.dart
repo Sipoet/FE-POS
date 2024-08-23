@@ -17,6 +17,7 @@ export 'supplier_page.dart';
 export 'brand_page.dart';
 export 'item_type_page.dart';
 export 'discount_page.dart';
+export 'customer_group_discount_page.dart';
 export 'employee_page.dart';
 export 'user_page.dart';
 export 'role_page.dart';

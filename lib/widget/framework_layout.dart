@@ -271,6 +271,15 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 pageFunct: () => const DiscountPage(),
                 children: []),
             Menu(
+              icon: Icons.discount,
+              isClosed: true,
+              label: 'Customer Group Discount',
+              isDisabled:
+                  !setting.isAuthorize('customerGroupDiscount', 'index'),
+              key: 'customerGroupDiscount',
+              pageFunct: () => const CustomerGroupDiscountPage(),
+            ),
+            Menu(
                 icon: Icons.person,
                 isClosed: true,
                 label: 'Karyawan',
