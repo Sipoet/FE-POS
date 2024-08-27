@@ -1,5 +1,7 @@
+import 'package:collection/collection.dart';
 import 'package:fe_pos/model/cashier_session.dart';
 import 'package:fe_pos/model/edc_settlement.dart';
+import 'package:fe_pos/model/sales_transaction_report.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -25,6 +27,8 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
   bool _displaySummary = false;
   final _focusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
+  final _headerStyle =
+      const TextStyle(fontWeight: FontWeight.bold, fontSize: 16);
   @override
   bool get wantKeepAlive => true;
 
@@ -64,44 +68,43 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
   }
 
   List<TableCell> _headerTable() {
-    const headerStyle = TextStyle(fontWeight: FontWeight.bold, fontSize: 16);
     List<TableCell> header = [
       TableCell(
           child: Padding(
         padding: const EdgeInsets.all(5.0),
         child: Text(
           setting.columnName('edcSettlement', 'payment_provider_id'),
-          style: headerStyle,
+          style: _headerStyle,
         ),
       )),
       TableCell(
           child: Padding(
         padding: const EdgeInsets.all(5),
         child: Text(setting.columnName('edcSettlement', 'payment_type_id'),
-            style: headerStyle),
+            style: _headerStyle),
       )),
       TableCell(
           child: Padding(
         padding: const EdgeInsets.all(5),
         child: Text(setting.columnName('edcSettlement', 'amount'),
-            style: headerStyle),
+            style: _headerStyle),
       )),
       TableCell(
           child: Padding(
         padding: const EdgeInsets.all(5),
         child: Text(setting.columnName('edcSettlement', 'terminal_id'),
-            style: headerStyle),
+            style: _headerStyle),
       )),
       TableCell(
           child: Padding(
         padding: const EdgeInsets.all(5),
         child: Text(setting.columnName('edcSettlement', 'merchant_id'),
-            style: headerStyle),
+            style: _headerStyle),
       )),
-      const TableCell(
+      TableCell(
           child: Padding(
-        padding: EdgeInsets.all(5),
-        child: Text('Action', style: headerStyle),
+        padding: const EdgeInsets.all(5),
+        child: Text('Action', style: _headerStyle),
       )),
     ];
     if (setting.canShow('edcSettlement', 'status')) {
@@ -111,7 +114,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
             child: Padding(
           padding: const EdgeInsets.all(5),
           child: Text(setting.columnName('edcSettlement', 'status'),
-              style: headerStyle),
+              style: _headerStyle),
         )),
       );
     }
@@ -339,37 +342,122 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
         );
       }
       return TableRow(children: [
-        TableCell(child: Text(edcSummary.paymentTypeName)),
-        TableCell(child: Text(edcSummary.totalInSystem.toString())),
-        TableCell(child: Text(edcSummary.totalinInput.toString())),
-        TableCell(child: statusText),
+        TableCell(
+            child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(edcSummary.paymentTypeName),
+        )),
+        TableCell(
+            child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(edcSummary.totalInSystem.toString()),
+        )),
+        TableCell(
+            child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(edcSummary.totalinInput.toString()),
+        )),
+        TableCell(
+            child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: statusText,
+        )),
       ]);
     }).toList();
   }
 
-  void _checkEdc() {
-    server
-        .get(
-            'cashier_sessions/${widget.cashierSession.id}/edc_settlements/check_edc')
-        .then((response) {
-      if (response.statusCode == '200') {
-        _displaySummary = true;
-        final json = response.data;
-        setState(() {
-          for (final row in json['data']) {
-            edcSummaries.add(EdcSummary(
-                paymentTypeName: row['payment_type_name'],
-                totalInSystem:
-                    Money.tryParse(row['total_in_system']) ?? const Money(0),
-                totalinInput:
-                    Money.tryParse(row['total_in_input']) ?? const Money(0)));
-          }
-        });
+  Future<List<PaymentType>> fetchAllPaymentTypes() async {
+    final response = await server.get('payment_types',
+        queryParam: {'page[page]': '1', 'page[limit]': '9999'});
+    if (response.statusCode == 200) {
+      return response.data['data']
+          .map<PaymentType>((json) => PaymentType.fromJson(json))
+          .toList();
+    }
+    return [];
+  }
+
+  Map<String, Money> groupedEdcSettlementAmountByPaymentType() {
+    Map<String, Money> result = {};
+    groupBy(edcSettlements, (edcSettlement) => edcSettlement.paymentType.name)
+        .forEach((paymentTypeName, groupedEdcSettlements) {
+      Money total = const Money(0);
+      for (final edcSettlement in groupedEdcSettlements) {
+        total += edcSettlement.amount;
       }
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-      _displaySummary = false;
+      result[paymentTypeName] = total;
     });
+    return result;
+  }
+
+  Future<Map<String, Money>> fetchSystemAmountBasedPaymentType() async {
+    final date = cashierSession.date;
+    final response = await server.get('sales/transaction_report', queryParam: {
+      'start_time': date
+          .toDateTime()
+          .copyWith(hour: 7, minute: 0, second: 0, millisecond: 0)
+          .toIso8601String(),
+      'end_time': date
+          .toDateTime()
+          .add(const Duration(days: 1))
+          .copyWith(hour: 6, minute: 59, second: 59, millisecond: 99)
+          .toIso8601String()
+    });
+    if (response.statusCode == 200) {
+      var data = response.data['data'];
+      final salesTransactionReport = SalesTransactionReport.fromJson(data);
+      return {
+        'Kartu Debit': salesTransactionReport.totalDebit,
+        'Kartu Kredit': salesTransactionReport.totalCredit,
+        'QRIS': salesTransactionReport.totalQRIS,
+        'Cash': salesTransactionReport.totalCash,
+        'Transfer': salesTransactionReport.totalOnline,
+        'Tap': const Money(0),
+        'E-money': const Money(0),
+      };
+    }
+    return {};
+  }
+
+  void _checkEdc() async {
+    edcSummaries = [];
+    Map<String, Money> totalInInputs =
+        groupedEdcSettlementAmountByPaymentType();
+    Map<String, Money> totalInSystems =
+        await fetchSystemAmountBasedPaymentType();
+    final paymentTypes = await fetchAllPaymentTypes();
+    setState(() {
+      for (final paymentType in paymentTypes) {
+        edcSummaries.add(EdcSummary(
+            paymentTypeName: paymentType.name,
+            totalInSystem: totalInSystems[paymentType.name] ?? const Money(0),
+            totalinInput: totalInInputs[paymentType.name] ?? const Money(0)));
+      }
+      _displaySummary = true;
+    });
+
+    // server
+    //     .get(
+    //         'cashier_sessions/${widget.cashierSession.id}/edc_settlements/check_edc')
+    //     .then((response) {
+    //   if (response.statusCode == '200') {
+    //     _displaySummary = true;
+    //     final json = response.data;
+    //     setState(() {
+    //       for (final row in json['data']) {
+    //         edcSummaries.add(EdcSummary(
+    //             paymentTypeName: row['payment_type_name'],
+    //             totalInSystem:
+    //                 Money.tryParse(row['total_in_system']) ?? const Money(0),
+    //             totalinInput:
+    //                 Money.tryParse(row['total_in_input']) ?? const Money(0)));
+    //       }
+    //     });
+    //   }
+    // }, onError: (error) {
+    //   defaultErrorResponse(error: error);
+    //   _displaySummary = false;
+    // });
   }
 
   @override
@@ -459,19 +547,44 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
                 child: Padding(
                     padding: const EdgeInsets.only(top: 10),
                     child: Table(
+                      border: TableBorder.all(),
                       children: [
-                            const TableRow(children: [
+                            TableRow(children: [
                               TableCell(
-                                child: Text('Tipe Pembayaran'),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'Tipe Pembayaran',
+                                    style: _headerStyle,
+                                  ),
+                                ),
                               ),
                               TableCell(
-                                child: Text('Total di system'),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'Total di system',
+                                    style: _headerStyle,
+                                  ),
+                                ),
                               ),
                               TableCell(
-                                child: Text('Hasil EDC Settlement'),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'Hasil EDC Settlement',
+                                    style: _headerStyle,
+                                  ),
+                                ),
                               ),
                               TableCell(
-                                child: Text('Status'),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'Status',
+                                    style: _headerStyle,
+                                  ),
+                                ),
                               ),
                             ]),
                           ] +

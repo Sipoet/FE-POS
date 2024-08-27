@@ -74,6 +74,10 @@ class Date extends DateTime {
     return parsingDateTime(DateTime.now());
   }
 
+  DateTime toDateTime() {
+    return DateTime(year, month, day, 0, 0, 0);
+  }
+
   String toJson() {
     return toIso8601String();
   }
@@ -139,6 +143,20 @@ class Money {
       return Money(value * other, symbol: symbol);
     }
   }
+
+  @override
+  bool operator ==(var other) {
+    if (other is Money) {
+      return value == other.value;
+    } else if (other is double) {
+      return value == other;
+    } else {
+      return false;
+    }
+  }
+
+  @override
+  int get hashCode => Object.hash(value, symbol, rate);
 
   Money operator /(var other) {
     if (other is Money) {
