@@ -45,9 +45,9 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
         columns: tableColumns,
         fetchData: fetchCashierSessions);
     _source.isAscending = false;
-    _source.sortColumn =
-        tableColumns.firstWhere((tableColumn) => tableColumn.key == 'date') ??
-            _source.sortColumn;
+    _source.sortColumn = tableColumns.firstWhere(
+        (tableColumn) => tableColumn.key == 'date',
+        orElse: () => tableColumns.first);
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }

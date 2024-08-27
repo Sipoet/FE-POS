@@ -686,7 +686,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                                       ElevatedButton(
                                         onPressed: () {
                                           setState(() {
-                                            employee.schedules
+                                            employee.employeeDayOffs
                                                 .remove(employeeDayOff);
                                           });
                                         },
