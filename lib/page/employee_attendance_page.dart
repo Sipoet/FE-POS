@@ -5,6 +5,7 @@ import 'package:fe_pos/page/mass_update_allowed_overtime_form_page.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:fe_pos/widget/table_filter_form.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,7 @@ class EmployeeAttendancePage extends StatefulWidget {
 }
 
 class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, TextFormatter {
   late final CustomAsyncDataTableSource<EmployeeAttendance> _source;
   late final Server server;
   String _searchText = '';
@@ -174,7 +175,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
   void destroyRecord(EmployeeAttendance employeeAttendance) {
     showConfirmDialog(
         message:
-            'Apakah anda yakin hapus ${employeeAttendance.employee.name} tanggal ${setting.dateFormat(employeeAttendance.date)}?',
+            'Apakah anda yakin hapus ${employeeAttendance.employee.name} tanggal ${dateFormat(employeeAttendance.date)}?',
         onSubmit: () {
           server.delete('/employee_attendances/${employeeAttendance.id}').then(
               (response) {

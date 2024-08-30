@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/setting.dart';
@@ -24,7 +25,10 @@ class ItemSalesTransactionReportWidget extends StatefulWidget {
 
 class _ItemSalesTransactionReportWidgetState
     extends State<ItemSalesTransactionReportWidget>
-    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+    with
+        TickerProviderStateMixin,
+        AutomaticKeepAliveClientMixin,
+        TextFormatter {
   List results = [];
   late final Setting setting;
   late AnimationController _controller;
@@ -281,7 +285,7 @@ class _ItemSalesTransactionReportWidgetState
                                     Padding(
                                       padding: const EdgeInsets.all(5),
                                       child: Text(
-                                        setting.moneyFormat(
+                                        moneyFormat(
                                           row['sales_total'],
                                         ),
                                         style: TextStyle(
@@ -296,7 +300,7 @@ class _ItemSalesTransactionReportWidgetState
                                     Padding(
                                       padding: const EdgeInsets.all(5),
                                       child: Text(
-                                        setting.numberFormat(row['quantity']),
+                                        numberFormat(row['quantity']),
                                         style: TextStyle(
                                             color: index.isOdd
                                                 ? colorScheme
@@ -309,8 +313,7 @@ class _ItemSalesTransactionReportWidgetState
                                     Padding(
                                       padding: const EdgeInsets.all(5),
                                       child: Text(
-                                        setting
-                                            .moneyFormat(row['discount_total']),
+                                        moneyFormat(row['discount_total']),
                                         style: TextStyle(
                                             color: index.isOdd
                                                 ? colorScheme

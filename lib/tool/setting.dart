@@ -1,6 +1,5 @@
-import 'package:fe_pos/tool/datatable.dart';
+import 'package:fe_pos/tool/table_decorator.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class Setting extends ChangeNotifier {
   Map<String, Map<String, TableColumn>> _tableColumns = {};
@@ -38,37 +37,6 @@ class Setting extends ChangeNotifier {
 
   List<TableColumn> tableColumn(String key) {
     return _tableColumns[key]?.values.toList() ?? [];
-  }
-
-  String dateFormat(DateTime date) {
-    return DateFormat('dd/MM/y', 'id_ID').format(date);
-  }
-
-  String dateTimeFormat(DateTime date) {
-    return DateFormat('dd/MM/y HH:mm', 'id_ID').format(date);
-  }
-
-  String timeFormat(TimeOfDay time) {
-    return "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
-  }
-
-  String dateTimeLocalFormat(DateTime date) {
-    return DateFormat('dd/MM/y HH:mm', 'id_ID').format(date.toLocal());
-  }
-
-  String moneyFormat(dynamic value) {
-    if (value is Money) {
-      return NumberFormat.currency(
-              locale: "en_US", symbol: value.symbol, decimalDigits: 1)
-          .format(value.value);
-    }
-    return NumberFormat.currency(
-            locale: "en_US", symbol: "Rp", decimalDigits: 1)
-        .format(value);
-  }
-
-  String numberFormat(number) {
-    return NumberFormat(",##0.##", "en_US").format(number);
   }
 
   bool isAuthorize(String controllerName, String actionName) {

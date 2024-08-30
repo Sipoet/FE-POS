@@ -3,6 +3,7 @@ import 'package:fe_pos/page/employee_leave_form_page.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:fe_pos/widget/table_filter_form.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,7 @@ class EmployeeLeavePage extends StatefulWidget {
 }
 
 class _EmployeeLeavePageState extends State<EmployeeLeavePage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, TextFormatter {
   late final CustomAsyncDataTableSource<EmployeeLeave> _source;
   late final Server server;
   String _searchText = '';
@@ -162,7 +163,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
   void destroyRecord(EmployeeLeave employeeLeave) {
     showConfirmDialog(
         message:
-            'Apakah anda yakin hapus ${employeeLeave.employee.name} tanggal ${setting.dateFormat(employeeLeave.date)}?',
+            'Apakah anda yakin hapus ${employeeLeave.employee.name} tanggal ${dateFormat(employeeLeave.date)}?',
         onSubmit: () {
           server.delete('/employee_leaves/${employeeLeave.id}').then(
               (response) {

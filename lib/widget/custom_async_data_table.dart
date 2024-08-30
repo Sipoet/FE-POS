@@ -1,8 +1,9 @@
 import 'package:data_table_2/data_table_2.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 
 import 'package:flutter/material.dart';
-import 'package:fe_pos/tool/datatable.dart';
-export 'package:fe_pos/tool/datatable.dart';
+import 'package:fe_pos/tool/table_decorator.dart';
+export 'package:fe_pos/tool/table_decorator.dart';
 
 class CustomAsyncDataTable extends StatefulWidget {
   final CustomAsyncDataTableSource controller;
@@ -163,4 +164,90 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
       }),
     );
   }
+}
+
+class CustomAsyncDataTableSource<T extends Model> extends AsyncDataTableSource
+    with TableDecorator<T>, TextFormatter {
+  final List<TableColumn> columns;
+  late List<T> sortedData = [];
+  TableColumn? sortColumn;
+  bool isAscending = true;
+  List<Widget> Function(T model, int index)? actionButtons;
+  Map<int, T> selectedMap = {};
+  PaginatorController? paginatorController;
+  bool isShowActions = false;
+  List<T> get selected => selectedMap.values.toList();
+  int totalRows = 0;
+
+  Future<ResponseResult<T>> Function(
+      {int page,
+      int limit,
+      TableColumn sortColumn,
+      bool isAscending}) fetchData;
+
+  CustomAsyncDataTableSource(
+      {required this.fetchData,
+      this.isShowActions = false,
+      this.isAscending = true,
+      this.sortColumn,
+      required this.columns,
+      this.actionButtons,
+      this.paginatorController});
+
+  void refreshDataFromFirstPage() {
+    if (paginatorController?.isAttached ?? false) {
+      paginatorController?.goToFirstPage();
+    }
+    refreshDatasource();
+  }
+
+  bool get hasActionButton => actionButtons is Function;
+
+  void sortData(TableColumn sortColumn, bool isAscending) {
+    this.sortColumn = sortColumn;
+    this.isAscending = isAscending;
+    refreshDatasource();
+  }
+
+  @override
+  int get rowCount => totalRows;
+
+  @override
+  Future<AsyncRowsResponse> getRows(int startIndex, int count) {
+    final page = startIndex ~/ count + 1;
+    return fetchData(
+            page: page,
+            limit: count,
+            isAscending: this.isAscending,
+            sortColumn: this.sortColumn ?? this.columns[0])
+        .then((responseResult) {
+      totalRows = responseResult.totalRows;
+      List<DataRow> rows = [];
+      for (T model in responseResult.models) {
+        rows.add(DataRow(
+          key: ValueKey<dynamic>(model.id),
+          onSelectChanged: (value) {
+            if (value != null) {
+              setRowSelection(ValueKey<dynamic>(model.id), value);
+            }
+          },
+          cells: decorateModel(model,
+              columns: columns, actionButtons: actionButtons),
+        ));
+      }
+      return AsyncRowsResponse(totalRows, rows);
+    });
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get selectedRowCount => selectedMap.keys.length;
+}
+
+class ResponseResult<T> {
+  int totalRows;
+  List<T> models;
+  ResponseResult({this.totalRows = 0, required this.models});
 }

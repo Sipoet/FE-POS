@@ -4,6 +4,7 @@ import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_form_field.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,11 @@ class PayslipFormPage extends StatefulWidget {
 }
 
 class _PayslipFormPageState extends State<PayslipFormPage>
-    with AutomaticKeepAliveClientMixin, HistoryPopup, LoadingPopup {
+    with
+        AutomaticKeepAliveClientMixin,
+        HistoryPopup,
+        LoadingPopup,
+        TextFormatter {
   late Flash flash;
   late final Setting setting;
   final _formKey = GlobalKey<FormState>();
@@ -485,7 +490,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                               textAlign: TextAlign.right,
                             ),
                             Text(
-                              setting.moneyFormat(payslip.grossSalary),
+                              moneyFormat(payslip.grossSalary),
                               textAlign: TextAlign.right,
                             ),
                           ]),
@@ -496,7 +501,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                               textAlign: TextAlign.right,
                             ),
                             Text(
-                              setting.moneyFormat(payslip.taxAmount),
+                              moneyFormat(payslip.taxAmount),
                               textAlign: TextAlign.right,
                             ),
                           ]),
@@ -507,7 +512,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                               textAlign: TextAlign.right,
                             ),
                             Text(
-                              setting.moneyFormat(payslip.nettSalary),
+                              moneyFormat(payslip.nettSalary),
                               textAlign: TextAlign.right,
                             ),
                           ])

@@ -4,6 +4,7 @@ import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/model/server.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 
 import 'package:flutter/material.dart';
@@ -19,7 +20,11 @@ class SaleFormPage extends StatefulWidget {
 }
 
 class _SaleFormPageState extends State<SaleFormPage>
-    with AutomaticKeepAliveClientMixin, LoadingPopup, HistoryPopup {
+    with
+        AutomaticKeepAliveClientMixin,
+        LoadingPopup,
+        HistoryPopup,
+        TextFormatter {
   late Flash flash;
 
   final _formKey = GlobalKey<FormState>();
@@ -131,7 +136,7 @@ class _SaleFormPageState extends State<SaleFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.dateTimeFormat(sale.datetime),
+                        initialValue: dateTimeFormat(sale.datetime),
                       ),
                     ),
                   ),
@@ -162,7 +167,7 @@ class _SaleFormPageState extends State<SaleFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.moneyFormat(sale.subtotal),
+                        initialValue: moneyFormat(sale.subtotal),
                       ),
                     ),
                   ),
@@ -177,7 +182,7 @@ class _SaleFormPageState extends State<SaleFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.moneyFormat(sale.discountAmount),
+                        initialValue: moneyFormat(sale.discountAmount),
                       ),
                     ),
                   ),
@@ -192,7 +197,7 @@ class _SaleFormPageState extends State<SaleFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.moneyFormat(sale.otherCost),
+                        initialValue: moneyFormat(sale.otherCost),
                       ),
                     ),
                   ),
@@ -207,7 +212,7 @@ class _SaleFormPageState extends State<SaleFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.moneyFormat(sale.taxAmount),
+                        initialValue: moneyFormat(sale.taxAmount),
                       ),
                     ),
                   ),
@@ -222,7 +227,7 @@ class _SaleFormPageState extends State<SaleFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.moneyFormat(sale.grandtotal),
+                        initialValue: moneyFormat(sale.grandtotal),
                       ),
                     ),
                   ),
@@ -267,7 +272,7 @@ class _SaleFormPageState extends State<SaleFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.moneyFormat(sale.cashAmount),
+                        initialValue: moneyFormat(sale.cashAmount),
                       ),
                     ),
                   ),
@@ -282,7 +287,7 @@ class _SaleFormPageState extends State<SaleFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.moneyFormat(sale.debitCardAmount),
+                        initialValue: moneyFormat(sale.debitCardAmount),
                       ),
                     ),
                   ),
@@ -297,8 +302,7 @@ class _SaleFormPageState extends State<SaleFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue:
-                            setting.moneyFormat(sale.creditCardAmount),
+                        initialValue: moneyFormat(sale.creditCardAmount),
                       ),
                     ),
                   ),
@@ -313,7 +317,7 @@ class _SaleFormPageState extends State<SaleFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.moneyFormat(sale.emoneyAmount),
+                        initialValue: moneyFormat(sale.emoneyAmount),
                       ),
                     ),
                   ),

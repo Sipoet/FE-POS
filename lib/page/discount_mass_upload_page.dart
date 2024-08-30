@@ -2,6 +2,7 @@ import 'package:fe_pos/model/discount.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/file_saver.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:excel/excel.dart';
@@ -209,7 +210,8 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
   }
 }
 
-class DiscountMassUploadDatatableSource extends DataTableSource {
+class DiscountMassUploadDatatableSource extends DataTableSource
+    with TextFormatter {
   List<Discount> rows = [];
   List selected = [];
   List status = [];
@@ -258,8 +260,8 @@ class DiscountMassUploadDatatableSource extends DataTableSource {
       DataCell(SelectableText(discount.discount2.toString())),
       DataCell(SelectableText(discount.discount3.toString())),
       DataCell(SelectableText(discount.discount4.toString())),
-      DataCell(SelectableText(setting.dateTimeFormat(discount.startTime))),
-      DataCell(SelectableText(setting.dateTimeFormat(discount.endTime))),
+      DataCell(SelectableText(dateTimeFormat(discount.startTime))),
+      DataCell(SelectableText(dateTimeFormat(discount.endTime))),
       DataCell(SelectableText(status[index] ?? 'Draft')),
     ];
   }

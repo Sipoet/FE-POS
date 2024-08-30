@@ -3,6 +3,7 @@ import 'package:fe_pos/model/payslip.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:flutter/material.dart';
@@ -249,7 +250,8 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
   }
 }
 
-class GeneratePayslipDatatableSource extends DataTableSource {
+class GeneratePayslipDatatableSource extends DataTableSource
+    with TextFormatter {
   List<Payslip> rows = [];
   List selected = [];
   List status = [];
@@ -291,10 +293,10 @@ class GeneratePayslipDatatableSource extends DataTableSource {
     final payslip = rows[index];
     return <DataCell>[
       DataCell(SelectableText(payslip.employee.name)),
-      DataCell(SelectableText(setting.dateFormat(payslip.startDate))),
-      DataCell(SelectableText(setting.dateFormat(payslip.endDate))),
-      DataCell(SelectableText(setting.numberFormat(payslip.grossSalary))),
-      DataCell(SelectableText(setting.numberFormat(payslip.nettSalary))),
+      DataCell(SelectableText(dateFormat(payslip.startDate))),
+      DataCell(SelectableText(dateFormat(payslip.endDate))),
+      DataCell(SelectableText(numberFormat(payslip.grossSalary))),
+      DataCell(SelectableText(numberFormat(payslip.nettSalary))),
     ];
   }
 

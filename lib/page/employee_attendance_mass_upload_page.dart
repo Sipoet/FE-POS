@@ -1,5 +1,6 @@
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/employee_attendance.dart';
 import 'package:fe_pos/model/session_state.dart';
@@ -20,7 +21,7 @@ class EmployeeAttendanceMassUploadPage extends StatefulWidget {
 
 class _EmployeeAttendanceMassUploadPageState
     extends State<EmployeeAttendanceMassUploadPage>
-    with AutomaticKeepAliveClientMixin, LoadingPopup {
+    with AutomaticKeepAliveClientMixin, LoadingPopup, TextFormatter {
   late Server _server;
   late Setting _setting;
   late final EmployeeAttendanceMassUploadDatatableSource _source;
@@ -249,7 +250,8 @@ class _EmployeeAttendanceMassUploadPageState
   }
 }
 
-class EmployeeAttendanceMassUploadDatatableSource extends DataTableSource {
+class EmployeeAttendanceMassUploadDatatableSource extends DataTableSource
+    with TextFormatter {
   List<EmployeeAttendance> rows = [];
   List selected = [];
   List status = [];
@@ -291,12 +293,10 @@ class EmployeeAttendanceMassUploadDatatableSource extends DataTableSource {
     final employeeAttendance = rows[index];
     return <DataCell>[
       DataCell(SelectableText(employeeAttendance.employee.name)),
-      DataCell(SelectableText(setting.dateFormat(employeeAttendance.date))),
+      DataCell(SelectableText(dateFormat(employeeAttendance.date))),
       DataCell(SelectableText(employeeAttendance.shift.toString())),
-      DataCell(
-          SelectableText(setting.dateTimeFormat(employeeAttendance.startTime))),
-      DataCell(
-          SelectableText(setting.dateTimeFormat(employeeAttendance.endTime))),
+      DataCell(SelectableText(dateTimeFormat(employeeAttendance.startTime))),
+      DataCell(SelectableText(dateTimeFormat(employeeAttendance.endTime))),
       DataCell(SelectableText(employeeAttendance.isLate.toString())),
     ];
   }

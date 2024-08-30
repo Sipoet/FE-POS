@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/sales_transaction_report.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/setting.dart';
@@ -16,7 +17,10 @@ class SalesTransactionReportWidget extends StatefulWidget {
 
 class _SalesTransactionReportWidgetState
     extends State<SalesTransactionReportWidget>
-    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+    with
+        TickerProviderStateMixin,
+        AutomaticKeepAliveClientMixin,
+        TextFormatter {
   late SalesTransactionReport salesTransactionReport;
   CancelToken cancelToken = CancelToken();
   late final Setting setting;
@@ -156,7 +160,7 @@ class _SalesTransactionReportWidgetState
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      setting.moneyFormat(salesTransactionReport.totalSales),
+                      moneyFormat(salesTransactionReport.totalSales),
                       textAlign: TextAlign.right,
                       style: valueStyle,
                     ),
@@ -180,8 +184,7 @@ class _SalesTransactionReportWidgetState
                       Padding(
                         padding: const EdgeInsets.all(5),
                         child: Text(
-                          setting
-                              .moneyFormat(salesTransactionReport.grossProfit),
+                          moneyFormat(salesTransactionReport.grossProfit),
                           textAlign: TextAlign.right,
                           style: valueStyle,
                         ),
@@ -199,8 +202,7 @@ class _SalesTransactionReportWidgetState
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      setting.numberFormat(
-                          salesTransactionReport.totalTransaction),
+                      numberFormat(salesTransactionReport.totalTransaction),
                       textAlign: TextAlign.right,
                       style: valueStyle,
                     ),
@@ -224,8 +226,7 @@ class _SalesTransactionReportWidgetState
                       Padding(
                         padding: const EdgeInsets.all(5),
                         child: Text(
-                          setting.moneyFormat(
-                              salesTransactionReport.totalDiscount),
+                          moneyFormat(salesTransactionReport.totalDiscount),
                           textAlign: TextAlign.right,
                           style: valueStyle,
                         ),
@@ -243,7 +244,7 @@ class _SalesTransactionReportWidgetState
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      setting.moneyFormat(salesTransactionReport.totalCash),
+                      moneyFormat(salesTransactionReport.totalCash),
                       textAlign: TextAlign.right,
                       style: valueStyle,
                     ),
@@ -267,8 +268,7 @@ class _SalesTransactionReportWidgetState
                       Padding(
                         padding: const EdgeInsets.all(5),
                         child: Text(
-                          setting
-                              .moneyFormat(salesTransactionReport.totalDebit),
+                          moneyFormat(salesTransactionReport.totalDebit),
                           textAlign: TextAlign.right,
                           style: valueStyle,
                         ),
@@ -286,7 +286,7 @@ class _SalesTransactionReportWidgetState
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      setting.moneyFormat(salesTransactionReport.totalCredit),
+                      moneyFormat(salesTransactionReport.totalCredit),
                       textAlign: TextAlign.right,
                       style: valueStyle,
                     ),
@@ -310,7 +310,7 @@ class _SalesTransactionReportWidgetState
                       Padding(
                         padding: const EdgeInsets.all(5),
                         child: Text(
-                          setting.moneyFormat(salesTransactionReport.totalQRIS),
+                          moneyFormat(salesTransactionReport.totalQRIS),
                           textAlign: TextAlign.right,
                           style: valueStyle,
                         ),
@@ -328,7 +328,7 @@ class _SalesTransactionReportWidgetState
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      setting.moneyFormat(salesTransactionReport.totalOnline),
+                      moneyFormat(salesTransactionReport.totalOnline),
                       textAlign: TextAlign.right,
                       style: valueStyle,
                     ),

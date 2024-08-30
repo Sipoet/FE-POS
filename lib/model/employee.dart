@@ -7,7 +7,7 @@ import 'package:fe_pos/model/payroll.dart';
 export 'package:fe_pos/model/payroll.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:fe_pos/model/work_schedule.dart';
-import 'package:fe_pos/tool/datatable.dart';
+import 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/model/work_schedule.dart';
 
 enum EmployeeStatus {

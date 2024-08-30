@@ -1,6 +1,5 @@
-import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class DateFormField extends StatefulWidget {
   final DateTime? initialValue;
@@ -32,15 +31,13 @@ class DateFormField extends StatefulWidget {
   State<DateFormField> createState() => _DateFormFieldState();
 }
 
-class _DateFormFieldState extends State<DateFormField> {
+class _DateFormFieldState extends State<DateFormField> with TextFormatter {
   DateTime? _datetime;
 
   final _controller = TextEditingController();
-  late final Setting _setting;
 
   @override
   void initState() {
-    _setting = context.read<Setting>();
     _datetime = widget.initialValue;
     writeToTextField();
     super.initState();
@@ -101,9 +98,9 @@ class _DateFormFieldState extends State<DateFormField> {
     if (_datetime == null) {
       _controller.text = '';
     } else if (widget.datePickerOnly) {
-      _controller.text = _setting.dateFormat(_datetime!);
+      _controller.text = dateFormat(_datetime!);
     } else {
-      _controller.text = _setting.dateTimeFormat(_datetime!);
+      _controller.text = dateTimeFormat(_datetime!);
     }
   }
 

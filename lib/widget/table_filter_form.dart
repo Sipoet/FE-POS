@@ -1,4 +1,4 @@
-import 'package:fe_pos/tool/datatable.dart';
+import 'package:fe_pos/tool/table_decorator.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 

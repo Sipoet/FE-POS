@@ -1,8 +1,9 @@
 import 'package:data_table_2/data_table_2.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 
 import 'package:flutter/material.dart';
-import 'package:fe_pos/tool/datatable.dart';
-export 'package:fe_pos/tool/datatable.dart';
+import 'package:fe_pos/tool/table_decorator.dart';
+export 'package:fe_pos/tool/table_decorator.dart';
 
 class SyncDataTable extends StatefulWidget {
   final SyncDataTableSource controller;
@@ -10,6 +11,7 @@ class SyncDataTable extends StatefulWidget {
   final List<Widget>? actions;
   final Widget? header;
   final bool showCheckboxColumn;
+  final bool showSummary;
   final void Function(int)? onPageChanged;
   const SyncDataTable({
     super.key,
@@ -17,6 +19,7 @@ class SyncDataTable extends StatefulWidget {
     this.onPageChanged,
     this.actions,
     this.header,
+    this.showSummary = false,
     this.showCheckboxColumn = false,
     this.fixedLeftColumns = 1,
   });
@@ -161,4 +164,89 @@ class _SyncDataTableState extends State<SyncDataTable> {
       }),
     );
   }
+}
+
+class SyncDataTableSource<T extends Model> extends DataTableSource
+    with TableDecorator<T>, TextFormatter {
+  late List<T> sortedData = [];
+  final List<TableColumn> columns;
+  TableColumn? sortColumn;
+  bool isAscending;
+  Map<int, T> selectedMap = {};
+  PaginatorController? paginatorController;
+  bool isShowActions = false;
+  List<T> get selected => selectedMap.values.toList();
+  List<Widget> Function(T model, int? index)? actionButtons;
+
+  SyncDataTableSource(
+      {required this.columns,
+      this.isAscending = true,
+      this.sortColumn,
+      this.actionButtons,
+      this.paginatorController});
+
+  void setActionButtons(value) {
+    actionButtons = value;
+  }
+
+  void updateData(index, T model) {
+    sortedData[index] = model;
+    notifyListeners();
+  }
+
+  void refreshData() {
+    notifyListeners();
+  }
+
+  void setData(List<T> rawData) {
+    if (paginatorController?.isAttached ?? false) {
+      paginatorController?.goToFirstPage();
+    }
+    sortedData = rawData;
+
+    sortData(sortColumn ?? columns[0], isAscending);
+  }
+
+  void sortData(TableColumn sortColumn, bool isAscending) {
+    this.sortColumn = sortColumn;
+    this.isAscending = isAscending;
+    sortedData.sort((T a, T b) {
+      var cellA = a.toMap()[sortColumn.attributeKey] ?? '';
+      var cellB = b.toMap()[sortColumn.attributeKey] ?? '';
+      if (cellA is TimeOfDay) {
+        cellA = cellA.toString();
+        cellB = cellB.toString();
+      }
+      return cellA.compareTo(cellB) * (isAscending ? 1 : -1);
+    });
+    notifyListeners();
+  }
+
+  @override
+  int get rowCount => sortedData.length;
+
+  @override
+  DataRow? getRow(int index) {
+    T model = sortedData[index];
+    return DataRow.byIndex(
+      index: index,
+      selected: selectedMap.containsKey(index),
+      onSelectChanged: (bool? isSelected) {
+        if (isSelected == true) {
+          selectedMap[index] = model;
+        } else {
+          selectedMap.remove(index);
+        }
+        notifyListeners();
+      },
+      cells: decorateModel(model,
+          index: index, columns: columns, actionButtons: actionButtons),
+    );
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get selectedRowCount => 0;
 }

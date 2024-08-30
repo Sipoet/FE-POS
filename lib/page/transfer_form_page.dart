@@ -4,6 +4,7 @@ import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/model/server.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 
 import 'package:flutter/material.dart';
@@ -19,7 +20,11 @@ class TransferFormPage extends StatefulWidget {
 }
 
 class _TransferFormPageState extends State<TransferFormPage>
-    with AutomaticKeepAliveClientMixin, LoadingPopup, HistoryPopup {
+    with
+        AutomaticKeepAliveClientMixin,
+        LoadingPopup,
+        HistoryPopup,
+        TextFormatter {
   late Flash flash;
 
   final _formKey = GlobalKey<FormState>();
@@ -161,7 +166,7 @@ class _TransferFormPageState extends State<TransferFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.dateTimeFormat(transfer.datetime),
+                        initialValue: dateTimeFormat(transfer.datetime),
                       ),
                     ),
                   ),
@@ -228,7 +233,7 @@ class _TransferFormPageState extends State<TransferFormPage>
                         readOnly: true,
                         initialValue: transfer.updatedAt == null
                             ? ''
-                            : setting.dateTimeFormat(transfer.updatedAt!),
+                            : dateTimeFormat(transfer.updatedAt!),
                       ),
                     ),
                   ),

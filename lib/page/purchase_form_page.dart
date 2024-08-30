@@ -4,6 +4,7 @@ import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/model/server.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 
 import 'package:flutter/material.dart';
@@ -19,7 +20,11 @@ class PurchaseFormPage extends StatefulWidget {
 }
 
 class _PurchaseFormPageState extends State<PurchaseFormPage>
-    with AutomaticKeepAliveClientMixin, LoadingPopup, HistoryPopup {
+    with
+        AutomaticKeepAliveClientMixin,
+        LoadingPopup,
+        HistoryPopup,
+        TextFormatter {
   late Flash flash;
 
   final _formKey = GlobalKey<FormState>();
@@ -161,7 +166,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.dateTimeFormat(purchase.datetime),
+                        initialValue: dateTimeFormat(purchase.datetime),
                       ),
                     ),
                   ),
@@ -192,7 +197,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.moneyFormat(purchase.subtotal),
+                        initialValue: moneyFormat(purchase.subtotal),
                       ),
                     ),
                   ),
@@ -207,8 +212,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue:
-                            setting.moneyFormat(purchase.discountAmount),
+                        initialValue: moneyFormat(purchase.discountAmount),
                       ),
                     ),
                   ),
@@ -223,7 +227,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.moneyFormat(purchase.otherCost),
+                        initialValue: moneyFormat(purchase.otherCost),
                       ),
                     ),
                   ),
@@ -238,7 +242,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.moneyFormat(purchase.taxAmount),
+                        initialValue: moneyFormat(purchase.taxAmount),
                       ),
                     ),
                   ),
@@ -253,7 +257,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.moneyFormat(purchase.grandtotal),
+                        initialValue: moneyFormat(purchase.grandtotal),
                       ),
                     ),
                   ),
@@ -298,7 +302,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: setting.moneyFormat(purchase.cashAmount),
+                        initialValue: moneyFormat(purchase.cashAmount),
                       ),
                     ),
                   ),
@@ -313,8 +317,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue:
-                            setting.moneyFormat(purchase.debitCardAmount),
+                        initialValue: moneyFormat(purchase.debitCardAmount),
                       ),
                     ),
                   ),
@@ -329,8 +332,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue:
-                            setting.moneyFormat(purchase.creditCardAmount),
+                        initialValue: moneyFormat(purchase.creditCardAmount),
                       ),
                     ),
                   ),
@@ -345,8 +347,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue:
-                            setting.moneyFormat(purchase.emoneyAmount),
+                        initialValue: moneyFormat(purchase.emoneyAmount),
                       ),
                     ),
                   ),

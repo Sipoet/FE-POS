@@ -6,6 +6,7 @@ import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +20,11 @@ class EdcSettlementFormPage extends StatefulWidget {
 }
 
 class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
-    with DefaultResponse, LoadingPopup, AutomaticKeepAliveClientMixin {
+    with
+        DefaultResponse,
+        LoadingPopup,
+        AutomaticKeepAliveClientMixin,
+        TextFormatter {
   late final Server server;
   late final Setting setting;
   late Flash flash;
@@ -473,8 +478,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                  'Tanggal : ${setting.dateFormat(widget.cashierSession.date)}'),
+              Text('Tanggal : ${dateFormat(widget.cashierSession.date)}'),
               const SizedBox(
                 height: 10,
               ),
