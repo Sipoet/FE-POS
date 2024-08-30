@@ -3,7 +3,7 @@ import 'package:fe_pos/model/item_sales_percentage_report.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
-import 'package:fe_pos/widget/custom_data_table.dart';
+import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:fe_pos/widget/table_filter_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

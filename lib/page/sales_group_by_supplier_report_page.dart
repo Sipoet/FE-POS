@@ -3,7 +3,7 @@ import 'package:fe_pos/model/sales_group_by_supplier.dart';
 import 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
-import 'package:fe_pos/widget/custom_data_table.dart';
+import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
 

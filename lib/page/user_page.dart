@@ -3,7 +3,7 @@ import 'package:fe_pos/page/user_form_page.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
-import 'package:fe_pos/widget/custom_data_table.dart';
+import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';

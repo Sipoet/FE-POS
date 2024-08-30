@@ -1,6 +1,6 @@
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
-import 'package:fe_pos/widget/custom_data_table.dart';
+import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/model/sales_transaction_report.dart';
 import 'package:flutter/material.dart';

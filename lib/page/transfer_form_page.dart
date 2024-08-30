@@ -4,7 +4,7 @@ import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/model/server.dart';
-import 'package:fe_pos/widget/custom_data_table.dart';
+import 'package:fe_pos/widget/sync_data_table.dart';
 
 import 'package:flutter/material.dart';
 

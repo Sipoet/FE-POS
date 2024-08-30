@@ -5,7 +5,7 @@ import 'package:fe_pos/widget/table_filter_form.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
-import 'package:fe_pos/widget/custom_data_table.dart';
+import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:fe_pos/model/cashier_session.dart';
 
 class CashierSessionTablePage extends StatefulWidget {

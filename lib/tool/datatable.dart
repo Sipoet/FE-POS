@@ -1,6 +1,6 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:fe_pos/model/model.dart';
-import 'package:fe_pos/widget/custom_data_table.dart';
+import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 export 'package:fe_pos/model/model.dart';

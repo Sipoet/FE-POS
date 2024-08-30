@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/table_filter_form.dart';
-import 'package:fe_pos/widget/custom_data_table.dart';
+import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/model/payment_method.dart';
 import 'package:fe_pos/page/payment_method_form_page.dart';

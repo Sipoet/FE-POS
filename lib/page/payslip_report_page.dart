@@ -4,7 +4,7 @@ import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/file_saver.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
-import 'package:fe_pos/widget/custom_data_table.dart';
+import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
