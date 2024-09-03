@@ -15,14 +15,18 @@ class SalesTransactionReportPage extends StatefulWidget {
       _SalesTransactionReportPageState();
 }
 
-class _SalesTransactionReportPageState
-    extends State<SalesTransactionReportPage> {
+class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
+    with AutomaticKeepAliveClientMixin {
   late DateTimeRange range;
   late Server server;
-  bool _isDisplayTable = false;
   List requestControllers = [];
-  late final SyncDataTableSource<SalesTransactionReport> _source;
   late Flash flash;
+  late List<TableColumn> columns;
+  List<SalesTransactionReport> salesTransactionReports = [];
+  late final PlutoGridStateManager? stateManager;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -34,16 +38,14 @@ class _SalesTransactionReportPageState
             .subtract(const Duration(days: 1))));
     flash = Flash(context);
     server = context.read<Server>();
-    var setting = context.read<Setting>();
-    _source = SyncDataTableSource<SalesTransactionReport>(
-        columns: setting.tableColumn('salesTransactionReport'));
-
+    final setting = context.read<Setting>();
+    columns = setting.tableColumn('salesTransactionReport');
     super.initState();
+    Future.delayed(Duration.zero, () => _refreshTable(range));
   }
 
   @override
   void dispose() {
-    _source.dispose();
     super.dispose();
   }
 
@@ -61,7 +63,10 @@ class _SalesTransactionReportPageState
     );
     var start = range.start;
     var end = range.end;
-    List<SalesTransactionReport> rows = <SalesTransactionReport>[];
+    salesTransactionReports = <SalesTransactionReport>[];
+
+    stateManager?.removeAllRows();
+
     while (start.isBefore(end)) {
       var rowDateRange =
           DateTimeRange(start: beginningOfDay(start), end: endOfDay(start));
@@ -69,8 +74,10 @@ class _SalesTransactionReportPageState
       var request = _requestReport(rowDateRange).then((response) {
         if (response.statusCode != 200) return;
         var data = response.data['data'];
-        rows.add(SalesTransactionReport.fromJson(data));
-        _source.setData(rows);
+        final salesTransactionReport = SalesTransactionReport.fromJson(data);
+        setState(() {
+          stateManager?.appendModel(salesTransactionReport);
+        });
       },
           onError: (error, trace) =>
               server.defaultErrorResponse(context: context, error: error));
@@ -79,7 +86,6 @@ class _SalesTransactionReportPageState
     }
     Future.delayed(const Duration(seconds: 2), (() {
       setState(() {
-        _isDisplayTable = true;
         flash.hide();
       });
     }));
@@ -95,9 +101,10 @@ class _SalesTransactionReportPageState
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
+    super.build(context);
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -119,15 +126,17 @@ class _SalesTransactionReportPageState
               onPressed: () => {_refreshTable(range)},
               child: const Text('Tampilkan'),
             ),
-            if (_isDisplayTable) const Divider(),
-            if (_isDisplayTable)
-              SizedBox(
-                height: 600,
-                child: SyncDataTable(
-                  controller: _source,
-                  fixedLeftColumns: 1,
-                ),
+            const Divider(),
+            SizedBox(
+              height: 400,
+              child: SyncDataTable2<SalesTransactionReport>(
+                rows: salesTransactionReports,
+                columns: columns,
+                fixedLeftColumns: 1,
+                onLoaded: (state) => stateManager = state,
+                showSummary: true,
               ),
+            ),
           ],
         ),
       ),

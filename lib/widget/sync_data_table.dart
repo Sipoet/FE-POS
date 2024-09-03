@@ -4,6 +4,8 @@ import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/tool/table_decorator.dart';
+import 'package:pluto_grid/pluto_grid.dart';
+export 'package:pluto_grid/pluto_grid.dart';
 
 class SyncDataTable extends StatefulWidget {
   final SyncDataTableSource controller;
@@ -12,6 +14,7 @@ class SyncDataTable extends StatefulWidget {
   final Widget? header;
   final bool showCheckboxColumn;
   final bool showSummary;
+
   final void Function(int)? onPageChanged;
   const SyncDataTable({
     super.key,
@@ -249,4 +252,243 @@ class SyncDataTableSource<T extends Model> extends DataTableSource
 
   @override
   int get selectedRowCount => 0;
+}
+
+typedef OnLoadedCallBack = void Function(PlutoGridStateManager stateManager);
+
+class SyncDataTable2<T extends Model> extends StatefulWidget {
+  final int fixedLeftColumns;
+  final List<Widget>? actions;
+  final Widget? header;
+  final bool showCheckboxColumn;
+  final bool showSummary;
+  final List<T> rows;
+  final List<TableColumn> columns;
+  final void Function(int)? onPageChanged;
+  final Map<String, List<Enum>> enums;
+  final OnLoadedCallBack? onLoaded;
+  const SyncDataTable2({
+    super.key,
+    this.onPageChanged,
+    this.actions,
+    this.onLoaded,
+    this.header,
+    List<TableColumn>? columns,
+    List<T>? rows,
+    this.enums = const {},
+    this.showSummary = false,
+    this.showCheckboxColumn = false,
+    this.fixedLeftColumns = 1,
+  })  : columns = columns ?? const [],
+        rows = rows ?? const [];
+
+  @override
+  State<SyncDataTable2<T>> createState() => _SyncDataTable2State<T>();
+}
+
+extension TableStateMananger on PlutoGridStateManager {
+  void appendModel(model) {
+    appendRows([decorateRow(model)]);
+    notifyListeners();
+  }
+
+  static PlutoRow decorateRow(row) {
+    final rowMap = row.toMap();
+    Map<String, PlutoCell> cells = {};
+    rowMap.forEach(
+      (key, value) {
+        var newValue = value;
+        if (newValue is Money) {
+          newValue = newValue.value;
+        } else if (newValue is Percentage) {
+          newValue = newValue.value;
+        }
+        cells[key] = PlutoCell(value: newValue);
+      },
+    );
+    return PlutoRow(cells: cells, type: PlutoRowType.normal());
+  }
+}
+
+class _SyncDataTable2State<T extends Model> extends State<SyncDataTable2<T>> {
+  late List<PlutoColumn> columns;
+  late List<PlutoRow> rows;
+
+  PlutoColumnType _parseColumnType(TableColumn tableColumn) {
+    switch (tableColumn.type) {
+      case 'string':
+        return PlutoColumnType.text();
+      case 'date':
+        return PlutoColumnType.date(format: 'dd/MM/yyyy');
+      case 'datetime':
+        return PlutoColumnType.date(format: 'dd/MM/yyyy HH::mm');
+      case 'time':
+        return PlutoColumnType.time();
+      case 'money':
+        return PlutoColumnType.currency(locale: 'id_ID', symbol: 'Rp');
+      case 'enum':
+        final listEnumValues = widget.enums[tableColumn.key];
+        return PlutoColumnType.select(listEnumValues ?? []);
+      case 'percentage':
+      case 'decimal':
+      case 'integer':
+      case 'double':
+      case 'float':
+        return PlutoColumnType.number();
+      default:
+        return PlutoColumnType.text();
+    }
+  }
+
+  PlutoColumn decorateColumn(TableColumn tableColumn) {
+    final columnType = _parseColumnType(tableColumn);
+    bool showFooter = [
+      'money',
+      'decimal',
+      'integer',
+      'float',
+      'int',
+      'double',
+    ].contains(tableColumn.type);
+    bool isCurrency = [
+      'money',
+      'decimal',
+      'double',
+    ].contains(tableColumn.type);
+    const footerStyle = TextStyle(fontWeight: FontWeight.bold);
+    const label = TextStyle(
+        fontWeight: FontWeight.bold, color: Color.fromRGBO(56, 142, 60, 1));
+    return PlutoColumn(
+      readOnly: true,
+      enableSorting: tableColumn.canSort,
+      // enableEditingMode: false,
+      textAlign:
+          showFooter ? PlutoColumnTextAlign.right : PlutoColumnTextAlign.left,
+      title: tableColumn.name,
+      field: tableColumn.key,
+      minWidth: tableColumn.width,
+      type: columnType,
+      footerRenderer: showFooter
+          ? (rendererContext) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  PlutoAggregateColumnFooter(
+                    padding: const EdgeInsets.only(top: 5.0),
+                    rendererContext: rendererContext,
+                    formatAsCurrency: isCurrency,
+                    type: PlutoAggregateColumnType.sum,
+                    format: '#,###',
+                    locale: 'id_ID',
+                    alignment: Alignment.topLeft,
+                    titleSpanBuilder: (text) {
+                      return [
+                        const TextSpan(
+                          text: 'SUM',
+                          style: label,
+                        ),
+                        const TextSpan(text: ' : '),
+                        TextSpan(text: text, style: footerStyle),
+                      ];
+                    },
+                  ),
+                  PlutoAggregateColumnFooter(
+                    padding: const EdgeInsets.only(top: 5.0),
+                    rendererContext: rendererContext,
+                    formatAsCurrency: isCurrency,
+                    type: PlutoAggregateColumnType.min,
+                    format: '#,###',
+                    locale: 'id_ID',
+                    alignment: Alignment.topLeft,
+                    titleSpanBuilder: (text) {
+                      return [
+                        const TextSpan(
+                          text: 'MIN',
+                          style: label,
+                        ),
+                        const TextSpan(text: '  : '),
+                        TextSpan(text: text, style: footerStyle),
+                      ];
+                    },
+                  ),
+                  PlutoAggregateColumnFooter(
+                    padding: const EdgeInsets.only(top: 5.0),
+                    rendererContext: rendererContext,
+                    formatAsCurrency: isCurrency,
+                    type: PlutoAggregateColumnType.average,
+                    format: '#,###',
+                    locale: 'id_ID',
+                    alignment: Alignment.topLeft,
+                    titleSpanBuilder: (text) {
+                      return [
+                        const TextSpan(
+                          text: 'AVG',
+                          style: label,
+                        ),
+                        const TextSpan(text: '  : '),
+                        TextSpan(text: text, style: footerStyle),
+                      ];
+                    },
+                  ),
+                  PlutoAggregateColumnFooter(
+                    padding: const EdgeInsets.only(top: 5.0),
+                    rendererContext: rendererContext,
+                    formatAsCurrency: isCurrency,
+                    type: PlutoAggregateColumnType.max,
+                    format: '#,###',
+                    locale: 'id_ID',
+                    alignment: Alignment.topLeft,
+                    titleSpanBuilder: (text) {
+                      return [
+                        const TextSpan(
+                          text: 'MAX',
+                          style: label,
+                        ),
+                        const TextSpan(text: ' : '),
+                        TextSpan(text: text, style: footerStyle),
+                      ];
+                    },
+                  ),
+                ],
+              );
+            }
+          : null,
+    );
+  }
+
+  @override
+  void initState() {
+    columns = widget.columns.map<PlutoColumn>(decorateColumn).toList();
+    rows = widget.rows.map<PlutoRow>(TableStateMananger.decorateRow).toList();
+
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return PlutoGrid(
+      columns: columns,
+      rows: rows,
+      onLoaded: (PlutoGridOnLoadedEvent event) {
+        final stateManager = event.stateManager;
+        stateManager.setShowColumnFilter(true);
+        stateManager.setShowColumnFooter(widget.showSummary);
+        stateManager.columnFooterHeight = 115.0;
+        if (widget.onLoaded != null) {
+          widget.onLoaded!(stateManager);
+        }
+      },
+      noRowsWidget: const Text('Data tidak ditemukan'),
+      onChanged: (PlutoGridOnChangedEvent event) {
+        debugPrint(event.toString());
+      },
+      configuration: PlutoGridConfiguration(
+          style: PlutoGridStyleConfig(
+              borderColor: colorScheme.outline,
+              rowColor: colorScheme.secondaryContainer,
+              evenRowColor: colorScheme.onPrimary)),
+    );
+  }
 }
