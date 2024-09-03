@@ -44,7 +44,7 @@ class User extends Model {
   UserStatus status;
   Role role;
   User(
-      {required this.username,
+      {this.username = '',
       this.email,
       super.id,
       Role? role,
@@ -52,15 +52,20 @@ class User extends Model {
       : role = role ?? Role();
 
   @override
-  Map<String, dynamic> toMap() => {
-        'username': username,
-        'email': email,
-        'role_id': role.id,
-        'role.name': role.name,
-        'password': password,
-        'password_confirmation': passwordConfirmation,
-        'status': status
-      };
+  Map<String, dynamic> toMap() {
+    Map<String, dynamic> result = {
+      'username': username,
+      'email': email,
+      'role_id': role.id,
+      'role.name': role.name,
+      'status': status
+    };
+    if (password != null && password!.isNotEmpty) {
+      result['password'] = password;
+      result['password_confirmation'] = passwordConfirmation;
+    }
+    return result;
+  }
 
   @override
   factory User.fromJson(Map<String, dynamic> json,
@@ -71,7 +76,7 @@ class User extends Model {
         relation: json['relationships']['role'],
         convert: Role.fromJson);
 
-    model ??= User(username: '');
+    model ??= User();
     model.id = json['id'];
     model.username = attributes['username'] ?? '';
     model.email = attributes['email'];

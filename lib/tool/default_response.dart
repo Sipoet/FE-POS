@@ -13,7 +13,7 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
       case DioExceptionType.badResponse:
         if (response?.statusCode == 401) {
           Navigator.pop(context);
-          Navigator.pushReplacement(context,
+          Navigator.push(context,
               MaterialPageRoute(builder: (context) => const LoadingPage()));
         } else if (response?.statusCode == 500) {
           Flash flash = Flash(context);

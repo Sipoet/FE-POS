@@ -1,5 +1,7 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
+import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
@@ -17,24 +19,60 @@ class UserFormPage extends StatefulWidget {
 }
 
 class _UserFormPageState extends State<UserFormPage>
-    with AutomaticKeepAliveClientMixin, HistoryPopup {
+    with
+        AutomaticKeepAliveClientMixin,
+        HistoryPopup,
+        DefaultResponse,
+        LoadingPopup {
   late Flash flash;
   late final Setting setting;
   final _formKey = GlobalKey<FormState>();
   User get user => widget.user;
-
+  late final Server _server;
   @override
   bool get wantKeepAlive => true;
-
+  final usernameController = TextEditingController();
+  final emailController = TextEditingController();
   @override
   void initState() {
     flash = Flash(context);
     setting = context.read<Setting>();
+    _server = context.read<Server>();
+    if (user.username.isNotEmpty) {
+      Future.delayed(Duration.zero, _fetchUser);
+    } else {
+      _refreshForm();
+    }
+
     super.initState();
   }
 
+  void _refreshForm() {
+    usernameController.text = user.username;
+    emailController.text = user.email ?? '';
+  }
+
+  void _fetchUser() {
+    showLoadingPopup();
+    _server.get("users/${user.username}", queryParam: {'include': 'role'}).then(
+        (response) {
+      final data = response.data;
+      if (response.statusCode == 200) {
+        setState(() {
+          User.fromJson(data['data'],
+              model: user, included: data['included'] ?? []);
+          _refreshForm();
+        });
+      } else {
+        flash.showBanner(
+            title: data['message'],
+            description: data['errors'].join('\n'),
+            messageType: MessageType.failed);
+      }
+    }).whenComplete(() => hideLoadingPopup());
+  }
+
   void _submit() async {
-    final server = context.read<Server>();
     Map body = {
       'data': {
         'type': 'user',
@@ -44,9 +82,9 @@ class _UserFormPageState extends State<UserFormPage>
     };
     Future request;
     if (user.id == null) {
-      request = server.post('users', body: body);
+      request = _server.post('users', body: body);
     } else {
-      request = server.put('users/${user.username}', body: body);
+      request = _server.put('users/${user.username}', body: body);
     }
     request.then((response) {
       if ([200, 201].contains(response.statusCode)) {
@@ -66,7 +104,7 @@ class _UserFormPageState extends State<UserFormPage>
             messageType: MessageType.failed);
       }
     }, onError: (error, stackTrace) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 
@@ -113,7 +151,7 @@ class _UserFormPageState extends State<UserFormPage>
                     onSaved: (newValue) {
                       user.username = newValue.toString();
                     },
-                    initialValue: user.username,
+                    controller: usernameController,
                     onChanged: (newValue) {
                       user.username = newValue.toString();
                     },
@@ -126,7 +164,7 @@ class _UserFormPageState extends State<UserFormPage>
                         labelText: 'Email',
                         labelStyle: labelStyle,
                         border: OutlineInputBorder()),
-                    initialValue: user.email,
+                    controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                     onSaved: (newValue) {
                       user.email = newValue.toString();
@@ -144,7 +182,8 @@ class _UserFormPageState extends State<UserFormPage>
                   const SizedBox(
                     height: 10,
                   ),
-                  Flexible(
+                  Visibility(
+                    visible: setting.canShow('user', 'role_id'),
                     child: AsyncDropdown<Role>(
                       converter: Role.fromJson,
                       key: const ValueKey('roleSelect'),
@@ -206,7 +245,6 @@ class _UserFormPageState extends State<UserFormPage>
                         labelText: 'password',
                         labelStyle: labelStyle,
                         border: OutlineInputBorder()),
-                    initialValue: user.password,
                     onSaved: (newValue) {
                       user.password = newValue.toString();
                     },
@@ -230,7 +268,6 @@ class _UserFormPageState extends State<UserFormPage>
                         labelText: 'Konfirmasi password',
                         labelStyle: labelStyle,
                         border: OutlineInputBorder()),
-                    initialValue: user.passwordConfirmation,
                     onSaved: (newValue) {
                       user.passwordConfirmation = newValue.toString();
                     },
@@ -254,6 +291,7 @@ class _UserFormPageState extends State<UserFormPage>
                     child: ElevatedButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
+                            _formKey.currentState!.save();
                             flash.show(const Text('Loading'), MessageType.info);
                             _submit();
                           }
