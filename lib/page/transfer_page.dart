@@ -37,9 +37,9 @@ class _TransferPageState extends State<TransferPage>
     setting = context.read<Setting>();
     _source = CustomAsyncDataTableSource<Transfer>(
         columns: setting.tableColumn('ipos::Transfer'),
+        isAscending: false,
         fetchData: fetchTransfers);
-    _source.sortColumn = _source.columns[2];
-    _source.isAscending = false;
+    _source.sortColumn = _source.columns[1];
     Future.delayed(Duration.zero, refreshTable);
     super.initState();
   }

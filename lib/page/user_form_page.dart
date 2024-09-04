@@ -33,6 +33,7 @@ class _UserFormPageState extends State<UserFormPage>
   bool get wantKeepAlive => true;
   final usernameController = TextEditingController();
   final emailController = TextEditingController();
+  final _focusNode = FocusNode();
   @override
   void initState() {
     flash = Flash(context);
@@ -42,8 +43,8 @@ class _UserFormPageState extends State<UserFormPage>
       Future.delayed(Duration.zero, _fetchUser);
     } else {
       _refreshForm();
+      _focusNode.requestFocus();
     }
-
     super.initState();
   }
 
@@ -69,7 +70,10 @@ class _UserFormPageState extends State<UserFormPage>
             description: data['errors'].join('\n'),
             messageType: MessageType.failed);
       }
-    }).whenComplete(() => hideLoadingPopup());
+    }).whenComplete(() {
+      hideLoadingPopup();
+      _focusNode.requestFocus();
+    });
   }
 
   void _submit() async {
@@ -90,7 +94,9 @@ class _UserFormPageState extends State<UserFormPage>
       if ([200, 201].contains(response.statusCode)) {
         var data = response.data['data'];
         setState(() {
-          user.id = int.tryParse(data['id']);
+          User.fromJson(data['data'],
+              model: user, included: data['included'] ?? []);
+          _refreshForm();
           var tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(widget, 'Edit user ${user.username}');
         });
@@ -144,6 +150,7 @@ class _UserFormPageState extends State<UserFormPage>
                   ),
                   const Divider(),
                   TextFormField(
+                    focusNode: user.isNewRecord ? _focusNode : null,
                     decoration: const InputDecoration(
                         labelText: 'Username',
                         labelStyle: labelStyle,
@@ -151,6 +158,7 @@ class _UserFormPageState extends State<UserFormPage>
                     onSaved: (newValue) {
                       user.username = newValue.toString();
                     },
+                    readOnly: !user.isNewRecord,
                     controller: usernameController,
                     onChanged: (newValue) {
                       user.username = newValue.toString();
@@ -160,6 +168,7 @@ class _UserFormPageState extends State<UserFormPage>
                     height: 10,
                   ),
                   TextFormField(
+                    focusNode: user.isNewRecord ? null : _focusNode,
                     decoration: const InputDecoration(
                         labelText: 'Email',
                         labelStyle: labelStyle,
@@ -185,6 +194,7 @@ class _UserFormPageState extends State<UserFormPage>
                   Visibility(
                     visible: setting.canShow('user', 'role_id'),
                     child: AsyncDropdown<Role>(
+                      allowClear: false,
                       converter: Role.fromJson,
                       key: const ValueKey('roleSelect'),
                       path: '/roles',

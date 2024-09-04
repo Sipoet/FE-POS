@@ -3,6 +3,7 @@ import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/page/edc_settlement_form_page.dart';
 import 'package:fe_pos/page/cashier_session_table_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ class CashierSessionPage extends StatefulWidget {
 }
 
 class _CashierSessionPageState extends State<CashierSessionPage>
-    with DefaultResponse, AutomaticKeepAliveClientMixin {
+    with DefaultResponse, AutomaticKeepAliveClientMixin, LoadingPopup {
   final _menuController = MenuController();
   late final TabManager tabManager;
   late final Server server;
@@ -32,10 +33,11 @@ class _CashierSessionPageState extends State<CashierSessionPage>
     server = context.read<Server>();
     setting = context.read<Setting>();
     super.initState();
-    _fetchCashierSessionToday();
+    Future.delayed(Duration.zero, _fetchCashierSessionToday);
   }
 
   void _fetchCashierSessionToday() {
+    showLoadingPopup();
     server
         .get(
       'cashier_sessions/today',
@@ -43,10 +45,37 @@ class _CashierSessionPageState extends State<CashierSessionPage>
         .then((response) {
       if (response.statusCode == 200) {
         final json = response.data;
-        cashierSession = CashierSession.fromJson(json['data'],
-            included: json['included'] ?? []);
+        setState(() {
+          cashierSession = CashierSession.fromJson(json['data'],
+              included: json['included'] ?? []);
+        });
       }
-    }, onError: (error) => defaultErrorResponse(error: error));
+    }, onError: (error) {
+      final response = error.response;
+      if (response?.statusCode == 404) {
+        _createCashierSessionToday();
+      } else {
+        defaultErrorResponse(error: error);
+      }
+    }).whenComplete(() => hideLoadingPopup());
+  }
+
+  void _createCashierSessionToday() {
+    hideLoadingPopup();
+    showLoadingPopup();
+    final bodyParams = {
+      'data': {'type': 'cashier_session', 'attributes': cashierSession.toJson()}
+    };
+    server.post('cashier_sessions', body: bodyParams).then((response) {
+      if (response.statusCode == 200) {
+        final json = response.data;
+        setState(() {
+          cashierSession = CashierSession.fromJson(json['data'],
+              included: json['included'] ?? []);
+        });
+      }
+    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
+        () => hideLoadingPopup());
   }
 
   void openTodayEdcSettlement() {

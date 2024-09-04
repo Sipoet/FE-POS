@@ -1,7 +1,5 @@
-import 'package:collection/collection.dart';
 import 'package:fe_pos/model/cashier_session.dart';
 import 'package:fe_pos/model/edc_settlement.dart';
-import 'package:fe_pos/model/sales_transaction_report.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -329,22 +327,11 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
   List<EdcSummary> edcSummaries = [];
   List<TableRow> _summaryRows() {
     return edcSummaries.map<TableRow>((edcSummary) {
-      Widget statusText;
-      if (edcSummary.totalInSystem == edcSummary.totalinInput) {
-        statusText = const Text(
-          'Pas',
-          style: TextStyle(color: Color.fromARGB(255, 61, 133, 64)),
-        );
-      } else if (edcSummary.totalInSystem > edcSummary.totalinInput) {
-        statusText = const Text(
-          'Kurang',
-          style: TextStyle(color: Color.fromARGB(255, 100, 21, 15)),
-        );
+      late Color color;
+      if (edcSummary.status == EdcSummaryStatus.same) {
+        color = const Color.fromARGB(255, 61, 133, 64);
       } else {
-        statusText = const Text(
-          'Lebih',
-          style: TextStyle(color: Color.fromARGB(255, 100, 21, 15)),
-        );
+        color = const Color.fromARGB(255, 100, 21, 15);
       }
       return TableRow(children: [
         TableCell(
@@ -352,117 +339,55 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
           padding: const EdgeInsets.all(8.0),
           child: Text(edcSummary.paymentTypeName),
         )),
+        if (setting.canShow('edcSettlement', 'diff_amount'))
+          TableCell(
+              child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(edcSummary.totalInSystem.toString()),
+          )),
         TableCell(
             child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text(edcSummary.totalInSystem.toString()),
+          child: Text(edcSummary.totalInInput.toString()),
         )),
         TableCell(
             child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text(edcSummary.totalinInput.toString()),
-        )),
-        TableCell(
-            child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: statusText,
+          child: Text(
+            edcSummary.status.humanize(),
+            style: TextStyle(color: color),
+          ),
         )),
       ]);
     }).toList();
   }
 
-  Future<List<PaymentType>> fetchAllPaymentTypes() async {
-    final response = await server.get('payment_types',
-        queryParam: {'page[page]': '1', 'page[limit]': '9999'});
-    if (response.statusCode == 200) {
-      return response.data['data']
-          .map<PaymentType>((json) => PaymentType.fromJson(json))
-          .toList();
-    }
-    return [];
-  }
-
-  Map<String, Money> groupedEdcSettlementAmountByPaymentType() {
-    Map<String, Money> result = {};
-    groupBy(edcSettlements, (edcSettlement) => edcSettlement.paymentType.name)
-        .forEach((paymentTypeName, groupedEdcSettlements) {
-      Money total = const Money(0);
-      for (final edcSettlement in groupedEdcSettlements) {
-        total += edcSettlement.amount;
-      }
-      result[paymentTypeName] = total;
-    });
-    return result;
-  }
-
-  Future<Map<String, Money>> fetchSystemAmountBasedPaymentType() async {
-    final date = cashierSession.date;
-    final response = await server.get('sales/transaction_report', queryParam: {
-      'start_time': date
-          .toDateTime()
-          .copyWith(hour: 7, minute: 0, second: 0, millisecond: 0)
-          .toIso8601String(),
-      'end_time': date
-          .toDateTime()
-          .add(const Duration(days: 1))
-          .copyWith(hour: 6, minute: 59, second: 59, millisecond: 99)
-          .toIso8601String()
-    });
-    if (response.statusCode == 200) {
-      var data = response.data['data'];
-      final salesTransactionReport = SalesTransactionReport.fromJson(data);
-      return {
-        'Kartu Debit': salesTransactionReport.totalDebit,
-        'Kartu Kredit': salesTransactionReport.totalCredit,
-        'QRIS': salesTransactionReport.totalQRIS,
-        'Cash': salesTransactionReport.totalCash,
-        'Transfer': salesTransactionReport.totalOnline,
-        'Tap': const Money(0),
-        'E-money': const Money(0),
-      };
-    }
-    return {};
-  }
-
   void _checkEdc() async {
     edcSummaries = [];
-    Map<String, Money> totalInInputs =
-        groupedEdcSettlementAmountByPaymentType();
-    Map<String, Money> totalInSystems =
-        await fetchSystemAmountBasedPaymentType();
-    final paymentTypes = await fetchAllPaymentTypes();
-    setState(() {
-      for (final paymentType in paymentTypes) {
-        edcSummaries.add(EdcSummary(
-            paymentTypeName: paymentType.name,
-            totalInSystem: totalInSystems[paymentType.name] ?? const Money(0),
-            totalinInput: totalInInputs[paymentType.name] ?? const Money(0)));
+    server
+        .get(
+            'cashier_sessions/${widget.cashierSession.id}/edc_settlements/check_edc')
+        .then((response) {
+      if (response.statusCode == 200) {
+        final json = response.data;
+        setState(() {
+          _displaySummary = true;
+          for (final row in json['data']) {
+            final attributes = row['attributes'];
+            edcSummaries.add(EdcSummary(
+                paymentTypeName: attributes['payment_type_name'],
+                status: EdcSummaryStatus.fromString(attributes['status']),
+                totalInSystem: Money.tryParse(attributes['total_in_system']) ??
+                    const Money(0),
+                totalInInput: Money.tryParse(attributes['total_in_input']) ??
+                    const Money(0)));
+          }
+        });
       }
-      _displaySummary = true;
+    }, onError: (error) {
+      defaultErrorResponse(error: error);
+      _displaySummary = false;
     });
-
-    // server
-    //     .get(
-    //         'cashier_sessions/${widget.cashierSession.id}/edc_settlements/check_edc')
-    //     .then((response) {
-    //   if (response.statusCode == '200') {
-    //     _displaySummary = true;
-    //     final json = response.data;
-    //     setState(() {
-    //       for (final row in json['data']) {
-    //         edcSummaries.add(EdcSummary(
-    //             paymentTypeName: row['payment_type_name'],
-    //             totalInSystem:
-    //                 Money.tryParse(row['total_in_system']) ?? const Money(0),
-    //             totalinInput:
-    //                 Money.tryParse(row['total_in_input']) ?? const Money(0)));
-    //       }
-    //     });
-    //   }
-    // }, onError: (error) {
-    //   defaultErrorResponse(error: error);
-    //   _displaySummary = false;
-    // });
   }
 
   @override
@@ -563,15 +488,17 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
                                   ),
                                 ),
                               ),
-                              TableCell(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    'Total di system',
-                                    style: _headerStyle,
+                              if (setting.canShow(
+                                  'edcSettlement', 'diff_amount'))
+                                TableCell(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      'Total di system',
+                                      style: _headerStyle,
+                                    ),
                                   ),
                                 ),
-                              ),
                               TableCell(
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
@@ -603,12 +530,46 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
   }
 }
 
+enum EdcSummaryStatus {
+  same,
+  lesser,
+  greater;
+
+  String humanize() {
+    switch (this) {
+      case same:
+        return 'Pas';
+      case lesser:
+        return 'Kurang';
+      case greater:
+        return 'Lebih';
+      default:
+        return '';
+    }
+  }
+
+  static EdcSummaryStatus fromString(String value) {
+    switch (value) {
+      case 'same':
+        return same;
+      case 'lesser':
+        return lesser;
+      case 'greater':
+        return greater;
+      default:
+        throw "$value is not edc summary status";
+    }
+  }
+}
+
 class EdcSummary {
   String paymentTypeName;
   Money totalInSystem;
-  Money totalinInput;
+  Money totalInInput;
+  EdcSummaryStatus status;
   EdcSummary(
       {required this.paymentTypeName,
       required this.totalInSystem,
-      required this.totalinInput});
+      required this.totalInInput,
+      required this.status});
 }
