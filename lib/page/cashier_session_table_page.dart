@@ -1,3 +1,6 @@
+import 'package:fe_pos/page/edc_settlement_form_page.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
@@ -17,12 +20,13 @@ class CashierSessionTablePage extends StatefulWidget {
 }
 
 class _CashierSessionTablePageState extends State<CashierSessionTablePage>
-    with AutomaticKeepAliveClientMixin, DefaultResponse {
+    with AutomaticKeepAliveClientMixin, DefaultResponse, TextFormatter {
   late final CustomAsyncDataTableSource<CashierSession> _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
+  late final TabManager tabManager;
   Map _filter = {};
 
   @override
@@ -30,7 +34,11 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
 
   List<Widget> actionButtons(CashierSession cashierSession, int index) {
     return [
-      IconButton.filled(onPressed: () {}, icon: const Icon(Icons.search))
+      IconButton.filled(
+          onPressed: () {
+            openEdcSettlement(cashierSession);
+          },
+          icon: const Icon(Icons.search))
     ];
   }
 
@@ -40,6 +48,7 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
     flash = Flash(context);
     final setting = context.read<Setting>();
     final tableColumns = setting.tableColumn('cashierSession');
+    tabManager = context.read<TabManager>();
     _source = CustomAsyncDataTableSource<CashierSession>(
         actionButtons: actionButtons,
         columns: tableColumns,
@@ -128,6 +137,15 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
     if (container != _searchText) {
       refreshTable();
     }
+  }
+
+  void openEdcSettlement(cashierSession) {
+    tabManager.addTab(
+        "EDC Settlement ${dateFormat(cashierSession.date)}",
+        EdcSettlementFormPage(
+          key: ObjectKey(cashierSession),
+          cashierSession: cashierSession,
+        ));
   }
 
   @override
