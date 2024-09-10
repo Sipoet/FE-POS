@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:fe_pos/model/server.dart';
+import 'package:fe_pos/tool/flash.dart';
 export 'package:fe_pos/model/server.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -52,16 +53,25 @@ class SessionState extends ChangeNotifier {
     return server.post('login', body: {
       'user': {'username': username, 'password': password}
     }).then((response) {
-      if (response.statusCode == 200) {
-        server.jwt = response.headers.value('Authorization');
-        server.userName = username;
-        saveSession(server);
-        onSuccess(response);
-      } else {
-        server.jwt = jwtBefore;
-        onFailed(response);
+      try {
+        if (response.statusCode == 200) {
+          server.jwt = response.headers.value('Authorization');
+          server.userName = username;
+
+          saveSession(server);
+          onSuccess(response);
+        } else {
+          server.jwt = jwtBefore;
+          onFailed(response);
+        }
+      } catch (error) {
+        final flash = Flash(context);
+        flash.show(Text(error.toString()), MessageType.failed);
       }
     }, onError: (error, stackTrace) {
+      final flash = Flash(context);
+      flash.show(Text("${error.toString()} ${stackTrace.toString()}"),
+          MessageType.failed);
       if (error.type == DioExceptionType.badResponse) {
         onFailed(error.response);
       } else {

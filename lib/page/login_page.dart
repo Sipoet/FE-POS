@@ -197,7 +197,9 @@ class _LoginPageState extends State<LoginPage> with AppUpdater, LoadingPopup {
           setting.menus[key] = value.map<String>((e) => e.toString()).toList();
         });
       }
-    }).whenComplete(() {
+    },
+        onError: (error) => flash.show(
+            Text(error.toString()), MessageType.failed)).whenComplete(() {
       _redirectToHomePage();
     });
   }
