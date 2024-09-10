@@ -11,6 +11,7 @@ class SessionState extends ChangeNotifier {
 
   Future fetchServerData(Server server) async {
     try {
+      server.setCert();
       String? sessionString = await _storage.read(key: 'server');
       if (sessionString != null) {
         final sessionData = jsonDecode(sessionString);
@@ -18,7 +19,6 @@ class SessionState extends ChangeNotifier {
         server.jwt = sessionData['jwt'];
         server.userName = sessionData['userName'] ?? '';
       }
-      await server.setCert();
     } catch (error) {
       log(error.toString());
     }
@@ -70,7 +70,11 @@ class SessionState extends ChangeNotifier {
       }
     }, onError: (error, stackTrace) {
       final flash = Flash(context);
-      flash.show(Text("${error.toString()} ${stackTrace.toString()}"),
+      flash.show(
+          Text(
+            "${error.toString()} ${stackTrace.toString()}",
+            style: const TextStyle(fontSize: 9),
+          ),
           MessageType.failed);
       if (error.type == DioExceptionType.badResponse) {
         onFailed(error.response);

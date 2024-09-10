@@ -1,5 +1,6 @@
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
+import 'package:board_datetime_picker/board_datetime_picker.dart';
 
 class DateFormField extends StatefulWidget {
   final DateTime? initialValue;
@@ -43,55 +44,37 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
     super.initState();
   }
 
-  void _openDialog() {
-    final time = _datetime != null
-        ? TimeOfDay.fromDateTime(_datetime!)
-        : TimeOfDay.now();
-    showDatePicker(
-      helpText: widget.helpText,
-      context: context,
-      initialDate: _datetime,
-      cancelText: 'Batal',
-      confirmText: 'OK',
-      initialEntryMode: DatePickerEntryMode.calendar,
-      firstDate: DateTime(1945),
-      lastDate: DateTime(9999),
-    ).then((date) {
-      if (date == null) {
-        return;
-      }
-      if (widget.datePickerOnly) {
-        _selectDate(date: date);
-      } else {
-        showTimePicker(
-          helpText: widget.helpText,
-          context: context,
-          initialTime: time,
-          hourLabelText: 'Jam',
-          minuteLabelText: 'Menit',
-          cancelText: 'Batal',
-          confirmText: 'OK',
-          initialEntryMode: TimePickerEntryMode.dial,
-        ).then((time) {
-          if (time != null) {
-            _selectDate(date: date, time: time);
-          }
-        });
-      }
-    });
-  }
+  final minDate = DateTime(1900);
+  final maxDate = DateTime(99999);
 
-  void _selectDate({required DateTime date, TimeOfDay? time}) {
-    setState(() {
-      _datetime = date;
-      if (time != null) {
-        _datetime = _datetime!.copyWith(hour: time.hour, minute: time.minute);
-      }
-      writeToTextField();
+  void _openDialog() {
+    showBoardDateTimePicker(
+            context: context,
+            options: BoardDateTimeOptions(
+                pickerFormat: PickerFormat.dmy,
+                startDayOfWeek: DateTime.monday,
+                boardTitle: widget.helpText,
+                languages: const BoardPickerLanguages(
+                    today: 'Hari ini',
+                    tomorrow: 'Besok',
+                    now: 'Sekarang',
+                    locale: 'id')),
+            initialDate: widget.initialValue,
+            minimumDate: minDate,
+            maximumDate: maxDate,
+            pickerType: widget.datePickerOnly
+                ? DateTimePickerType.date
+                : DateTimePickerType.datetime,
+            breakpoint: 1000)
+        .then((date) {
+      setState(() {
+        _datetime = date;
+        writeToTextField();
+        if (widget.onChanged != null) {
+          widget.onChanged!(_datetime);
+        }
+      });
     });
-    if (widget.onChanged != null) {
-      widget.onChanged!(_datetime);
-    }
   }
 
   void writeToTextField() {

@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:omni_datetime_picker/omni_datetime_picker.dart';
+import 'package:board_datetime_picker/board_datetime_picker.dart';
 
 class DateRangeFormField extends StatefulWidget {
   const DateRangeFormField({
@@ -77,7 +77,7 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
     if (widget.datePickerOnly) {
       showNativePicker(colorScheme);
     } else {
-      showOmniPicker(colorScheme);
+      showBoardPicker(colorScheme);
     }
   }
 
@@ -90,6 +90,8 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
             initialDateRange: _dateRange,
             currentDate: DateTime.now(),
             firstDate: DateTime(1900),
+            useRootNavigator: false,
+            initialEntryMode: DatePickerEntryMode.calendarOnly,
             lastDate: maxDate)
         .then(
       (pickedDateRange) {
@@ -109,42 +111,38 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
     );
   }
 
-  void showOmniPicker(ColorScheme colorScheme) {
-    showOmniDateTimeRangePicker(
-      barrierColor: colorScheme.outline,
+  void showBoardPicker(ColorScheme colorscheme) {
+    showBoardDateTimeMultiPicker(
       context: context,
-      is24HourMode: true,
-      constraints: const BoxConstraints(minHeight: 600),
-      type: widget.datePickerOnly
-          ? OmniDateTimePickerType.date
-          : OmniDateTimePickerType.dateAndTime,
-      title: widget.helpText != null ? Text(widget.helpText as String) : null,
-      startWidget: const Text('Mulai'),
-      endWidget: const Text('Akhir'),
-      startFirstDate: minDate,
-      startLastDate: maxDate,
-      endFirstDate: minDate,
-      endLastDate: maxDate,
-      startInitialDate: _dateRange?.start,
-      endInitialDate: _dateRange?.end,
-    ).then(
-      (pickedDateRange) {
-        if (pickedDateRange == null) {
-          return;
+      options: BoardDateTimeOptions(
+          pickerFormat: PickerFormat.dmy,
+          startDayOfWeek: DateTime.monday,
+          boardTitle: widget.helpText,
+          languages: const BoardPickerLanguages(
+              today: 'Hari ini',
+              tomorrow: 'Besok',
+              now: 'Sekarang',
+              locale: 'id')),
+      startDate: widget.initialDateRange?.start,
+      endDate: widget.initialDateRange?.end,
+      minimumDate: minDate,
+      maximumDate: maxDate,
+      pickerType: widget.datePickerOnly
+          ? DateTimePickerType.date
+          : DateTimePickerType.datetime,
+      breakpoint: 1000,
+    ).then((dateTimeRange) {
+      setState(() {
+        if (dateTimeRange != null) {
+          _dateRange =
+              DateTimeRange(start: dateTimeRange.start, end: dateTimeRange.end);
         }
-        setState(() {
-          if (pickedDateRange.length == 2) {
-            _dateRange = DateTimeRange(
-                start: pickedDateRange[0], end: pickedDateRange[1]);
-          }
-          _controller.text = _daterangeFormat();
-          if (widget.onChanged != null) {
-            widget.onChanged!(_dateRange);
-          }
-        });
-        return;
-      },
-    );
+        _controller.text = _daterangeFormat();
+        if (widget.onChanged != null) {
+          widget.onChanged!(_dateRange);
+        }
+      });
+    });
   }
 
   @override

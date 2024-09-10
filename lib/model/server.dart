@@ -14,7 +14,7 @@ class Server extends ChangeNotifier {
   String jwt;
   String userName;
   Dio dio = Dio(BaseOptions(
-    connectTimeout: const Duration(seconds: 3),
+    connectTimeout: const Duration(seconds: 5),
     validateStatus: (int? status) {
       if (status != null && status <= 308 && status >= 200) {
         return true;
@@ -29,15 +29,14 @@ class Server extends ChangeNotifier {
     }
   }
 
-  Future setCert() async {
+  void setCert() {
     if (kIsWeb) return;
     dio.httpClientAdapter = IOHttpClientAdapter(
       createHttpClient: () {
-        final SecurityContext context = SecurityContext.defaultContext;
-
-        final HttpClient client = HttpClient(context: context);
-        client.badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
+        final HttpClient client =
+            HttpClient(context: SecurityContext(withTrustedRoots: false));
+        // ignore bad certificate
+        client.badCertificateCallback = (cert, host, port) => true;
         return client;
       },
     );
@@ -69,7 +68,7 @@ class Server extends ChangeNotifier {
         flash.showBanner(
             title: 'koneksi terputus',
             description:
-                'Pastikan sudah nyalakan VPN atau berada di satu network dengan server',
+                'Pastikan IP/domain server sudah benar dan server online',
             messageType: MessageType.failed);
         break;
     }

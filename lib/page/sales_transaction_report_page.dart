@@ -30,7 +30,8 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
 
   @override
   void initState() {
-    var now = DateTime.now().toUtc();
+    final today = Date.today();
+    var now = DateTime.utc(today.year, today.month, today.day);
     range = DateTimeRange(
         start: beginningOfDay(now.copyWith(day: 1)),
         end: endOfDay(now
@@ -119,13 +120,6 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
                   _refreshTable(range);
                 },
               ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            ElevatedButton(
-              onPressed: () => {_refreshTable(range)},
-              child: const Text('Tampilkan'),
             ),
             const Divider(),
             SizedBox(

@@ -369,6 +369,7 @@ class _SyncDataTable2State<T extends Model> extends State<SyncDataTable2<T>> {
       title: tableColumn.name,
       field: tableColumn.key,
       minWidth: tableColumn.width,
+
       type: columnType,
       footerRenderer: showFooter
           ? (rendererContext) {

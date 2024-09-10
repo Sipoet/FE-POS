@@ -345,6 +345,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           'Tanggal Mulai Kerja',
                           style: labelStyle,
                         ),
+                        helpText: 'Tanggal Mulai Kerja',
                         datePickerOnly: true,
                         onSaved: (newValue) {
                           if (newValue == null) {
@@ -377,6 +378,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           'Tanggal terakhir Kerja',
                           style: labelStyle,
                         ),
+                        helpText: 'Tanggal terakhir Kerja',
                         datePickerOnly: true,
                         onSaved: (newValue) {
                           employee.endWorkingDate = newValue == null

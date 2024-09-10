@@ -24,8 +24,9 @@ class AllegraPos extends StatelessWidget {
         title: 'Allegra POS',
         theme: ThemeData(
           fontFamily: 'Lato',
-          textTheme: Theme.of(context).textTheme.apply(
-              fontSizeFactor: 1.1, fontSizeDelta: 2.0, fontFamily: 'Lato'),
+          textTheme: Theme.of(context)
+              .textTheme
+              .apply(fontSizeFactor: 1.2, fontFamily: 'Lato'),
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
               seedColor: const Color.fromARGB(255, 135, 239, 154)),

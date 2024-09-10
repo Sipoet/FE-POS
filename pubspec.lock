@@ -25,14 +25,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
-  bloc:
-    dependency: transitive
+  board_datetime_picker:
+    dependency: "direct main"
     description:
-      name: bloc
-      sha256: "106842ad6569f0b60297619e9e0b1885c2fb9bf84812935490e6c5275777804e"
+      name: board_datetime_picker
+      sha256: d0006f7928f6578cf3202b64af7a05a1921a53a0f4c0d74872c94e1a28a9349c
       url: "https://pub.dev"
     source: hosted
-    version: "8.1.4"
+    version: "2.1.2"
   boolean_selector:
     dependency: transitive
     description:
@@ -262,14 +262,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_bloc:
-    dependency: transitive
-    description:
-      name: flutter_bloc
-      sha256: b594505eac31a0518bdcb4b5b79573b8d9117b193cc80cc12e17d639b10aa27a
-      url: "https://pub.dev"
-    source: hosted
-    version: "8.1.6"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -549,14 +541,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
-  omni_datetime_picker:
-    dependency: "direct main"
-    description:
-      name: omni_datetime_picker
-      sha256: "554eb966e84f8d196cf6e189384141db46a79a192d1a360277ead98e5d6036bd"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.2"
   open_file:
     dependency: "direct main"
     description:
