@@ -70,23 +70,60 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
         start.year == end.year;
   }
 
+  final maxDate = DateTime(99999, 12, 31, 23, 59, 59, 59);
+  final minDate = DateTime(1900);
   void _openDialog() {
     final colorScheme = Theme.of(context).colorScheme;
-    final maxDate = DateTime(99999, 12, 31, 23, 59, 59, 59);
+    if (widget.datePickerOnly) {
+      showNativePicker(colorScheme);
+    } else {
+      showOmniPicker(colorScheme);
+    }
+  }
 
+  void showNativePicker(ColorScheme colorScheme) {
+    showDateRangePicker(
+            context: context,
+            locale: const Locale('id', 'ID'),
+            fieldStartHintText: 'Mulai',
+            fieldEndHintText: 'Akhir',
+            initialDateRange: _dateRange,
+            currentDate: DateTime.now(),
+            firstDate: DateTime(1900),
+            lastDate: maxDate)
+        .then(
+      (pickedDateRange) {
+        if (pickedDateRange == null) {
+          return;
+        }
+        setState(() {
+          _dateRange = pickedDateRange;
+
+          _controller.text = _daterangeFormat();
+          if (widget.onChanged != null) {
+            widget.onChanged!(_dateRange);
+          }
+        });
+        return;
+      },
+    );
+  }
+
+  void showOmniPicker(ColorScheme colorScheme) {
     showOmniDateTimeRangePicker(
       barrierColor: colorScheme.outline,
       context: context,
       is24HourMode: true,
+      constraints: const BoxConstraints(minHeight: 600),
       type: widget.datePickerOnly
           ? OmniDateTimePickerType.date
           : OmniDateTimePickerType.dateAndTime,
       title: widget.helpText != null ? Text(widget.helpText as String) : null,
       startWidget: const Text('Mulai'),
       endWidget: const Text('Akhir'),
-      startFirstDate: DateTime(DateTime.now().year - 5),
+      startFirstDate: minDate,
       startLastDate: maxDate,
-      endFirstDate: DateTime(DateTime.now().year - 5),
+      endFirstDate: minDate,
       endLastDate: maxDate,
       startInitialDate: _dateRange?.start,
       endInitialDate: _dateRange?.end,

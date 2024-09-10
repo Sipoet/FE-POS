@@ -357,7 +357,9 @@ class _SyncDataTable2State<T extends Model> extends State<SyncDataTable2<T>> {
     ].contains(tableColumn.type);
     const footerStyle = TextStyle(fontWeight: FontWeight.bold);
     const label = TextStyle(
-        fontWeight: FontWeight.bold, color: Color.fromRGBO(56, 142, 60, 1));
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+        color: Color.fromRGBO(56, 142, 60, 1));
     return PlutoColumn(
       readOnly: true,
       enableSorting: tableColumn.canSort,
@@ -384,9 +386,15 @@ class _SyncDataTable2State<T extends Model> extends State<SyncDataTable2<T>> {
                     alignment: Alignment.topLeft,
                     titleSpanBuilder: (text) {
                       return [
-                        const TextSpan(
-                          text: 'SUM',
-                          style: label,
+                        const WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Tooltip(
+                            message: 'Total Penjumlahan',
+                            child: Text(
+                              'SUM',
+                              style: label,
+                            ),
+                          ),
                         ),
                         const TextSpan(text: ' : '),
                         TextSpan(text: text, style: footerStyle),
@@ -403,9 +411,15 @@ class _SyncDataTable2State<T extends Model> extends State<SyncDataTable2<T>> {
                     alignment: Alignment.topLeft,
                     titleSpanBuilder: (text) {
                       return [
-                        const TextSpan(
-                          text: 'MIN',
-                          style: label,
+                        const WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Tooltip(
+                            message: 'Minimum',
+                            child: Text(
+                              'MIN',
+                              style: label,
+                            ),
+                          ),
                         ),
                         const TextSpan(text: '  : '),
                         TextSpan(text: text, style: footerStyle),
@@ -422,9 +436,15 @@ class _SyncDataTable2State<T extends Model> extends State<SyncDataTable2<T>> {
                     alignment: Alignment.topLeft,
                     titleSpanBuilder: (text) {
                       return [
-                        const TextSpan(
-                          text: 'AVG',
-                          style: label,
+                        const WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Tooltip(
+                            message: 'Rata-rata',
+                            child: Text(
+                              'AVG',
+                              style: label,
+                            ),
+                          ),
                         ),
                         const TextSpan(text: '  : '),
                         TextSpan(text: text, style: footerStyle),
@@ -441,9 +461,15 @@ class _SyncDataTable2State<T extends Model> extends State<SyncDataTable2<T>> {
                     alignment: Alignment.topLeft,
                     titleSpanBuilder: (text) {
                       return [
-                        const TextSpan(
-                          text: 'MAX',
-                          style: label,
+                        const WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Tooltip(
+                            message: 'Maksimum',
+                            child: Text(
+                              'MAX',
+                              style: label,
+                            ),
+                          ),
                         ),
                         const TextSpan(text: ' : '),
                         TextSpan(text: text, style: footerStyle),

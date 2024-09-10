@@ -18,11 +18,11 @@ mixin TextFormatter {
   String moneyFormat(dynamic value) {
     if (value is Money) {
       return NumberFormat.currency(
-              locale: "en_US", symbol: value.symbol, decimalDigits: 1)
+              locale: "id_ID", symbol: value.symbol, decimalDigits: 1)
           .format(value.value);
     }
     return NumberFormat.currency(
-            locale: "en_US", symbol: "Rp", decimalDigits: 1)
+            locale: "id_ID", symbol: "Rp", decimalDigits: 1)
         .format(value);
   }
 
