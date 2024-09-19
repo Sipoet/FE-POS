@@ -20,6 +20,7 @@ class ItemSalesPercentageReport extends Model {
   Money purchaseTotal;
   Money grossProfit;
   int itemOut;
+  bool isConsignment;
   DateTime? recentPurchaseDate;
 
   ItemSalesPercentageReport(
@@ -43,6 +44,7 @@ class ItemSalesPercentageReport extends Model {
       required this.itemOut,
       this.stockLeft = 0,
       required this.grossProfit,
+      this.isConsignment = false,
       this.recentPurchaseDate});
   @override
   factory ItemSalesPercentageReport.fromJson(Map<String, dynamic> json,
@@ -59,6 +61,7 @@ class ItemSalesPercentageReport extends Model {
         storeStock: attributes['store_stock'],
         warehouseStock: attributes['warehouse_stock'],
         brandName: attributes['brand_name'] ?? '',
+        isConsignment: attributes['is_consignment'],
         stockLeft: double.tryParse(attributes['stock_left'].toString()) ?? 0,
         percentageSales: Percentage(attributes['percentage_sales']),
         sellPrice: Money.tryParse(attributes['sell_price']) ?? const Money(0),

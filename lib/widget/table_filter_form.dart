@@ -145,6 +145,8 @@ class _TableFilterFormState extends State<TableFilterForm> {
       case 'money':
       case 'percentage':
         return numberFilter(column);
+      case 'boolean':
+        return boolFilter(column);
       case 'date':
         return dateFilter(column, datePickerOnly: true);
       case 'datetime':
@@ -183,6 +185,28 @@ class _TableFilterFormState extends State<TableFilterForm> {
       return [range.start.toIso8601String(), range.end.toIso8601String()]
           .join(',');
     }
+  }
+
+  Map<String, bool?> val = {};
+  Widget boolFilter(TableColumn column) {
+    return SizedBox(
+      width: 300,
+      child: CheckboxListTile(
+          title: Text(column.name),
+          controlAffinity: ListTileControlAffinity.leading,
+          value: val[column.key],
+          tristate: true,
+          onChanged: (value) {
+            setState(() {
+              val[column.key] = value;
+            });
+            if (value == null) {
+              controller.removeFilter(column.key);
+            } else {
+              controller.setFilter(column.key, 'eq', value.toString());
+            }
+          }),
+    );
   }
 
   Widget dateFilter(TableColumn column, {bool datePickerOnly = false}) {

@@ -33,6 +33,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
   List _itemTypes = [];
   List _suppliers = [];
   List _brands = [];
+  bool? _isConsignment;
   @override
   void initState() {
     flash = Flash(context);
@@ -75,6 +76,8 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
           'report_type': _reportType,
           'start_time': _dateRange.start.toIso8601String(),
           'end_time': _dateRange.end.toIso8601String(),
+          if (_isConsignment != null)
+            'is_consignment': _isConsignment.toString(),
           if (page != null) 'page': page.toString(),
           if (per != null) 'per': per.toString()
         },
@@ -208,6 +211,18 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                     converter: Item.fromJson,
                     onChanged: (value) =>
                         _items = value.map<String>((e) => e.code).toList(),
+                  ),
+                ),
+                Container(
+                  constraints: const BoxConstraints(maxWidth: 350),
+                  child: CheckboxListTile(
+                    tristate: true,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    value: _isConsignment,
+                    title: const Text('Konsinyasi?', style: _filterLabelStyle),
+                    onChanged: (value) => setState(() {
+                      _isConsignment = value;
+                    }),
                   ),
                 ),
               ],

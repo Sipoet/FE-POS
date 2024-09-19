@@ -52,12 +52,12 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
       return '';
     }
     var formater = DateFormat('dd/MM/y');
+    if (widget.datePickerOnly) {
+      return "${formater.format(_dateRange!.start)} - ${formater.format(_dateRange!.end)}";
+    }
     if (_isSameDay(_dateRange!.start, _dateRange!.end)) {
       var hourFormat = DateFormat('HH:mm');
       return "${formater.format(_dateRange!.start)} ${hourFormat.format(_dateRange!.start)} - ${hourFormat.format(_dateRange!.end)}";
-    }
-    if (widget.datePickerOnly) {
-      return "${formater.format(_dateRange!.start)} - ${formater.format(_dateRange!.end)}";
     } else {
       final formater = DateFormat('dd/MM/y HH:mm');
       return "${formater.format(_dateRange!.start)} - ${formater.format(_dateRange!.end)}";
