@@ -130,13 +130,27 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                   ),
                 ]),
             Menu(
-              icon: Icons.people,
-              isClosed: true,
-              label: 'Laporan Slip Gaji',
-              key: 'payslipReport',
-              isDisabled: !setting.isAuthorize('payslip', 'report'),
-              pageFunct: () => const PayslipReportPage(),
-            ),
+                key: 'humanResourceGroup',
+                icon: Icons.people,
+                label: 'Laporan SDM',
+                children: [
+                  Menu(
+                    icon: Icons.people,
+                    isClosed: true,
+                    label: 'Laporan Slip Gaji',
+                    key: 'payslipReport',
+                    isDisabled: !setting.isAuthorize('payslip', 'report'),
+                    pageFunct: () => const PayslipReportPage(),
+                  ),
+                  Menu(
+                    icon: Icons.people,
+                    isClosed: true,
+                    label: 'Laporan Payroll',
+                    key: 'payslipReport',
+                    isDisabled: !setting.isAuthorize('payroll', 'report'),
+                    pageFunct: () => const PayrollReportPage(),
+                  ),
+                ]),
           ]),
       Menu(icon: Icons.money, label: 'Keuangan', key: 'finance', children: [
         Menu(

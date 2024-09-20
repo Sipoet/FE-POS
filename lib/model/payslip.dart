@@ -113,18 +113,6 @@ class Payslip extends Model {
   factory Payslip.fromJson(Map<String, dynamic> json,
       {Payslip? model, List included = const []}) {
     var attributes = json['attributes'];
-    Employee? employee;
-    Payroll? payroll;
-    if (included.isNotEmpty) {
-      payroll = Model.findRelationData<Payroll>(
-          included: included,
-          relation: json['relationships']['payroll'],
-          convert: Payroll.fromJson);
-      employee = Model.findRelationData<Employee>(
-          included: included,
-          relation: json['relationships']['employee'],
-          convert: Employee.fromJson);
-    }
     model ??= Payslip(
         employee: Employee(
             code: '',
@@ -135,8 +123,6 @@ class Payslip extends Model {
         startDate: Date.today(),
         endDate: Date.today());
     model.id = int.parse(json['id']);
-    model.employee = employee ?? model.employee;
-    model.payroll = payroll ?? model.payroll;
     model.startDate = Date.parse(attributes['start_date']);
     model.endDate = Date.parse(attributes['end_date']);
     model.status = PayslipStatus.fromString(attributes['status']);
@@ -152,6 +138,22 @@ class Payslip extends Model {
     model.overtimeHour = double.parse(attributes['overtime_hour']);
     model.late = attributes['late'];
     model.workDays = double.parse(attributes['work_days']);
+    if (included.isNotEmpty) {
+      model.payroll = Model.findRelationData<Payroll>(
+              included: included,
+              relation: json['relationships']['payroll'],
+              convert: Payroll.fromJson) ??
+          model.payroll;
+      model.employee = Model.findRelationData<Employee>(
+              included: included,
+              relation: json['relationships']['employee'],
+              convert: Employee.fromJson) ??
+          model.employee;
+      model.lines = Model.findRelationsData<PayslipLine>(
+          relation: json['relationships']['payslip_lines'],
+          included: included,
+          convert: PayslipLine.fromJson);
+    }
     return model;
   }
 }

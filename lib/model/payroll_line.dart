@@ -1,4 +1,6 @@
 import 'package:fe_pos/model/model.dart';
+import 'package:fe_pos/model/payroll_type.dart';
+export 'package:fe_pos/model/payroll_type.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
 enum PayrollGroup {
@@ -33,61 +35,6 @@ enum PayrollGroup {
       return 'potongan';
     }
     return '';
-  }
-}
-
-enum PayrollType {
-  baseSalary,
-  incentive,
-  insurance,
-  debt,
-  commission,
-  tax;
-
-  @override
-  String toString() {
-    if (this == baseSalary) {
-      return 'base_salary';
-    }
-    return super.toString().split('.').last;
-  }
-
-  String humanize() {
-    switch (this) {
-      case baseSalary:
-        return "gaji pokok";
-      case incentive:
-        return "tunjangan";
-      case insurance:
-        return "asuransi";
-      case debt:
-        return "hutang";
-      case commission:
-        return "komisi";
-      case tax:
-        return "pajak";
-      default:
-        throw 'invalid Payroll type';
-    }
-  }
-
-  static PayrollType fromString(value) {
-    switch (value) {
-      case 'base_salary':
-        return baseSalary;
-      case 'incentive':
-        return incentive;
-      case 'insurance':
-        return insurance;
-      case 'debt':
-        return debt;
-      case 'commission':
-        return commission;
-      case 'tax':
-        return tax;
-      default:
-        throw 'invalid Payroll type $value';
-    }
   }
 }
 
@@ -232,7 +179,10 @@ class PayrollLine extends Model {
     model.id = int.parse(json['id']);
     model.row = attributes['row'];
     model.group = PayrollGroup.fromString(attributes['group']);
-    model.payrollType = PayrollType.fromString(attributes['payroll_type']);
+    model.payrollType = Model.findRelationData<PayrollType>(
+        included: included,
+        relation: json['relationships']['payroll_type'],
+        convert: PayrollType.fromJson);
     model.formula = PayrollFormula.fromString(attributes['formula']);
     model.variable1 = double.tryParse(attributes['variable1'] ?? '');
     model.variable2 = double.tryParse(attributes['variable2'] ?? '');

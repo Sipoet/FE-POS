@@ -1,10 +1,10 @@
-import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 
 import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/payroll.dart';
 import 'package:flutter/services.dart';
@@ -48,8 +48,9 @@ class _PayrollFormPageState extends State<PayrollFormPage>
   void fetchPayroll() {
     showLoadingPopup();
     final server = context.read<Server>();
-    server.get('payrolls/${payroll.id}',
-        queryParam: {'include': 'payroll_lines'}).then((response) {
+    server.get('payrolls/${payroll.id}', queryParam: {
+      'include': 'payroll_lines,payroll_lines.payroll_type'
+    }).then((response) {
       if (response.statusCode == 200) {
         final jsonData = response.data;
         setState(() {
@@ -278,16 +279,17 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                               label: value.humanize()))
                                       .toList(),
                                 )),
-                                DataCell(DropdownMenu<PayrollType>(
-                                  initialSelection: payrollLine.payrollType,
-                                  onSelected: (value) =>
-                                      payrollLine.payrollType = value,
-                                  dropdownMenuEntries: PayrollType.values
-                                      .map<DropdownMenuEntry<PayrollType>>(
-                                          (value) => DropdownMenuEntry(
-                                              value: value,
-                                              label: value.humanize()))
-                                      .toList(),
+                                DataCell(AsyncDropdown<PayrollType>(
+                                  converter: PayrollType.fromJson,
+                                  allowClear: false,
+                                  path: 'payroll_types',
+                                  selected: payrollLine.payrollType,
+                                  textOnSearch: (payrollType) =>
+                                      payrollType.name,
+                                  onChanged: (payrollType) =>
+                                      payrollLine.payrollType = payrollType,
+                                  onSaved: (payrollType) =>
+                                      payrollLine.payrollType = payrollType,
                                 )),
                                 DataCell(DropdownMenu<PayrollFormula>(
                                   initialSelection: payrollLine.formula,

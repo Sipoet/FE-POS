@@ -23,12 +23,14 @@ class TableColumn {
   String sortKey;
   bool canSort;
   bool canFilter;
+  Map<String, dynamic> options = {};
 
   TableColumn(
       {this.initX = 0,
       required this.width,
       this.excelWidth,
       this.path,
+      this.options = const {},
       required this.attributeKey,
       this.type = 'string',
       this.canSort = true,

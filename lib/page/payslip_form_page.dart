@@ -47,18 +47,14 @@ class _PayslipFormPageState extends State<PayslipFormPage>
   void fetchPayslip() {
     showLoadingPopup();
     final server = context.read<Server>();
-    server.get('payslips/${payslip.id}',
-        queryParam: {'include': 'payslip_lines'}).then((response) {
+    server.get('payslips/${payslip.id}', queryParam: {
+      'include': 'payslip_lines,payslip_lines.payroll_type'
+    }).then((response) {
       if (response.statusCode == 200) {
-        final payslipLines = response.data['data']['relationships']
-            ['payslip_lines']['data'] as List;
-        final relationshipsData = response.data['included'] as List;
+        final json = response.data;
         setState(() {
-          payslip.lines = payslipLines.map<PayslipLine>((line) {
-            final json = relationshipsData.firstWhere((row) =>
-                row['type'] == line['type'] && row['id'] == line['id']);
-            return PayslipLine.fromJson(json);
-          }).toList();
+          Payslip.fromJson(json['data'],
+              model: payslip, included: json['included'] ?? []);
         });
       }
     }, onError: (error) {
@@ -394,16 +390,17 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                                               label: value.toString()))
                                       .toList(),
                                 )),
-                                DataCell(DropdownMenu<PayrollType>(
-                                  initialSelection: payslipLine.payslipType,
-                                  onSelected: (value) =>
-                                      payslipLine.payslipType = value,
-                                  dropdownMenuEntries: PayrollType.values
-                                      .map<DropdownMenuEntry<PayrollType>>(
-                                          (value) => DropdownMenuEntry(
-                                              value: value,
-                                              label: value.toString()))
-                                      .toList(),
+                                DataCell(AsyncDropdown<PayrollType>(
+                                  converter: PayrollType.fromJson,
+                                  allowClear: false,
+                                  path: 'payroll_types',
+                                  selected: payslipLine.payrollType,
+                                  textOnSearch: (payrollType) =>
+                                      payrollType.name,
+                                  onChanged: (payrollType) =>
+                                      payslipLine.payrollType = payrollType,
+                                  onSaved: (payrollType) =>
+                                      payslipLine.payrollType = payrollType,
                                 )),
                                 DataCell(SizedBox(
                                   width: 250,
