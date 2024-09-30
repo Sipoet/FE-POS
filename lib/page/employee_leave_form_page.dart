@@ -218,7 +218,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                             firstDate: DateTime(2023),
                             lastDate:
                                 DateTime.now().add(const Duration(days: 31)),
-                            initialValue: employeeLeave.date),
+                            initialValue: employeeLeave.changeDate),
                         const SizedBox(
                           height: 10,
                         ),
