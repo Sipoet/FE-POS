@@ -160,6 +160,7 @@ class PayrollLine extends Model {
   Map<String, dynamic> toMap() => {
         'row': row,
         'group': group,
+        'payroll_type_id': payrollType?.id,
         'payroll_type': payrollType,
         'formula': formula,
         'variable1': variable1,

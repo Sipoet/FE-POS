@@ -32,6 +32,7 @@ class PayslipLine extends Model {
   Map<String, dynamic> toMap() => {
         'group': group,
         'payroll_type': payrollType,
+        'payroll_type_id': payrollType?.id,
         'amount': amount,
         'formula': formula,
         'description': description,
