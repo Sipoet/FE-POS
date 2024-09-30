@@ -54,6 +54,13 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             Menu(
                 icon: Icons.settings,
                 isClosed: true,
+                label: 'Tipe Aturan Gaji',
+                isDisabled: !setting.isAuthorize('payrollType', 'index'),
+                pageFunct: () => const PayrollTypePage(),
+                key: 'payrollType'),
+            Menu(
+                icon: Icons.settings,
+                isClosed: true,
                 label: 'Aturan Gaji',
                 isDisabled: !setting.isAuthorize('payroll', 'index'),
                 pageFunct: () => const PayrollPage(),

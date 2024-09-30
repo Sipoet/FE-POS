@@ -25,6 +25,7 @@ export 'role_page.dart';
 
 // human resource
 export 'payroll_page.dart';
+export 'payroll_type_page.dart';
 export 'payslip_page.dart';
 export 'employee_attendance_page.dart';
 export 'employee_leave_page.dart';

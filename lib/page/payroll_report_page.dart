@@ -22,7 +22,6 @@ class _PayrollReportPageState extends State<PayrollReportPage>
   PlutoGridStateManager? tableStateManager;
   List<PayrollType> payrollTypes = [];
   List<TableColumn> tableColumns = [];
-  List<PayrollReport> payrollReports = [];
   late final Server server;
   late final Flash flash;
   final _focusNode = FocusNode();
