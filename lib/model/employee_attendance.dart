@@ -38,8 +38,8 @@ class EmployeeAttendance extends Model {
         'allow_overtime': allowOvertime,
       };
 
-  TimeDay get startWork => TimeDay.fromDateTime(startTime);
-  TimeDay get endWork => TimeDay.fromDateTime(endTime);
+  TimeDay get startWork => TimeDay.fromDateTime(startTime.toLocal());
+  TimeDay get endWork => TimeDay.fromDateTime(endTime.toLocal());
   Date get date => Date.parsingDateTime(startTime);
   @override
   factory EmployeeAttendance.fromJson(Map<String, dynamic> json,
