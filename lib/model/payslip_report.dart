@@ -9,15 +9,8 @@ class PayslipReport extends Model {
   int employeeId;
   Date startDate;
   Date endDate;
-  double baseSalary;
-  double taxAmount;
-  double nettSalary;
-  double positionalIncentive;
-  double attendanceIncentive;
-  double otherIncentive;
-  double overtimeIncentive;
-  double commission;
-  double debt;
+  Money nettSalary;
+  Map<String, Money> amountBasedPayrollType;
   int totalDay;
   int sickLeave;
   int knownAbsence;
@@ -29,56 +22,47 @@ class PayslipReport extends Model {
   PayslipReport(
       {required this.startDate,
       required this.endDate,
-      this.baseSalary = 0,
       required this.employeeId,
       required this.employeeName,
       this.employeeStartWorkingDate,
-      this.positionalIncentive = 0,
-      this.attendanceIncentive = 0,
-      this.overtimeIncentive = 0,
-      this.otherIncentive = 0,
       this.totalDay = 0,
-      this.taxAmount = 0,
-      this.nettSalary = 0,
       this.sickLeave = 0,
       this.knownAbsence = 0,
       this.unknownAbsence = 0,
-      this.commission = 0,
       this.overtimeHour = 0,
       this.late = 0,
+      this.nettSalary = const Money(0),
       this.workDays = 0,
-      this.debt = 0,
+      this.amountBasedPayrollType = const {},
       this.description,
       super.id});
 
   @override
-  Map<String, dynamic> toMap() => {
-        'employee_name': employeeName,
-        'employee_id': employeeId,
-        'start_date': startDate,
-        'end_date': endDate,
-        'employee_start_working_date': employeeStartWorkingDate,
-        'base_salary': baseSalary,
-        'positional_incentive': positionalIncentive,
-        'attendance_incentive': attendanceIncentive,
-        'other_incentive': otherIncentive,
-        'overtime_incentive': overtimeIncentive,
-        'total_day': totalDay,
-        'tax_amount': taxAmount,
-        'nett_salary': nettSalary,
-        'sick_leave': sickLeave,
-        'known_absence': knownAbsence,
-        'unknown_absence': unknownAbsence,
-        'overtime_hour': overtimeHour,
-        'work_days': workDays,
-        'late': late,
-        'debt': debt,
-        'bank': bank,
-        'bank_register_name': bankRegisterName,
-        'bank_account': bankAccount,
-        'description': description,
-        'commission': commission
-      };
+  Map<String, dynamic> toMap() {
+    Map<String, dynamic> result = {
+      'employee_name': employeeName,
+      'employee_id': employeeId,
+      'start_date': startDate,
+      'end_date': endDate,
+      'employee_start_working_date': employeeStartWorkingDate,
+      'total_day': totalDay,
+      'sick_leave': sickLeave,
+      'known_absence': knownAbsence,
+      'unknown_absence': unknownAbsence,
+      'overtime_hour': overtimeHour,
+      'work_days': workDays,
+      'late': late,
+      'bank': bank,
+      'nett_salary': nettSalary,
+      'bank_register_name': bankRegisterName,
+      'bank_account': bankAccount,
+      'description': description,
+    };
+    for (MapEntry<String, Money> val in amountBasedPayrollType.entries) {
+      result[val.key] = val.value;
+    }
+    return result;
+  }
 
   @override
   factory PayslipReport.fromJson(Map<String, dynamic> json,
@@ -95,16 +79,12 @@ class PayslipReport extends Model {
     model.startDate = Date.parse(attributes['start_date']);
     model.endDate = Date.parse(attributes['end_date']);
 
-    model.baseSalary =
-        double.tryParse(attributes['base_salary'].toString()) ?? 0;
-    model.nettSalary =
-        double.tryParse(attributes['nett_salary'].toString()) ?? 0;
     model.employeeId = attributes['employee_id'];
     model.employeeName = attributes['employee_name'];
     model.bank = attributes['bank'];
     model.bankAccount = attributes['bank_account'];
     model.bankRegisterName = attributes['bank_register_name'];
-    model.taxAmount = double.tryParse(attributes['tax_amount'].toString()) ?? 0;
+
     model.sickLeave = attributes['sick_leave'];
     model.knownAbsence = attributes['known_absence'];
     model.unknownAbsence = attributes['unknown_absence'];
@@ -112,22 +92,19 @@ class PayslipReport extends Model {
         double.tryParse(attributes['overtime_hour'].toString()) ?? 0;
     model.late = attributes['late'] ?? model.late;
     model.workDays = double.tryParse(attributes['work_days'].toString()) ?? 0;
-    model.commission =
-        double.tryParse(attributes['commission'].toString()) ?? 0;
+
     model.totalDay = attributes['total_day'];
     model.description = attributes['description'];
     model.employeeStartWorkingDate =
         Date.parse(attributes['employee_start_working_date']);
-    model.debt = double.tryParse(attributes['debt'].toString()) ?? 0;
-    model.positionalIncentive =
-        double.parse(attributes['positional_incentive'].toString());
-    model.attendanceIncentive =
-        double.parse(attributes['attendance_incentive'].toString());
-    model.otherIncentive =
-        double.parse(attributes['other_incentive'].toString());
-    model.overtimeIncentive =
-        double.parse(attributes['overtime_incentive'].toString());
-
+    model.amountBasedPayrollType = {};
+    model.nettSalary =
+        Money.tryParse(attributes['nett_salary'] ?? '') ?? const Money(0);
+    for (MapEntry<String, dynamic> val
+        in attributes['payroll_type_amounts'].entries) {
+      model.amountBasedPayrollType[val.key] =
+          Money.tryParse(val.value ?? '0') ?? const Money(0);
+    }
     return model;
   }
 }

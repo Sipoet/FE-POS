@@ -10,11 +10,6 @@ mixin TextFormatter {
     return DateFormat('dd/MM/y', 'id_ID').format(date);
   }
 
-  String datetimeFormat(DateTime data) {
-    var formated = DateFormat('dd/MM/y HH:mm');
-    return formated.format(data.toUtc());
-  }
-
   String moneyFormat(dynamic value) {
     if (value is Money) {
       return NumberFormat.currency(

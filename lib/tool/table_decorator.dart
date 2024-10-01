@@ -82,7 +82,7 @@ mixin TableDecorator<T extends Model> implements TextFormatter {
       case const (Date):
         return dateFormat(cell);
       case const (DateTime):
-        return datetimeFormat(cell);
+        return dateTimeLocalFormat(cell);
       case const (TimeDay):
         return timeFormat(cell);
       case const (Money):

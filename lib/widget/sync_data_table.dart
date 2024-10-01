@@ -527,7 +527,6 @@ class _SyncDataTable2State<T extends Model> extends State<SyncDataTable2<T>> {
       'decimal',
       'integer',
       'float',
-      'int',
       'double',
     ].contains(tableColumn.type);
     bool isCurrency = [

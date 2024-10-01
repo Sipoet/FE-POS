@@ -2,7 +2,8 @@ import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/payslip_report.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/file_saver.dart';
-import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
@@ -17,8 +18,11 @@ class PayslipReportPage extends StatefulWidget {
 }
 
 class _PayslipReportPageState extends State<PayslipReportPage>
-    with AutomaticKeepAliveClientMixin, DefaultResponse {
+    with AutomaticKeepAliveClientMixin, DefaultResponse, LoadingPopup {
   final formKey = GlobalKey<FormState>();
+  PlutoGridStateManager? tableStateManager;
+  List<PayrollType> payrollTypes = [];
+  List<TableColumn> tableColumns = [];
   DateTimeRange _dateRange = DateTimeRange(
       start: DateTime.now().copyWith(
           month: DateTime.now().month - 1,
@@ -28,29 +32,42 @@ class _PayslipReportPageState extends State<PayslipReportPage>
           second: 0),
       end: DateTime.now().copyWith(day: 25, hour: 23, minute: 59, second: 59));
   final cancelToken = CancelToken();
-  late final SyncDataTableSource<PayslipReport> _source;
   @override
   bool get wantKeepAlive => true;
   List<String> _employeeIds = [];
+  late final Flash flash;
   @override
   void initState() {
-    final setting = context.read<Setting>();
-    _source = SyncDataTableSource<PayslipReport>(
-        columns: setting.tableColumn('payslipReport'));
+    flash = Flash(context);
     super.initState();
   }
 
   void search() {
+    showLoadingPopup();
+    tableStateManager?.removeAllRows();
     fetchData('json').then((response) {
       if (response.statusCode == 200) {
+        final json = response.data;
+        final included = json['included'];
         setState(() {
-          _source.setData(response.data['data']
-              .map<PayslipReport>((json) => PayslipReport.fromJson(json,
-                  included: response.data['included'] ?? []))
-              .toList());
+          tableColumns = json['meta']['table_columns'].map<TableColumn>((row) {
+            return TableColumn(
+                width: double.parse(row['table_width'] ?? '200'),
+                type: row['type'],
+                attributeKey: row['attribute_key'],
+                sortKey: row['sort_key'],
+                key: row['name'],
+                name: row['humanize_name']);
+          }).toList();
+          tableStateManager?.setTableColumns(tableColumns);
+          for (final row in json['data']) {
+            final model = PayslipReport.fromJson(row, included: included ?? []);
+            tableStateManager?.appendModel(model);
+          }
         });
       }
-    }, onError: (error) => defaultErrorResponse(error: error));
+    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
+        () => hideLoadingPopup());
   }
 
   @override
@@ -72,13 +89,24 @@ class _PayslipReportPageState extends State<PayslipReportPage>
   }
 
   void download() {
+    flash.hide();
     fetchData('xlsx').then((response) {
       if (response.statusCode == 200) {
         const fileSaver = FileSaver();
         String filename = (response.headers.value('content-disposition') ?? '');
         filename = filename.substring(filename.indexOf('filename="') + 10,
             filename.indexOf('xlsx";') + 4);
-        fileSaver.download(filename, response.data, 'xlsx');
+        fileSaver.download(
+          filename,
+          response.data,
+          'xlsx',
+          onSuccess: (path) {
+            flash.showBanner(
+                messageType: MessageType.success,
+                title: 'Sukses download',
+                description: 'sukses disimpan di $path');
+          },
+        );
       }
     }, onError: (error) => defaultErrorResponse(error: error));
   }
@@ -162,14 +190,13 @@ class _PayslipReportPageState extends State<PayslipReportPage>
               const SizedBox(
                 height: 10,
               ),
-              Visibility(
-                visible: true,
-                child: SizedBox(
-                  height: 600,
-                  child: SyncDataTable(
-                    controller: _source,
-                    fixedLeftColumns: 1,
-                  ),
+              const Divider(),
+              SizedBox(
+                height: 500,
+                child: SyncDataTable2(
+                  columns: tableColumns,
+                  showSummary: true,
+                  onLoaded: (stateManager) => tableStateManager = stateManager,
                 ),
               )
             ],
