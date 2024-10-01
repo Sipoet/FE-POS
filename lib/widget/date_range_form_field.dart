@@ -123,8 +123,8 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
               tomorrow: 'Besok',
               now: 'Sekarang',
               locale: 'id')),
-      startDate: widget.initialDateRange?.start,
-      endDate: widget.initialDateRange?.end,
+      startDate: _dateRange?.start,
+      endDate: _dateRange?.end,
       minimumDate: minDate,
       maximumDate: maxDate,
       pickerType: widget.datePickerOnly
@@ -134,8 +134,9 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
     ).then((dateTimeRange) {
       setState(() {
         if (dateTimeRange != null) {
-          _dateRange =
-              DateTimeRange(start: dateTimeRange.start, end: dateTimeRange.end);
+          _dateRange = DateTimeRange(
+              start: dateTimeRange.start.toLocal(),
+              end: dateTimeRange.end.toLocal());
         }
         _controller.text = _daterangeFormat();
         if (widget.onChanged != null) {
