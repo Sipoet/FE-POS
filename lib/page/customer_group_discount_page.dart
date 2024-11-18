@@ -192,6 +192,18 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
     }
   }
 
+  void toggleDiscount() {
+    server.post('/customer_group_discounts/toggle_discount').then(
+      (response) {
+        if (response.statusCode == 200) {
+          flash.show(const Text('Sedang diproses'), MessageType.info);
+        } else {
+          flash.show(const Text('Gagal diproses'), MessageType.failed);
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -253,6 +265,13 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
                           onPressed: () {
                             _menuController.close();
                             addForm();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('Toggle Diskon'),
+                          onPressed: () {
+                            _menuController.close();
+                            toggleDiscount();
                           },
                         ),
                       ],
