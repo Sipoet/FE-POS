@@ -136,7 +136,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: purchase.orderCode,
+                        initialValue: purchase.destLocation,
                       ),
                     ),
                   ),
