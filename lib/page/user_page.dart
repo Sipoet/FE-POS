@@ -149,7 +149,7 @@ class _UserPageState extends State<UserPage>
     showConfirmDialog(
         message: 'Apakah anda yakin hapus ${user.username}?',
         onSubmit: () {
-          server.delete('/users/${user.id}').then((response) {
+          server.delete('/users/${user.username}').then((response) {
             if (response.statusCode == 200) {
               flash.showBanner(
                   messageType: MessageType.success,
@@ -177,6 +177,19 @@ class _UserPageState extends State<UserPage>
     }
   }
 
+  void _unlockAccess(User user) {
+    server.post('/users/${user.username}/unlock_access').then((response) {
+      if (response.statusCode == 200) {
+        flash.showBanner(
+            messageType: MessageType.success,
+            title: 'Sukses unlock',
+            description: 'Sukses unlock ${user.username}');
+      }
+    }, onError: (error) {
+      server.defaultErrorResponse(context: context, error: error);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -187,6 +200,11 @@ class _UserPageState extends State<UserPage>
               },
               tooltip: 'Edit User',
               icon: const Icon(Icons.edit)),
+          IconButton(
+            tooltip: 'unlock Akses User',
+            icon: const Icon(Icons.lock_open),
+            onPressed: () => _unlockAccess(user),
+          ),
           IconButton(
               onPressed: () {
                 destroyRecord(user);

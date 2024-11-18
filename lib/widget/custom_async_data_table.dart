@@ -66,8 +66,8 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
     double tableWidth = calculateTableWidth();
     List<DataColumn2> actions = [];
     if (_dataSource.hasActionButton) {
-      actions.add(const DataColumn2(label: Text(''), fixedWidth: 200.0));
-      tableWidth += 200;
+      actions.add(const DataColumn2(label: Text(''), fixedWidth: 300.0));
+      tableWidth += 300;
     }
     return AsyncPaginatedDataTable2(
       key: ObjectKey(widget.key),
