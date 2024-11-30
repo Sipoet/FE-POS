@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/user.dart';
 import 'package:fe_pos/page/user_form_page.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -17,7 +18,7 @@ class UserPage extends StatefulWidget {
 }
 
 class _UserPageState extends State<UserPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final CustomAsyncDataTableSource<User> _source;
   late final Server server;
   String _searchText = '';
@@ -32,7 +33,7 @@ class _UserPageState extends State<UserPage>
   @override
   void initState() {
     server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     final setting = context.read<Setting>();
     _source = CustomAsyncDataTableSource<User>(
         columns: setting.tableColumn('user'), fetchData: fetchUsers);
@@ -86,13 +87,13 @@ class _UserPageState extends State<UserPage>
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<User>(models: models, totalRows: totalRows);
       },
-              onError: (error, stackTrace) => server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: []));
+              onError: (error, stackTrace) =>
+                  defaultErrorResponse(error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
-          messageType: MessageType.failed);
+          messageType: ToastificationType.error);
       return Future(() => ResponseResult<User>(models: []));
     }
   }
@@ -152,13 +153,13 @@ class _UserPageState extends State<UserPage>
           server.delete('/users/${user.username}').then((response) {
             if (response.statusCode == 200) {
               flash.showBanner(
-                  messageType: MessageType.success,
+                  messageType: ToastificationType.success,
                   title: 'Sukses Hapus',
                   description: 'Sukses Hapus user ${user.username}');
               refreshTable();
             }
           }, onError: (error) {
-            server.defaultErrorResponse(context: context, error: error);
+            defaultErrorResponse(error: error);
           });
         });
   }
@@ -181,12 +182,12 @@ class _UserPageState extends State<UserPage>
     server.post('/users/${user.username}/unlock_access').then((response) {
       if (response.statusCode == 200) {
         flash.showBanner(
-            messageType: MessageType.success,
+            messageType: ToastificationType.success,
             title: 'Sukses unlock',
             description: 'Sukses unlock ${user.username}');
       }
     }, onError: (error) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 

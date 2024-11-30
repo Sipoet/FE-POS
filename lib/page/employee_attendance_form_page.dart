@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
@@ -21,7 +22,7 @@ class EmployeeAttendanceFormPage extends StatefulWidget {
 }
 
 class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, DefaultResponse {
   late Server _server;
   final _formKey = GlobalKey<FormState>();
   late final Flash flash;
@@ -29,7 +30,7 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
   EmployeeAttendance get employeeAttendance => widget.employeeAttendance;
   @override
   void initState() {
-    flash = Flash(context);
+    flash = Flash();
     _server = context.read<Server>();
     super.initState();
   }
@@ -173,8 +174,8 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
                               _formKey.currentState!.save();
-                              flash.show(
-                                  const Text('Loading'), MessageType.info);
+                              flash.show(const Text('Loading'),
+                                  ToastificationType.info);
                               _submit();
                             }
                           },
@@ -188,7 +189,7 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
         ));
   }
 
-  void _submit() async {
+  void _submit() {
     Map body = {
       'data': {
         'type': 'employee_attendance',
@@ -213,16 +214,16 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
               widget, 'Edit Absensi Karyawan ${employeeAttendance.id}');
         });
 
-        flash.show(const Text('Berhasil disimpan'), MessageType.success);
+        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
       } else if (response.statusCode == 409) {
         var data = response.data;
         flash.showBanner(
             title: data['message'],
             description: data['errors'].join('\n'),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
       }
     }, onError: (error, stackTrace) {
-      _server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 }

@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/app_updater.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/widget/sales_transaction_report_widget.dart';
 import 'package:fe_pos/widget/item_sales_transaction_report_widget.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage>
-    with AppUpdater<HomePage>, AutomaticKeepAliveClientMixin {
+    with AppUpdater, AutomaticKeepAliveClientMixin, DefaultResponse {
   final TransactionReportController controller = TransactionReportController(
       DateTimeRange(start: DateTime.now(), end: DateTime.now()));
   bool _isCustom = false;

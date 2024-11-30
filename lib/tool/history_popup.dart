@@ -1,10 +1,12 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/activity_log.dart';
 import 'package:fe_pos/model/server.dart';
 import 'package:intl/intl.dart';
 
-mixin HistoryPopup<T extends StatefulWidget> on State<T> {
+mixin HistoryPopup<T extends StatefulWidget> on State<T>
+    implements DefaultResponse<T> {
   final _source = HistorySource();
 
   void _showLoadingPopup() {
@@ -54,7 +56,7 @@ mixin HistoryPopup<T extends StatefulWidget> on State<T> {
       }
     }, onError: (error) {
       _hideLoadingPopup();
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 
@@ -80,7 +82,7 @@ mixin HistoryPopup<T extends StatefulWidget> on State<T> {
       }
     }, onError: (error) {
       _hideLoadingPopup();
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 

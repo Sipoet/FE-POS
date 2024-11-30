@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/payslip.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
@@ -18,7 +19,7 @@ class GeneratePayslipFormPage extends StatefulWidget {
 }
 
 class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
-    with AutomaticKeepAliveClientMixin, LoadingPopup {
+    with AutomaticKeepAliveClientMixin, LoadingPopup, DefaultResponse {
   DateTime startDate = DateTime.now().copyWith(
       month: DateTime.now().month - 1, day: 26, hour: 0, minute: 0, second: 0);
   DateTime endDate =
@@ -37,7 +38,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
   void initState() {
     _server = context.read<Server>();
     _setting = context.read<Setting>();
-    flash = Flash(context);
+    flash = Flash();
     _source = GeneratePayslipDatatableSource(setting: _setting);
     super.initState();
     Future.delayed(Duration.zero, () => _focusNode.requestFocus());
@@ -238,15 +239,13 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
         });
       } else {
         flash.showBanner(
-            messageType: MessageType.failed,
+            messageType: ToastificationType.error,
             title: 'gagal buat slip gaji',
             description: response.data['message'] ?? '');
       }
       response.data['data'];
-    },
-        onError: (error) => _server.defaultErrorResponse(
-            context: context,
-            error: error)).whenComplete(() => hideLoadingPopup());
+    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
+        () => hideLoadingPopup());
   }
 }
 

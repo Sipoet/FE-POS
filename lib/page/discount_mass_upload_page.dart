@@ -68,6 +68,9 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
                 rowsPerPage: 10,
                 columns: [
                   DataColumn(
+                    label: Text('Kode Diskon', style: headerStyle),
+                  ),
+                  DataColumn(
                     label: Text('Kode Supplier', style: headerStyle),
                   ),
                   DataColumn(
@@ -183,25 +186,56 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
     setState(() {
       _discounts = [];
       for (final (index, row) in excel.tables['master']!.rows.indexed) {
-        if (index < 2 || row[5]?.value == null) {
+        if (index < 2 || row[5]?.value == null || row[11]?.value == null) {
           continue;
         }
-        final discount = Discount(
-          supplierCode: row[0]?.value?.toString(),
-          brandName: row[1]?.value?.toString(),
-          itemType: row[2]?.value?.toString(),
-          itemCode: row[3]?.value?.toString(),
-          calculationType: row[4]?.value.toString() == 'percentage'
+        print("TT start date: ${row[10]?.value.toString()}");
+        var discount = Discount(
+          code: row[0]?.value.toString() ?? '',
+          calculationType: row[5]?.value.toString() == 'percentage'
               ? DiscountCalculationType.percentage
               : DiscountCalculationType.nominal,
-          weight: int.parse(row[5]?.value.toString() ?? ''),
-          discount1: Percentage.parse(row[6]?.value?.toString() ?? '0'),
-          discount2: Percentage.parse(row[7]?.value?.toString() ?? '0'),
-          discount3: Percentage.parse(row[8]?.value?.toString() ?? '0'),
-          discount4: Percentage.parse(row[9]?.value?.toString() ?? '0'),
-          startTime: DateTime.parse(row[10]?.value.toString() ?? ''),
-          endTime: DateTime.parse(row[11]?.value.toString() ?? ''),
+          weight: int.tryParse(row[6]?.value?.toString() ?? '') ?? 0,
+          discount1: Percentage.parse(row[7]?.value?.toString() ?? '0'),
+          discount2: Percentage.parse(row[8]?.value?.toString() ?? '0'),
+          discount3: Percentage.parse(row[9]?.value?.toString() ?? '0'),
+          discount4: Percentage.parse(row[10]?.value?.toString() ?? '0'),
+          startTime: DateTime.parse(row[11]?.value.toString() ?? ''),
+          endTime: DateTime.parse(row[12]?.value.toString() ?? ''),
         );
+        List? supplierCodes = row[1]?.value?.toString().split(',').toList();
+        if (supplierCodes != null) {
+          discount.discountSuppliers = supplierCodes
+              .map<DiscountSupplier>(
+                  (value) => DiscountSupplier(supplier: Supplier(code: value)))
+              .toList();
+          discount.supplierCode = discount.discountSuppliers.first.supplierCode;
+        }
+        List? brandNames = row[2]?.value?.toString().split(',').toList();
+        if (brandNames != null) {
+          discount.discountBrands = brandNames
+              .map<DiscountBrand>(
+                  (value) => DiscountBrand(brand: Brand(name: value)))
+              .toList();
+          discount.brandName = discount.discountBrands.first.brandName;
+        }
+        List? itemTypeCodes = row[3]?.value?.toString().split(',').toList();
+        if (itemTypeCodes != null) {
+          discount.discountItemTypes = itemTypeCodes
+              .map<DiscountItemType>(
+                  (value) => DiscountItemType(itemType: ItemType(name: value)))
+              .toList();
+          discount.itemType = discount.discountItemTypes.first.itemTypeName;
+        }
+        List? itemCodes = row[4]?.value?.toString().split(',').toList();
+        if (itemCodes != null) {
+          discount.discountItems = itemCodes
+              .map<DiscountItem>(
+                  (value) => DiscountItem(item: Item(code: value)))
+              .toList();
+          discount.itemCode = discount.discountItems.first.itemCode;
+        }
+
         _discounts.add(discount);
       }
 
@@ -250,6 +284,7 @@ class DiscountMassUploadDatatableSource extends DataTableSource
   List<DataCell> decorateDiscount(int index) {
     final discount = rows[index];
     return <DataCell>[
+      DataCell(SelectableText(discount.code)),
       DataCell(SelectableText(discount.supplierCode ?? '')),
       DataCell(SelectableText(discount.brandName ?? '')),
       DataCell(SelectableText(discount.itemType ?? '')),

@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/employee.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -25,7 +26,8 @@ class _PayslipFormPageState extends State<PayslipFormPage>
         AutomaticKeepAliveClientMixin,
         HistoryPopup,
         LoadingPopup,
-        TextFormatter {
+        TextFormatter,
+        DefaultResponse {
   late Flash flash;
   late final Setting setting;
   final _formKey = GlobalKey<FormState>();
@@ -37,7 +39,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
   @override
   void initState() {
     setting = context.read<Setting>();
-    flash = Flash(context);
+    flash = Flash();
     super.initState();
     if (payslip.id != null) {
       Future.delayed(Duration.zero, () => fetchPayslip());
@@ -58,7 +60,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
         });
       }
     }, onError: (error) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     }).whenComplete(() => hideLoadingPopup());
   }
 
@@ -105,16 +107,16 @@ class _PayslipFormPageState extends State<PayslipFormPage>
           tabManager.changeTabHeader(widget, 'Edit payslip ${payslip.id}');
         });
         fetchPayslip();
-        flash.show(const Text('Berhasil disimpan'), MessageType.success);
+        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
       } else if (response.statusCode == 409) {
         final data = response.data;
         flash.showBanner(
             title: data['message'],
             description: data['errors'].join('\n'),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
       }
     }, onError: (error, stackTrace) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 
@@ -522,7 +524,8 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                     child: ElevatedButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            flash.show(const Text('Loading'), MessageType.info);
+                            flash.show(
+                                const Text('Loading'), ToastificationType.info);
                             _submit();
                           }
                         },

@@ -34,7 +34,7 @@ class _DiscountPageState extends State<DiscountPage>
   @override
   void initState() {
     server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     final setting = context.read<Setting>();
     _source = CustomAsyncDataTableSource<Discount>(
         columns: setting.tableColumn('discount'), fetchData: fetchDiscounts);
@@ -90,13 +90,13 @@ class _DiscountPageState extends State<DiscountPage>
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<Discount>(totalRows: totalRows, models: models);
       },
-              onError: (error, stackTrace) => server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: []));
+              onError: (error, stackTrace) =>
+                  defaultErrorResponse(error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
-          messageType: MessageType.failed);
+          messageType: ToastificationType.error);
 
       return Future(() => ResponseResult<Discount>(models: []));
     }
@@ -157,7 +157,7 @@ class _DiscountPageState extends State<DiscountPage>
     server.delete("discounts/${discount.id}").then((response) {
       if (response.statusCode == 200) {
         flash.showBanner(
-            messageType: MessageType.success,
+            messageType: ToastificationType.success,
             description: response.data?['message']);
         refreshTable();
       } else if (response.statusCode == 409) {
@@ -165,10 +165,10 @@ class _DiscountPageState extends State<DiscountPage>
         flash.showBanner(
             title: data['message'],
             description: data['errors'].join('\n'),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
       }
     }, onError: (error, stack) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 
@@ -177,10 +177,10 @@ class _DiscountPageState extends State<DiscountPage>
       flash.showBanner(
           title: 'Refresh akan diproses',
           description: 'diskon ${discount.code} akan diproses',
-          messageType: MessageType.info,
+          messageType: ToastificationType.info,
           duration: const Duration(seconds: 3));
     }, onError: (error, stack) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 
@@ -189,10 +189,10 @@ class _DiscountPageState extends State<DiscountPage>
       flash.showBanner(
           title: 'Refresh akan diproses',
           description: 'Semua diskon akan diproses',
-          messageType: MessageType.info,
+          messageType: ToastificationType.info,
           duration: const Duration(seconds: 3));
     }, onError: (error, stack) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 
@@ -201,10 +201,10 @@ class _DiscountPageState extends State<DiscountPage>
       flash.showBanner(
           title: response.data['message'],
           description: 'Semua diskon akan diproses',
-          messageType: MessageType.success);
+          messageType: ToastificationType.success);
       refreshTable();
     }, onError: (error, stack) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 

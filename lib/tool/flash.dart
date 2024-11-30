@@ -1,99 +1,37 @@
 import 'package:flutter/material.dart';
-
-enum MessageType { success, failed, info, warning }
+import 'package:toastification/toastification.dart';
+export 'package:toastification/toastification.dart';
 
 class Flash extends ChangeNotifier {
-  BuildContext context;
-  ScaffoldMessengerState? messenger;
-
-  Flash(this.context);
-  void show(Widget content, MessageType messageType) {
+  Flash();
+  void show(Widget content, ToastificationType messageType) {
     hide();
-    messenger = ScaffoldMessenger.of(context);
-    MaterialColor color = _colorBasedMessageType(messageType);
-    messenger?.showMaterialBanner(MaterialBanner(
-      elevation: 1,
-      padding: const EdgeInsets.all(20),
-      content: content,
-      backgroundColor: color,
-      actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            hide();
-          },
-          child: const Text(
-            'DISMISS',
-            selectionColor: Colors.black,
-          ),
-        ),
-      ],
-    ));
-    if (messageType == MessageType.success) {
-      Future.delayed(const Duration(seconds: 3), () {
-        hide();
-      });
-    }
+    toastification.show(
+      autoCloseDuration: const Duration(seconds: 5),
+      title: content,
+      type: messageType,
+    );
   }
 
   void showBanner(
       {String title = '',
       String description = '',
-      required MessageType messageType,
+      required ToastificationType messageType,
       Duration? duration}) {
     hide();
-    messenger = ScaffoldMessenger.of(context);
-    MaterialColor color = _colorBasedMessageType(messageType);
-
-    messenger?.showMaterialBanner(MaterialBanner(
-      elevation: 1,
-      padding: const EdgeInsets.all(20),
-      content: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            Flexible(child: Text(description))
-          ],
-        ),
+    toastification.dismissAll();
+    toastification.show(
+      title: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
       ),
-      backgroundColor: color,
-      actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            messenger?.clearMaterialBanners();
-          },
-          child: const Text('DISMISS'),
-        ),
-      ],
-    ));
-    if (messageType == MessageType.success) {
-      duration = const Duration(seconds: 3);
-    }
-    if (duration != null) {
-      Future.delayed(duration, hide);
-    }
-  }
-
-  MaterialColor _colorBasedMessageType(MessageType messageType) {
-    switch (messageType) {
-      case MessageType.warning:
-        return Colors.yellow;
-      case MessageType.failed:
-        return Colors.red;
-      case MessageType.success:
-        return Colors.green;
-      case MessageType.info:
-      default:
-        return Colors.blue;
-    }
+      description: Text(description),
+      type: messageType,
+      autoCloseDuration: duration,
+    );
   }
 
   void hide() {
-    messenger = messenger ?? ScaffoldMessenger.of(context);
-    messenger?.clearMaterialBanners();
+    toastification.dismissAll();
   }
 }

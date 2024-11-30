@@ -1,6 +1,7 @@
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:fe_pos/model/sales_group_by_supplier.dart';
 import 'package:fe_pos/model/item.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
@@ -20,7 +21,7 @@ class SalesGroupBySupplierReportPage extends StatefulWidget {
 
 class _SalesGroupBySupplierReportPageState
     extends State<SalesGroupBySupplierReportPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, DefaultResponse {
   static const TextStyle _filterLabelStyle =
       TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
   late Server server;
@@ -40,7 +41,7 @@ class _SalesGroupBySupplierReportPageState
   void initState() {
     server = context.read<Server>();
     final setting = context.read<Setting>();
-    flash = Flash(context);
+    flash = Flash();
     _tableColumns = setting.tableColumn('salesGroupBySupplierReport');
     _source = SyncDataTableSource<SalesGroupBySupplier>(columns: _tableColumns);
     super.initState();
@@ -52,23 +53,21 @@ class _SalesGroupBySupplierReportPageState
   void _displayReport() async {
     flash.show(
       const Text('Dalam proses.'),
-      MessageType.info,
+      ToastificationType.info,
     );
     _reportType = 'json';
     _requestReport().then(_displayDatatable,
-        onError: ((error, stackTrace) =>
-            server.defaultErrorResponse(context: context, error: error)));
+        onError: ((error, stackTrace) => defaultErrorResponse(error: error)));
   }
 
   void _downloadReport() async {
     flash.show(
       const Text('Dalam proses.'),
-      MessageType.info,
+      ToastificationType.info,
     );
     _reportType = 'xlsx';
     _requestReport().then(_downloadResponse,
-        onError: ((error, stackTrace) =>
-            server.defaultErrorResponse(context: context, error: error)));
+        onError: ((error, stackTrace) => defaultErrorResponse(error: error)));
   }
 
   Future _requestReport({int? page, int? per}) async {
@@ -89,7 +88,7 @@ class _SalesGroupBySupplierReportPageState
   void _downloadResponse(response) async {
     flash.hide();
     if (response.statusCode != 200) {
-      flash.show(const Text('gagal simpan ke excel'), MessageType.failed);
+      flash.show(const Text('gagal simpan ke excel'), ToastificationType.error);
       return;
     }
     String filename = response.headers.value('content-disposition') ?? '';
@@ -103,7 +102,7 @@ class _SalesGroupBySupplierReportPageState
     downloader.download(filename, response.data, 'xlsx',
         onSuccess: (String path) {
       flash.showBanner(
-          messageType: MessageType.success,
+          messageType: ToastificationType.success,
           title: 'Sukses download',
           description: 'sukses disimpan di $path');
     });

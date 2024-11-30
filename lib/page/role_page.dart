@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/role.dart';
 import 'package:fe_pos/page/role_form_page.dart';
@@ -17,7 +18,7 @@ class RolePage extends StatefulWidget {
 }
 
 class _RolePageState extends State<RolePage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final CustomAsyncDataTableSource<Role> _source;
   late final Server server;
 
@@ -32,7 +33,7 @@ class _RolePageState extends State<RolePage>
   @override
   void initState() {
     server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     final setting = context.read<Setting>();
     _source = CustomAsyncDataTableSource<Role>(
         columns: setting.tableColumn('role'), fetchData: fetchRoles);
@@ -84,13 +85,13 @@ class _RolePageState extends State<RolePage>
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<Role>(models: models, totalRows: totalRows);
       },
-              onError: (error, stackTrace) => server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: []));
+              onError: (error, stackTrace) =>
+                  defaultErrorResponse(error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
-          messageType: MessageType.failed);
+          messageType: ToastificationType.error);
       return Future(() => ResponseResult<Role>(models: []));
     }
   }
@@ -150,13 +151,13 @@ class _RolePageState extends State<RolePage>
           server.delete('/roles/${role.id}').then((response) {
             if (response.statusCode == 200) {
               flash.showBanner(
-                  messageType: MessageType.success,
+                  messageType: ToastificationType.success,
                   title: 'Sukses Hapus',
                   description: 'Sukses Hapus role ${role.name}');
               refreshTable();
             }
           }, onError: (error) {
-            server.defaultErrorResponse(context: context, error: error);
+            defaultErrorResponse(error: error);
           });
         });
   }

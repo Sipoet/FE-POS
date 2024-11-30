@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
@@ -21,7 +22,11 @@ class EmployeeAttendanceMassUploadPage extends StatefulWidget {
 
 class _EmployeeAttendanceMassUploadPageState
     extends State<EmployeeAttendanceMassUploadPage>
-    with AutomaticKeepAliveClientMixin, LoadingPopup, TextFormatter {
+    with
+        AutomaticKeepAliveClientMixin,
+        LoadingPopup,
+        TextFormatter,
+        DefaultResponse {
   late Server _server;
   late Setting _setting;
   late final EmployeeAttendanceMassUploadDatatableSource _source;
@@ -238,14 +243,14 @@ class _EmployeeAttendanceMassUploadPageState
           _source.setData(employeeAttendances);
         });
       } else {
-        final flash = Flash(context);
+        final flash = Flash();
         flash.showBanner(
-            messageType: MessageType.failed,
+            messageType: ToastificationType.error,
             title: 'gagal upload Absensi Karyawan',
             description: response.data['message']);
       }
     }, onError: (error) {
-      _server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     }).whenComplete(() => hideLoadingPopup());
   }
 }

@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -18,7 +19,7 @@ class EmployeeLeaveFormPage extends StatefulWidget {
 }
 
 class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
-    with AutomaticKeepAliveClientMixin, HistoryPopup {
+    with AutomaticKeepAliveClientMixin, HistoryPopup, DefaultResponse {
   late Flash flash;
 
   final _formKey = GlobalKey<FormState>();
@@ -29,7 +30,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
 
   @override
   void initState() {
-    flash = Flash(context);
+    flash = Flash();
     super.initState();
   }
 
@@ -58,16 +59,16 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
               widget, 'Edit Cuti Karyawan ${employeeLeave.id}');
         });
 
-        flash.show(const Text('Berhasil disimpan'), MessageType.success);
+        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
       } else if (response.statusCode == 409) {
         var data = response.data;
         flash.showBanner(
             title: data['message'],
             description: data['errors'].join('\n'),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
       }
     }, onError: (error, stackTrace) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 
@@ -276,7 +277,8 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                     child: ElevatedButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            flash.show(const Text('Loading'), MessageType.info);
+                            flash.show(
+                                const Text('Loading'), ToastificationType.info);
                             _submit();
                           }
                         },

@@ -52,7 +52,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         TextEditingController(text: discount.discount3Nominal.toString());
     _discount4Controller =
         TextEditingController(text: discount.discount4Nominal.toString());
-    flash = Flash(context);
+    flash = Flash();
     _focusNode = FocusNode();
     super.initState();
     Future.delayed(Duration.zero, () {
@@ -150,16 +150,16 @@ class _DiscountFormPageState extends State<DiscountFormPage>
           });
         }
 
-        flash.show(const Text('Berhasil disimpan'), MessageType.success);
+        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
       } else if (response.statusCode == 409) {
         var data = response.data;
         flash.showBanner(
             title: data['message'],
             description: data['errors'].join('\n'),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
       }
     }, onError: (error, stackTrace) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     }).whenComplete(() => hideLoadingPopup());
   }
 

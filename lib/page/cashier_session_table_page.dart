@@ -45,7 +45,7 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
   @override
   void initState() {
     server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     final setting = context.read<Setting>();
     final tableColumns = setting.tableColumn('cashierSession');
     tabManager = context.read<TabManager>();
@@ -114,13 +114,13 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
           return ResponseResult<CashierSession>(totalRows: 0, models: []);
         }
       },
-              onError: (error, stackTrace) => server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: []));
+              onError: (error, stackTrace) =>
+                  defaultErrorResponse(error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
-          messageType: MessageType.failed);
+          messageType: ToastificationType.error);
       return Future(() => ResponseResult<CashierSession>(models: []));
     }
   }

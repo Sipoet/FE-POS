@@ -35,7 +35,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
 
   @override
   void initState() {
-    flash = Flash(context);
+    flash = Flash();
     super.initState();
     if (payroll.id != null) {
       Future.delayed(
@@ -59,7 +59,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
         });
       }
     }, onError: (error) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     }).whenComplete(() => hideLoadingPopup());
   }
 
@@ -113,16 +113,16 @@ class _PayrollFormPageState extends State<PayrollFormPage>
           tabManager.changeTabHeader(widget, 'Edit payroll ${payroll.name}');
         });
         fetchPayroll();
-        flash.show(const Text('Berhasil disimpan'), MessageType.success);
+        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
       } else if (response.statusCode == 409) {
         var data = response.data;
         flash.showBanner(
             title: data['message'],
             description: data['errors'].join('\n'),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
       }
     }, onError: (error, stackTrace) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 
@@ -454,8 +454,8 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                         ElevatedButton(
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
-                                flash.show(
-                                    const Text('Loading'), MessageType.info);
+                                flash.show(const Text('Loading'),
+                                    ToastificationType.info);
                                 _submit();
                               }
                             },

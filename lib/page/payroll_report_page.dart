@@ -28,7 +28,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
   @override
   void initState() {
     server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     super.initState();
     _focusNode.requestFocus();
   }
@@ -68,13 +68,14 @@ class _PayrollReportPageState extends State<PayrollReportPage>
     flash.hide();
     fetchReport(reportType: 'xlsx').then((response) {
       if (response.statusCode != 200) {
-        flash.show(const Text('gagal simpan ke excel'), MessageType.failed);
+        flash.show(
+            const Text('gagal simpan ke excel'), ToastificationType.error);
         return;
       }
       String filename = response.headers.value('content-disposition') ?? '';
       if (filename.isEmpty) {
-        flash.show(
-            const Text('gagal filename tidak ditemukan'), MessageType.failed);
+        flash.show(const Text('gagal filename tidak ditemukan'),
+            ToastificationType.error);
         return;
       }
       filename = filename.substring(
@@ -83,7 +84,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
       downloader.download(filename, response.data, 'xlsx',
           onSuccess: (String path) {
         flash.showBanner(
-            messageType: MessageType.success,
+            messageType: ToastificationType.success,
             title: 'Sukses download',
             description: 'sukses disimpan di $path');
       });

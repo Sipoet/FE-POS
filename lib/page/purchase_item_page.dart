@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/purchase.dart';
 import 'package:fe_pos/page/purchase_form_page.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -17,7 +18,7 @@ class PurchaseItemPage extends StatefulWidget {
 }
 
 class _PurchaseItemPageState extends State<PurchaseItemPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final CustomAsyncDataTableSource<PurchaseItem> _source;
   late final Server server;
   String _searchText = '';
@@ -33,7 +34,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
   @override
   void initState() {
     server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     setting = context.read<Setting>();
     _source = CustomAsyncDataTableSource<PurchaseItem>(
         columns: setting.tableColumn('ipos::PurchaseItem'),
@@ -89,13 +90,13 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
         return ResponseResult<PurchaseItem>(
             totalRows: totalRows, models: models);
       },
-              onError: (error, stackTrace) => server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: []));
+              onError: (error, stackTrace) =>
+                  defaultErrorResponse(error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
-          messageType: MessageType.failed);
+          messageType: ToastificationType.error);
       throw 'error';
     }
   }

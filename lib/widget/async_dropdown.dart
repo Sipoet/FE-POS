@@ -2,6 +2,7 @@ library dropdown_remote_multiple_menu;
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:fe_pos/model/server.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 export 'package:fe_pos/model/server.dart';
@@ -68,7 +69,7 @@ class AsyncDropdownMultiple<T extends Object> extends StatefulWidget {
 }
 
 class _AsyncDropdownMultipleState<T extends Object>
-    extends State<AsyncDropdownMultiple<T>> {
+    extends State<AsyncDropdownMultiple<T>> with DefaultResponse {
   final notFoundSign = const DropdownMenuEntry<String>(
       label: 'Data tidak Ditemukan', value: '', enabled: false);
   late final Server server;
@@ -219,10 +220,8 @@ class _AsyncDropdownMultipleState<T extends Object>
 
   Future<List<T>> getData(String filter) async {
     var response = await request(server, 1, filter, _cancelToken).onError(
-        (error, stackTrace) => {
-              server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: [])
-            });
+        (error, stackTrace) =>
+            {defaultErrorResponse(error: error, valueWhenError: [])});
     if (response.statusCode == 200) {
       Map responseBody = response.data;
       return convertToOptions(
@@ -286,7 +285,8 @@ class AsyncDropdown<T> extends StatefulWidget {
   State<AsyncDropdown<T>> createState() => _AsyncDropdownState<T>();
 }
 
-class _AsyncDropdownState<T> extends State<AsyncDropdown<T>> {
+class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
+    with DefaultResponse {
   final notFoundSign = const DropdownMenuEntry<String>(
       label: 'Data tidak Ditemukan', value: '', enabled: false);
   late final Server server;
@@ -373,10 +373,8 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>> {
 
   Future<List<T>> getData(String filter) async {
     var response = await request(server, 1, filter, _cancelToken).onError(
-        (error, stackTrace) => {
-              server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: [])
-            });
+        (error, stackTrace) =>
+            {defaultErrorResponse(error: error, valueWhenError: [])});
     if (response.statusCode == 200) {
       Map responseBody = response.data;
       return convertToOptions(

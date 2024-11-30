@@ -36,7 +36,7 @@ class _UserFormPageState extends State<UserFormPage>
   final _focusNode = FocusNode();
   @override
   void initState() {
-    flash = Flash(context);
+    flash = Flash();
     setting = context.read<Setting>();
     _server = context.read<Server>();
     if (user.username.isNotEmpty) {
@@ -68,7 +68,7 @@ class _UserFormPageState extends State<UserFormPage>
         flash.showBanner(
             title: data['message'],
             description: data['errors'].join('\n'),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
       }
     }).whenComplete(() {
       hideLoadingPopup();
@@ -101,13 +101,13 @@ class _UserFormPageState extends State<UserFormPage>
           tabManager.changeTabHeader(widget, 'Edit user ${user.username}');
         });
 
-        flash.show(const Text('Berhasil disimpan'), MessageType.success);
+        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
       } else if (response.statusCode == 409) {
         var data = response.data;
         flash.showBanner(
             title: data['message'],
             description: data['errors'].join('\n'),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
       }
     }, onError: (error, stackTrace) {
       defaultErrorResponse(error: error);
@@ -302,7 +302,8 @@ class _UserFormPageState extends State<UserFormPage>
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
                             _formKey.currentState!.save();
-                            flash.show(const Text('Loading'), MessageType.info);
+                            flash.show(
+                                const Text('Loading'), ToastificationType.info);
                             _submit();
                           }
                         },

@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/employee_attendance.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -23,7 +24,11 @@ class EmployeeFormPage extends StatefulWidget {
 }
 
 class _EmployeeFormPageState extends State<EmployeeFormPage>
-    with AutomaticKeepAliveClientMixin, LoadingPopup, HistoryPopup {
+    with
+        AutomaticKeepAliveClientMixin,
+        LoadingPopup,
+        HistoryPopup,
+        DefaultResponse {
   late Flash flash;
   final codeInputWidget = TextEditingController();
   final ImagePicker _picker = ImagePicker();
@@ -38,7 +43,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
 
   @override
   void initState() {
-    flash = Flash(context);
+    flash = Flash();
     setting = context.read<Setting>();
     _server = context.read<Server>();
     if (employee.imageCode != null) {
@@ -64,7 +69,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
         });
       }
     }, onError: (error) {
-      _server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     }).whenComplete(() => hideLoadingPopup());
   }
 
@@ -116,17 +121,17 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
           tabManager.changeTabHeader(widget, 'Edit Karyawan ${employee.code}');
         });
 
-        flash.show(const Text('Berhasil disimpan'), MessageType.success);
+        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
       } else if (response.statusCode == 409) {
         var data = response.data;
         flash.showBanner(
             title: data['message'],
             description: (data['errors'] ?? []).join('\n'),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
       }
     }, onError: (error, stackTrace) {
       request = null;
-      _server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 
@@ -139,7 +144,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     }
     if (await pickedFile.length() > 1024000000) {
       flash.showBanner(
-          messageType: MessageType.failed,
+          messageType: ToastificationType.error,
           title: 'Gagal Upload gambar',
           description: 'Gambar tidak boleh lebih dari 1MB');
       return;
@@ -156,9 +161,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
           }
         });
       }
-    },
-        onError: (error) =>
-            _server.defaultErrorResponse(context: context, error: error));
+    }, onError: (error) => defaultErrorResponse(error: error));
   }
 
   void loadImage(String imageCode) async {
@@ -170,7 +173,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
       });
     } else {
       flash.showBanner(
-          messageType: MessageType.failed,
+          messageType: ToastificationType.error,
           title: 'Gagal',
           description: 'gagal tampilkan gambar');
     }
@@ -712,7 +715,8 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                     child: ElevatedButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            flash.show(const Text('Loading'), MessageType.info);
+                            flash.show(
+                                const Text('Loading'), ToastificationType.info);
                             _submit();
                           }
                         },

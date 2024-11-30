@@ -1,4 +1,5 @@
 import 'package:fe_pos/tool/app_updater.dart';
+import 'package:fe_pos/tool/default_response.dart';
 
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -17,7 +18,8 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with AppUpdater, LoadingPopup {
+class _LoginPageState extends State<LoginPage>
+    with AppUpdater, SessionState, LoadingPopup, DefaultResponse {
   final _formKey = GlobalKey<FormState>();
   String _host = '';
   String _username = '';
@@ -26,7 +28,7 @@ class _LoginPageState extends State<LoginPage> with AppUpdater, LoadingPopup {
   late final Flash flash;
   @override
   void initState() {
-    flash = Flash(context);
+    flash = Flash();
     Server server = context.read<Server>();
     PackageInfo.fromPlatform().then((packageInfo) => setState(() {
           version = packageInfo.version;
@@ -140,49 +142,47 @@ class _LoginPageState extends State<LoginPage> with AppUpdater, LoadingPopup {
 
   void _submit() async {
     showLoadingPopup();
-    SessionState sessionState = context.read<SessionState>();
     Server server = context.read<Server>();
     _formKey.currentState?.save();
     try {
-      sessionState
-          .login(
-              server: server,
-              host: _host,
-              context: context,
-              username: _username,
-              password: _password,
-              onSuccess: (response) {
-                fetchSetting(server);
-                flash.hide();
-                var body = response.data;
-                flash.showBanner(
-                    title: body['message'], messageType: MessageType.success);
-              },
-              onFailed: (response) {
-                flash.hide();
-                if (response.statusCode == 308) {
-                  flash.show(const Text('status 308'), MessageType.warning);
-                  return;
-                }
-                String body = '';
-                if (response?.data is Map) {
-                  body = response?.data?['error'] ?? '';
-                } else if (response?.data is String) {
-                  body = response.data;
-                }
-                flash.show(
-                    Text(
-                      body,
-                    ),
-                    MessageType.failed);
-              })
-          .whenComplete(() => hideLoadingPopup());
+      login(
+          server: server,
+          host: _host,
+          context: context,
+          username: _username,
+          password: _password,
+          onSuccess: (response) {
+            fetchSetting(server);
+            flash.hide();
+            var body = response.data;
+            flash.showBanner(
+                title: body['message'],
+                messageType: ToastificationType.success);
+          },
+          onFailed: (response) {
+            flash.hide();
+            if (response.statusCode == 308) {
+              flash.show(const Text('status 308'), ToastificationType.warning);
+              return;
+            }
+            String body = '';
+            if (response?.data is Map) {
+              body = response?.data?['error'] ?? '';
+            } else if (response?.data is String) {
+              body = response.data;
+            }
+            flash.show(
+                Text(
+                  body,
+                ),
+                ToastificationType.error);
+          }).whenComplete(() => hideLoadingPopup());
     } catch (error) {
       flash.show(
           Text(
             error.toString(),
           ),
-          MessageType.failed);
+          ToastificationType.error);
       hideLoadingPopup();
     }
   }
@@ -199,7 +199,7 @@ class _LoginPageState extends State<LoginPage> with AppUpdater, LoadingPopup {
       }
     },
         onError: (error) => flash.show(
-            Text(error.toString()), MessageType.failed)).whenComplete(() {
+            Text(error.toString()), ToastificationType.error)).whenComplete(() {
       _redirectToHomePage();
     });
   }

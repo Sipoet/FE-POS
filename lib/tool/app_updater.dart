@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:fe_pos/model/server.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,8 @@ import 'package:fe_pos/tool/file_saver.dart';
 import 'package:open_file/open_file.dart';
 import 'package:yaml/yaml.dart';
 
-mixin AppUpdater<T extends StatefulWidget> on State<T> {
+mixin AppUpdater<T extends StatefulWidget> on State<T>
+    implements DefaultResponse<T> {
   bool _isDownloading = false;
   late String latestVersion;
   late String localVersion;
@@ -35,9 +37,7 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
           _showConfirmDialog(server, platform);
         }
       }
-    },
-            onError: (error) =>
-                server.defaultErrorResponse(context: context, error: error));
+    }, onError: (error) => defaultErrorResponse(error: error));
   }
 
   bool isOlderVersion() {
@@ -122,6 +122,7 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
     final path = _downloadPath[platform];
     final extFile = path.split('.').last;
     DartPluginRegistrant.ensureInitialized();
+    final navigator = Navigator.of(context);
     fileSaver.downloadPath('allegra-pos', extFile).then((String? filePath) {
       if (filePath != null) {
         setStateDialog(
@@ -153,16 +154,14 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
                 return;
               } else {
                 debugPrint('====success open file');
-                Navigator.of(context).pop();
+                navigator.pop();
               }
-            },
-                onError: (error) => server.defaultErrorResponse(
-                    context: context, error: error));
+            }, onError: (error) => defaultErrorResponse(error: error));
           } else if (platform == TargetPlatform.windows) {
             await installApp(filePath);
           } else {
-            Flash(context).showBanner(
-                messageType: MessageType.success,
+            Flash().showBanner(
+                messageType: ToastificationType.success,
                 title: 'Sukses download APP',
                 description: 'file installer terinstall di $filePath');
           }
@@ -171,7 +170,7 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
             _message = 'gagal download installer';
             _isDownloading = false;
           });
-          server.defaultErrorResponse(context: context, error: error);
+          defaultErrorResponse(error: error);
         });
       }
     }, onError: (error) {
@@ -189,8 +188,9 @@ mixin AppUpdater<T extends StatefulWidget> on State<T> {
   }
 
   Future installApp(String filePath) {
+    final navigator = Navigator.of(context);
     return Process.run(filePath, []).then((ProcessResult results) {
-      Navigator.of(context).pop();
+      navigator.pop();
     });
   }
 }

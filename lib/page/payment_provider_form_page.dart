@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/edc_settlement.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -20,7 +21,11 @@ class PaymentProviderFormPage extends StatefulWidget {
 }
 
 class _PaymentProviderFormPageState extends State<PaymentProviderFormPage>
-    with AutomaticKeepAliveClientMixin, HistoryPopup, LoadingPopup {
+    with
+        AutomaticKeepAliveClientMixin,
+        HistoryPopup,
+        LoadingPopup,
+        DefaultResponse {
   late Flash flash;
   late final Setting setting;
   final _formKey = GlobalKey<FormState>();
@@ -32,7 +37,7 @@ class _PaymentProviderFormPageState extends State<PaymentProviderFormPage>
   @override
   void initState() {
     setting = context.read<Setting>();
-    flash = Flash(context);
+    flash = Flash();
 
     super.initState();
     if (paymentProvider.id != null) {
@@ -54,7 +59,7 @@ class _PaymentProviderFormPageState extends State<PaymentProviderFormPage>
         });
       }
     }, onError: (error) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     }).whenComplete(() => hideLoadingPopup());
   }
 
@@ -95,16 +100,16 @@ class _PaymentProviderFormPageState extends State<PaymentProviderFormPage>
           tabManager.changeTabHeader(
               widget, 'Edit Payment Provider ${paymentProvider.id}');
         });
-        flash.show(const Text('Berhasil disimpan'), MessageType.success);
+        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
       } else if (response.statusCode == 409) {
         final data = response.data;
         flash.showBanner(
             title: data['message'],
             description: data['errors'].join('\n'),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
       }
     }, onError: (error, stackTrace) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 
@@ -401,7 +406,8 @@ class _PaymentProviderFormPageState extends State<PaymentProviderFormPage>
                   child: ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          flash.show(const Text('Loading'), MessageType.info);
+                          flash.show(
+                              const Text('Loading'), ToastificationType.info);
                           _submit();
                         }
                       },

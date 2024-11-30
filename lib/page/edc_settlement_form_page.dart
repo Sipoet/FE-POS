@@ -39,7 +39,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
 
   @override
   void initState() {
-    flash = Flash(context);
+    flash = Flash();
     server = context.read<Server>();
     setting = context.read<Setting>();
     super.initState();
@@ -312,14 +312,14 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
             body: bodyParam)
         .then((response) {
       if (response.statusCode == 200) {
-        flash.show(const Text('Berhasil disimpan'), MessageType.success);
+        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
         fetchEdcSettlement();
       } else {
         var data = response.data;
         flash.showBanner(
             title: data['message'],
             description: (data['errors'] ?? []).join('\n'),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
       }
     }, onError: (error) {}).whenComplete(() => hideLoadingPopup());
   }

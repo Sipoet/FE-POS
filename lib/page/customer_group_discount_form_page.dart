@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/customer_group_discount.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -23,7 +24,11 @@ class CustomerGroupDiscountFormPage extends StatefulWidget {
 
 class _CustomerGroupDiscountFormPageState
     extends State<CustomerGroupDiscountFormPage>
-    with AutomaticKeepAliveClientMixin, LoadingPopup, HistoryPopup {
+    with
+        AutomaticKeepAliveClientMixin,
+        LoadingPopup,
+        HistoryPopup,
+        DefaultResponse {
   late Flash flash;
   final _formKey = GlobalKey<FormState>();
   CustomerGroupDiscount get customerGroupDiscount =>
@@ -36,7 +41,7 @@ class _CustomerGroupDiscountFormPageState
 
   @override
   void initState() {
-    flash = Flash(context);
+    flash = Flash();
     setting = context.read<Setting>();
     _server = context.read<Server>();
     super.initState();
@@ -75,17 +80,17 @@ class _CustomerGroupDiscountFormPageState
               widget, 'Edit Karyawan ${customerGroupDiscount.id}');
         });
 
-        flash.show(const Text('Berhasil disimpan'), MessageType.success);
+        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
       } else if (response.statusCode == 409) {
         var data = response.data;
         flash.showBanner(
             title: data['message'],
             description: (data['errors'] ?? []).join('\n'),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
       }
     }, onError: (error, stackTrace) {
       request = null;
-      _server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 
@@ -477,7 +482,8 @@ class _CustomerGroupDiscountFormPageState
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
                             _formKey.currentState!.save();
-                            flash.show(const Text('Loading'), MessageType.info);
+                            flash.show(
+                                const Text('Loading'), ToastificationType.info);
                             _submit();
                           }
                         },

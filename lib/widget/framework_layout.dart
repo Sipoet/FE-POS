@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/user.dart';
 import 'package:fe_pos/page/user_form_page.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/desktop_layout.dart';
@@ -21,7 +22,7 @@ class FrameworkLayout extends StatefulWidget {
 }
 
 class _FrameworkLayoutState extends State<FrameworkLayout>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, SessionState, DefaultResponse {
   List<Menu> menuTree = [];
 
   late TabManager tabManager;
@@ -338,7 +339,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
         },
       )
     ];
-    flash = Flash(context);
+    flash = Flash();
     tabManager = TabManager(this);
     tabManager.addTab('Home', const HomePage());
     PackageInfo.fromPlatform().then((packageInfo) => setState(() {
@@ -378,17 +379,16 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
   }
 
   void _logout() {
-    SessionState sessionState = context.read<SessionState>();
     Server server = context.read<Server>();
     try {
-      sessionState.logout(
+      logout(
           server: server,
           context: context,
           onSuccess: (response) {
             var body = response.data;
             flash.showBanner(
               title: body['message'],
-              messageType: MessageType.success,
+              messageType: ToastificationType.success,
             );
             // Navigator.pop(context);
             Navigator.pushReplacement(
@@ -402,14 +402,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 Text(
                   body['error'],
                 ),
-                MessageType.failed);
+                ToastificationType.error);
           });
     } catch (error) {
       flash.show(
           Text(
             error.toString(),
           ),
-          MessageType.failed);
+          ToastificationType.error);
     }
   }
 }

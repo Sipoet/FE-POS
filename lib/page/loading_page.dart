@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/page/login_page.dart';
@@ -16,7 +17,8 @@ class LoadingPage extends StatefulWidget {
   State<LoadingPage> createState() => _LoadingPageState();
 }
 
-class _LoadingPageState extends State<LoadingPage> {
+class _LoadingPageState extends State<LoadingPage>
+    with DefaultResponse, SessionState {
   late Setting setting;
   @override
   void initState() {
@@ -28,6 +30,7 @@ class _LoadingPageState extends State<LoadingPage> {
 
   void fetchSetting(Server server) async {
     setting = context.read<Setting>();
+    final navigator = Navigator.of(context);
     server.get('settings').then((response) {
       try {
         if (response.statusCode == 200) {
@@ -44,13 +47,12 @@ class _LoadingPageState extends State<LoadingPage> {
           content: Text(error.toString()),
           actions: [
             ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('close'))
+                onPressed: () => navigator.pop(), child: const Text('close'))
           ],
         );
       }
     }).whenComplete(() {
-      Navigator.pushReplacement(context,
+      navigator.pushReplacement(
           MaterialPageRoute(builder: (context) => const FrameworkLayout()));
     });
   }
@@ -129,14 +131,14 @@ class _LoadingPageState extends State<LoadingPage> {
   void reroute() {
     try {
       initializeDateFormatting('id_ID', null);
-      SessionState sessionState = context.read<SessionState>();
       Server server = context.read<Server>();
-      sessionState.fetchServerData(server).then((isLogin) {
+      final navigator = Navigator.of(context);
+      fetchServerData(server).then((isLogin) {
         try {
           if (isLogin) {
             fetchSetting(server);
           } else {
-            Navigator.pushReplacement(context,
+            navigator.pushReplacement(
                 MaterialPageRoute(builder: (context) => const LoginPage()));
           }
         } catch (error) {
@@ -150,9 +152,7 @@ class _LoadingPageState extends State<LoadingPage> {
             ],
           );
         }
-      },
-          onError: (error) =>
-              server.defaultErrorResponse(context: context, error: error));
+      }, onError: (error) => defaultErrorResponse(error: error));
     } catch (error) {
       AlertDialog(
         title: const Text('Error'),

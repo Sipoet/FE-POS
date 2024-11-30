@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/payroll_type.dart';
 import 'package:fe_pos/page/payroll_type_form_page.dart';
@@ -17,7 +18,7 @@ class PayrollTypePage extends StatefulWidget {
 }
 
 class _PayrollTypePageState extends State<PayrollTypePage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final CustomAsyncDataTableSource<PayrollType> _source;
   late final Server server;
 
@@ -32,7 +33,7 @@ class _PayrollTypePageState extends State<PayrollTypePage>
   @override
   void initState() {
     server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     final setting = context.read<Setting>();
     _source = CustomAsyncDataTableSource<PayrollType>(
         columns: setting.tableColumn('payrollType'),
@@ -86,13 +87,13 @@ class _PayrollTypePageState extends State<PayrollTypePage>
         return ResponseResult<PayrollType>(
             models: models, totalRows: totalRows);
       },
-              onError: (error, stackTrace) => server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: []));
+              onError: (error, stackTrace) =>
+                  defaultErrorResponse(error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
-          messageType: MessageType.failed);
+          messageType: ToastificationType.error);
       return Future(() => ResponseResult<PayrollType>(models: []));
     }
   }
@@ -156,13 +157,13 @@ class _PayrollTypePageState extends State<PayrollTypePage>
           server.delete('/payroll_types/${payrollType.id}').then((response) {
             if (response.statusCode == 200) {
               flash.showBanner(
-                  messageType: MessageType.success,
+                  messageType: ToastificationType.success,
                   title: 'Sukses Hapus',
                   description: 'Sukses Hapus payrollType ${payrollType.name}');
               refreshTable();
             }
           }, onError: (error) {
-            server.defaultErrorResponse(context: context, error: error);
+            defaultErrorResponse(error: error);
           });
         });
   }

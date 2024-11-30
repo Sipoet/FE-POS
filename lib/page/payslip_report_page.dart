@@ -38,7 +38,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
   late final Flash flash;
   @override
   void initState() {
-    flash = Flash(context);
+    flash = Flash();
     super.initState();
   }
 
@@ -102,7 +102,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
           'xlsx',
           onSuccess: (path) {
             flash.showBanner(
-                messageType: MessageType.success,
+                messageType: ToastificationType.success,
                 title: 'Sukses download',
                 description: 'sukses disimpan di $path');
           },

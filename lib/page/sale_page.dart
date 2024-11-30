@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/sale.dart';
 import 'package:fe_pos/page/sale_form_page.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -17,7 +18,7 @@ class SalePage extends StatefulWidget {
 }
 
 class _SalePageState extends State<SalePage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final CustomAsyncDataTableSource<Sale> _source;
   late final Server server;
   String _searchText = '';
@@ -33,7 +34,7 @@ class _SalePageState extends State<SalePage>
   @override
   void initState() {
     server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     setting = context.read<Setting>();
     _source = CustomAsyncDataTableSource<Sale>(
         columns: setting.tableColumn('ipos::Sale'), fetchData: fetchSales);
@@ -87,13 +88,13 @@ class _SalePageState extends State<SalePage>
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<Sale>(totalRows: totalRows, models: models);
       },
-              onError: (error, stackTrace) => server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: []));
+              onError: (error, stackTrace) =>
+                  defaultErrorResponse(error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
-          messageType: MessageType.failed);
+          messageType: ToastificationType.error);
       throw 'error';
     }
   }

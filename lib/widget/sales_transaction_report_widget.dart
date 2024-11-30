@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/sales_transaction_report.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +21,7 @@ class _SalesTransactionReportWidgetState
     with
         TickerProviderStateMixin,
         AutomaticKeepAliveClientMixin,
+        DefaultResponse,
         TextFormatter {
   late SalesTransactionReport salesTransactionReport;
   CancelToken cancelToken = CancelToken();
@@ -78,8 +80,8 @@ class _SalesTransactionReportWidgetState
         });
       }
     },
-            onError: (error, stack) => server.defaultErrorResponse(
-                context: context, error: error)).whenComplete(() {
+            onError: (error, stack) =>
+                defaultErrorResponse(error: error)).whenComplete(() {
       if (_controller.isAnimating) _controller.reset();
     });
   }

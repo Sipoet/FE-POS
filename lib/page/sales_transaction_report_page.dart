@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
@@ -16,7 +17,7 @@ class SalesTransactionReportPage extends StatefulWidget {
 }
 
 class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, DefaultResponse {
   late DateTimeRange range;
   late Server server;
   List requestControllers = [];
@@ -37,7 +38,7 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
         end: endOfDay(now
             .copyWith(month: now.month + 1, day: 1)
             .subtract(const Duration(days: 1))));
-    flash = Flash(context);
+    flash = Flash();
     server = context.read<Server>();
     final setting = context.read<Setting>();
     columns = setting.tableColumn('salesTransactionReport');
@@ -60,7 +61,7 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
   void _refreshTable(DateTimeRange range) {
     flash.show(
       const Text('Dalam proses.'),
-      MessageType.info,
+      ToastificationType.info,
     );
     var start = range.start;
     var end = range.end;
@@ -79,9 +80,7 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
         setState(() {
           stateManager?.appendModel(salesTransactionReport);
         });
-      },
-          onError: (error, trace) =>
-              server.defaultErrorResponse(context: context, error: error));
+      }, onError: (error, trace) => defaultErrorResponse(error: error));
       requestControllers.add(request);
       start = start.add(const Duration(days: 1));
     }

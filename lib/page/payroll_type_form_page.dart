@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -16,7 +17,11 @@ class PayrollTypeFormPage extends StatefulWidget {
 }
 
 class _PayrollTypeFormPageState extends State<PayrollTypeFormPage>
-    with AutomaticKeepAliveClientMixin, HistoryPopup, LoadingPopup {
+    with
+        AutomaticKeepAliveClientMixin,
+        HistoryPopup,
+        LoadingPopup,
+        DefaultResponse {
   late final Flash flash;
   final focusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
@@ -27,7 +32,7 @@ class _PayrollTypeFormPageState extends State<PayrollTypeFormPage>
 
   @override
   void initState() {
-    flash = Flash(context);
+    flash = Flash();
     super.initState();
     focusNode.requestFocus();
   }
@@ -57,16 +62,16 @@ class _PayrollTypeFormPageState extends State<PayrollTypeFormPage>
           tabManager.changeTabHeader(
               widget, 'Edit Payroll Type ${payrollType.name}');
         });
-        flash.show(const Text('Berhasil disimpan'), MessageType.success);
+        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
       } else if (response.statusCode == 409) {
         var data = response.data;
         flash.showBanner(
             title: data['message'],
             description: data['errors'].join('\n'),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
       }
     }, onError: (error, stackTrace) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 
@@ -176,7 +181,8 @@ class _PayrollTypeFormPageState extends State<PayrollTypeFormPage>
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
                             _formKey.currentState!.save();
-                            flash.show(const Text('Loading'), MessageType.info);
+                            flash.show(
+                                const Text('Loading'), ToastificationType.info);
                             _submit();
                           }
                         },

@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:fe_pos/model/server.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 export 'package:fe_pos/model/server.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class SessionState extends ChangeNotifier {
+mixin SessionState<T extends StatefulWidget> on State<T>
+    implements DefaultResponse<T> {
   final _storage = const FlutterSecureStorage();
 
   Future fetchServerData(Server server) async {
@@ -65,21 +67,21 @@ class SessionState extends ChangeNotifier {
           onFailed(response);
         }
       } catch (error) {
-        final flash = Flash(context);
-        flash.show(Text(error.toString()), MessageType.failed);
+        final flash = Flash();
+        flash.show(Text(error.toString()), ToastificationType.error);
       }
     }, onError: (error, stackTrace) {
-      final flash = Flash(context);
+      final flash = Flash();
       flash.show(
           Text(
             "${error.toString()} ${stackTrace.toString()}",
             style: const TextStyle(fontSize: 9),
           ),
-          MessageType.failed);
+          ToastificationType.error);
       if (error.type == DioExceptionType.badResponse) {
         onFailed(error.response);
       } else {
-        server.defaultErrorResponse(context: context, error: error);
+        defaultErrorResponse(error: error);
       }
     });
   }
@@ -97,8 +99,7 @@ class SessionState extends ChangeNotifier {
               else
                 {onFailed(response)}
             },
-        onError: (error, stackTrace) =>
-            server.defaultErrorResponse(context: context, error: error));
+        onError: (error, stackTrace) => defaultErrorResponse(error: error));
   }
 
   void saveSession(Server server) async {

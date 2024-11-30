@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/employee_leave.dart';
 import 'package:fe_pos/page/employee_leave_form_page.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -18,7 +19,7 @@ class EmployeeLeavePage extends StatefulWidget {
 }
 
 class _EmployeeLeavePageState extends State<EmployeeLeavePage>
-    with AutomaticKeepAliveClientMixin, TextFormatter {
+    with AutomaticKeepAliveClientMixin, TextFormatter, DefaultResponse {
   late final CustomAsyncDataTableSource<EmployeeLeave> _source;
   late final Server server;
   String _searchText = '';
@@ -33,7 +34,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
   @override
   void initState() {
     server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     setting = context.read<Setting>();
     _source = CustomAsyncDataTableSource<EmployeeLeave>(
         columns: setting.tableColumn('employeeLeave'),
@@ -90,13 +91,13 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
         return ResponseResult<EmployeeLeave>(
             totalRows: totalRows, models: models);
       },
-              onError: (error, stackTrace) => server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: []));
+              onError: (error, stackTrace) =>
+                  defaultErrorResponse(error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
-          messageType: MessageType.failed);
+          messageType: ToastificationType.error);
       return Future(
           () => ResponseResult<EmployeeLeave>(models: [], totalRows: 0));
     }
@@ -169,14 +170,14 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
               (response) {
             if (response.statusCode == 200) {
               flash.showBanner(
-                  messageType: MessageType.success,
+                  messageType: ToastificationType.success,
                   title: 'Sukses Hapus',
                   description:
                       'Sukses Hapus employee_leave ${employeeLeave.employee.name}');
               refreshTable();
             }
           }, onError: (error) {
-            server.defaultErrorResponse(context: context, error: error);
+            defaultErrorResponse(error: error);
           });
         });
   }

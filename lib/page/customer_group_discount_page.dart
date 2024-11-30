@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/customer_group_discount.dart';
 import 'package:fe_pos/page/customer_group_discount_form_page.dart';
@@ -18,7 +19,7 @@ class CustomerGroupDiscountPage extends StatefulWidget {
 }
 
 class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final CustomAsyncDataTableSource<CustomerGroupDiscount> _source;
   late final Server server;
   final _menuController = MenuController();
@@ -33,7 +34,7 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
   @override
   void initState() {
     server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     final setting = context.read<Setting>();
     _source = CustomAsyncDataTableSource<CustomerGroupDiscount>(
         columns: setting.tableColumn('customerGroupDiscount'),
@@ -95,12 +96,12 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
         flash.showBanner(
             title: e.toString(),
             description: trace.toString(),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
         return Future(() => ResponseResult<CustomerGroupDiscount>(models: []));
       }
     },
-            onError: (error, stackTrace) => server.defaultErrorResponse(
-                context: context, error: error, valueWhenError: []));
+            onError: (error, stackTrace) =>
+                defaultErrorResponse(error: error, valueWhenError: []));
   }
 
   void addForm() {
@@ -166,14 +167,14 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
               .then((response) {
             if (response.statusCode == 200) {
               flash.showBanner(
-                  messageType: MessageType.success,
+                  messageType: ToastificationType.success,
                   title: 'Sukses Hapus',
                   description:
                       'Sukses Hapus customer Group Discount ${customerGroupDiscount.id}');
               refreshTable();
             }
           }, onError: (error) {
-            server.defaultErrorResponse(context: context, error: error);
+            defaultErrorResponse(error: error);
           });
         });
   }
@@ -196,9 +197,9 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
     server.post('/customer_group_discounts/toggle_discount').then(
       (response) {
         if (response.statusCode == 200) {
-          flash.show(const Text('Sedang diproses'), MessageType.info);
+          flash.show(const Text('Sedang diproses'), ToastificationType.info);
         } else {
-          flash.show(const Text('Gagal diproses'), MessageType.failed);
+          flash.show(const Text('Gagal diproses'), ToastificationType.error);
         }
       },
     );

@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/table_filter_form.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
@@ -17,7 +18,7 @@ class PaymentMethodPage extends StatefulWidget {
 }
 
 class _PaymentMethodPageState extends State<PaymentMethodPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final CustomAsyncDataTableSource<PaymentMethod> _source;
   late final Server server;
   String _searchText = '';
@@ -32,7 +33,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
   @override
   void initState() {
     server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     final setting = context.read<Setting>();
     _source = CustomAsyncDataTableSource<PaymentMethod>(
         actionButtons: actionButtons,
@@ -93,13 +94,13 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
         return ResponseResult<PaymentMethod>(
             totalRows: totalRows, models: responsedModels);
       },
-              onError: (error, stackTrace) => server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: []));
+              onError: (error, stackTrace) =>
+                  defaultErrorResponse(error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
-          messageType: MessageType.failed);
+          messageType: ToastificationType.error);
       return Future(() => ResponseResult<PaymentMethod>(models: []));
     }
   }

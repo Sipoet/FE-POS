@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/transfer.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -24,7 +25,8 @@ class _TransferFormPageState extends State<TransferFormPage>
         AutomaticKeepAliveClientMixin,
         LoadingPopup,
         HistoryPopup,
-        TextFormatter {
+        TextFormatter,
+        DefaultResponse {
   late Flash flash;
 
   final _formKey = GlobalKey<FormState>();
@@ -36,7 +38,7 @@ class _TransferFormPageState extends State<TransferFormPage>
   bool get wantKeepAlive => true;
   @override
   void initState() {
-    flash = Flash(context);
+    flash = Flash();
     setting = context.read<Setting>();
     _server = context.read<Server>();
 
@@ -65,7 +67,7 @@ class _TransferFormPageState extends State<TransferFormPage>
         });
       }
     }, onError: (error) {
-      _server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     }).whenComplete(() => hideLoadingPopup());
   }
 

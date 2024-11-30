@@ -2,6 +2,7 @@ import 'package:fe_pos/model/employee_attendance.dart';
 import 'package:fe_pos/page/employee_attendance_form_page.dart';
 import 'package:fe_pos/page/employee_attendance_mass_upload_page.dart';
 import 'package:fe_pos/page/mass_update_allowed_overtime_form_page.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -20,7 +21,7 @@ class EmployeeAttendancePage extends StatefulWidget {
 }
 
 class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
-    with AutomaticKeepAliveClientMixin, TextFormatter {
+    with AutomaticKeepAliveClientMixin, TextFormatter, DefaultResponse {
   late final CustomAsyncDataTableSource<EmployeeAttendance> _source;
   late final Server server;
   String _searchText = '';
@@ -36,7 +37,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
   @override
   void initState() {
     server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     setting = context.read<Setting>();
     _source = CustomAsyncDataTableSource<EmployeeAttendance>(
         columns: setting.tableColumn('employeeAttendance'),
@@ -96,13 +97,13 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
         return ResponseResult<EmployeeAttendance>(
             totalRows: totalRows, models: models);
       },
-              onError: (error, stackTrace) => server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: []));
+              onError: (error, stackTrace) =>
+                  defaultErrorResponse(error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
-          messageType: MessageType.failed);
+          messageType: ToastificationType.error);
       return Future(
           () => ResponseResult<EmployeeAttendance>(totalRows: 0, models: []));
     }
@@ -181,14 +182,14 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
               (response) {
             if (response.statusCode == 200) {
               flash.showBanner(
-                  messageType: MessageType.success,
+                  messageType: ToastificationType.success,
                   title: 'Sukses Hapus',
                   description:
                       'Sukses Hapus employee_attendance ${employeeAttendance.employee.name}');
               refreshTable();
             }
           }, onError: (error) {
-            server.defaultErrorResponse(context: context, error: error);
+            defaultErrorResponse(error: error);
           });
         });
   }

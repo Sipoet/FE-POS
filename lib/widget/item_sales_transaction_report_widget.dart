@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -28,7 +29,8 @@ class _ItemSalesTransactionReportWidgetState
     with
         TickerProviderStateMixin,
         AutomaticKeepAliveClientMixin,
-        TextFormatter {
+        TextFormatter,
+        DefaultResponse {
   List results = [];
   late final Setting setting;
   late AnimationController _controller;
@@ -92,8 +94,8 @@ class _ItemSalesTransactionReportWidgetState
         });
       }
     },
-        onError: (error, stack) => server.defaultErrorResponse(
-            context: context, error: error)).whenComplete(() {
+        onError: (error, stack) =>
+            defaultErrorResponse(error: error)).whenComplete(() {
       if (_controller.isAnimating) {
         _controller.stop();
         _controller.reset();

@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/item_type.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
@@ -14,7 +15,7 @@ class ItemTypePage extends StatefulWidget {
   State<ItemTypePage> createState() => _ItemTypePageState();
 }
 
-class _ItemTypePageState extends State<ItemTypePage> {
+class _ItemTypePageState extends State<ItemTypePage> with DefaultResponse {
   late final CustomAsyncDataTableSource<ItemType> _source;
   late final Server server;
   String _searchText = '';
@@ -26,7 +27,7 @@ class _ItemTypePageState extends State<ItemTypePage> {
   @override
   void initState() {
     server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     setting = context.read<Setting>();
     _source = CustomAsyncDataTableSource<ItemType>(
         columns: setting.tableColumn('ipos::ItemType'),
@@ -81,13 +82,13 @@ class _ItemTypePageState extends State<ItemTypePage> {
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<ItemType>(models: models, totalRows: totalRows);
       },
-              onError: (error, stackTrace) => server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: []));
+              onError: (error, stackTrace) =>
+                  defaultErrorResponse(error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
-          messageType: MessageType.failed);
+          messageType: ToastificationType.error);
       return Future(() => ResponseResult<ItemType>(models: []));
     }
   }

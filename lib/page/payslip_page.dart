@@ -1,6 +1,7 @@
 import 'package:fe_pos/model/payslip.dart';
 import 'package:fe_pos/page/payslip_form_page.dart';
 import 'package:fe_pos/page/generate_payslip_form_page.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -18,7 +19,7 @@ class PayslipPage extends StatefulWidget {
 }
 
 class _PayslipPageState extends State<PayslipPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final CustomAsyncDataTableSource<Payslip> _source;
   late final Server server;
   String _searchText = '';
@@ -33,7 +34,7 @@ class _PayslipPageState extends State<PayslipPage>
   @override
   void initState() {
     server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     final setting = context.read<Setting>();
     _source = CustomAsyncDataTableSource<Payslip>(
         columns: setting.tableColumn('payslip'), fetchData: fetchPayslips);
@@ -88,13 +89,13 @@ class _PayslipPageState extends State<PayslipPage>
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<Payslip>(models: models, totalRows: totalRows);
       },
-              onError: (error, stackTrace) => server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: []));
+              onError: (error, stackTrace) =>
+                  defaultErrorResponse(error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
-          messageType: MessageType.failed);
+          messageType: ToastificationType.error);
       return Future(() => ResponseResult<Payslip>(models: []));
     }
   }
@@ -152,13 +153,13 @@ class _PayslipPageState extends State<PayslipPage>
           server.delete('/payslips/${payslip.id}').then((response) {
             if (response.statusCode == 200) {
               flash.showBanner(
-                  messageType: MessageType.success,
+                  messageType: ToastificationType.success,
                   title: 'Sukses Hapus',
                   description: 'Sukses Hapus Slip Gaji ${payslip.id}');
               refreshTable();
             }
           }, onError: (error) {
-            server.defaultErrorResponse(context: context, error: error);
+            defaultErrorResponse(error: error);
           });
         });
   }

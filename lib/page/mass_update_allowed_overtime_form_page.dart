@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
@@ -20,7 +21,7 @@ class MassUpdateAllowedOvertimeFormPage extends StatefulWidget {
 
 class _MassUpdateAllowedOvertimeFormPageState
     extends State<MassUpdateAllowedOvertimeFormPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, DefaultResponse {
   late Server _server;
   final _focusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
@@ -34,7 +35,7 @@ class _MassUpdateAllowedOvertimeFormPageState
   @override
   void initState() {
     _server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     final setting = context.read<Setting>();
     _source = SyncDataTableSource<EmployeeAttendance>(
         columns: setting.tableColumn('employeeAttendance'));
@@ -128,8 +129,8 @@ class _MassUpdateAllowedOvertimeFormPageState
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
                               _formKey.currentState!.save();
-                              flash.show(
-                                  const Text('Loading'), MessageType.info);
+                              flash.show(const Text('Loading'),
+                                  ToastificationType.info);
                               _submit();
                             }
                           },
@@ -159,7 +160,7 @@ class _MassUpdateAllowedOvertimeFormPageState
         .then((response) {
       if (response.statusCode == 200) {
         flash.showBanner(
-            messageType: MessageType.success,
+            messageType: ToastificationType.success,
             title: 'Berhasil update Absensi Karyawan');
         final json = response.data;
         final employeeAttendances = json['data']
@@ -171,14 +172,14 @@ class _MassUpdateAllowedOvertimeFormPageState
           _source.setData(employeeAttendances);
         });
       } else {
-        final flash = Flash(context);
+        final flash = Flash();
         flash.showBanner(
-            messageType: MessageType.failed,
+            messageType: ToastificationType.error,
             title: 'Gagal update Absensi Karyawan',
             description: response.data['message']);
       }
     }, onError: (error) {
-      _server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 }

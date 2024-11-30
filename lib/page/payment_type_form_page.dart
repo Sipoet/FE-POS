@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -16,7 +17,11 @@ class PaymentTypeFormPage extends StatefulWidget {
 }
 
 class _PaymentTypeFormPageState extends State<PaymentTypeFormPage>
-    with AutomaticKeepAliveClientMixin, HistoryPopup, LoadingPopup {
+    with
+        AutomaticKeepAliveClientMixin,
+        HistoryPopup,
+        LoadingPopup,
+        DefaultResponse {
   late final Flash flash;
   final codeInputWidget = TextEditingController();
 
@@ -28,7 +33,7 @@ class _PaymentTypeFormPageState extends State<PaymentTypeFormPage>
 
   @override
   void initState() {
-    flash = Flash(context);
+    flash = Flash();
     super.initState();
     if (paymentType.id != null) {
       Future.delayed(Duration.zero, fetchPaymentType);
@@ -49,7 +54,7 @@ class _PaymentTypeFormPageState extends State<PaymentTypeFormPage>
         });
       }
     }, onError: (error) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     }).whenComplete(() => hideLoadingPopup());
   }
 
@@ -78,16 +83,16 @@ class _PaymentTypeFormPageState extends State<PaymentTypeFormPage>
           tabManager.changeTabHeader(
               widget, 'Edit paymentType ${paymentType.name}');
         });
-        flash.show(const Text('Berhasil disimpan'), MessageType.success);
+        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
       } else if (response.statusCode == 409) {
         var data = response.data;
         flash.showBanner(
             title: data['message'],
             description: data['errors'].join('\n'),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
       }
     }, onError: (error, stackTrace) {
-      server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 
@@ -139,7 +144,8 @@ class _PaymentTypeFormPageState extends State<PaymentTypeFormPage>
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
                             _formKey.currentState!.save();
-                            flash.show(const Text('Loading'), MessageType.info);
+                            flash.show(
+                                const Text('Loading'), ToastificationType.info);
                             _submit();
                           }
                         },

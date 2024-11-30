@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/bank.dart';
 import 'package:fe_pos/model/payment_method.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -17,7 +18,11 @@ class PaymentMethodFormPage extends StatefulWidget {
 }
 
 class _PaymentMethodFormPageState extends State<PaymentMethodFormPage>
-    with AutomaticKeepAliveClientMixin, LoadingPopup, HistoryPopup {
+    with
+        AutomaticKeepAliveClientMixin,
+        LoadingPopup,
+        HistoryPopup,
+        DefaultResponse {
   final _formKey = GlobalKey<FormState>();
   PaymentMethod get paymentMethod => widget.paymentMethod;
   late final Server _server;
@@ -28,7 +33,7 @@ class _PaymentMethodFormPageState extends State<PaymentMethodFormPage>
 
   @override
   void initState() {
-    flash = Flash(context);
+    flash = Flash();
     _server = context.read<Server>();
     super.initState();
   }
@@ -56,16 +61,16 @@ class _PaymentMethodFormPageState extends State<PaymentMethodFormPage>
               widget, 'Edit Karyawan ${paymentMethod.name}');
         });
 
-        flash.show(const Text('Berhasil disimpan'), MessageType.success);
+        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
       } else if (response.statusCode == 409) {
         var data = response.data;
         flash.showBanner(
             title: data['message'],
             description: (data['errors'] ?? []).join('\n'),
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
       }
     }, onError: (error, stackTrace) {
-      _server.defaultErrorResponse(context: context, error: error);
+      defaultErrorResponse(error: error);
     });
   }
 
@@ -147,7 +152,7 @@ class _PaymentMethodFormPageState extends State<PaymentMethodFormPage>
                                     onPressed: () {
                                       if (_formKey.currentState!.validate()) {
                                         flash.show(const Text('Loading'),
-                                            MessageType.info);
+                                            ToastificationType.info);
                                         _submit();
                                       }
                                     },

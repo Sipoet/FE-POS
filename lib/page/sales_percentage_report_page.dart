@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/model/item_sales_percentage_report.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -18,7 +19,7 @@ class SalesPercentageReportPage extends StatefulWidget {
 }
 
 class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
-    with AutomaticKeepAliveClientMixin, LoadingPopup {
+    with AutomaticKeepAliveClientMixin, LoadingPopup, DefaultResponse {
   late Server server;
   String? _reportType;
   bool _isDisplayTable = false;
@@ -65,13 +66,13 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
                 totalRows: 0, models: []);
           }
         }, onError: ((error, stackTrace) {
-          server.defaultErrorResponse(context: context, error: error);
+          defaultErrorResponse(error: error);
           return Future(
               () => ResponseResult<ItemSalesPercentageReport>(models: []));
         }));
       },
     );
-    flash = Flash(context);
+    flash = Flash();
     super.initState();
   }
 
@@ -85,12 +86,11 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
   void _downloadReport() async {
     flash.show(
       const Text('Dalam proses.'),
-      MessageType.info,
+      ToastificationType.info,
     );
     _reportType = 'xlsx';
     _requestReport().then(_downloadResponse,
-        onError: ((error, stackTrace) =>
-            server.defaultErrorResponse(context: context, error: error)));
+        onError: ((error, stackTrace) => defaultErrorResponse(error: error)));
   }
 
   Future _requestReport(
@@ -115,7 +115,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
   void _downloadResponse(response) async {
     flash.hide();
     if (response.statusCode != 200) {
-      flash.show(const Text('gagal simpan ke excel'), MessageType.failed);
+      flash.show(const Text('gagal simpan ke excel'), ToastificationType.error);
       return;
     }
     String filename = response.headers.value('content-disposition') ?? '';
@@ -128,7 +128,7 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
     downloader.download(filename, response.data, 'xlsx',
         onSuccess: (String path) {
       flash.showBanner(
-          messageType: MessageType.success,
+          messageType: ToastificationType.success,
           title: 'Sukses download',
           description: 'sukses disimpan di $path');
     });

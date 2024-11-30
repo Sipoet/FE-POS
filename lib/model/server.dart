@@ -53,23 +53,23 @@ class Server extends ChangeNotifier {
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => const LoadingPage()));
         } else if (response?.statusCode == 500) {
-          Flash flash = Flash(context);
+          Flash flash = Flash();
           flash.showBanner(
               title: 'Gagal',
               description: 'Terjadi kesalahan server. hubungi IT support',
-              messageType: MessageType.failed);
+              messageType: ToastificationType.error);
           log(response.data.toString(), time: DateTime.now());
         }
         break;
       case DioExceptionType.connectionError:
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
-        Flash flash = Flash(context);
+        Flash flash = Flash();
         flash.showBanner(
             title: 'koneksi terputus',
             description:
                 'Pastikan IP/domain server sudah benar dan server online',
-            messageType: MessageType.failed);
+            messageType: ToastificationType.error);
         break;
     }
     log(error.toString(), time: DateTime.now());

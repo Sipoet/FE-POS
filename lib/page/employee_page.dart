@@ -33,7 +33,7 @@ class _EmployeePageState extends State<EmployeePage>
   @override
   void initState() {
     server = context.read<Server>();
-    flash = Flash(context);
+    flash = Flash();
     final setting = context.read<Setting>();
     _source = CustomAsyncDataTableSource<Employee>(
         actionButtons: actionButtons,
@@ -99,13 +99,13 @@ class _EmployeePageState extends State<EmployeePage>
           return ResponseResult<Employee>(totalRows: 0, models: []);
         }
       },
-              onError: (error, stackTrace) => server.defaultErrorResponse(
-                  context: context, error: error, valueWhenError: []));
+              onError: (error, stackTrace) =>
+                  defaultErrorResponse(error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
-          messageType: MessageType.failed);
+          messageType: ToastificationType.error);
       return Future(() => ResponseResult<Employee>(models: []));
     }
   }
@@ -179,10 +179,10 @@ class _EmployeePageState extends State<EmployeePage>
             flash.showBanner(
                 title: 'Sukses',
                 description: 'karyawan ${employee.code} sukses $statusName',
-                messageType: MessageType.success,
+                messageType: ToastificationType.success,
                 duration: const Duration(seconds: 3));
           }, onError: (error, stack) {
-            server.defaultErrorResponse(context: context, error: error);
+            defaultErrorResponse(error: error);
           });
         });
   }
@@ -202,7 +202,7 @@ class _EmployeePageState extends State<EmployeePage>
                 _source.refreshDatasource();
               });
             }, onError: (error, stack) {
-              server.defaultErrorResponse(context: context, error: error);
+              defaultErrorResponse(error: error);
             });
           });
         });
@@ -223,7 +223,7 @@ class _EmployeePageState extends State<EmployeePage>
                 Employee.fromJson(response.data['data'], model: employee);
               });
             }, onError: (error, stack) {
-              server.defaultErrorResponse(context: context, error: error);
+              defaultErrorResponse(error: error);
             });
           });
         });
