@@ -252,18 +252,21 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
                       onSubmitted: searchChanged,
                     ),
                   ),
-                  SubmenuButton(
-                      controller: menuController,
-                      menuChildren: [
-                        MenuItemButton(
-                          child: const Text('Tambah Cuti Karyawan'),
-                          onPressed: () {
-                            menuController.close();
-                            addForm();
-                          },
-                        ),
-                      ],
-                      child: const Icon(Icons.table_rows_rounded))
+                  SizedBox(
+                    width: 50,
+                    child: SubmenuButton(
+                        controller: menuController,
+                        menuChildren: [
+                          MenuItemButton(
+                            child: const Text('Tambah Cuti Karyawan'),
+                            onPressed: () {
+                              menuController.close();
+                              addForm();
+                            },
+                          ),
+                        ],
+                        child: const Icon(Icons.table_rows_rounded)),
+                  )
                 ],
               ),
             ),

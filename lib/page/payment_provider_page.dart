@@ -244,12 +244,15 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
                       onSubmitted: searchChanged,
                     ),
                   ),
-                  SubmenuButton(menuChildren: [
-                    MenuItemButton(
-                      child: const Text('Tambah Payment Provider'),
-                      onPressed: () => addForm(),
-                    ),
-                  ], child: const Icon(Icons.table_rows_rounded))
+                  SizedBox(
+                    width: 50,
+                    child: SubmenuButton(menuChildren: [
+                      MenuItemButton(
+                        child: const Text('Tambah Payment Provider'),
+                        onPressed: () => addForm(),
+                      ),
+                    ], child: const Icon(Icons.table_rows_rounded)),
+                  )
                 ],
               ),
             ),

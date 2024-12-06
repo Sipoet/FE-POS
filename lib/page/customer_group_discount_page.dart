@@ -258,25 +258,28 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
                       onSubmitted: searchChanged,
                     ),
                   ),
-                  SubmenuButton(
-                      controller: _menuController,
-                      menuChildren: [
-                        MenuItemButton(
-                          child: const Text('Tambah Customer Group Discount'),
-                          onPressed: () {
-                            _menuController.close();
-                            addForm();
-                          },
-                        ),
-                        MenuItemButton(
-                          child: const Text('Toggle Diskon'),
-                          onPressed: () {
-                            _menuController.close();
-                            toggleDiscount();
-                          },
-                        ),
-                      ],
-                      child: const Icon(Icons.table_rows_rounded))
+                  SizedBox(
+                    width: 50,
+                    child: SubmenuButton(
+                        controller: _menuController,
+                        menuChildren: [
+                          MenuItemButton(
+                            child: const Text('Tambah Customer Group Discount'),
+                            onPressed: () {
+                              _menuController.close();
+                              addForm();
+                            },
+                          ),
+                          MenuItemButton(
+                            child: const Text('Toggle Diskon'),
+                            onPressed: () {
+                              _menuController.close();
+                              toggleDiscount();
+                            },
+                          ),
+                        ],
+                        child: const Icon(Icons.table_rows_rounded)),
+                  )
                 ],
               ),
             ),

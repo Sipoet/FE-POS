@@ -22,6 +22,7 @@ class AllegraPos extends StatelessWidget {
           ChangeNotifierProvider<Setting>(create: (_) => Setting()),
         ],
         child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           title: 'Allegra POS',
           theme: ThemeData(
             fontFamily: 'Lato',

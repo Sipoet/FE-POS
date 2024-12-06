@@ -189,7 +189,6 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
         if (index < 2 || row[5]?.value == null || row[11]?.value == null) {
           continue;
         }
-        print("TT start date: ${row[10]?.value.toString()}");
         var discount = Discount(
           code: row[0]?.value.toString() ?? '',
           calculationType: row[5]?.value.toString() == 'percentage'

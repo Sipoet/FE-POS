@@ -341,7 +341,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
     ];
     flash = Flash();
     tabManager = TabManager(this);
-    tabManager.addTab('Home', const HomePage());
+    tabManager.addTab('Home', const HomePage(), canRemove: false);
     PackageInfo.fromPlatform().then((packageInfo) => setState(() {
           version = packageInfo.version;
         }));
@@ -381,29 +381,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
   void _logout() {
     Server server = context.read<Server>();
     try {
-      logout(
-          server: server,
-          context: context,
-          onSuccess: (response) {
-            var body = response.data;
-            flash.showBanner(
-              title: body['message'],
-              messageType: ToastificationType.success,
-            );
-            // Navigator.pop(context);
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                    builder: (BuildContext context) => const LoginPage()));
-          },
-          onFailed: (response) {
-            var body = response.data;
-            flash.show(
-                Text(
-                  body['error'],
-                ),
-                ToastificationType.error);
-          });
+      logout(server);
     } catch (error) {
       flash.show(
           Text(

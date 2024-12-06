@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:pluto_layout/pluto_layout.dart';
 
 class TabManager extends ChangeNotifier {
-  List<String> tabs = List<String>.filled(10, '', growable: true);
-  List<Widget> tabViews =
-      List<Widget>.filled(10, const SizedBox(), growable: true);
+  List<TabItemDetail> tabItemDetails = [];
+  int selectedIndex = 0;
   late TabController controller;
+  PlutoLayoutEventStreamController? plutoController;
+  List<String> get tabs => tabItemDetails
+      .map<String>((tabItemDetail) => tabItemDetail.title)
+      .toList();
+  List<Widget> get tabViews => tabItemDetails
+      .map<Widget>((tabItemDetail) => tabItemDetail.tabView)
+      .toList();
 
   int emptyIndex = 0;
   TabManager(TickerProvider obj) {
@@ -15,28 +22,65 @@ class TabManager extends ChangeNotifier {
     );
   }
 
-  void addTab(String header, Widget tabview) {
+  void addTab(String header, Widget tabView, {bool canRemove = true}) async {
+    // int index = tabs.indexOf(header);
+    // if (index == -1) {
+    //   tabViews[emptyIndex] = tabView;
+    //   tabs[emptyIndex] = header;
+    //   emptyIndex += 1;
+    //   notifyListeners();
+    //   goTo(emptyIndex - 1);
+    // } else {
+    //   goTo(index);
+    // }
     int index = tabs.indexOf(header);
     if (index == -1) {
-      tabViews[emptyIndex] = tabview;
-      tabs[emptyIndex] = header;
-      emptyIndex += 1;
-      notifyListeners();
-      goTo(emptyIndex - 1);
-    } else {
-      goTo(index);
+      tabItemDetails.add(
+          TabItemDetail(title: header, tabView: tabView, canRemove: canRemove));
+      index = tabs.length - 1;
+      plutoController?.add(
+        PlutoInsertTabItemEvent(
+          layoutId: PlutoLayoutId.body,
+          itemResolver: ({required List<PlutoLayoutTabItem> items}) {
+            return PlutoInsertTabItemResult(
+                item: PlutoLayoutTabItem(
+                    id: header,
+                    title: header,
+                    enabled: true,
+                    tabViewWidget: tabView,
+                    showRemoveButton: canRemove),
+                index: index);
+          },
+        ),
+      );
     }
+    goTo(index);
+  }
+
+  bool isActive(TabItemDetail tabItemDetail) {
+    return selectedIndex == tabItemDetails.indexOf(tabItemDetail);
   }
 
   void goTo(int index) {
-    controller.animateTo(index);
+    // controller.animateTo(index);
+    selectedIndex = index;
+
+    // for (final (index, plutoTab) in plutoTabs.indexed) {
+    //   plutoTabs[index] = PlutoLayoutTabItem(
+    //       showRemoveButton: plutoTab.showRemoveButton,
+    //       enabled: index == selectedIndex,
+    //       id: plutoTab.id,
+    //       title: plutoTab.title,
+    //       tabViewWidget: plutoTab.tabViewWidget);
+    // }
     notifyListeners();
   }
 
-  void changeTabHeader(Widget tabView, String label) {
+  void changeTabHeader(Widget tabView, String title) {
     int index = tabViews.indexOf(tabView);
+    var tabItemDetail = tabItemDetails[index];
     if (index >= 0) {
-      tabs[index] = label;
+      tabItemDetail.title = title;
       notifyListeners();
     }
   }
@@ -55,4 +99,12 @@ class TabManager extends ChangeNotifier {
     }
     notifyListeners();
   }
+}
+
+class TabItemDetail {
+  String title;
+  Widget tabView;
+  bool canRemove;
+  TabItemDetail(
+      {required this.title, required this.tabView, this.canRemove = false});
 }

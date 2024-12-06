@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:fe_pos/model/server.dart';
+import 'package:fe_pos/page/login_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 export 'package:fe_pos/model/server.dart';
@@ -47,7 +48,6 @@ mixin SessionState<T extends StatefulWidget> on State<T>
     required String host,
     required Function onSuccess,
     required Function onFailed,
-    required BuildContext context,
   }) async {
     String jwtBefore = server.jwt;
     server.jwt = '';
@@ -86,20 +86,29 @@ mixin SessionState<T extends StatefulWidget> on State<T>
     });
   }
 
-  Future logout({
-    required Server server,
-    required Function onSuccess,
-    required Function onFailed,
-    required BuildContext context,
-  }) {
-    return server.delete('logout').then(
-        (response) => {
-              if (response.statusCode == 200)
-                {server.jwt = '', saveSession(server), onSuccess(response)}
-              else
-                {onFailed(response)}
-            },
-        onError: (error, stackTrace) => defaultErrorResponse(error: error));
+  Future logout(Server server) {
+    final navigator = Navigator.of(context);
+    return server.delete('logout').then((response) {
+      var body = response.data;
+      final flash = Flash();
+      if (response.statusCode == 200) {
+        server.jwt = '';
+        saveSession(server);
+
+        flash.showBanner(
+          title: body['message'],
+          messageType: ToastificationType.success,
+        );
+        navigator.pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => const LoginPage()));
+      } else {
+        flash.show(
+            Text(
+              body['error'],
+            ),
+            ToastificationType.error);
+      }
+    }, onError: (error, stackTrace) => defaultErrorResponse(error: error));
   }
 
   void saveSession(Server server) async {

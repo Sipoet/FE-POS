@@ -230,18 +230,21 @@ class _PayrollPageState extends State<PayrollPage>
                       onSubmitted: searchChanged,
                     ),
                   ),
-                  SubmenuButton(
-                      controller: _menuController,
-                      menuChildren: [
-                        MenuItemButton(
-                          child: const Text('Tambah Payroll'),
-                          onPressed: () {
-                            _menuController.close();
-                            addForm();
-                          },
-                        ),
-                      ],
-                      child: const Icon(Icons.table_rows_rounded))
+                  SizedBox(
+                    width: 50,
+                    child: SubmenuButton(
+                        controller: _menuController,
+                        menuChildren: [
+                          MenuItemButton(
+                            child: const Text('Tambah Payroll'),
+                            onPressed: () {
+                              _menuController.close();
+                              addForm();
+                            },
+                          ),
+                        ],
+                        child: const Icon(Icons.table_rows_rounded)),
+                  )
                 ],
               ),
             ),

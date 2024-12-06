@@ -1,5 +1,8 @@
+import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/menu.dart';
+import 'package:pluto_layout/pluto_layout.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 
@@ -24,12 +27,100 @@ class MobileLayout extends StatefulWidget {
 class _MobileLayoutState extends State<MobileLayout>
     with TickerProviderStateMixin {
   final List<String> disableClosedTabs = ['Home'];
-  late final List<Menu> _menus;
 
   @override
+  Widget build(BuildContext context) {
+    print('build');
+    return Scaffold(
+      appBar: AppBar(
+        title: Tooltip(
+          message:
+              'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: ${widget.version} | Allegra POS',
+          child: Text(
+            'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: ${widget.version} | Allegra POS',
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
+      drawer: LeftMenubar(
+        menuTree: widget.menuTree,
+      ),
+      body: PlutoLayout(
+          body: PlutoLayoutContainer(
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              child: const MobileTab())),
+    );
+  }
+}
+
+class MobileTab extends StatefulWidget {
+  const MobileTab({super.key});
+
+  @override
+  State<MobileTab> createState() => _MobileTabState();
+}
+
+class _MobileTabState extends State<MobileTab> {
+  @override
   void initState() {
-    _menus = List.from(widget.menuTree);
+    final eventStreamController = PlutoLayout.getEventStreamController(context);
+    final tabManager = context.read<TabManager>();
+    tabManager.plutoController = eventStreamController;
+
     super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var tabManager = context.watch<TabManager>();
+    return PlutoLayoutTabsOrChild(
+      draggable: true,
+      items: tabManager.tabItemDetails
+          .map<PlutoLayoutTabItem>((tabItemDetail) => PlutoLayoutTabItem(
+              id: tabItemDetail.title,
+              title: tabItemDetail.title,
+              enabled: tabManager.isActive(tabItemDetail),
+              showRemoveButton: tabItemDetail.canRemove,
+              tabViewWidget: tabItemDetail.tabView))
+          .toList(),
+    );
+  }
+}
+
+class LeftMenubar extends StatefulWidget {
+  final List<Menu> menuTree;
+  const LeftMenubar({super.key, required this.menuTree});
+
+  @override
+  State<LeftMenubar> createState() => _LeftMenubarState();
+}
+
+class _LeftMenubarState extends State<LeftMenubar>
+    with SessionState, DefaultResponse {
+  Map<String, bool> iconStatus = {};
+  late final TabManager tabManager;
+  @override
+  void initState() {
+    tabManager = context.read<TabManager>();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final menuWidgets = listMenuNested(widget.menuTree);
+    final server = context.read<Server>();
+    menuWidgets.add(ListTile(
+      leading: const Icon(Icons.power_settings_new),
+      onTap: () {
+        logout(server);
+      },
+      title: const Text('Log Out'),
+    ));
+    return Drawer(
+      child: ListView(
+        children: menuWidgets,
+      ),
+    );
   }
 
   List<Widget> listMenuNested(List<Menu> menus) {
@@ -41,9 +132,6 @@ class _MobileLayoutState extends State<MobileLayout>
       iconStatus[menu.key] = menu.isClosed;
       container.add(decorateMenu(menu));
       if (menu.children.isNotEmpty) {
-        if (menu.key == 'report') {
-          debugPrint('decorate ${menu.key} ${iconStatus[menu.key]}');
-        }
         container.add(Visibility(
           visible: iconStatus[menu.key] == false,
           child: ListView(
@@ -58,95 +146,14 @@ class _MobileLayoutState extends State<MobileLayout>
     return container;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    var tabManager = context.read<TabManager>();
-    final menuWidgets = listMenuNested(_menus);
-    menuWidgets.add(ListTile(
-      leading: const Icon(Icons.power_settings_new),
-      onTap: () {
-        widget.logout();
-      },
-      title: const Text('Log Out'),
-    ));
-    return Scaffold(
-      appBar: AppBar(
-        title: Tooltip(
-          message:
-              'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: ${widget.version} | Allegra POS',
-          child: Text(
-            'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: ${widget.version} | Allegra POS',
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-        ),
-        bottom: TabBar(
-          isScrollable: true,
-          controller: tabManager.controller,
-          onTap: (index) {
-            var controller = tabManager.controller;
-            if (controller.indexIsChanging && tabManager.emptyIndex <= index) {
-              controller.index = controller.previousIndex;
-            } else {
-              return;
-            }
-          },
-          tabs: tabManager.tabs
-              .map<Widget>((header) => SizedBox(
-                    height: 40,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          constraints: const BoxConstraints(maxWidth: 100),
-                          child: Tooltip(
-                            message: header,
-                            child: Text(
-                              header,
-                              overflow: TextOverflow.ellipsis,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                        Visibility(
-                          visible: header.isNotEmpty &&
-                              !disableClosedTabs.contains(header),
-                          child: IconButton(
-                              onPressed: () => setState(() {
-                                    tabManager.removeTab(header);
-                                  }),
-                              icon: const Icon(Icons.close)),
-                        ),
-                      ],
-                    ),
-                  ))
-              .toList(),
-        ),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          children: menuWidgets,
-        ),
-      ),
-      body: TabBarView(
-        physics: const NeverScrollableScrollPhysics(),
-        controller: tabManager.controller,
-        children: tabManager.tabViews,
-      ),
-    );
-  }
-
-  Map<String, bool> iconStatus = {};
-
   Widget decorateMenu(Menu menu) {
     if (menu.children.isEmpty) {
       return ListTile(
         key: ValueKey(menu.key),
         leading: Icon(menu.icon),
         onTap: () {
+          Navigator.pop(context);
           setState(() {
-            Navigator.pop(context);
-            var tabManager = context.read<TabManager>();
             tabManager.addTab(menu.label, menu.page);
           });
         },

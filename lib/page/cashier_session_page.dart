@@ -99,24 +99,27 @@ class _CashierSessionPageState extends State<CashierSessionPage>
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              SubmenuButton(
-                  controller: _menuController,
-                  menuChildren: [
-                    MenuItemButton(
-                      onPressed: () {
-                        _menuController.close();
-                        openTodayEdcSettlement();
-                      },
-                      child: const Text('EDC Settlement Hari ini'),
-                    ),
-                    MenuItemButton(
-                      onPressed: () {
-                        _menuController.close();
-                      },
-                      child: const Text('Tambah Kas Keluar'),
-                    ),
-                  ],
-                  child: const Icon(Icons.table_rows_rounded)),
+              SizedBox(
+                width: 50,
+                child: SubmenuButton(
+                    controller: _menuController,
+                    menuChildren: [
+                      MenuItemButton(
+                        onPressed: () {
+                          _menuController.close();
+                          openTodayEdcSettlement();
+                        },
+                        child: const Text('EDC Settlement Hari ini'),
+                      ),
+                      MenuItemButton(
+                        onPressed: () {
+                          _menuController.close();
+                        },
+                        child: const Text('Tambah Kas Keluar'),
+                      ),
+                    ],
+                    child: const Icon(Icons.table_rows_rounded)),
+              ),
             ],
           ),
           Visibility(

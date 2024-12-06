@@ -245,44 +245,47 @@ class _PayslipPageState extends State<PayslipPage>
                       onSubmitted: searchChanged,
                     ),
                   ),
-                  SubmenuButton(
-                      controller: menuController,
-                      onHover: (isHover) {
-                        if (isHover) {
-                          menuController.close();
-                        }
-                      },
-                      menuChildren: [
-                        MenuItemButton(
-                          child: const Text('Cancel Slip Gaji'),
-                          onPressed: () {
+                  SizedBox(
+                    width: 50,
+                    child: SubmenuButton(
+                        controller: menuController,
+                        onHover: (isHover) {
+                          if (isHover) {
                             menuController.close();
-                            actionSelected(cancelPayslip);
-                          },
-                        ),
-                        MenuItemButton(
-                          child: const Text('confirm Slip Gaji'),
-                          onPressed: () {
-                            menuController.close();
-                            actionSelected(confirmPayslip);
-                          },
-                        ),
-                        MenuItemButton(
-                          child: const Text('pay Slip Gaji'),
-                          onPressed: () {
-                            menuController.close();
-                            actionSelected(payPayslip);
-                          },
-                        ),
-                        MenuItemButton(
-                          child: const Text('Generate Slip Gaji'),
-                          onPressed: () {
-                            menuController.close();
-                            generatePayslip();
-                          },
-                        ),
-                      ],
-                      child: const Icon(Icons.table_rows_rounded))
+                          }
+                        },
+                        menuChildren: [
+                          MenuItemButton(
+                            child: const Text('Cancel Slip Gaji'),
+                            onPressed: () {
+                              menuController.close();
+                              actionSelected(cancelPayslip);
+                            },
+                          ),
+                          MenuItemButton(
+                            child: const Text('confirm Slip Gaji'),
+                            onPressed: () {
+                              menuController.close();
+                              actionSelected(confirmPayslip);
+                            },
+                          ),
+                          MenuItemButton(
+                            child: const Text('pay Slip Gaji'),
+                            onPressed: () {
+                              menuController.close();
+                              actionSelected(payPayslip);
+                            },
+                          ),
+                          MenuItemButton(
+                            child: const Text('Generate Slip Gaji'),
+                            onPressed: () {
+                              menuController.close();
+                              generatePayslip();
+                            },
+                          ),
+                        ],
+                        child: const Icon(Icons.table_rows_rounded)),
+                  )
                 ],
               ),
             ),

@@ -250,18 +250,21 @@ class _UserPageState extends State<UserPage>
                       onSubmitted: searchChanged,
                     ),
                   ),
-                  SubmenuButton(
-                      controller: _menuController,
-                      menuChildren: [
-                        MenuItemButton(
-                          child: const Text('Tambah User'),
-                          onPressed: () {
-                            _menuController.close();
-                            addForm();
-                          },
-                        ),
-                      ],
-                      child: const Icon(Icons.table_rows_rounded))
+                  SizedBox(
+                    width: 50,
+                    child: SubmenuButton(
+                        controller: _menuController,
+                        menuChildren: [
+                          MenuItemButton(
+                            child: const Text('Tambah User'),
+                            onPressed: () {
+                              _menuController.close();
+                              addForm();
+                            },
+                          ),
+                        ],
+                        child: const Icon(Icons.table_rows_rounded)),
+                  )
                 ],
               ),
             ),

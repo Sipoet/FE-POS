@@ -235,12 +235,15 @@ class _PaymentTypePageState extends State<PaymentTypePage>
                       onSubmitted: searchChanged,
                     ),
                   ),
-                  SubmenuButton(menuChildren: [
-                    MenuItemButton(
-                      child: const Text('Tambah PaymentType'),
-                      onPressed: () => addForm(),
-                    ),
-                  ], child: const Icon(Icons.table_rows_rounded))
+                  SizedBox(
+                    width: 50,
+                    child: SubmenuButton(menuChildren: [
+                      MenuItemButton(
+                        child: const Text('Tambah PaymentType'),
+                        onPressed: () => addForm(),
+                      ),
+                    ], child: const Icon(Icons.table_rows_rounded)),
+                  )
                 ],
               ),
             ),

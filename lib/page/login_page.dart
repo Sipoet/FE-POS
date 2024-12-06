@@ -148,7 +148,6 @@ class _LoginPageState extends State<LoginPage>
       login(
           server: server,
           host: _host,
-          context: context,
           username: _username,
           password: _password,
           onSuccess: (response) {

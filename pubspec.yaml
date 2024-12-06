@@ -55,6 +55,8 @@ dependencies:
   pluto_grid: ^8.0.0
   board_datetime_picker: ^2.1.2
   toastification: ^2.3.0
+  pluto_layout: ^1.0.0
+  pluto_menu_bar: ^3.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

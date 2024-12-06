@@ -263,26 +263,29 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
                       onSubmitted: searchChanged,
                     ),
                   ),
-                  SubmenuButton(
-                      controller: _menuController,
-                      menuChildren: [
-                        MenuItemButton(
-                          child: const Text('Upload Absensi Karyawan'),
-                          onPressed: () {
-                            _menuController.close();
-                            massUploadAttendance();
-                          },
-                        ),
-                        MenuItemButton(
-                          child: const Text(
-                              'Mass Update Overtime Absensi Karyawan'),
-                          onPressed: () {
-                            _menuController.close();
-                            massUpdateAttendance();
-                          },
-                        ),
-                      ],
-                      child: const Icon(Icons.table_rows_rounded))
+                  SizedBox(
+                    width: 50,
+                    child: SubmenuButton(
+                        controller: _menuController,
+                        menuChildren: [
+                          MenuItemButton(
+                            child: const Text('Upload Absensi Karyawan'),
+                            onPressed: () {
+                              _menuController.close();
+                              massUploadAttendance();
+                            },
+                          ),
+                          MenuItemButton(
+                            child: const Text(
+                                'Mass Update Overtime Absensi Karyawan'),
+                            onPressed: () {
+                              _menuController.close();
+                              massUpdateAttendance();
+                            },
+                          ),
+                        ],
+                        child: const Icon(Icons.table_rows_rounded)),
+                  )
                 ],
               ),
             ),
