@@ -30,7 +30,6 @@ class _MobileLayoutState extends State<MobileLayout>
 
   @override
   Widget build(BuildContext context) {
-    print('build');
     return Scaffold(
       appBar: AppBar(
         title: Tooltip(
