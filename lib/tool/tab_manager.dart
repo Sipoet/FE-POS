@@ -4,7 +4,6 @@ import 'package:pluto_layout/pluto_layout.dart';
 class TabManager extends ChangeNotifier {
   List<TabItemDetail> tabItemDetails = [];
   int selectedIndex = 0;
-  late TabController controller;
   PlutoLayoutEventStreamController? plutoController;
   List<String> get tabs => tabItemDetails
       .map<String>((tabItemDetail) => tabItemDetail.title)
@@ -14,25 +13,9 @@ class TabManager extends ChangeNotifier {
       .toList();
 
   int emptyIndex = 0;
-  TabManager(TickerProvider obj) {
-    controller = TabController(
-      vsync: obj,
-      length: 10,
-      initialIndex: emptyIndex,
-    );
-  }
+  TabManager();
 
   void addTab(String header, Widget tabView, {bool canRemove = true}) async {
-    // int index = tabs.indexOf(header);
-    // if (index == -1) {
-    //   tabViews[emptyIndex] = tabView;
-    //   tabs[emptyIndex] = header;
-    //   emptyIndex += 1;
-    //   notifyListeners();
-    //   goTo(emptyIndex - 1);
-    // } else {
-    //   goTo(index);
-    // }
     int index = tabs.indexOf(header);
     if (index == -1) {
       tabItemDetails.add(
@@ -62,18 +45,13 @@ class TabManager extends ChangeNotifier {
   }
 
   void goTo(int index) {
-    // controller.animateTo(index);
     selectedIndex = index;
-
-    // for (final (index, plutoTab) in plutoTabs.indexed) {
-    //   plutoTabs[index] = PlutoLayoutTabItem(
-    //       showRemoveButton: plutoTab.showRemoveButton,
-    //       enabled: index == selectedIndex,
-    //       id: plutoTab.id,
-    //       title: plutoTab.title,
-    //       tabViewWidget: plutoTab.tabViewWidget);
-    // }
     notifyListeners();
+  }
+
+  void selectById(String id) {
+    int index = tabs.indexOf(id);
+    goTo(index);
   }
 
   void changeTabHeader(Widget tabView, String title) {
@@ -87,15 +65,9 @@ class TabManager extends ChangeNotifier {
 
   void removeTab(header) {
     int index = tabs.indexOf(header);
-    tabs.remove(header);
-    tabs.add('');
-    tabViews.removeAt(index);
-    tabViews.add(const SizedBox());
-    emptyIndex -= 1;
-    if (controller.index == index) {
-      controller.animateTo(index < 1 ? 0 : index - 1);
-    } else {
-      controller.animateTo(controller.previousIndex);
+    tabItemDetails.removeAt(index);
+    if (selectedIndex == tabItemDetails.length) {
+      selectedIndex -= 1;
     }
     notifyListeners();
   }

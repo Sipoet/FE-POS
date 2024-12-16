@@ -30,6 +30,11 @@ class _DesktopLayoutState extends State<DesktopLayout>
   final List<String> disableClosedTabs = ['Home'];
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final tabManager = context.watch<TabManager>();
 
@@ -92,6 +97,14 @@ class _TopMenuBarState extends State<TopMenuBar> {
   void initState() {
     final eventStreamController = PlutoLayout.getEventStreamController(context);
     tabManager = context.read<TabManager>();
+    eventStreamController?.listen((PlutoLayoutEvent event) {
+      if (event is PlutoRemoveTabItemEvent) {
+        tabManager.removeTab(event.itemId);
+      } else if (event is PlutoInsertTabItemEvent) {
+      } else if (event is PlutoToggleTabViewEvent) {
+        tabManager.selectById(event.itemId as String);
+      }
+    });
     tabManager.plutoController = eventStreamController;
     super.initState();
   }

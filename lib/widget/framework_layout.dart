@@ -98,9 +98,8 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               icon: Icons.card_giftcard,
               isClosed: true,
               label: 'Laporan item',
-              isDisabled:
-                  !setting.isAuthorize('itemSalesPercentageReport', 'index'),
-              pageFunct: () => const SalesPercentageReportPage(),
+              isDisabled: !setting.isAuthorize('itemReport', 'index'),
+              pageFunct: () => const ItemReportPage(),
               key: 'salesPercentageReport',
             ),
             Menu(
@@ -131,8 +130,8 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     icon: Icons.pages,
                     isClosed: true,
                     label: 'Laporan Grup Penjualan',
-                    isDisabled: !setting.isAuthorize(
-                        'itemSalesPercentageReport', 'groupedReport'),
+                    isDisabled:
+                        !setting.isAuthorize('ItemReport', 'groupedReport'),
                     pageFunct: () => const SalesGroupBySupplierReportPage(),
                     key: 'salesGroupBySupplierReport',
                   ),
@@ -340,7 +339,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
       )
     ];
     flash = Flash();
-    tabManager = TabManager(this);
+    tabManager = TabManager();
     tabManager.addTab('Home', const HomePage(), canRemove: false);
     PackageInfo.fromPlatform().then((packageInfo) => setState(() {
           version = packageInfo.version;

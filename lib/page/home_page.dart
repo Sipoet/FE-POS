@@ -1,6 +1,8 @@
+import 'package:fe_pos/model/sales_transaction_report.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/widget/period_sales_goal.dart';
 import 'package:fe_pos/widget/sales_transaction_report_widget.dart';
 import 'package:fe_pos/widget/item_sales_transaction_report_widget.dart';
 import 'package:flutter/material.dart';
@@ -24,11 +26,14 @@ class _HomePageState extends State<HomePage>
   late final Setting setting;
   final pickerController = PickerController(
       DateTimeRange(start: DateTime.now(), end: DateTime.now()));
+  Money? totalSales;
+  final Period period = Period.week;
   @override
   void initState() {
     setting = context.read<Setting>();
     final server = context.read<Server>();
     checkUpdate(server);
+    getPeriodSalesTotal(period, server);
     _panels = [
       if (setting.isAuthorize('sale', 'transactionReport'))
         SalesTransactionReportWidget(
@@ -102,6 +107,54 @@ class _HomePageState extends State<HomePage>
     _isCustom = rangeType == 'custom';
   }
 
+  void getPeriodSalesTotal(Period period, Server server) {
+    late Date startDate;
+    late Date endDate;
+    switch (period) {
+      case Period.day:
+        startDate = Date.today();
+        endDate = Date.today();
+        break;
+      case Period.month:
+        startDate = Date.today().beginningOfMonth();
+        endDate = Date.today().endOfMonth();
+        break;
+      case Period.year:
+        startDate = Date.today().beginningOfYear();
+        endDate = Date.today().endOfYear();
+        break;
+      case Period.week:
+        startDate = Date.today().beginningOfWeek();
+        endDate = Date.today().endOfWeek();
+        break;
+      default:
+    }
+    server.get('sales/transaction_report', queryParam: {
+      'start_time': startDate.toDateTime().toIso8601String(),
+      'end_time': endDate
+          .add(const Duration(days: 1))
+          .toDateTime()
+          .copyWith(hour: 6, minute: 59, second: 59, millisecond: 99)
+          .toIso8601String()
+    }).then((response) {
+      if (response.statusCode == 200) {
+        var data = response.data['data'];
+        final salesTransactionReport = SalesTransactionReport.fromJson(data);
+        setState(() {
+          totalSales = salesTransactionReport.totalSales;
+          _panels.insert(
+              0,
+              PeriodSalesGoal(
+                totalSales: totalSales ?? const Money(0),
+                period: period,
+                expectedSales: const Money(140000000),
+                salesTransactionReports: const [],
+              ));
+        });
+      }
+    }, onError: (error, stack) => defaultErrorResponse(error: error));
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -163,6 +216,22 @@ class _HomePageState extends State<HomePage>
                         arrangeDate(value ?? '');
                       })),
                 ),
+                Visibility(
+                    visible: true,
+                    child: DropdownMenu<Period>(
+                        dropdownMenuEntries: Period.values
+                            .map<DropdownMenuEntry<Period>>((period) =>
+                                DropdownMenuEntry<Period>(
+                                    value: period, label: period.humanize()))
+                            .toList())),
+                Visibility(
+                    visible: true,
+                    child: DropdownMenu<Period>(
+                        dropdownMenuEntries: Period.values
+                            .map<DropdownMenuEntry<Period>>((period) =>
+                                DropdownMenuEntry<Period>(
+                                    value: period, label: period.humanize()))
+                            .toList())),
                 Container(
                   constraints: const BoxConstraints(maxWidth: 350),
                   child: DateRangeFormField(

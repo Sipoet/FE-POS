@@ -1,6 +1,7 @@
 import 'package:fe_pos/model/sale.dart';
 import 'package:fe_pos/page/sale_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/tool/file_saver.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -27,6 +28,7 @@ class _SaleItemPageState extends State<SaleItemPage>
   late Flash flash;
   late final Setting setting;
   Map _filter = {};
+  final _menuController = MenuController();
 
   @override
   bool get wantKeepAlive => true;
@@ -64,13 +66,12 @@ class _SaleItemPageState extends State<SaleItemPage>
       'search_text': _searchText,
       'page[page]': page.toString(),
       'page[limit]': limit.toString(),
-      'include': 'item',
+      'include': 'item,sale',
       'sort': '${isAscending ? '' : '-'}$orderKey',
     };
     _filter.forEach((key, value) {
       param[key] = value;
     });
-    debugPrint("jalan");
     try {
       return server
           .get('sale_items', queryParam: param, cancelToken: cancelToken)
@@ -153,6 +154,56 @@ class _SaleItemPageState extends State<SaleItemPage>
     });
   }
 
+  void download() {
+    flash.show(
+      const Text('Dalam proses.'),
+      ToastificationType.info,
+    );
+    Map<String, dynamic> param = {
+      'search_text': _searchText,
+      'include': 'item,sale',
+      'sort': 'kodeitem',
+      'report_type': 'xlsx',
+    };
+    _filter.forEach((key, value) {
+      param[key] = value;
+    });
+    try {
+      server
+          .get('sale_items',
+              queryParam: param, cancelToken: cancelToken, type: 'xlsx')
+          .then((response) {
+        flash.hide();
+        if (response.statusCode != 200) {
+          flash.show(
+              const Text('gagal simpan ke excel'), ToastificationType.error);
+          return;
+        }
+        String filename = response.headers.value('content-disposition') ?? '';
+        if (filename.isEmpty) {
+          return;
+        }
+        filename = filename.substring(filename.indexOf('filename="') + 10,
+            filename.indexOf('xlsx";') + 4);
+        var downloader = const FileSaver();
+        downloader.download(filename, response.data, 'xlsx',
+            onSuccess: (String path) {
+          flash.showBanner(
+              messageType: ToastificationType.success,
+              title: 'Sukses download',
+              description: 'sukses disimpan di $path');
+        });
+      },
+              onError: (error, stackTrace) =>
+                  defaultErrorResponse(error: error, valueWhenError: []));
+    } catch (e, trace) {
+      flash.showBanner(
+          title: e.toString(),
+          description: trace.toString(),
+          messageType: ToastificationType.error);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -199,6 +250,22 @@ class _SaleItemPageState extends State<SaleItemPage>
                       onSubmitted: searchChanged,
                     ),
                   ),
+                  SizedBox(
+                    width: 50,
+                    child: SubmenuButton(
+                        controller: _menuController,
+                        menuChildren: [
+                          MenuItemButton(
+                            leadingIcon: const Icon(Icons.download),
+                            child: const Text('Download Excel'),
+                            onPressed: () {
+                              _menuController.close();
+                              download();
+                            },
+                          ),
+                        ],
+                        child: const Icon(Icons.table_rows_rounded)),
+                  )
                 ],
               ),
             ),

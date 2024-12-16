@@ -64,8 +64,16 @@ class _MobileTabState extends State<MobileTab> {
   void initState() {
     final eventStreamController = PlutoLayout.getEventStreamController(context);
     final tabManager = context.read<TabManager>();
+    eventStreamController?.listen((PlutoLayoutEvent event) {
+      if (event is PlutoRemoveTabItemEvent) {
+        tabManager.removeTab(event.itemId);
+      } else if (event is PlutoInsertTabItemEvent) {
+        // _handleInsertTabItemEvent(event);
+      } else if (event is PlutoToggleTabViewEvent) {
+        tabManager.selectById(event.itemId as String);
+      }
+    });
     tabManager.plutoController = eventStreamController;
-
     super.initState();
   }
 
@@ -73,7 +81,7 @@ class _MobileTabState extends State<MobileTab> {
   Widget build(BuildContext context) {
     var tabManager = context.watch<TabManager>();
     return PlutoLayoutTabsOrChild(
-      draggable: true,
+      draggable: false,
       items: tabManager.tabItemDetails
           .map<PlutoLayoutTabItem>((tabItemDetail) => PlutoLayoutTabItem(
               id: tabItemDetail.title,

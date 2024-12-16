@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class TimeDay extends TimeOfDay {
   final int second;
@@ -78,8 +79,52 @@ class Date extends DateTime {
     return DateTime(year, month, day, 0, 0, 0);
   }
 
+  String format({String pattern = 'dd/MM/y'}) {
+    return DateFormat(pattern, 'id_ID').format(this);
+  }
+
   String toJson() {
     return toIso8601String();
+  }
+
+  Date beginningOfWeek() {
+    int dayT = weekday;
+    return subtract(Duration(days: dayT - 1));
+  }
+
+  Date endOfWeek() {
+    int dayT = 7 - weekday;
+    return add(Duration(days: dayT));
+  }
+
+  Date beginningOfMonth() {
+    return Date(year, month, 1);
+  }
+
+  Date endOfMonth() {
+    if (month == 12) {
+      return Date(year, month, 31);
+    } else {
+      return Date(year, month + 1, 1).subtract(const Duration(days: 1));
+    }
+  }
+
+  Date beginningOfYear() {
+    return Date(year, 1, 1);
+  }
+
+  Date endOfYear() {
+    return Date(year, 12, 31);
+  }
+
+  @override
+  Date subtract(Duration duration) {
+    return Date.parsingDateTime(super.subtract(duration));
+  }
+
+  @override
+  Date add(Duration duration) {
+    return Date.parsingDateTime(super.add(duration));
   }
 
   @override
@@ -125,6 +170,12 @@ class Money {
       return null;
     }
     return null;
+  }
+
+  String format({int? decimalDigits}) {
+    return NumberFormat.currency(
+            locale: "id_ID", symbol: symbol, decimalDigits: decimalDigits)
+        .format(value);
   }
 
   @override
