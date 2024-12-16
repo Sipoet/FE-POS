@@ -1,6 +1,6 @@
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
-import 'package:fe_pos/model/item_sales_percentage_report.dart';
+import 'package:fe_pos/model/item_report.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
@@ -10,29 +10,28 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/file_saver.dart';
 
-class SalesPercentageReportPage extends StatefulWidget {
-  const SalesPercentageReportPage({super.key});
+class ItemReportPage extends StatefulWidget {
+  const ItemReportPage({super.key});
 
   @override
-  State<SalesPercentageReportPage> createState() =>
-      _SalesPercentageReportPageState();
+  State<ItemReportPage> createState() => _ItemReportPageState();
 }
 
-class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
+class _ItemReportPageState extends State<ItemReportPage>
     with AutomaticKeepAliveClientMixin, LoadingPopup, DefaultResponse {
   late Server server;
   String? _reportType;
   bool _isDisplayTable = false;
   double minimumColumnWidth = 150;
-  late final CustomAsyncDataTableSource<ItemSalesPercentageReport> _source;
+  late final CustomAsyncDataTableSource<ItemReport> _source;
   late Flash flash;
   Map _filter = {};
   @override
   void initState() {
     server = context.read<Server>();
     final setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<ItemSalesPercentageReport>(
-      columns: setting.tableColumn('itemSalesPercentageReport'),
+    _source = CustomAsyncDataTableSource<ItemReport>(
+      columns: setting.tableColumn('itemReport'),
       fetchData: (
           {bool isAscending = true,
           int limit = 10,
@@ -47,28 +46,25 @@ class _SalesPercentageReportPageState extends State<SalesPercentageReportPage>
             .then((response) {
           try {
             if (response.statusCode != 200) {
-              return ResponseResult<ItemSalesPercentageReport>(
-                  totalRows: 0, models: []);
+              return ResponseResult<ItemReport>(totalRows: 0, models: []);
             }
             var data = response.data;
             setState(() {
               _isDisplayTable = true;
             });
-            final models = data['data'].map<ItemSalesPercentageReport>((row) {
-              return ItemSalesPercentageReport.fromJson(row);
+            final models = data['data'].map<ItemReport>((row) {
+              return ItemReport.fromJson(row);
             }).toList();
-            return ResponseResult<ItemSalesPercentageReport>(
+            return ResponseResult<ItemReport>(
                 models: models, totalRows: data['meta']['total_rows']);
           } catch (error, stackTrace) {
             debugPrint(error.toString());
             debugPrint(stackTrace.toString());
-            return ResponseResult<ItemSalesPercentageReport>(
-                totalRows: 0, models: []);
+            return ResponseResult<ItemReport>(totalRows: 0, models: []);
           }
         }, onError: ((error, stackTrace) {
           defaultErrorResponse(error: error);
-          return Future(
-              () => ResponseResult<ItemSalesPercentageReport>(models: []));
+          return Future(() => ResponseResult<ItemReport>(models: []));
         }));
       },
     );

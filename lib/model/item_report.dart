@@ -1,6 +1,6 @@
 import 'package:fe_pos/model/model.dart';
 
-class ItemSalesPercentageReport extends Model {
+class ItemReport extends Model {
   String itemCode;
   String itemName;
   String itemTypeName;
@@ -23,7 +23,7 @@ class ItemSalesPercentageReport extends Model {
   bool isConsignment;
   DateTime? recentPurchaseDate;
 
-  ItemSalesPercentageReport(
+  ItemReport(
       {super.id,
       required this.itemCode,
       required this.itemName,
@@ -47,10 +47,10 @@ class ItemSalesPercentageReport extends Model {
       this.isConsignment = false,
       this.recentPurchaseDate});
   @override
-  factory ItemSalesPercentageReport.fromJson(Map<String, dynamic> json,
+  factory ItemReport.fromJson(Map<String, dynamic> json,
       {List included = const []}) {
     var attributes = json['attributes'];
-    return ItemSalesPercentageReport(
+    return ItemReport(
         id: json['id'],
         itemCode: attributes['item_code'],
         itemName: attributes['item_name'],

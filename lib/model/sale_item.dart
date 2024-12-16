@@ -29,6 +29,7 @@ class SaleItem extends Model {
   String? supplierCode;
   String? itemTypeName;
   String? itemName;
+  DateTime transactionDate;
   SaleItem(
       {Item? item,
       super.id,
@@ -43,6 +44,7 @@ class SaleItem extends Model {
       this.itemTypeName,
       this.brandName,
       this.supplierCode,
+      DateTime? transactionDate,
       this.subtotal = const Money(0),
       this.discountAmount1 = 0,
       this.discountPercentage2 = const Percentage(0),
@@ -57,12 +59,12 @@ class SaleItem extends Model {
       this.promoUom = '',
       this.saleCode,
       this.cogs = const Money(0)})
-      : item = item ?? Item();
+      : item = item ?? Item(),
+        transactionDate = transactionDate ?? DateTime.now();
 
   @override
   Map<String, dynamic> toMap() => {
         'kodeitem': itemCode,
-        'item.namaitem': itemName,
         'jumlah': quantity,
         'nobaris': row,
         'harga': price,
@@ -81,12 +83,11 @@ class SaleItem extends Model {
         'itempromo': promoItemCode,
         'satuanpromo': promoUom,
         'hppdasar': cogs,
-        'item.jenis': itemTypeName,
-        'item.supplier1': supplierCode,
-        'item.merek': brandName,
         'item_type_name': itemTypeName,
         'supplier_code': supplierCode,
         'brand_name': brandName,
+        'item_name': itemName,
+        'transaction_date': transactionDate,
       };
 
   @override
@@ -130,6 +131,7 @@ class SaleItem extends Model {
     model.itemName = attributes['item_name'];
     model.freeQuantity = double.tryParse(attributes['jmlgratis']) ?? 0;
     model.cogs = Money.parse(attributes['hppdasar']);
+    model.transactionDate = DateTime.parse(attributes['transaction_date']);
     Model.fromModel(model, attributes);
     return model;
   }
