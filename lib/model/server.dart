@@ -23,7 +23,7 @@ class Server extends ChangeNotifier {
     },
   ));
 
-  Server({this.host = '192.168.11.11', this.jwt = '', this.userName = ''}) {
+  Server({this.host = 'localhost', this.jwt = '', this.userName = ''}) {
     if (kIsWeb) {
       host = Uri.base.host;
     }

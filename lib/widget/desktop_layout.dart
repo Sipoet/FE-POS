@@ -1,9 +1,9 @@
+import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/menu.dart';
 import 'package:pluto_layout/pluto_layout.dart';
 import 'package:pluto_menu_bar/pluto_menu_bar.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/foundation.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 
 class DesktopLayout extends StatefulWidget {
@@ -90,7 +90,7 @@ class TopMenuBar extends StatefulWidget {
   State<TopMenuBar> createState() => _TopMenuBarState();
 }
 
-class _TopMenuBarState extends State<TopMenuBar> {
+class _TopMenuBarState extends State<TopMenuBar> with PlatformChecker {
   late final TabManager tabManager;
 
   @override
@@ -111,14 +111,9 @@ class _TopMenuBarState extends State<TopMenuBar> {
 
   @override
   Widget build(BuildContext context) {
-    bool isMobile = [
-      TargetPlatform.android,
-      TargetPlatform.iOS,
-      TargetPlatform.fuchsia
-    ].contains(defaultTargetPlatform);
     return PlutoMenuBar(
         showBackButton: false,
-        mode: isMobile ? PlutoMenuBarMode.tap : PlutoMenuBarMode.hover,
+        mode: isMobile() ? PlutoMenuBarMode.tap : PlutoMenuBarMode.hover,
         menus: decorateMenus(widget.menuTree));
   }
 

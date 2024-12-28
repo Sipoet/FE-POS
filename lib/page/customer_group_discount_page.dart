@@ -59,7 +59,7 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
       int limit = 100,
       TableColumn? sortColumn,
       bool isAscending = true}) {
-    String orderKey = sortColumn?.sortKey ?? 'tbl_supelgrup.grup';
+    String orderKey = sortColumn?.name ?? 'tbl_supelgrup.grup';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),

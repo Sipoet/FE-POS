@@ -3,13 +3,13 @@ import 'package:fe_pos/tool/default_response.dart';
 
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
+import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/framework_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:flutter/foundation.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,7 +19,12 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage>
-    with AppUpdater, SessionState, LoadingPopup, DefaultResponse {
+    with
+        AppUpdater,
+        SessionState,
+        LoadingPopup,
+        DefaultResponse,
+        PlatformChecker {
   final _formKey = GlobalKey<FormState>();
   String _host = '';
   String _username = '';
@@ -54,8 +59,9 @@ class _LoginPageState extends State<LoginPage>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (!kIsWeb)
-                  TextFormField(
+                Visibility(
+                  visible: !isWeb(),
+                  child: TextFormField(
                     initialValue: server.host,
                     decoration: const InputDecoration(
                       icon: Icon(Icons.screen_search_desktop),
@@ -71,6 +77,7 @@ class _LoginPageState extends State<LoginPage>
                       return null;
                     },
                   ),
+                ),
                 TextFormField(
                   decoration: const InputDecoration(
                     icon: Icon(Icons.person),

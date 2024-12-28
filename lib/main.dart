@@ -33,11 +33,12 @@ class AllegraPos extends StatelessWidget {
             colorScheme: ColorScheme.fromSeed(
                 seedColor: const Color.fromARGB(255, 135, 239, 154)),
             dividerTheme: const DividerThemeData(
-                space: 20,
-                color: Colors.grey,
-                thickness: 1,
-                indent: 10,
-                endIndent: 10),
+              space: 20,
+              color: Colors.grey,
+              thickness: 1,
+              indent: 10,
+              endIndent: 10,
+            ),
           ),
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,

@@ -2,6 +2,7 @@ import 'package:fe_pos/model/user.dart';
 import 'package:fe_pos/page/user_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/desktop_layout.dart';
 import 'package:fe_pos/widget/mobile_layout.dart';
@@ -10,7 +11,6 @@ import 'package:fe_pos/page/all_page.dart';
 import 'package:fe_pos/page/home_page.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/model/menu.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 
@@ -22,7 +22,11 @@ class FrameworkLayout extends StatefulWidget {
 }
 
 class _FrameworkLayoutState extends State<FrameworkLayout>
-    with TickerProviderStateMixin, SessionState, DefaultResponse {
+    with
+        TickerProviderStateMixin,
+        SessionState,
+        DefaultResponse,
+        PlatformChecker {
   List<Menu> menuTree = [];
 
   late TabManager tabManager;
@@ -52,6 +56,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           label: 'HRD',
           key: 'humanResource',
           children: [
+            Menu(
+                icon: Icons.person,
+                isClosed: true,
+                label: 'Karyawan',
+                isDisabled: !setting.isAuthorize('employee', 'index'),
+                key: 'employee',
+                pageFunct: () => const EmployeePage(),
+                children: []),
             Menu(
                 icon: Icons.settings,
                 isClosed: true,
@@ -87,6 +99,13 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 isDisabled: !setting.isAuthorize('employeeLeave', 'index'),
                 pageFunct: () => const EmployeeLeavePage(),
                 key: 'employeeLeave'),
+            Menu(
+                icon: Icons.calendar_month,
+                isClosed: true,
+                label: 'Libur Karyawan',
+                isDisabled: !setting.isAuthorize('holiday', 'index'),
+                pageFunct: () => const HolidayPage(),
+                key: 'holiday'),
           ]),
       Menu(
           icon: Icons.pages,
@@ -131,7 +150,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     isClosed: true,
                     label: 'Laporan Grup Penjualan',
                     isDisabled:
-                        !setting.isAuthorize('ItemReport', 'groupedReport'),
+                        !setting.isAuthorize('itemReport', 'groupedReport'),
                     pageFunct: () => const SalesGroupBySupplierReportPage(),
                     key: 'salesGroupBySupplierReport',
                   ),
@@ -306,14 +325,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             Menu(
                 icon: Icons.person,
                 isClosed: true,
-                label: 'Karyawan',
-                isDisabled: !setting.isAuthorize('employee', 'index'),
-                key: 'employee',
-                pageFunct: () => const EmployeePage(),
-                children: []),
-            Menu(
-                icon: Icons.person,
-                isClosed: true,
                 label: 'User',
                 isDisabled: !setting.isAuthorize('user', 'index'),
                 key: 'user',
@@ -341,8 +352,8 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
     flash = Flash();
     tabManager = TabManager();
     tabManager.addTab('Home', const HomePage(), canRemove: false);
-    PackageInfo.fromPlatform().then((packageInfo) => setState(() {
-          version = packageInfo.version;
+    appVersion().then((version) => setState(() {
+          version = version;
         }));
 
     super.initState();

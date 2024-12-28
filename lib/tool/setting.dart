@@ -18,15 +18,15 @@ class Setting extends ChangeNotifier {
       for (Map row in data[key]) {
         final columnKey = row['name'];
         _tableColumns[key]![columnKey] = TableColumn(
-            key: row['name'],
-            sortKey: row['sort_key'],
+            name: row['name'],
             attributeKey: row['attribute_key'],
             path: row['path'],
-            name: row['humanize_name'],
+            humanizeName: row['humanize_name'],
             type: row['type'],
-            width: row['pixel_width'] ?? 175,
+            clientWidth: double.tryParse(row['client_width'].toString()) ?? 175,
             canFilter: row['can_filter'] ?? true,
-            excelWidth: double.tryParse(row['width'].toString()));
+            canSort: row['can_sort'] ?? true,
+            excelWidth: double.tryParse(row['excel_width'].toString()));
       }
     }
   }

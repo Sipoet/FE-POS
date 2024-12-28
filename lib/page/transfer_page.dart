@@ -60,7 +60,7 @@ class _TransferPageState extends State<TransferPage>
       int limit = 50,
       TableColumn? sortColumn,
       bool isAscending = false}) {
-    String orderKey = sortColumn?.sortKey ?? 'tanggal';
+    String orderKey = sortColumn?.name ?? 'tanggal';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),

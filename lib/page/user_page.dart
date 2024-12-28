@@ -56,7 +56,7 @@ class _UserPageState extends State<UserPage>
       int limit = 100,
       TableColumn? sortColumn,
       bool isAscending = true}) {
-    String orderKey = sortColumn?.sortKey ?? 'username';
+    String orderKey = sortColumn?.name ?? 'username';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),

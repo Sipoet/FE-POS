@@ -194,16 +194,16 @@ class _TableFilterFormState extends State<TableFilterForm> {
       child: CheckboxListTile(
           title: Text(column.name),
           controlAffinity: ListTileControlAffinity.leading,
-          value: val[column.key],
+          value: val[column.name],
           tristate: true,
           onChanged: (value) {
             setState(() {
-              val[column.key] = value;
+              val[column.name] = value;
             });
             if (value == null) {
-              controller.removeFilter(column.key);
+              controller.removeFilter(column.name);
             } else {
-              controller.setFilter(column.key, 'eq', value.toString());
+              controller.setFilter(column.name, 'eq', value.toString());
             }
           }),
     );
@@ -217,14 +217,14 @@ class _TableFilterFormState extends State<TableFilterForm> {
         datePickerOnly: datePickerOnly,
         label: Text(column.name, style: _labelStyle),
         helpText: column.name,
-        key: ValueKey(column.key),
+        key: ValueKey(column.name),
         canRemove: true,
         onChanged: (value) {
           if (value == null) {
-            controller.removeFilter(column.key);
+            controller.removeFilter(column.name);
           } else {
             controller.setFilter(
-                column.key, 'btw', decorateTimeRange(value, column.type));
+                column.name, 'btw', decorateTimeRange(value, column.type));
           }
         },
       ),
@@ -232,22 +232,22 @@ class _TableFilterFormState extends State<TableFilterForm> {
   }
 
   Widget enumFilter(TableColumn column) {
-    final enumList = widget.enums[column.key];
+    final enumList = widget.enums[column.name];
     return DropdownMenu<String>(
         width: 300,
         inputDecorationTheme: const InputDecorationTheme(
             contentPadding: EdgeInsets.all(12), border: OutlineInputBorder()),
-        key: ValueKey(column.key),
+        key: ValueKey(column.name),
         label: Text(
           column.name,
           style: _labelStyle,
         ),
         onSelected: (String? value) {
           if (value == null || value.isEmpty) {
-            controller.removeFilter(column.key);
+            controller.removeFilter(column.name);
             return;
           }
-          controller.setFilter(column.key, 'eq', value);
+          controller.setFilter(column.name, 'eq', value);
         },
         dropdownMenuEntries: const [
               DropdownMenuEntry<String>(value: '', label: '')
@@ -263,20 +263,20 @@ class _TableFilterFormState extends State<TableFilterForm> {
       width: 300,
       height: 50,
       child: TextFormField(
-        key: ValueKey(column.key),
+        key: ValueKey(column.name),
         onSaved: (newValue) {
           if (newValue == null || newValue.isEmpty) {
-            controller.removeFilter(column.key);
+            controller.removeFilter(column.name);
             return;
           }
-          controller.setFilter(column.key, 'like', newValue);
+          controller.setFilter(column.name, 'like', newValue);
         },
         onChanged: (newValue) {
           if (newValue.isEmpty) {
-            controller.removeFilter(column.key);
+            controller.removeFilter(column.name);
             return;
           }
-          controller.setFilter(column.key, 'like', newValue);
+          controller.setFilter(column.name, 'like', newValue);
         },
         decoration: InputDecoration(
             contentPadding: const EdgeInsets.all(12),
@@ -313,9 +313,9 @@ class _TableFilterFormState extends State<TableFilterForm> {
           if (value != null && value.isNotEmpty) {
             final decoratedValue =
                 value.map<String>((e) => e['id'].toString()).join(',');
-            controller.setFilter(column.key, 'eq', decoratedValue);
+            controller.setFilter(column.name, 'eq', decoratedValue);
           } else {
-            controller.removeFilter(column.key);
+            controller.removeFilter(column.name);
           }
         },
       ),
@@ -324,25 +324,25 @@ class _TableFilterFormState extends State<TableFilterForm> {
 
   void comparisonChanged(column) {
     setState(() {
-      final comparison = _numComparison[column.key];
-      final value1 = _textController['${column.key}-val1'].text;
-      final value2 = _textController['${column.key}-val2'].text;
+      final comparison = _numComparison[column.name];
+      final value1 = _textController['${column.name}-val1'].text;
+      final value2 = _textController['${column.name}-val2'].text;
       if (comparison == null) {
-        controller.removeFilter(column.key);
+        controller.removeFilter(column.name);
         return;
       }
       if (comparison == 'btw' && value1.isNotEmpty && value2.isNotEmpty) {
-        controller.setFilter(column.key, comparison, '$value1,$value2');
+        controller.setFilter(column.name, comparison, '$value1,$value2');
       } else if (comparison != 'btw' && value1.isNotEmpty) {
-        controller.setFilter(column.key, comparison, value1);
+        controller.setFilter(column.name, comparison, value1);
       }
     });
   }
 
   Widget numberFilter(TableColumn column) {
-    _textController['${column.key}-val1'] ??= TextEditingController();
-    _textController['${column.key}-val2'] ??= TextEditingController();
-    _textController['${column.key}-cmpr'] ??= TextEditingController();
+    _textController['${column.name}-val1'] ??= TextEditingController();
+    _textController['${column.name}-val2'] ??= TextEditingController();
+    _textController['${column.name}-cmpr'] ??= TextEditingController();
 
     return SizedBox(
       height: 90,
@@ -354,7 +354,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
               width: 170,
               onSelected: (value) {
                 setState(() {
-                  _numComparison[column.key] = value;
+                  _numComparison[column.name] = value;
                 });
               },
               inputDecorationTheme: const InputDecorationTheme(
@@ -362,7 +362,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
                 contentPadding: EdgeInsets.all(12),
               ),
               requestFocusOnTap: false,
-              controller: _textController['${column.key}-cmpr'],
+              controller: _textController['${column.name}-cmpr'],
               label: Text(column.name, style: _labelStyle),
               dropdownMenuEntries: const [
                 DropdownMenuEntry(value: 'eq', label: '='),
@@ -377,28 +377,28 @@ class _TableFilterFormState extends State<TableFilterForm> {
           SizedBox(
             width: 130,
             child: TextFormField(
-              key: ValueKey('${column.key}-value1'),
+              key: ValueKey('${column.name}-value1'),
               keyboardType: TextInputType.number,
               onSaved: (value) {
                 comparisonChanged(column);
               },
-              controller: _textController['${column.key}-val1'],
+              controller: _textController['${column.name}-val1'],
               decoration: const InputDecoration(
                   contentPadding: EdgeInsets.all(12),
                   border: OutlineInputBorder()),
             ),
           ),
           Visibility(
-            visible: _numComparison[column.key] == 'btw',
+            visible: _numComparison[column.name] == 'btw',
             child: SizedBox(
               width: 130,
               child: TextFormField(
-                key: ValueKey('${column.key}-value2'),
+                key: ValueKey('${column.name}-value2'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) {
                   comparisonChanged(column);
                 },
-                controller: _textController['${column.key}-val2'],
+                controller: _textController['${column.name}-val2'],
                 decoration: const InputDecoration(
                     contentPadding: EdgeInsets.all(12),
                     border: OutlineInputBorder()),
@@ -407,10 +407,10 @@ class _TableFilterFormState extends State<TableFilterForm> {
           ),
           IconButton.filled(
             onPressed: () {
-              _textController['${column.key}-val1'].text = '';
-              _textController['${column.key}-val2'].text = '';
-              _textController['${column.key}-cmpr'].text = '';
-              controller.removeFilter(column.key);
+              _textController['${column.name}-val1'].text = '';
+              _textController['${column.name}-val2'].text = '';
+              _textController['${column.name}-cmpr'].text = '';
+              controller.removeFilter(column.name);
             },
             icon: const Icon(Icons.close),
             // color: colorScheme.primary,

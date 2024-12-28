@@ -60,7 +60,7 @@ class _SyncDataTableState extends State<SyncDataTable> {
   double calculateTableWidth() {
     double width = 100;
     for (TableColumn column in columns) {
-      width += column.width;
+      width += column.clientWidth;
     }
     return width;
   }
@@ -92,7 +92,7 @@ class _SyncDataTableState extends State<SyncDataTable> {
       empty: const Text('Data tidak ditemukan'),
       columns: (columns).map<DataColumn2>((tableColumn) {
             return DataColumn2(
-              tooltip: tableColumn.name,
+              tooltip: tableColumn.humanizeName,
               numeric: true,
               onSort: tableColumn.canSort
                   ? ((columnIndex, ascending) {
@@ -103,7 +103,7 @@ class _SyncDataTableState extends State<SyncDataTable> {
                       _dataSource.sortData(tableColumn, _sortAscending);
                     })
                   : null,
-              fixedWidth: tableColumn.width,
+              fixedWidth: tableColumn.clientWidth,
               label: Stack(
                 alignment: AlignmentDirectional.centerStart,
                 clipBehavior: Clip.none,
@@ -120,12 +120,14 @@ class _SyncDataTableState extends State<SyncDataTable> {
                           onHorizontalDragUpdate: (details) {
                             final increment =
                                 details.globalPosition.dx - tableColumn.initX;
-                            final newWidth = tableColumn.width + increment;
+                            final newWidth =
+                                tableColumn.clientWidth + increment;
                             setState(() {
                               tableColumn.initX = details.globalPosition.dx;
-                              tableColumn.width = newWidth > minimumColumnWidth
-                                  ? newWidth
-                                  : minimumColumnWidth;
+                              tableColumn.clientWidth =
+                                  newWidth > minimumColumnWidth
+                                      ? newWidth
+                                      : minimumColumnWidth;
                             });
                           },
                           child: const Icon(
@@ -134,9 +136,9 @@ class _SyncDataTableState extends State<SyncDataTable> {
                           ))),
                   Positioned(
                     left: 0,
-                    width: tableColumn.width - 50,
+                    width: tableColumn.clientWidth - 50,
                     child: Text(
-                      tableColumn.name,
+                      tableColumn.humanizeName,
                       overflow: TextOverflow.ellipsis,
                       softWrap: false,
                       style: const TextStyle(
@@ -328,9 +330,9 @@ extension TableStateMananger on PlutoGridStateManager {
       // enableEditingMode: false,
       textAlign:
           showFooter ? PlutoColumnTextAlign.right : PlutoColumnTextAlign.left,
-      title: tableColumn.name,
-      field: tableColumn.key,
-      minWidth: tableColumn.width,
+      title: tableColumn.humanizeName,
+      field: tableColumn.name,
+      minWidth: tableColumn.clientWidth,
 
       type: columnType,
       footerRenderer: showFooter
@@ -507,7 +509,7 @@ class _SyncDataTable2State<T extends Model> extends State<SyncDataTable2<T>> {
       case 'money':
         return PlutoColumnType.currency(locale: 'id_ID', symbol: 'Rp');
       case 'enum':
-        final listEnumValues = widget.enums[tableColumn.key];
+        final listEnumValues = widget.enums[tableColumn.name];
         return PlutoColumnType.select(listEnumValues ?? []);
       case 'percentage':
       case 'decimal':
@@ -545,9 +547,9 @@ class _SyncDataTable2State<T extends Model> extends State<SyncDataTable2<T>> {
       // enableEditingMode: false,
       textAlign:
           showFooter ? PlutoColumnTextAlign.right : PlutoColumnTextAlign.left,
-      title: tableColumn.name,
-      field: tableColumn.key,
-      minWidth: tableColumn.width,
+      title: tableColumn.humanizeName,
+      field: tableColumn.name,
+      minWidth: tableColumn.clientWidth,
 
       type: columnType,
       footerRenderer: showFooter

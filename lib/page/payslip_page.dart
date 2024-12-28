@@ -58,7 +58,7 @@ class _PayslipPageState extends State<PayslipPage>
       int limit = 100,
       TableColumn? sortColumn,
       bool isAscending = true}) {
-    String orderKey = sortColumn?.sortKey ?? 'id';
+    String orderKey = sortColumn?.name ?? 'id';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),

@@ -13,21 +13,20 @@ extension ComparingTimeOfDay on TimeOfDay {
 
 class TableColumn {
   double initX;
-  double width;
+  double clientWidth;
   double? excelWidth;
-  String key;
-  String type;
   String name;
+  String type;
+  String humanizeName;
   String? path;
   String attributeKey;
-  String sortKey;
   bool canSort;
   bool canFilter;
   Map<String, dynamic> options = {};
 
   TableColumn(
       {this.initX = 0,
-      required this.width,
+      required this.clientWidth,
       this.excelWidth,
       this.path,
       this.options = const {},
@@ -35,9 +34,8 @@ class TableColumn {
       this.type = 'string',
       this.canSort = true,
       this.canFilter = true,
-      required this.sortKey,
-      required this.key,
-      required this.name});
+      required this.name,
+      required this.humanizeName});
 
   bool isNumeric() {
     return ['float', 'decimal', 'int', 'money', 'percentage'].contains(type);
@@ -102,7 +100,7 @@ mixin TableDecorator<T extends Model> implements TextFormatter {
   }
 
   DataCell decorateValue(jsonData, TableColumn column) {
-    final cell = jsonData[column.attributeKey] ?? jsonData[column.key];
+    final cell = jsonData[column.attributeKey] ?? jsonData[column.name];
     final val = _formatData(cell);
     return DataCell(Tooltip(
       message: val,

@@ -60,7 +60,7 @@ class _PurchasePageState extends State<PurchasePage>
       int limit = 50,
       TableColumn? sortColumn,
       bool isAscending = false}) {
-    String orderKey = sortColumn?.sortKey ?? 'tanggal';
+    String orderKey = sortColumn?.name ?? 'tanggal';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),

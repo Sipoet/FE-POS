@@ -94,7 +94,7 @@ class _ItemReportPageState extends State<ItemReportPage>
       int limit = 10,
       TableColumn? sortColumn,
       bool isAscending = true}) async {
-    String orderKey = sortColumn?.sortKey ?? 'item_code';
+    String orderKey = sortColumn?.name ?? 'item_code';
     Map<String, dynamic> param = {
       'page[page]': page.toString(),
       'page[limit]': limit.toString(),

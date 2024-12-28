@@ -60,7 +60,7 @@ class _EmployeePageState extends State<EmployeePage>
       TableColumn? sortColumn,
       bool isAscending = true}) {
     try {
-      String orderKey = sortColumn?.sortKey ?? 'code';
+      String orderKey = sortColumn?.name ?? 'code';
       Map<String, dynamic> param = {
         'search_text': _searchText,
         'page[page]': page.toString(),

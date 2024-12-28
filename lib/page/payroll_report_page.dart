@@ -45,12 +45,11 @@ class _PayrollReportPageState extends State<PayrollReportPage>
         setState(() {
           tableColumns = json['meta']['table_columns'].map<TableColumn>((row) {
             return TableColumn(
-                width: double.parse(row['table_width'] ?? '200'),
+                clientWidth: double.parse(row['client_width'] ?? '200'),
                 type: row['type'],
                 attributeKey: row['attribute_key'],
-                sortKey: row['sort_key'],
-                key: row['name'],
-                name: row['humanize_name']);
+                name: row['name'],
+                humanizeName: row['humanize_name']);
           }).toList();
           tableStateManager?.setTableColumns(tableColumns);
           for (final row in json['data']) {

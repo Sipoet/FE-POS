@@ -51,7 +51,7 @@ class _ItemTypePageState extends State<ItemTypePage> with DefaultResponse {
       int limit = 100,
       TableColumn? sortColumn,
       bool isAscending = true}) {
-    String orderKey = sortColumn?.sortKey ?? 'jenis';
+    String orderKey = sortColumn?.name ?? 'jenis';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),

@@ -130,12 +130,12 @@ class _SalesGroupBySupplierReportPageState
         List<TableColumn> columns = List.from(_tableColumns);
         columns.removeWhere(
           (tableColumn) =>
-              groupList.contains(tableColumn.key) &&
-              !_groupKeys.contains(tableColumn.key),
+              groupList.contains(tableColumn.name) &&
+              !_groupKeys.contains(tableColumn.name),
         );
         columns.sort((columnA, columnB) {
-          final index = _groupKeys.indexOf(columnA.key);
-          final index2 = _groupKeys.indexOf(columnB.key);
+          final index = _groupKeys.indexOf(columnA.name);
+          final index2 = _groupKeys.indexOf(columnB.name);
           if (index >= 0 && index2 >= 0) {
             return index.compareTo(index2);
           } else if (index >= 0) {

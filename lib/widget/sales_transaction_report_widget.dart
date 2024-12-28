@@ -48,15 +48,17 @@ class _SalesTransactionReportWidgetState
       });
     setting = context.read<Setting>();
     _dateRange = widget.controller?.range ?? _dateRange;
-    widget.controller?.addListener(() {
-      setState(() {
-        _dateRange = widget.controller?.range ?? _dateRange;
-        refreshReport();
-      });
-    });
+    widget.controller?.addListener(setDateAndRefreshReport);
 
     refreshReport();
     super.initState();
+  }
+
+  void setDateAndRefreshReport() {
+    setState(() {
+      _dateRange = widget.controller?.range ?? _dateRange;
+      refreshReport();
+    });
   }
 
   void refreshReport() {
@@ -90,6 +92,7 @@ class _SalesTransactionReportWidgetState
   void dispose() {
     cancelToken.cancel();
     _controller.dispose();
+    widget.controller?.removeListener(setDateAndRefreshReport);
     super.dispose();
   }
 

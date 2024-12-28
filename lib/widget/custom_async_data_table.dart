@@ -55,7 +55,7 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
   double calculateTableWidth() {
     double width = 100;
     for (TableColumn column in columns) {
-      width += column.width;
+      width += column.clientWidth;
     }
     return width;
   }
@@ -88,7 +88,7 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
       empty: const Text('Data tidak ditemukan'),
       columns: (columns).map<DataColumn2>((tableColumn) {
             return DataColumn2(
-              tooltip: tableColumn.name,
+              tooltip: tableColumn.humanizeName,
               numeric: true,
               onSort: tableColumn.canSort
                   ? ((columnIndex, ascending) {
@@ -99,7 +99,7 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
                       _dataSource.sortData(tableColumn, _sortAscending);
                     })
                   : null,
-              fixedWidth: tableColumn.width,
+              fixedWidth: tableColumn.clientWidth,
               label: Stack(
                 alignment: AlignmentDirectional.centerStart,
                 clipBehavior: Clip.none,
@@ -116,12 +116,14 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
                           onHorizontalDragUpdate: (details) {
                             final increment =
                                 details.globalPosition.dx - tableColumn.initX;
-                            final newWidth = tableColumn.width + increment;
+                            final newWidth =
+                                tableColumn.clientWidth + increment;
                             setState(() {
                               tableColumn.initX = details.globalPosition.dx;
-                              tableColumn.width = newWidth > minimumColumnWidth
-                                  ? newWidth
-                                  : minimumColumnWidth;
+                              tableColumn.clientWidth =
+                                  newWidth > minimumColumnWidth
+                                      ? newWidth
+                                      : minimumColumnWidth;
                             });
                           },
                           child: const Icon(
@@ -130,9 +132,9 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
                           ))),
                   Positioned(
                     left: 0,
-                    width: tableColumn.width - 50,
+                    width: tableColumn.clientWidth - 50,
                     child: Text(
-                      tableColumn.name,
+                      tableColumn.humanizeName,
                       overflow: TextOverflow.ellipsis,
                       softWrap: false,
                       style: const TextStyle(

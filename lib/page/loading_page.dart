@@ -32,25 +32,24 @@ class _LoadingPageState extends State<LoadingPage>
     setting = context.read<Setting>();
     final navigator = Navigator.of(context);
     server.get('settings').then((response) {
-      try {
-        if (response.statusCode == 200) {
-          setting.setTableColumns(response.data['data']['table_columns']);
+      // try {
+      if (response.statusCode == 200) {
+        setting.setTableColumns(response.data['data']['table_columns']);
 
-          response.data['data']['menus'].forEach((String key, value) {
-            setting.menus[key] =
-                value.map<String>((e) => e.toString()).toList();
-          });
-        }
-      } catch (error) {
-        AlertDialog(
-          title: const Text('Error'),
-          content: Text(error.toString()),
-          actions: [
-            ElevatedButton(
-                onPressed: () => navigator.pop(), child: const Text('close'))
-          ],
-        );
+        response.data['data']['menus'].forEach((String key, value) {
+          setting.menus[key] = value.map<String>((e) => e.toString()).toList();
+        });
       }
+      // } catch (error) {
+      //   AlertDialog(
+      //     title: const Text('Error'),
+      //     content: Text(error.toString()),
+      //     actions: [
+      //       ElevatedButton(
+      //           onPressed: () => navigator.pop(), child: const Text('close'))
+      //     ],
+      //   );
+      // }
     }).whenComplete(() {
       navigator.pushReplacement(
           MaterialPageRoute(builder: (context) => const FrameworkLayout()));

@@ -51,7 +51,7 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
       int limit = 100,
       TableColumn? sortColumn,
       bool isAscending = true}) {
-    String orderKey = sortColumn?.sortKey ?? 'kode';
+    String orderKey = sortColumn?.name ?? 'kode';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),

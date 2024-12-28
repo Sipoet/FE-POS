@@ -58,7 +58,7 @@ class _PayrollTypePageState extends State<PayrollTypePage>
       int limit = 100,
       TableColumn? sortColumn,
       bool isAscending = true}) {
-    String orderKey = sortColumn?.sortKey ?? 'name';
+    String orderKey = sortColumn?.name ?? 'name';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),

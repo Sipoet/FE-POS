@@ -55,7 +55,7 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
         fetchData: fetchCashierSessions);
     _source.isAscending = false;
     _source.sortColumn = tableColumns.firstWhere(
-        (tableColumn) => tableColumn.key == 'date',
+        (tableColumn) => tableColumn.name == 'date',
         orElse: () => tableColumns.first);
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
@@ -78,7 +78,7 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
       TableColumn? sortColumn,
       bool isAscending = true}) {
     try {
-      String orderKey = sortColumn?.sortKey ?? 'date';
+      String orderKey = sortColumn?.name ?? 'date';
       Map<String, dynamic> param = {
         'search_text': _searchText,
         'page[page]': page.toString(),

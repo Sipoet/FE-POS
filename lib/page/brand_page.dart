@@ -53,7 +53,7 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
       int limit = 100,
       bool isAscending = false,
       TableColumn? sortColumn}) {
-    String orderKey = sortColumn?.sortKey ?? 'merek';
+    String orderKey = sortColumn?.name ?? 'merek';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
