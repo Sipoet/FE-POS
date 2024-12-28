@@ -19,7 +19,6 @@ export 'brand_page.dart';
 export 'item_type_page.dart';
 export 'discount_page.dart';
 export 'customer_group_discount_page.dart';
-export 'employee_page.dart';
 export 'user_page.dart';
 export 'role_page.dart';
 
@@ -29,6 +28,8 @@ export 'payroll_type_page.dart';
 export 'payslip_page.dart';
 export 'employee_attendance_page.dart';
 export 'employee_leave_page.dart';
+export 'employee_page.dart';
+export 'holiday_page.dart';
 
 // sale
 export 'cashier_session_page.dart';
