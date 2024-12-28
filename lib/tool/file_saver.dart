@@ -1,11 +1,11 @@
+import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:universal_html/html.dart' as html;
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 
-class FileSaver {
+class FileSaver with PlatformChecker {
   const FileSaver();
 
   Future webDownload(String filename, List<int> bytes) async {
@@ -23,17 +23,10 @@ class FileSaver {
 
   Future<String?> downloadPath(String filename, String extFile) async {
     String? outputFile;
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
+    if (isMobile()) {
       Directory? dir = await getDownloadsDirectory();
       outputFile = "${dir?.path}/$filename";
-    } else if (defaultTargetPlatform == TargetPlatform.android) {
-      Directory dir = await getTemporaryDirectory();
-      outputFile = "${dir.path}/$filename";
-    } else if ([
-      TargetPlatform.linux,
-      TargetPlatform.windows,
-      TargetPlatform.macOS
-    ].contains(defaultTargetPlatform)) {
+    } else if (isDesktop()) {
       outputFile = await FilePicker.platform.saveFile(
           dialogTitle: 'Please select an output file:',
           fileName: filename,
@@ -46,7 +39,7 @@ class FileSaver {
   void download(String filename, List<int> bytes, String extFile,
       {void Function(String path)? onSuccess,
       void Function(String path)? onFailed}) async {
-    if (kIsWeb) {
+    if (isWeb()) {
       await webDownload(filename, bytes);
       return;
     }
