@@ -10,7 +10,8 @@ import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/payslip.dart';
-
+import 'package:fe_pos/tool/thousand_separator_formatter.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class PayslipFormPage extends StatefulWidget {
@@ -426,6 +427,10 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                                   ),
                                 )),
                                 DataCell(TextFormField(
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                    ThousandSeparatorFormatter(),
+                                  ],
                                   decoration: const InputDecoration(
                                       border: OutlineInputBorder()),
                                   initialValue: payslipLine.amount.toString(),

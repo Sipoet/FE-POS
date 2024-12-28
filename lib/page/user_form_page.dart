@@ -92,7 +92,7 @@ class _UserFormPageState extends State<UserFormPage>
     }
     request.then((response) {
       if ([200, 201].contains(response.statusCode)) {
-        var data = response.data['data'];
+        var data = response.data;
         setState(() {
           User.fromJson(data['data'],
               model: user, included: data['included'] ?? []);

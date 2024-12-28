@@ -33,7 +33,9 @@ class _HomePageState extends State<HomePage>
     setting = context.read<Setting>();
     final server = context.read<Server>();
     checkUpdate(server);
-    getPeriodSalesTotal(period, server);
+    if (setting.isAuthorize('sale', 'transactionReport')) {
+      getPeriodSalesTotal(period, server);
+    }
     _panels = [
       if (setting.isAuthorize('sale', 'transactionReport'))
         SalesTransactionReportWidget(
@@ -216,22 +218,22 @@ class _HomePageState extends State<HomePage>
                         arrangeDate(value ?? '');
                       })),
                 ),
-                Visibility(
-                    visible: true,
-                    child: DropdownMenu<Period>(
-                        dropdownMenuEntries: Period.values
-                            .map<DropdownMenuEntry<Period>>((period) =>
-                                DropdownMenuEntry<Period>(
-                                    value: period, label: period.humanize()))
-                            .toList())),
-                Visibility(
-                    visible: true,
-                    child: DropdownMenu<Period>(
-                        dropdownMenuEntries: Period.values
-                            .map<DropdownMenuEntry<Period>>((period) =>
-                                DropdownMenuEntry<Period>(
-                                    value: period, label: period.humanize()))
-                            .toList())),
+                // Visibility(
+                //     visible: true,
+                //     child: DropdownMenu<Period>(
+                //         dropdownMenuEntries: Period.values
+                //             .map<DropdownMenuEntry<Period>>((period) =>
+                //                 DropdownMenuEntry<Period>(
+                //                     value: period, label: period.humanize()))
+                //             .toList())),
+                // Visibility(
+                //     visible: true,
+                //     child: DropdownMenu<Period>(
+                //         dropdownMenuEntries: Period.values
+                //             .map<DropdownMenuEntry<Period>>((period) =>
+                //                 DropdownMenuEntry<Period>(
+                //                     value: period, label: period.humanize()))
+                //             .toList())),
                 Container(
                   constraints: const BoxConstraints(maxWidth: 350),
                   child: DateRangeFormField(
