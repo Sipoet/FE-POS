@@ -7,20 +7,25 @@ export 'package:fe_pos/tool/custom_type.dart';
 class EmployeeAttendance extends Model {
   DateTime startTime;
   DateTime endTime;
+  Date date;
   Employee employee;
   bool isLate;
   bool allowOvertime;
   int shift;
   EmployeeAttendance(
-      {required this.startTime,
-      required this.endTime,
+      {DateTime? startTime,
+      DateTime? endTime,
+      Date? date,
       required this.employee,
       this.shift = 1,
       this.isLate = false,
       super.createdAt,
       super.updatedAt,
       this.allowOvertime = false,
-      super.id});
+      super.id})
+      : startTime = startTime ?? DateTime.now(),
+        endTime = endTime ?? DateTime.now(),
+        date = date ?? Date.today();
 
   @override
   Map<String, dynamic> toMap() => {
@@ -40,7 +45,7 @@ class EmployeeAttendance extends Model {
 
   TimeDay get startWork => TimeDay.fromDateTime(startTime.toLocal());
   TimeDay get endWork => TimeDay.fromDateTime(endTime.toLocal());
-  Date get date => Date.parsingDateTime(startTime.toLocal());
+
   @override
   factory EmployeeAttendance.fromJson(Map<String, dynamic> json,
       {EmployeeAttendance? model, List included = const []}) {
@@ -58,11 +63,11 @@ class EmployeeAttendance extends Model {
               convert: Employee.fromJson) ??
           employee;
     }
-    model ??= EmployeeAttendance(
-        startTime: DateTime.now(), endTime: DateTime.now(), employee: employee);
+    model ??= EmployeeAttendance(employee: employee);
     model.id = int.parse(json['id']);
     model.startTime = DateTime.parse(attributes['start_time']);
     model.endTime = DateTime.parse(attributes['end_time']);
+    model.date = Date.parse(attributes['date']);
     Model.fromModel(model, attributes);
     model.employee = employee;
     model.isLate = attributes['is_late'] ?? false;

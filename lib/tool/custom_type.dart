@@ -54,11 +54,6 @@ class Date extends DateTime {
     super.year, [
     super.month = 1,
     super.day = 1,
-    super.hour = 0,
-    super.minute = 0,
-    super.second = 0,
-    super.millisecond = 0,
-    super.microsecond = 0,
   ]);
   static Date parse(String value) {
     var datetime = DateTime.parse(value);
@@ -129,14 +124,11 @@ class Date extends DateTime {
 
   @override
   String toIso8601String() {
-    final value = super.toIso8601String();
-
-    return value.split('T')[0];
+    return '$year-$month-$day';
   }
 
   static Date parsingDateTime(DateTime value) {
-    return Date(value.year, value.month, value.day, value.hour, value.minute,
-        value.second, value.millisecond, value.microsecond);
+    return Date(value.year, value.month, value.day);
   }
 }
 
