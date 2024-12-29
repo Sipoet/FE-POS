@@ -52,7 +52,8 @@ class _PayslipReportPageState extends State<PayslipReportPage>
         setState(() {
           tableColumns = json['meta']['table_columns'].map<TableColumn>((row) {
             return TableColumn(
-                clientWidth: double.parse(row['client_width'] ?? '200'),
+                clientWidth:
+                    double.parse(row['client_width']?.toString() ?? '200'),
                 type: row['type'],
                 attributeKey: row['attribute_key'],
                 name: row['name'],

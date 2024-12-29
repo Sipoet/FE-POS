@@ -138,7 +138,9 @@ class _MassUpdateAllowedOvertimeFormPageState
                     ),
                     Visibility(
                         visible: _source.sortedData.isNotEmpty,
-                        child: SyncDataTable(controller: _source))
+                        child: SizedBox(
+                            height: 600,
+                            child: SyncDataTable(controller: _source)))
                   ],
                 ),
               ),
@@ -149,7 +151,7 @@ class _MassUpdateAllowedOvertimeFormPageState
 
   void _submit() async {
     Map body = {
-      'employee_ids[]': _employees.map((e) => e.id).toList(),
+      'employee_ids': _employees.map((e) => e.id).toList(),
       'shift': _shift,
       'date': _dateTime.toIso8601String(),
       'allow_overtime': _allowOvertime,

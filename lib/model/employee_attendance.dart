@@ -40,7 +40,7 @@ class EmployeeAttendance extends Model {
 
   TimeDay get startWork => TimeDay.fromDateTime(startTime.toLocal());
   TimeDay get endWork => TimeDay.fromDateTime(endTime.toLocal());
-  Date get date => Date.parsingDateTime(startTime);
+  Date get date => Date.parsingDateTime(startTime.toLocal());
   @override
   factory EmployeeAttendance.fromJson(Map<String, dynamic> json,
       {EmployeeAttendance? model, List included = const []}) {

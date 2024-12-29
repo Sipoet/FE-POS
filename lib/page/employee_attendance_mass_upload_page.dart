@@ -300,8 +300,9 @@ class EmployeeAttendanceMassUploadDatatableSource extends DataTableSource
       DataCell(SelectableText(employeeAttendance.employee.name)),
       DataCell(SelectableText(dateFormat(employeeAttendance.date))),
       DataCell(SelectableText(employeeAttendance.shift.toString())),
-      DataCell(SelectableText(dateTimeFormat(employeeAttendance.startTime))),
-      DataCell(SelectableText(dateTimeFormat(employeeAttendance.endTime))),
+      DataCell(
+          SelectableText(dateTimeLocalFormat(employeeAttendance.startTime))),
+      DataCell(SelectableText(dateTimeLocalFormat(employeeAttendance.endTime))),
       DataCell(SelectableText(employeeAttendance.isLate.toString())),
     ];
   }
