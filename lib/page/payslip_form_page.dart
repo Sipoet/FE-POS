@@ -435,8 +435,9 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                                       border: OutlineInputBorder()),
                                   initialValue: payslipLine.amount.toString(),
                                   keyboardType: TextInputType.number,
-                                  onChanged: (value) =>
-                                      payslipLine.amount = double.parse(value),
+                                  onChanged: (value) => payslipLine.amount =
+                                      double.parse(
+                                          value.replaceAll(RegExp(r','), '')),
                                   onSaved: (value) => payslipLine.amount =
                                       double.parse(value ?? ''),
                                   key: ValueKey("${payslipLine.id}-amount"),

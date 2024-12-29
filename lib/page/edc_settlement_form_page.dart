@@ -193,7 +193,9 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
           decoration: const InputDecoration(border: OutlineInputBorder()),
           initialValue: edcSettlement.amount.value.toString(),
           onChanged: (value) {
-            edcSettlement.amount = Money.tryParse(value) ?? const Money(0);
+            edcSettlement.amount =
+                Money.tryParse(value.replaceAll(RegExp(r','), '')) ??
+                    const Money(0);
           },
         ),
       )),
