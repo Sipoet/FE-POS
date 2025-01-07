@@ -192,7 +192,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
     return SizedBox(
       width: 300,
       child: CheckboxListTile(
-          title: Text(column.name),
+          title: Text(column.humanizeName),
           controlAffinity: ListTileControlAffinity.leading,
           value: val[column.name],
           tristate: true,
@@ -215,7 +215,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
       height: 50,
       child: DateRangeFormField(
         datePickerOnly: datePickerOnly,
-        label: Text(column.name, style: _labelStyle),
+        label: Text(column.humanizeName, style: _labelStyle),
         helpText: column.name,
         key: ValueKey(column.name),
         canRemove: true,
@@ -239,7 +239,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
             contentPadding: EdgeInsets.all(12), border: OutlineInputBorder()),
         key: ValueKey(column.name),
         label: Text(
-          column.name,
+          column.humanizeName,
           style: _labelStyle,
         ),
         onSelected: (String? value) {
@@ -280,7 +280,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
         },
         decoration: InputDecoration(
             contentPadding: const EdgeInsets.all(12),
-            label: Text(column.name, style: _labelStyle),
+            label: Text(column.humanizeName, style: _labelStyle),
             border: const OutlineInputBorder()),
       ),
     );
@@ -297,7 +297,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
         textOnSearch: (value) =>
             "${value['id'].toString()} - ${value['attributes'][attributeKey]}",
         textOnSelected: (value) => value['id'].toString(),
-        label: Text(column.name, style: _labelStyle),
+        label: Text(column.humanizeName, style: _labelStyle),
         request: (server, page, searchText, cancelToken) {
           return server.get(column.path ?? '',
               queryParam: {
@@ -363,7 +363,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
               ),
               requestFocusOnTap: false,
               controller: _textController['${column.name}-cmpr'],
-              label: Text(column.name, style: _labelStyle),
+              label: Text(column.humanizeName, style: _labelStyle),
               dropdownMenuEntries: const [
                 DropdownMenuEntry(value: 'eq', label: '='),
                 DropdownMenuEntry(value: 'not', label: 'bukan'),
