@@ -1,3 +1,5 @@
+import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/menu.dart';
@@ -10,14 +12,10 @@ class DesktopLayout extends StatefulWidget {
   const DesktopLayout(
       {super.key,
       required this.menuTree,
-      required this.logout,
-      required this.version,
       required this.host,
       required this.userName});
 
   final List<Menu> menuTree;
-  final Function logout;
-  final String version;
   final String userName;
   final String host;
 
@@ -26,25 +24,33 @@ class DesktopLayout extends StatefulWidget {
 }
 
 class _DesktopLayoutState extends State<DesktopLayout>
-    with TickerProviderStateMixin {
+    with
+        TickerProviderStateMixin,
+        SessionState,
+        PlatformChecker,
+        DefaultResponse {
   final List<String> disableClosedTabs = ['Home'];
-
+  String version = '';
   @override
   void initState() {
+    appVersion().then((appVersion) => setState(() {
+          version = appVersion;
+        }));
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     final tabManager = context.watch<TabManager>();
-
+    final message =
+        'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: $version | Allegra POS';
     return Scaffold(
       appBar: AppBar(
         title: Tooltip(
-          message:
-              'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: ${widget.version} | Allegra POS',
+          message: message,
           child: Text(
-            'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: ${widget.version} | Allegra POS',
+            message,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
@@ -52,7 +58,8 @@ class _DesktopLayoutState extends State<DesktopLayout>
           IconButton(
             icon: const Icon(Icons.power_settings_new),
             onPressed: () {
-              widget.logout();
+              final server = context.read<Server>();
+              logout(server);
             },
           )
         ],

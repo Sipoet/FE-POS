@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/menu.dart';
 import 'package:pluto_layout/pluto_layout.dart';
@@ -10,14 +11,10 @@ class MobileLayout extends StatefulWidget {
   const MobileLayout(
       {super.key,
       required this.menuTree,
-      required this.logout,
-      required this.version,
       required this.host,
       required this.userName});
 
   final List<Menu> menuTree;
-  final Function logout;
-  final String version;
   final String userName;
   final String host;
   @override
@@ -25,18 +22,31 @@ class MobileLayout extends StatefulWidget {
 }
 
 class _MobileLayoutState extends State<MobileLayout>
-    with TickerProviderStateMixin {
+    with
+        TickerProviderStateMixin,
+        SessionState,
+        PlatformChecker,
+        DefaultResponse {
   final List<String> disableClosedTabs = ['Home'];
+  String version = '';
+  @override
+  void initState() {
+    appVersion().then((appVersion) => setState(() {
+          version = appVersion;
+        }));
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final message =
+        'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: $version | Allegra POS';
     return Scaffold(
       appBar: AppBar(
         title: Tooltip(
-          message:
-              'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: ${widget.version} | Allegra POS',
+          message: message,
           child: Text(
-            'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: ${widget.version} | Allegra POS',
+            message,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),

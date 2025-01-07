@@ -31,7 +31,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
 
   late TabManager tabManager;
   late Flash flash;
-  String version = '';
 
   @override
   void initState() {
@@ -352,10 +351,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
     flash = Flash();
     tabManager = TabManager();
     tabManager.addTab('Home', const HomePage(), canRemove: false);
-    appVersion().then((version) => setState(() {
-          version = version;
-        }));
-
     super.initState();
   }
 
@@ -371,33 +366,16 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           if (constraints.maxWidth < 800.0 || constraints.maxHeight < 600.0) {
             return MobileLayout(
               menuTree: menuTree,
-              logout: _logout,
-              version: version,
               userName: server.userName,
               host: server.host,
             );
           } else {
             return DesktopLayout(
               menuTree: menuTree,
-              logout: _logout,
-              version: version,
               userName: server.userName,
               host: server.host,
             );
           }
         }));
-  }
-
-  void _logout() {
-    Server server = context.read<Server>();
-    try {
-      logout(server);
-    } catch (error) {
-      flash.show(
-          Text(
-            error.toString(),
-          ),
-          ToastificationType.error);
-    }
   }
 }
