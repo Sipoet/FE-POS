@@ -13,6 +13,7 @@ import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/model/menu.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:tabbed_view/tabbed_view.dart';
 
 class FrameworkLayout extends StatefulWidget {
   const FrameworkLayout({super.key});
@@ -349,8 +350,10 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
       )
     ];
     flash = Flash();
-    tabManager = TabManager();
-    tabManager.addTab('Home', const HomePage(), canRemove: false);
+    tabManager = TabManager(tabItemDetails: [
+      TabData(text: 'Home', content: const HomePage(), closable: false)
+    ]);
+
     super.initState();
   }
 

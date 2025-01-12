@@ -3,9 +3,9 @@ import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/menu.dart';
-import 'package:pluto_layout/pluto_layout.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:tabbed_view/tabbed_view.dart';
 
 class MobileLayout extends StatefulWidget {
   const MobileLayout(
@@ -54,10 +54,7 @@ class _MobileLayoutState extends State<MobileLayout>
       drawer: LeftMenubar(
         menuTree: widget.menuTree,
       ),
-      body: PlutoLayout(
-          body: PlutoLayoutContainer(
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              child: const MobileTab())),
+      body: const MobileTab(),
     );
   }
 }
@@ -71,35 +68,14 @@ class MobileTab extends StatefulWidget {
 
 class _MobileTabState extends State<MobileTab> {
   @override
-  void initState() {
-    final eventStreamController = PlutoLayout.getEventStreamController(context);
-    final tabManager = context.read<TabManager>();
-    eventStreamController?.listen((PlutoLayoutEvent event) {
-      if (event is PlutoRemoveTabItemEvent) {
-        tabManager.removeTab(event.itemId);
-      } else if (event is PlutoInsertTabItemEvent) {
-        // _handleInsertTabItemEvent(event);
-      } else if (event is PlutoToggleTabViewEvent) {
-        tabManager.selectById(event.itemId as String);
-      }
-    });
-    tabManager.plutoController = eventStreamController;
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     var tabManager = context.watch<TabManager>();
-    return PlutoLayoutTabsOrChild(
-      draggable: false,
-      items: tabManager.tabItemDetails
-          .map<PlutoLayoutTabItem>((tabItemDetail) => PlutoLayoutTabItem(
-              id: tabItemDetail.title,
-              title: tabItemDetail.title,
-              enabled: tabManager.isActive(tabItemDetail),
-              showRemoveButton: tabItemDetail.canRemove,
-              tabViewWidget: tabItemDetail.tabView))
-          .toList(),
+    return TabbedViewTheme(
+      data: TabbedViewThemeData.mobile(colorSet: Colors.grey, fontSize: 16),
+      child: TabbedView(
+          onTabSelection: (tabIndex) =>
+              tabManager.selectedIndex = tabIndex ?? -1,
+          controller: tabManager.controller),
     );
   }
 }

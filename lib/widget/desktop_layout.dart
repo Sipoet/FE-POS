@@ -7,6 +7,7 @@ import 'package:pluto_layout/pluto_layout.dart';
 import 'package:pluto_menu_bar/pluto_menu_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:tabbed_view/tabbed_view.dart';
 
 class DesktopLayout extends StatefulWidget {
   const DesktopLayout(
@@ -46,46 +47,45 @@ class _DesktopLayoutState extends State<DesktopLayout>
     final message =
         'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: $version | Allegra POS';
     return Scaffold(
-      appBar: AppBar(
-        title: Tooltip(
-          message: message,
-          child: Text(
-            message,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        appBar: AppBar(
+          title: Tooltip(
+            message: message,
+            child: Text(
+              message,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
           ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.power_settings_new),
+              onPressed: () {
+                final server = context.read<Server>();
+                logout(server);
+              },
+            )
+          ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.power_settings_new),
-            onPressed: () {
-              final server = context.read<Server>();
-              logout(server);
-            },
-          )
-        ],
-      ),
-      body: PlutoLayout(
-        top: PlutoLayoutContainer(
-          child: TopMenuBar(
-            menuTree: widget.menuTree,
+        body: PlutoLayout(
+          top: PlutoLayoutContainer(
+            child: TopMenuBar(
+              menuTree: widget.menuTree,
+            ),
           ),
-        ),
-        body: PlutoLayoutContainer(
+          body: PlutoLayoutContainer(
             backgroundColor: Theme.of(context).colorScheme.surface,
-            child: PlutoLayoutTabsOrChild(
-              draggable: true,
-              items: tabManager.tabItemDetails
-                  .map<PlutoLayoutTabItem>((tabItemDetail) =>
-                      PlutoLayoutTabItem(
-                          id: tabItemDetail.title,
-                          title: tabItemDetail.title,
-                          enabled: tabManager.isActive(tabItemDetail),
-                          showRemoveButton: tabItemDetail.canRemove,
-                          tabViewWidget: tabItemDetail.tabView))
-                  .toList(),
-            )),
-      ),
-    );
+            child: Padding(
+              padding: const EdgeInsets.only(top: 10.0),
+              child: TabbedViewTheme(
+                data: TabbedViewThemeData.classic(
+                    colorSet: Colors.grey, fontSize: 16),
+                child: TabbedView(
+                    onTabSelection: (tabIndex) =>
+                        tabManager.selectedIndex = tabIndex ?? -1,
+                    controller: tabManager.controller),
+              ),
+            ),
+          ),
+        ));
   }
 }
 
@@ -102,17 +102,7 @@ class _TopMenuBarState extends State<TopMenuBar> with PlatformChecker {
 
   @override
   void initState() {
-    final eventStreamController = PlutoLayout.getEventStreamController(context);
     tabManager = context.read<TabManager>();
-    eventStreamController?.listen((PlutoLayoutEvent event) {
-      if (event is PlutoRemoveTabItemEvent) {
-        tabManager.removeTab(event.itemId);
-      } else if (event is PlutoInsertTabItemEvent) {
-      } else if (event is PlutoToggleTabViewEvent) {
-        tabManager.selectById(event.itemId as String);
-      }
-    });
-    tabManager.plutoController = eventStreamController;
     super.initState();
   }
 
