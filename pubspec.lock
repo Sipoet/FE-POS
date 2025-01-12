@@ -898,6 +898,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
+  tabbed_view:
+    dependency: "direct main"
+    description:
+      name: tabbed_view
+      sha256: "44a3629dd7b8a59c81e4d4d01a242c411481a8cf11d8cf6fb4b8513815f1d743"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.19.1"
   table_calendar:
     dependency: "direct main"
     description:
