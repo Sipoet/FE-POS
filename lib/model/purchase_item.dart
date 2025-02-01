@@ -57,6 +57,8 @@ class PurchaseItem extends Model {
   @override
   Map<String, dynamic> toMap() => {
         'kodeitem': itemCode,
+        'item_code': itemCode,
+        'item_name': item.name,
         'jumlah': quantity,
         'nobaris': row,
         'harga': price,

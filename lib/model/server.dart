@@ -134,8 +134,8 @@ class Server extends ChangeNotifier {
         options: generateHeaders(type, type));
   }
 
-  Future download(String path, String type, var destinationPath) async {
-    return dio.download("https://$host/api/$path", destinationPath,
+  Future download(String urlPath, String type, var destinationPath) async {
+    return dio.download("https://$host/api/$urlPath", destinationPath,
         options: generateHeaders('json', type));
   }
 
@@ -143,6 +143,7 @@ class Server extends ChangeNotifier {
     'json': ResponseType.json,
     'text': ResponseType.plain,
     'xlsx': ResponseType.bytes,
+    'pdf': ResponseType.bytes,
     'file': ResponseType.bytes,
   };
   Options generateHeaders(String requestType, String responseType) {
@@ -162,6 +163,8 @@ class Server extends ChangeNotifier {
         return 'application/json';
       case 'xlsx':
         return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      case 'pdf':
+        return 'application/pdf';
       default:
         return 'application/json';
     }

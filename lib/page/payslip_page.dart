@@ -2,6 +2,7 @@ import 'package:fe_pos/model/payslip.dart';
 import 'package:fe_pos/page/payslip_form_page.dart';
 import 'package:fe_pos/page/generate_payslip_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/tool/file_saver.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -189,6 +190,28 @@ class _PayslipPageState extends State<PayslipPage>
     }
   }
 
+  void download(Payslip payslip) async {
+    server.get('payslips/${payslip.id.toString()}/download', type: 'file').then(
+        (response) async {
+      String filename = response.headers.value('content-disposition') ?? '';
+      if (filename.isEmpty) {
+        return;
+      }
+      filename = filename.substring(
+          filename.indexOf('filename="') + 10, filename.indexOf('pdf";') + 3);
+
+      var downloader = const FileSaver();
+      downloader.download(filename, response.data, 'pdf',
+          onSuccess: (String path) {
+        flash.showBanner(
+            messageType: ToastificationType.success,
+            title: 'Sukses download',
+            duration: Durations.short1,
+            description: 'sukses disimpan di $path');
+      });
+    }, onError: (error) => defaultErrorResponse(error: error));
+  }
+
   final menuController = MenuController();
 
   @override
@@ -201,6 +224,12 @@ class _PayslipPageState extends State<PayslipPage>
               },
               tooltip: 'Edit Slip Gaji',
               icon: const Icon(Icons.edit)),
+          IconButton(
+              onPressed: () {
+                download(payslip);
+              },
+              tooltip: 'Download Slip Gaji',
+              icon: const Icon(Icons.download)),
           IconButton(
               onPressed: () {
                 destroyRecord(payslip);
