@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/customer_group.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
@@ -70,7 +71,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     showLoadingPopup();
     server.get('/discounts/${discount.id}', queryParam: {
       'include':
-          'discount_items,discount_suppliers,discount_item_types,discount_brands,discount_brands.brand,discount_item_types.item_type,discount_suppliers.supplier,discount_items.item'
+          'discount_items,discount_suppliers,discount_item_types,discount_brands,discount_brands.brand,discount_item_types.item_type,discount_suppliers.supplier,discount_items.item,customer_group'
     }).then((response) {
       if (response.statusCode == 200) {
         var json = response.data['data'];
@@ -379,6 +380,24 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     ),
                     onChanged: (option) {
                       discount.blacklistItems = option;
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  AsyncDropdown<CustomerGroup>(
+                    key: const ValueKey('customerGroupCode'),
+                    selected: discount.customerGroup,
+                    path: '/customer_groups',
+                    attributeKey: 'grup',
+                    textOnSelected: (customerGroup) => customerGroup.code,
+                    textOnSearch: (customerGroup) =>
+                        "${customerGroup.code} - ${customerGroup.name}",
+                    converter: CustomerGroup.fromJson,
+                    label: const Text(
+                      'Grup Pelanggan:',
+                      style: labelStyle,
+                    ),
+                    onChanged: (option) {
+                      discount.customerGroup = option;
                     },
                   ),
                   const Text(

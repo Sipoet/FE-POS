@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/customer_group.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/discount_item.dart';
 export 'package:fe_pos/model/discount_item.dart';
@@ -100,6 +101,7 @@ class Discount extends Model {
   DateTime startTime;
   DateTime endTime;
   DiscountCalculationType calculationType;
+  CustomerGroup? customerGroup;
   List<DiscountItem> discountItems = [];
   List<DiscountBrand> discountBrands = [];
   List<DiscountItemType> discountItemTypes = [];
@@ -125,6 +127,7 @@ class Discount extends Model {
       this.blacklistItemType,
       this.blacklistSupplierCode,
       this.supplierCode,
+      this.customerGroup,
       required this.calculationType,
       required this.discount1,
       this.discount2,
@@ -196,11 +199,17 @@ class Discount extends Model {
         relation: relationships['discount_item_types'],
         convert: DiscountItemType.fromJson);
 
+    model.customerGroup = Model.findRelationData<CustomerGroup>(
+        included: included,
+        relation: relationships['customer_group'],
+        convert: CustomerGroup.fromJson);
     model.weight = attributes['weight'];
     model.startTime = DateTime.parse(attributes['start_time']);
     model.endTime = DateTime.parse(attributes['end_time']);
     return model;
   }
+
+  String? get customerGroupCode => customerGroup?.code;
 
   List<Brand> get brands => discountBrands
       .where((element) => element.isExclude == false && element.brand != null)
@@ -317,6 +326,7 @@ class Discount extends Model {
         'blacklist_item_type_name': blacklistItemType,
         'blacklist_brand_name': blacklistBrandName,
         'blacklist_supplier_code': blacklistSupplierCode,
+        'customer_group_code': customerGroup?.code,
         'discount1': discount1,
         'discount2': discount2,
         'discount3': discount3,
