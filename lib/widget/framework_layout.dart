@@ -233,6 +233,13 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           children: [
             Menu(
               icon: Icons.shopping_bag,
+              label: 'Pesanan Pembelian',
+              isDisabled: !setting.isAuthorize('purchaseOrder', 'index'),
+              key: 'purchase_order',
+              pageFunct: () => const PurchaseOrderPage(),
+            ),
+            Menu(
+              icon: Icons.shopping_bag,
               label: 'Pembelian',
               isDisabled: !setting.isAuthorize('purchase', 'index'),
               key: 'purchase',
@@ -244,7 +251,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               key: 'purchase',
               isDisabled: !setting.isAuthorize('purchaseItem', 'index'),
               pageFunct: () => const PurchaseItemPage(),
-            )
+            ),
+            Menu(
+              icon: Icons.shopping_bag,
+              label: 'Retur Pembelian',
+              isDisabled: !setting.isAuthorize('purchaseReturn', 'index'),
+              key: 'purchase_return',
+              pageFunct: () => const PurchaseReturnPage(),
+            ),
           ]),
       Menu(
           icon: Icons.inventory,
@@ -260,8 +274,8 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             Menu(
               icon: Icons.shopping_bag,
               label: 'Detail Transfer Item',
-              key: 'purchase',
-              isDisabled: !setting.isAuthorize('transferItem', 'index'),
+              key: 'transferItem',
+              isDisabled: !setting.isAuthorize('transfer', 'index'),
               pageFunct: () => const TransferItemPage(),
             )
           ],

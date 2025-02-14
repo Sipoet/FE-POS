@@ -39,6 +39,8 @@ export 'sale_item_page.dart';
 
 // purchase
 export 'purchase_page.dart';
+export 'purchase_order_page.dart';
+export 'purchase_return_page.dart';
 export 'purchase_item_page.dart';
 
 // inventory

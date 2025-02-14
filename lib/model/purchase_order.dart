@@ -1,14 +1,15 @@
-import 'package:fe_pos/model/purchase_item.dart';
-export 'package:fe_pos/model/purchase_item.dart';
+import 'package:fe_pos/model/purchase_order_item.dart';
+export 'package:fe_pos/model/purchase_order_item.dart';
 import 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-class Purchase extends Model {
+class PurchaseOrder extends Model {
   String code;
   String? orderCode;
   String userName;
-  List<PurchaseItem> purchaseItems;
+  List<PurchaseOrderItem> purchaseItems;
   DateTime datetime;
+  DateTime deliveredDate;
   String description;
   double totalItem;
   Money subtotal;
@@ -27,7 +28,7 @@ class Purchase extends Model {
   String destLocation;
   String supplierCode;
   Supplier supplier;
-  Purchase(
+  PurchaseOrder(
       {this.userName = '',
       this.description = '',
       this.totalItem = 0,
@@ -48,15 +49,17 @@ class Purchase extends Model {
       this.destLocation = '',
       this.bankCode,
       this.taxType = '',
+      Supplier? supplier,
       super.id,
       super.createdAt,
       super.updatedAt,
-      Supplier? supplier,
       DateTime? datetime,
-      List<PurchaseItem>? purchaseItems})
-      : purchaseItems = purchaseItems ?? <PurchaseItem>[],
+      DateTime? deliveredDate,
+      List<PurchaseOrderItem>? purchaseItems})
+      : purchaseItems = purchaseItems ?? <PurchaseOrderItem>[],
+        datetime = datetime ?? DateTime.now(),
         supplier = supplier ?? Supplier(),
-        datetime = datetime ?? DateTime.now();
+        deliveredDate = deliveredDate ?? DateTime.now();
 
   @override
   Map<String, dynamic> toMap() => {
@@ -81,21 +84,22 @@ class Purchase extends Model {
         'kodekantor': location,
         'kantortujuan': destLocation,
         'kodesupel': supplierCode,
+        'tanggalkirim': deliveredDate,
       };
 
   String get supplierName => supplier.name;
 
   @override
-  factory Purchase.fromJson(Map<String, dynamic> json,
-      {Purchase? model, List included = const []}) {
+  factory PurchaseOrder.fromJson(Map<String, dynamic> json,
+      {PurchaseOrder? model, List included = const []}) {
     var attributes = json['attributes'];
 
-    model ??= Purchase(userName: '');
+    model ??= PurchaseOrder(userName: '');
     if (included.isNotEmpty) {
-      model.purchaseItems = Model.findRelationsData<PurchaseItem>(
+      model.purchaseItems = Model.findRelationsData<PurchaseOrderItem>(
           included: included,
-          relation: json['relationships']['purchase_items'],
-          convert: PurchaseItem.fromJson);
+          relation: json['relationships']['purchase_order_items'],
+          convert: PurchaseOrderItem.fromJson);
       model.supplier = Model.findRelationData<Supplier>(
               included: included,
               relation: json['relationships']['supplier'],
@@ -106,6 +110,7 @@ class Purchase extends Model {
     model.id = json['id'];
     model.userName = attributes['user1'];
     model.datetime = DateTime.parse(attributes['tanggal']);
+    model.deliveredDate = DateTime.parse(attributes['tanggalkirim']);
     model.description = attributes['keterangan'];
     model.totalItem = double.parse(attributes['totalitem']);
     model.subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);

@@ -1,13 +1,13 @@
-import 'package:fe_pos/model/purchase_item.dart';
-export 'package:fe_pos/model/purchase_item.dart';
+import 'package:fe_pos/model/purchase_return_item.dart';
+export 'package:fe_pos/model/purchase_return_item.dart';
 import 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-class Purchase extends Model {
+class PurchaseReturn extends Model {
   String code;
   String? orderCode;
   String userName;
-  List<PurchaseItem> purchaseItems;
+  List<PurchaseReturnItem> purchaseItems;
   DateTime datetime;
   String description;
   double totalItem;
@@ -27,7 +27,7 @@ class Purchase extends Model {
   String destLocation;
   String supplierCode;
   Supplier supplier;
-  Purchase(
+  PurchaseReturn(
       {this.userName = '',
       this.description = '',
       this.totalItem = 0,
@@ -51,12 +51,14 @@ class Purchase extends Model {
       super.id,
       super.createdAt,
       super.updatedAt,
-      Supplier? supplier,
       DateTime? datetime,
-      List<PurchaseItem>? purchaseItems})
-      : purchaseItems = purchaseItems ?? <PurchaseItem>[],
+      Supplier? supplier,
+      List<PurchaseReturnItem>? purchaseItems})
+      : purchaseItems = purchaseItems ?? <PurchaseReturnItem>[],
         supplier = supplier ?? Supplier(),
         datetime = datetime ?? DateTime.now();
+
+  String get supplierName => supplier.name;
 
   @override
   Map<String, dynamic> toMap() => {
@@ -83,19 +85,17 @@ class Purchase extends Model {
         'kodesupel': supplierCode,
       };
 
-  String get supplierName => supplier.name;
-
   @override
-  factory Purchase.fromJson(Map<String, dynamic> json,
-      {Purchase? model, List included = const []}) {
+  factory PurchaseReturn.fromJson(Map<String, dynamic> json,
+      {PurchaseReturn? model, List included = const []}) {
     var attributes = json['attributes'];
 
-    model ??= Purchase(userName: '');
+    model ??= PurchaseReturn(userName: '');
     if (included.isNotEmpty) {
-      model.purchaseItems = Model.findRelationsData<PurchaseItem>(
+      model.purchaseItems = Model.findRelationsData<PurchaseReturnItem>(
           included: included,
-          relation: json['relationships']['purchase_items'],
-          convert: PurchaseItem.fromJson);
+          relation: json['relationships']['purchase_return_items'],
+          convert: PurchaseReturnItem.fromJson);
       model.supplier = Model.findRelationData<Supplier>(
               included: included,
               relation: json['relationships']['supplier'],
