@@ -28,6 +28,7 @@ class _HomePageState extends State<HomePage>
       DateTimeRange(start: DateTime.now(), end: DateTime.now()));
   Money? totalSales;
   final Period period = Period.week;
+
   @override
   void initState() {
     setting = context.read<Setting>();
@@ -70,6 +71,7 @@ class _HomePageState extends State<HomePage>
 
   @override
   bool get wantKeepAlive => true;
+
   int separateHourWithinDay = 7;
   void arrangeDate(String rangeType) {
     final now = DateTime.now();

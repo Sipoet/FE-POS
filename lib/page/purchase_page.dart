@@ -66,6 +66,7 @@ class _PurchasePageState extends State<PurchasePage>
       'page[page]': page.toString(),
       'page[limit]': limit.toString(),
       'sort': '${isAscending ? '' : '-'}$orderKey',
+      'include': 'supplier',
     };
     _filter.forEach((key, value) {
       param[key] = value;

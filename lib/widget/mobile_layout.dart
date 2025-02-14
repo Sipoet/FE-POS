@@ -75,6 +75,9 @@ class _MobileTabState extends State<MobileTab> {
       child: TabbedView(
           onTabSelection: (tabIndex) =>
               tabManager.selectedIndex = tabIndex ?? -1,
+          onTabClose: (tabIndex, tabData) {
+            tabManager.goTo(tabIndex - 1);
+          },
           controller: tabManager.controller),
     );
   }
