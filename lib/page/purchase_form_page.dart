@@ -36,7 +36,6 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
   late final SyncDataTableSource<PurchaseItem> _source;
   double margin = 1;
   String roundType = 'mark';
-  int roundPrecission = 0;
   double markUpper = 900;
   double markLower = 500;
   double markSeparator = 500;
@@ -196,7 +195,6 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
       'code': purchase.code,
       'margin': margin,
       'round_type': roundType,
-      'round_precission': roundPrecission,
       'mark_upper': markUpper,
       'mark_lower': markLower,
       'mark_separator': markSeparator,
