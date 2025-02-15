@@ -19,7 +19,7 @@ class PurchaseOrderItem extends Model {
   Money taxAmount;
   Money total;
   double orderQuantity;
-  Money sellPrice;
+
   Money cogs;
   DateTime? expiredDate;
   String? productionCode;
@@ -52,9 +52,10 @@ class PurchaseOrderItem extends Model {
       this.orderQuantity = 0,
       this.productionCode,
       this.expiredDate,
-      this.sellPrice = const Money(0),
       this.cogs = const Money(0)})
       : item = item ?? Item();
+
+  Money get sellPrice => item.sellPrice;
 
   @override
   Map<String, dynamic> toMap() => {
@@ -110,7 +111,6 @@ class PurchaseOrderItem extends Model {
     model.discountAmount1 = double.parse(attributes['potongan']);
     model.taxAmount = Money.parse(attributes['pajak']);
     model.total = Money.parse(attributes['total']);
-    model.sellPrice = Money.parse(attributes['sell_price']);
     model.productionCode = attributes['production_code'];
     model.expiredDate = DateTime.tryParse(attributes['tglexp'] ?? '');
     model.itemTypeName = attributes['item_type_name'];

@@ -179,7 +179,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                 ElevatedButton(
                   child: const Text("Submit"),
                   onPressed: () {
-                    updatePrice(navigator);
+                    updatePrice().then((result) => navigator.pop(result));
                   },
                 ),
               ],
@@ -190,7 +190,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
     });
   }
 
-  void updatePrice(NavigatorState navigator) {
+  Future<bool> updatePrice() async {
     showLoadingPopup();
     final dataParams = {
       'code': purchase.code,
@@ -201,11 +201,15 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
       'mark_lower': markLower,
       'mark_separator': markSeparator,
     };
-    _server
-        .post('purchases/code/update_price', body: dataParams)
-        .then((response) {
-      navigator.pop(response.statusCode == 200);
-    }).whenComplete(() => hideLoadingPopup());
+    try {
+      final response =
+          await _server.post('purchases/code/update_price', body: dataParams);
+      hideLoadingPopup();
+      return response.statusCode == 200;
+    } catch (e) {
+      hideLoadingPopup();
+      return false;
+    }
   }
 
   static const labelStyle =
@@ -574,6 +578,12 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                               child: const Text('Ganti Harga'),
                               onPressed: () {
                                 openUpdatePriceForm();
+                              },
+                            ),
+                            MenuItemButton(
+                              child: const Text('refresh item'),
+                              onPressed: () {
+                                fetchPurchase();
                               },
                             ),
                           ],

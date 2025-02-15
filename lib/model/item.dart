@@ -17,6 +17,8 @@ class Item extends Model {
   Supplier? supplier;
   ItemType itemType;
   Brand? brand;
+  Money hpp;
+  Money sellPrice;
   Item(
       {this.code = '',
       this.name = '',
@@ -25,9 +27,13 @@ class Item extends Model {
       this.supplierCode,
       this.supplier,
       this.brand,
+      Money? sellPrice,
+      Money? hpp,
       ItemType? itemType,
       super.id})
-      : itemType = itemType ?? ItemType();
+      : itemType = itemType ?? ItemType(),
+        hpp = hpp ?? const Money(0),
+        sellPrice = sellPrice ?? const Money(0);
 
   @override
   Map<String, dynamic> toMap() => {
@@ -37,6 +43,8 @@ class Item extends Model {
         'supplier.kode': supplierCode,
         'brand.merek': brandName,
         'item_type.jenis': itemTypeName,
+        'hargajual1': sellPrice,
+        'hargapokok': hpp,
       };
 
   @override
@@ -50,6 +58,9 @@ class Item extends Model {
     model.brandName = attributes['merek'];
     model.itemTypeName = attributes['jenis'];
     model.supplierCode = attributes['supplier1'];
+    model.hpp = Money.tryParse(attributes['hargapokok']) ?? model.hpp;
+    model.sellPrice =
+        Money.tryParse(attributes['hargajual1']) ?? model.sellPrice;
     model.supplier = Model.findRelationData<Supplier>(
         relation: json['relationships']['supplier'],
         included: included,

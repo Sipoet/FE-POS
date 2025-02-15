@@ -62,7 +62,6 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
 
   void fetchPurchaseOrder() {
     showLoadingPopup();
-
     _server.get('purchase_orders/show', queryParam: {
       'code': Uri.encodeComponent(purchaseOrder.id),
       'include': 'purchase_order_items,purchase_order_items.item,supplier'
@@ -180,7 +179,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                 ElevatedButton(
                   child: const Text("Submit"),
                   onPressed: () {
-                    updatePrice(navigator);
+                    updatePrice().then((result) => navigator.pop(result));
                   },
                 ),
               ],
@@ -191,7 +190,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
     });
   }
 
-  void updatePrice(NavigatorState navigator) {
+  Future<bool> updatePrice() async {
     showLoadingPopup();
     final dataParams = {
       'code': purchaseOrder.code,
@@ -202,11 +201,15 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
       'mark_lower': markLower,
       'mark_separator': markSeparator,
     };
-    _server
-        .post('purchase_orders/code/update_price', body: dataParams)
-        .then((response) {
-      navigator.pop(response.statusCode == 200);
-    }).whenComplete(() => hideLoadingPopup());
+    try {
+      final response = await _server.post('purchase_orders/code/update_price',
+          body: dataParams);
+      hideLoadingPopup();
+      return response.statusCode == 200;
+    } catch (e) {
+      hideLoadingPopup();
+      return false;
+    }
   }
 
   static const labelStyle =
@@ -589,6 +592,12 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               child: const Text('Ganti Harga'),
                               onPressed: () {
                                 openUpdatePriceForm();
+                              },
+                            ),
+                            MenuItemButton(
+                              child: const Text('Refresh item'),
+                              onPressed: () {
+                                fetchPurchaseOrder();
                               },
                             ),
                           ],

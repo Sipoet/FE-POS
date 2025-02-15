@@ -18,7 +18,6 @@ class PurchaseItem extends Model {
   Money taxAmount;
   Money total;
   double orderQuantity;
-  Money sellPrice;
   Money cogs;
   DateTime? expiredDate;
   String? productionCode;
@@ -50,7 +49,6 @@ class PurchaseItem extends Model {
       this.orderQuantity = 0,
       this.productionCode,
       this.expiredDate,
-      this.sellPrice = const Money(0),
       this.cogs = const Money(0)})
       : item = item ?? Item();
 
@@ -83,7 +81,7 @@ class PurchaseItem extends Model {
         'supplier_code': supplierCode,
         'brand_name': brandName,
       };
-
+  Money get sellPrice => item.sellPrice;
   @override
   factory PurchaseItem.fromJson(Map<String, dynamic> json,
       {PurchaseItem? model, List included = const []}) {
@@ -110,7 +108,6 @@ class PurchaseItem extends Model {
     model.discountPercentage4 = Percentage.parse(attributes['potongan4']);
     model.taxAmount = Money.parse(attributes['pajak']);
     model.total = Money.parse(attributes['total']);
-    model.sellPrice = Money.parse(attributes['sell_price']);
     model.productionCode = attributes['production_code'];
     model.expiredDate = DateTime.tryParse(attributes['tglexp'] ?? '');
     model.orderQuantity = double.tryParse(attributes['jmlpesan'] ?? '') ?? 0;
