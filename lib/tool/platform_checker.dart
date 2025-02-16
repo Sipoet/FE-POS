@@ -1,5 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform;
 import 'dart:io' show Platform;
 
 mixin PlatformChecker {
@@ -8,14 +9,16 @@ mixin PlatformChecker {
   }
 
   bool isMobile() {
-    return Platform.isAndroid || Platform.isIOS;
+    if (isWeb()) {
+      return [TargetPlatform.android, TargetPlatform.iOS]
+          .contains(defaultTargetPlatform);
+    } else {
+      return Platform.isAndroid || Platform.isIOS;
+    }
   }
 
   bool isDesktop() {
-    return Platform.isLinux ||
-        Platform.isWindows ||
-        Platform.isMacOS ||
-        Platform.isFuchsia;
+    return !isMobile();
   }
 
   Future<String> appVersion() async {
