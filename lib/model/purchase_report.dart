@@ -1,11 +1,59 @@
 import 'package:fe_pos/model/supplier.dart';
 import 'package:fe_pos/model/model.dart';
 
+enum PurchaseReportStatus {
+  noPaid,
+  halfPaid,
+  paid,
+  overPaid;
+
+  @override
+  String toString() {
+    if (this == noPaid) {
+      return 'no_paid';
+    } else if (this == halfPaid) {
+      return 'half_paid';
+    } else if (this == paid) {
+      return 'paid';
+    } else if (this == overPaid) {
+      return 'over_paid';
+    }
+    return '';
+  }
+
+  factory PurchaseReportStatus.fromString(String value) {
+    if (value == 'no_paid') {
+      return noPaid;
+    } else if (value == 'half_paid') {
+      return halfPaid;
+    } else if (value == 'paid') {
+      return paid;
+    } else if (value == 'over_paid') {
+      return overPaid;
+    }
+    throw '$value is not valid purchase report status';
+  }
+
+  String humanize() {
+    if (this == noPaid) {
+      return 'Belum Bayar';
+    } else if (this == halfPaid) {
+      return 'Terbayar Sebagian';
+    } else if (this == paid) {
+      return 'Sudah Bayar';
+    } else if (this == overPaid) {
+      return 'Kelebihan Bayar';
+    }
+    return '';
+  }
+}
+
 class PurchaseReport extends Model {
   String code;
   String supplierCode;
   DateTime purchaseDate;
   Date dueDate;
+  PurchaseReportStatus status;
   double purchaseItemTotal;
   Money purchaseSubtotal;
   Money headerDiscountAmount;
@@ -29,6 +77,7 @@ class PurchaseReport extends Model {
     this.supplierCode = '',
     DateTime? purchaseDate,
     Date? dueDate,
+    this.status = PurchaseReportStatus.noPaid,
     this.purchaseItemTotal = 0,
     this.purchaseSubtotal = const Money(0),
     this.headerDiscountAmount = const Money(0),
@@ -62,6 +111,7 @@ class PurchaseReport extends Model {
           model.supplier;
     }
     model.id = json['id'];
+    model.status = PurchaseReportStatus.fromString(attributes['status']);
     model.code = attributes['code'];
     model.supplierCode = attributes['supplier_code'];
     model.purchaseItemTotal =
@@ -128,6 +178,7 @@ class PurchaseReport extends Model {
         'grandtotal': grandtotal,
         'paid_amount': paidAmount,
         'last_paid_date': lastPaidDate,
-        'debt_amount': debtAmount
+        'debt_amount': debtAmount,
+        'status': status.humanize(),
       };
 }

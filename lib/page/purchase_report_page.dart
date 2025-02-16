@@ -151,6 +151,9 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
                   _filter = filter;
                   _displayReport();
                 },
+                enums: const {
+                  'status': PurchaseReportStatus.values,
+                },
                 onDownload: (filter) {
                   _filter = filter;
                   _downloadReport();
