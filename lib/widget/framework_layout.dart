@@ -122,6 +122,21 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               key: 'salesPercentageReport',
             ),
             Menu(
+                icon: Icons.shopping_bag,
+                isClosed: true,
+                label: 'Laporan Pembelian',
+                key: 'purchaseReportGroup',
+                children: [
+                  Menu(
+                    icon: Icons.pages,
+                    isClosed: true,
+                    label: 'Laporan Pembelian',
+                    isDisabled: !setting.isAuthorize('purchase', 'report'),
+                    pageFunct: () => const PurchaseReportPage(),
+                    key: 'purchaseReport',
+                  ),
+                ]),
+            Menu(
                 icon: Icons.money,
                 isClosed: true,
                 label: 'Laporan Penjualan',
