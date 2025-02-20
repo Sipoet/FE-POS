@@ -29,25 +29,79 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>fe_pos</title>
+  <title>Allegra POS</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    #loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      -ms-transform: translate(-50%, -50%);
+      transform: translate(-50%, -50%);
+    }
 
-  <script>
-    // The value below is injected by flutter build, do not touch.
-    var serviceWorkerVersion = null;
-  </script>
-  <!-- This script adds the flutter initialization JS code -->
-  <script src="flutter.js" defer></script>
+    .loader {
+      border: 16px solid gray;
+      border-radius: 50%;
+      border-top: 16px solid black;
+      border-right: 16px solid gray;
+      border-bottom: 16px solid gray;
+      border-left: 16px solid gray;
+      width: 120px;
+      height: 120px;
+      margin-top: 250px;
+      margin-left: -150px;
+      -webkit-animation: spin 2s linear infinite;
+      animation: spin 2s linear infinite;
+    }
+
+    @-webkit-keyframes spin {
+      0% {
+        -webkit-transform: rotate(0deg);
+      }
+      100% {
+        -webkit-transform: rotate(360deg);
+      }
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    .header-title-front{
+      text-align: center;font-size: 2em;
+    }
+  </style>
 </head>
 <body>
+
+  <div id="loading">
+    <p class="header-title-front" >Allegra Pos</p>
+    <div class="loader"></div>
+  </div>
+
   <script>
     window.addEventListener('load', function(ev) {
-      // Download main.dart.js
-      _flutter.loader.loadEntrypoint({
+      {{flutter_js}}
+      {{flutter_build_config}}
+      _flutter.loader.load({
         serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
+          serviceWorkerVersion: {{flutter_service_worker_version}},
         },
-        onEntrypointLoaded: function(engineInitializer) {
+        onEntrypointLoaded: async function(engineInitializer) {
+          loader = document.getElementById('loading');
+          if(loader ==  null) {
+            console.log('remove')
+            loader.remove();
+          }
           engineInitializer.initializeEngine().then(function(appRunner) {
             appRunner.runApp();
           });
