@@ -46,11 +46,13 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
   void initState() {
     if (widget.controller != null) {
       _controller = TextEditingController(
-          text: numberFormat(_valueFromInput(widget.controller!.text)?.value));
+        text: numberFormat(_valueFromInput(widget.controller!.text)?.value),
+      );
     }
     widget.controller?.addListener(() {
-      _controller!.text =
-          numberFormat(_valueFromInput(widget.controller!.text)?.value);
+      _controller!.text = numberFormat(
+        _valueFromInput(widget.controller!.text)?.value,
+      );
     });
     super.initState();
   }
@@ -99,13 +101,14 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
           : null,
       inputFormatters: [ThousandSeparatorFormatter()],
       decoration: InputDecoration(
-          label: widget.label,
-          contentPadding: const EdgeInsets.all(5),
-          prefix: const Text(
-            'Rp ',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          border: const OutlineInputBorder()),
+        label: widget.label,
+        contentPadding: const EdgeInsets.all(5),
+        prefix: const Text(
+          'Rp ',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        border: const OutlineInputBorder(),
+      ),
       initialValue: value,
     );
   }

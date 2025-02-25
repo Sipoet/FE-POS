@@ -14,17 +14,18 @@ class PercentageFormField extends StatefulWidget {
   final TextEditingController? controller;
   final bool readOnly;
   final FocusNode? focusNode;
-  const PercentageFormField(
-      {super.key,
-      this.initialValue,
-      this.onChanged,
-      this.label,
-      this.onSaved,
-      this.validator,
-      this.focusNode,
-      this.onFieldSubmitted,
-      this.readOnly = false,
-      this.controller});
+  const PercentageFormField({
+    super.key,
+    this.initialValue,
+    this.onChanged,
+    this.label,
+    this.onSaved,
+    this.validator,
+    this.focusNode,
+    this.onFieldSubmitted,
+    this.readOnly = false,
+    this.controller,
+  });
 
   @override
   State<PercentageFormField> createState() => _PercentageFormFieldState();
@@ -46,11 +47,13 @@ class _PercentageFormFieldState extends State<PercentageFormField>
   void initState() {
     if (widget.controller != null) {
       _controller = TextEditingController(
-          text: numberFormat(_valueFromInput(widget.controller!.text)?.value));
+        text: numberFormat(_valueFromInput(widget.controller!.text)?.value),
+      );
     }
     widget.controller?.addListener(() {
-      _controller!.text =
-          numberFormat(_valueFromInput(widget.controller!.text)?.value);
+      _controller!.text = numberFormat(
+        _valueFromInput(widget.controller!.text)?.value,
+      );
     });
     super.initState();
   }
@@ -95,10 +98,11 @@ class _PercentageFormFieldState extends State<PercentageFormField>
           : null,
       inputFormatters: [ThousandSeparatorFormatter()],
       decoration: InputDecoration(
-          label: widget.label,
-          contentPadding: const EdgeInsets.all(5),
-          suffixIcon: const Icon(Icons.percent),
-          border: const OutlineInputBorder()),
+        label: widget.label,
+        contentPadding: const EdgeInsets.all(5),
+        suffixIcon: const Icon(Icons.percent),
+        border: const OutlineInputBorder(),
+      ),
       initialValue: widget.initialValue == null
           ? null
           : numberFormat(widget.initialValue!.value * 100),
