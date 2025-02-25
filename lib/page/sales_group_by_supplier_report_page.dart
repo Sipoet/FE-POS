@@ -33,16 +33,22 @@ class _SalesGroupBySupplierReportPageState
   List _suppliers = [];
   List _itemTypes = [];
   List _groupKeys = [];
-  final groupList = ['supplier_name', 'brand_name', 'item_type_name'];
+  final groupList = [
+    'supplier_name',
+    'brand_name',
+    'item_type_name',
+    'last_purchase_date'
+  ];
   final _cancelToken = CancelToken();
   final _formState = GlobalKey<FormState>();
   late final List<TableColumn> _tableColumns;
+  late final Setting _setting;
   @override
   void initState() {
     server = context.read<Server>();
-    final setting = context.read<Setting>();
+    _setting = context.read<Setting>();
     flash = Flash();
-    _tableColumns = setting.tableColumn('salesGroupBySupplierReport');
+    _tableColumns = _setting.tableColumn('salesGroupBySupplierReport');
     _source = SyncDataTableSource<SalesGroupBySupplier>(columns: _tableColumns);
     super.initState();
   }
@@ -71,7 +77,7 @@ class _SalesGroupBySupplierReportPageState
   }
 
   Future _requestReport({int? page, int? per}) async {
-    return server.get('item_sales_percentage_reports/grouped_report',
+    return server.get('item_reports/grouped_report',
         queryParam: {
           'suppliers[]': _suppliers,
           'brands[]': _brands,
@@ -193,14 +199,8 @@ class _SalesGroupBySupplierReportPageState
                           return null;
                         },
                         itemAsString: (item) {
-                          if (item == 'supplier_name') {
-                            return 'Supplier';
-                          } else if (item == 'brand_name') {
-                            return 'Merek';
-                          } else if (item == 'item_type_name') {
-                            return 'Jenis/Departemen';
-                          }
-                          return '';
+                          return _setting.columnName(
+                              'salesGroupBySupplierReport', item);
                         },
                       )),
                   SizedBox(

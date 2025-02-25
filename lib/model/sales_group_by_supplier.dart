@@ -6,6 +6,7 @@ class SalesGroupBySupplier extends Model {
   String? supplierName;
   String? brandName;
   Percentage salesPercentage;
+  Date? lastPurchaseDate;
   int numberOfPurchase;
   int numberOfSales;
   int stockLeft;
@@ -19,6 +20,7 @@ class SalesGroupBySupplier extends Model {
     required this.supplierCode,
     required this.supplierName,
     required this.brandName,
+    this.lastPurchaseDate,
     required this.salesPercentage,
     required this.numberOfPurchase,
     required this.numberOfSales,
@@ -35,6 +37,7 @@ class SalesGroupBySupplier extends Model {
     var attributes = json['attributes'];
     return SalesGroupBySupplier(
       id: json['id'],
+      lastPurchaseDate: Date.tryParse(attributes['last_purchase_date'] ?? ''),
       itemTypeName: attributes['item_type_name'],
       supplierCode: attributes['supplier_code'],
       supplierName: attributes['supplier_name'],
@@ -65,5 +68,6 @@ class SalesGroupBySupplier extends Model {
         'sales_total': salesTotal,
         'purchase_total': purchaseTotal,
         'gross_profit': grossProfit,
+        'last_purchase_date': lastPurchaseDate,
       };
 }
