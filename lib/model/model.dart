@@ -11,8 +11,10 @@ abstract class Model {
   Map<String, dynamic> toJson() {
     var json = toMap();
     json.forEach((key, object) {
-      if (object is Money || object is Percentage) {
+      if (object is Money) {
         json[key] = object.value;
+      } else if (object is Percentage) {
+        json[key] = object.value * 100;
       } else if (object is Date || object is DateTime) {
         json[key] = object.toIso8601String();
       } else if (object is Enum) {

@@ -217,31 +217,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
         )
       ]),
       Menu(
-          icon: Icons.shopping_cart,
-          label: 'Penjualan',
-          key: 'sales',
-          children: [
-            // Menu(
-            //     icon: Icons.card_membership_rounded,
-            //     label: 'Metode Pembayaran',
-            //     pageFunct: () => const PaymentMethodPage(),
-            //     key: 'payment_method'),
-            Menu(
-                icon: Icons.shopping_cart,
-                label: 'Penjualan',
-                key: 'sale',
-                isDisabled: !setting.isAuthorize('sale', 'index'),
-                pageFunct: () => const SalePage()),
-            Menu(
-              icon: Icons.shopping_bag,
-              label: 'Detail Penjualan Item',
-              key: 'sale_item',
-              isDisabled: !setting.isAuthorize('saleItem', 'index'),
-              pageFunct: () => const SaleItemPage(),
-            ),
-          ]),
-
-      Menu(
           icon: Icons.shopping_bag,
           label: 'Pembelian',
           key: 'purchase',
@@ -275,6 +250,38 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               pageFunct: () => const PurchaseReturnPage(),
             ),
           ]),
+      Menu(
+          icon: Icons.shopping_cart,
+          label: 'Penjualan',
+          key: 'sales',
+          children: [
+            // Menu(
+            //     icon: Icons.card_membership_rounded,
+            //     label: 'Metode Pembayaran',
+            //     pageFunct: () => const PaymentMethodPage(),
+            //     key: 'payment_method'),
+            Menu(
+                icon: Icons.shopping_cart,
+                label: 'Daftar Penjualan IPOS',
+                key: 'sale',
+                isDisabled: !setting.isAuthorize('sale', 'index'),
+                pageFunct: () => const SalePage()),
+            Menu(
+              icon: Icons.shopping_bag,
+              label: 'Detail Penjualan Item IPOS',
+              key: 'sale_item',
+              isDisabled: !setting.isAuthorize('saleItem', 'index'),
+              pageFunct: () => const SaleItemPage(),
+            ),
+            Menu(
+              icon: Icons.shopping_bag,
+              label: 'Daftar Penjualan di Kasir',
+              key: 'sales_cashier',
+              // isDisabled: !setting.isAuthorize('saleItem', 'index'),
+              pageFunct: () => const SalesCashierPage(),
+            ),
+          ]),
+
       Menu(
           icon: Icons.inventory,
           label: 'Persediaan',

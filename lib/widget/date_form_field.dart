@@ -11,6 +11,7 @@ class DateFormField extends StatefulWidget {
   final bool canRemove;
   final bool datePickerOnly;
   final FocusNode? focusNode;
+  final double removeButtonSize;
   final void Function(DateTime?)? onSaved;
   final void Function(DateTime? date)? onChanged;
   final String? Function(DateTime?)? validator;
@@ -25,6 +26,7 @@ class DateFormField extends StatefulWidget {
       this.focusNode,
       this.onChanged,
       this.validator,
+      this.removeButtonSize = 30,
       this.canRemove = false,
       required this.initialValue});
 
@@ -68,6 +70,9 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
             breakpoint: 1000)
         .then((date) {
       setState(() {
+        if (date == null && !widget.canRemove) {
+          return;
+        }
         _datetime = date;
         writeToTextField();
         if (widget.onChanged != null) {
@@ -89,46 +94,40 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Stack(children: [
-          TextFormField(
-            onTap: () {
-              _openDialog();
-            },
-            focusNode: widget.focusNode,
-            readOnly: true,
-            validator: (value) {
-              if (widget.validator == null) {
-                return null;
-              }
-              return widget.validator!(_datetime);
-            },
-            onSaved: (newValue) {
-              widget.onSaved!(_datetime);
-            },
-            decoration: InputDecoration(
-                label: widget.label, border: const OutlineInputBorder()),
-            controller: _controller,
-          ),
-          Visibility(
-              visible: widget.canRemove && _datetime != null,
-              child: Positioned(
-                top: 1,
-                right: 5,
-                child: IconButton(
-                    iconSize: 30,
-                    onPressed: () {
-                      setState(() {
-                        _datetime = null;
-                        writeToTextField();
-                      });
-                      if (widget.onChanged != null) {
-                        widget.onChanged!(_datetime);
-                      }
-                    },
-                    icon: const Icon(Icons.close)),
-              )),
-        ]));
+    return TextFormField(
+      onTap: () {
+        _openDialog();
+      },
+      focusNode: widget.focusNode,
+      readOnly: true,
+      validator: (value) {
+        if (widget.validator == null) {
+          return null;
+        }
+        return widget.validator!(_datetime);
+      },
+      onSaved: (newValue) {
+        widget.onSaved!(_datetime);
+      },
+      decoration: InputDecoration(
+          contentPadding: const EdgeInsets.all(5),
+          suffixIcon: widget.canRemove && _datetime != null
+              ? IconButton(
+                  iconSize: widget.removeButtonSize,
+                  onPressed: () {
+                    setState(() {
+                      _datetime = null;
+                      writeToTextField();
+                    });
+                    if (widget.onChanged != null) {
+                      widget.onChanged!(_datetime);
+                    }
+                  },
+                  icon: const Icon(Icons.close))
+              : null,
+          label: widget.label,
+          border: const OutlineInputBorder()),
+      controller: _controller,
+    );
   }
 }

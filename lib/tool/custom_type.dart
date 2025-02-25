@@ -172,7 +172,7 @@ class Money {
 
   @override
   String toString() {
-    return "$symbol ${value.toString()}";
+    return value.toString();
   }
 
   int compareTo(Money other) {
@@ -275,7 +275,11 @@ class Percentage {
 
   @override
   String toString() {
-    return "${value.toString()}%";
+    return (value * 100).toString();
+  }
+
+  String format() {
+    return "${toString()}%";
   }
 
   bool get isNaN {

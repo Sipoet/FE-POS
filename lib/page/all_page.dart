@@ -37,6 +37,7 @@ export 'cashier_session_page.dart';
 export 'payment_method_page.dart';
 export 'sale_page.dart';
 export 'sale_item_page.dart';
+export 'sales_cashier_page.dart';
 
 // purchase
 export 'purchase_page.dart';

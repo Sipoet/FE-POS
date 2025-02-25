@@ -84,7 +84,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
           final navigator = Navigator.of(context);
           return StatefulBuilder(
             builder: (BuildContext context, setstateDialog) => AlertDialog(
-              title: const Text("Ubah Harga"),
+              title: const Text("Ubah Harga Jual"),
               content: Column(
                 children: [
                   TextFormField(

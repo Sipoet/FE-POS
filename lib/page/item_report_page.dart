@@ -4,7 +4,7 @@ import 'package:fe_pos/model/item_report.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
-import 'package:fe_pos/widget/custom_async_data_table.dart';
+import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/table_filter_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -23,51 +23,14 @@ class _ItemReportPageState extends State<ItemReportPage>
   String? _reportType;
   bool _isDisplayTable = false;
   double minimumColumnWidth = 150;
-  late final CustomAsyncDataTableSource<ItemReport> _source;
+  late final PlutoGridStateManager _source;
+  late final Setting _setting;
   late Flash flash;
   Map _filter = {};
   @override
   void initState() {
     server = context.read<Server>();
-    final setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<ItemReport>(
-      columns: setting.tableColumn('itemReport'),
-      fetchData: (
-          {bool isAscending = true,
-          int limit = 10,
-          int page = 1,
-          TableColumn? sortColumn}) {
-        _reportType = 'json';
-        return _requestReport(
-                page: page,
-                limit: limit,
-                sortColumn: sortColumn,
-                isAscending: isAscending)
-            .then((response) {
-          try {
-            if (response.statusCode != 200) {
-              return ResponseResult<ItemReport>(totalRows: 0, models: []);
-            }
-            var data = response.data;
-            setState(() {
-              _isDisplayTable = true;
-            });
-            final models = data['data'].map<ItemReport>((row) {
-              return ItemReport.fromJson(row);
-            }).toList();
-            return ResponseResult<ItemReport>(
-                models: models, totalRows: data['meta']['total_rows']);
-          } catch (error, stackTrace) {
-            debugPrint(error.toString());
-            debugPrint(stackTrace.toString());
-            return ResponseResult<ItemReport>(totalRows: 0, models: []);
-          }
-        }, onError: ((error, stackTrace) {
-          defaultErrorResponse(error: error);
-          return Future(() => ResponseResult<ItemReport>(models: []));
-        }));
-      },
-    );
+    _setting = context.read<Setting>();
     flash = Flash();
     super.initState();
   }
@@ -76,7 +39,35 @@ class _ItemReportPageState extends State<ItemReportPage>
   bool get wantKeepAlive => true;
 
   void _displayReport() async {
-    _source.refreshDataFromFirstPage();
+    _source.setShowLoading(true);
+    _requestReport(
+      page: 1,
+      limit: 500,
+      // sortColumn: sortColumn,
+      // isAscending: isAscending,
+    ).then((response) {
+      // try {
+      if (response.statusCode != 200) {
+        return;
+      }
+      var data = response.data;
+      setState(() {
+        _isDisplayTable = true;
+      });
+      final models = data['data']
+          .map<ItemReport>((row) => ItemReport.fromJson(row))
+          .toList();
+      _source.removeAllRows();
+      for (final model in models) {
+        _source.appendModel(model);
+      }
+      // } catch (error, stackTrace) {
+      //   debugPrint(error.toString());
+      //   debugPrint(stackTrace.toString());
+      // }
+    }, onError: ((error, stackTrace) {
+      defaultErrorResponse(error: error);
+    })).whenComplete(() => _source.setShowLoading(false));
   }
 
   void _downloadReport() async {
@@ -104,7 +95,7 @@ class _ItemReportPageState extends State<ItemReportPage>
     _filter.forEach((key, value) {
       param[key] = value;
     });
-    return server.get('item_sales_percentage_reports',
+    return server.get('item_reports',
         queryParam: param, type: _reportType ?? 'json');
   }
 
@@ -137,6 +128,8 @@ class _ItemReportPageState extends State<ItemReportPage>
     final size = MediaQuery.of(context).size;
     double tableHeight = size.height - padding.top - padding.bottom - 150;
     tableHeight = tableHeight > 600 ? 600 : tableHeight;
+    final columns = _setting.tableColumn('itemReport');
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -153,14 +146,17 @@ class _ItemReportPageState extends State<ItemReportPage>
                   _filter = filter;
                   _downloadReport();
                 },
-                columns: _source.columns),
+                columns: columns),
             const SizedBox(height: 10),
             Visibility(visible: _isDisplayTable, child: const Divider()),
             SizedBox(
               height: tableHeight,
-              child: CustomAsyncDataTable(
-                controller: _source,
-                fixedLeftColumns: 1,
+              child: SyncDataTable2<ItemReport>(
+                showSummary: true,
+                columns: columns,
+                showFilter: false,
+                onLoaded: (stateManager) => _source = stateManager,
+                fixedLeftColumns: 2,
               ),
             ),
           ],

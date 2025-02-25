@@ -5,6 +5,8 @@ import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
+import 'package:fe_pos/widget/number_form_field.dart';
+import 'package:fe_pos/widget/percentage_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/model/discount.dart';
@@ -456,6 +458,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                         'Level Diskon',
                         style: labelStyle,
                       ),
+                      border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
@@ -470,114 +473,121 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                     onChanged: ((value) => discount.weight = int.parse(value)),
                     initialValue: discount.weight.toString(),
                   )),
-                  Flexible(
-                      child: TextFormField(
-                    enableSuggestions: false,
-                    decoration: const InputDecoration(
-                      label: Text(
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Visibility(
+                    visible: discount.calculationType ==
+                        DiscountCalculationType.nominal,
+                    child: Flexible(
+                        child: NumberFormField<double>(
+                      label: const Text(
                         'Diskon 1',
                         style: labelStyle,
                       ),
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      var valDouble = Percentage.tryParse(value ?? '');
-                      if (valDouble == null || valDouble.isNaN) {
-                        return 'tidak valid';
-                      }
-                      if (discount.calculationType ==
-                          DiscountCalculationType.percentage) {
-                        if (valDouble >= 100 || valDouble < 0) {
-                          return 'range valid antara 0 - 100';
+                      validator: (value) {
+                        if (value == null) {
+                          return 'tidak valid';
                         }
-                        return null;
-                      } else if (discount.calculationType ==
-                          DiscountCalculationType.nominal) {
-                        if (valDouble <= 0) {
+                        if (value <= 0) {
                           return 'harus lebih besar dari 0';
                         }
                         return null;
-                      }
-                      return null;
-                    },
-                    onChanged: ((value) => discount.discount1 =
-                        Percentage.tryParse(value) ?? const Percentage(0.0)),
-                    initialValue: discount.discount1Nominal.toString(),
-                  )),
+                      },
+                      onChanged: (value) {
+                        discount.discount1 = Percentage(value ?? 0);
+                      },
+                      initialValue: discount.discount1Nominal,
+                    )),
+                  ),
+                  Visibility(
+                    visible: discount.calculationType ==
+                        DiscountCalculationType.percentage,
+                    child: Flexible(
+                        child: PercentageFormField(
+                      label: const Text(
+                        'Diskon 1',
+                        style: labelStyle,
+                      ),
+                      validator: (value) {
+                        if (value == null) {
+                          return 'tidak valid';
+                        } else if (value > 1 || value < 0) {
+                          return 'range valid antara 0 - 100';
+                        }
+                        return null;
+                      },
+                      onChanged: (value) {
+                        discount.discount1 = value ?? const Percentage(0);
+                      },
+                      initialValue: discount.discount1,
+                    )),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   Flexible(
-                      child: TextFormField(
-                    enableSuggestions: false,
+                      child: PercentageFormField(
                     controller: _discount2Controller,
                     readOnly: discount.calculationType ==
                         DiscountCalculationType.nominal,
-                    decoration: const InputDecoration(
-                      label: Text(
-                        'Diskon 2',
-                        style: labelStyle,
-                      ),
+                    label: const Text(
+                      'Diskon 2',
+                      style: labelStyle,
                     ),
-                    keyboardType: TextInputType.number,
                     validator: (value) {
-                      var valDouble = Percentage.tryParse(value ?? '');
-                      if (valDouble == null || valDouble.isNaN) {
+                      if (value == null) {
                         return 'tidak valid';
-                      } else if (valDouble >= 100 || valDouble < 0) {
+                      } else if (value > 1 || value < 0) {
                         return 'range valid antara 0 - 100';
                       }
                       return null;
                     },
-                    onChanged: ((value) =>
-                        discount.discount2 = Percentage.tryParse(value)),
+                    onChanged: ((value) => discount.discount2 = value),
                   )),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   Flexible(
-                      child: TextFormField(
-                    enableSuggestions: false,
-                    readOnly: discount.calculationType ==
-                        DiscountCalculationType.nominal,
+                      child: PercentageFormField(
                     controller: _discount3Controller,
-                    decoration: const InputDecoration(
-                      label: Text(
-                        'Diskon 3',
-                        style: labelStyle,
-                      ),
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      var valDouble = Percentage.tryParse(value ?? '');
-                      if (valDouble == null || valDouble.isNaN) {
-                        return 'tidak valid';
-                      } else if (valDouble >= 100 || valDouble < 0) {
-                        return 'range valid antara 0 - 100';
-                      }
-                      return null;
-                    },
-                    onChanged: ((value) =>
-                        discount.discount3 = Percentage.tryParse(value)),
-                  )),
-                  Flexible(
-                      child: TextFormField(
-                    enableSuggestions: false,
                     readOnly: discount.calculationType ==
                         DiscountCalculationType.nominal,
-                    controller: _discount4Controller,
-                    decoration: const InputDecoration(
-                      label: Text(
-                        'Diskon 4',
-                        style: labelStyle,
-                      ),
+                    label: const Text(
+                      'Diskon 3',
+                      style: labelStyle,
                     ),
-                    keyboardType: TextInputType.number,
                     validator: (value) {
-                      var valDouble = Percentage.tryParse(value ?? '');
-                      if (valDouble == null || valDouble.isNaN) {
+                      if (value == null) {
                         return 'tidak valid';
-                      } else if (valDouble >= 100 || valDouble < 0) {
+                      } else if (value > 1 || value < 0) {
                         return 'range valid antara 0 - 100';
                       }
                       return null;
                     },
-                    onChanged: ((value) =>
-                        discount.discount4 = Percentage.tryParse(value)),
+                    onChanged: ((value) => discount.discount3 = value),
+                  )),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Flexible(
+                      child: PercentageFormField(
+                    controller: _discount4Controller,
+                    readOnly: discount.calculationType ==
+                        DiscountCalculationType.nominal,
+                    label: const Text(
+                      'Diskon 4',
+                      style: labelStyle,
+                    ),
+                    validator: (value) {
+                      if (value == null) {
+                        return 'tidak valid';
+                      } else if (value > 1 || value < 0) {
+                        return 'range valid antara 0 - 100';
+                      }
+                      return null;
+                    },
+                    onChanged: ((value) => discount.discount4 = value),
                   )),
                   const SizedBox(
                     height: 10,

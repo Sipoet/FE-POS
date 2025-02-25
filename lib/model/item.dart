@@ -5,6 +5,8 @@ export 'package:fe_pos/model/brand.dart';
 export 'package:fe_pos/model/item_type.dart';
 export 'package:fe_pos/model/supplier.dart';
 import 'package:fe_pos/model/model.dart';
+import 'package:fe_pos/model/discount_rule.dart';
+export 'package:fe_pos/model/discount_rule.dart';
 
 export 'package:fe_pos/tool/custom_type.dart';
 
@@ -19,6 +21,7 @@ class Item extends Model {
   Brand? brand;
   Money hpp;
   Money sellPrice;
+  List<DiscountRule> discountRules;
   Item(
       {this.code = '',
       this.name = '',
@@ -27,12 +30,14 @@ class Item extends Model {
       this.supplierCode,
       this.supplier,
       this.brand,
+      List<DiscountRule>? discountRules,
       Money? sellPrice,
       Money? hpp,
       ItemType? itemType,
       super.id})
       : itemType = itemType ?? ItemType(),
         hpp = hpp ?? const Money(0),
+        discountRules = discountRules ?? [],
         sellPrice = sellPrice ?? const Money(0);
 
   @override
@@ -74,6 +79,10 @@ class Item extends Model {
         relation: json['relationships']['brand'],
         included: included,
         convert: Brand.fromJson);
+    model.discountRules = Model.findRelationsData<DiscountRule>(
+        relation: json['relationships']['discount_rules'],
+        included: included,
+        convert: DiscountRule.fromJson);
     return model;
   }
 }

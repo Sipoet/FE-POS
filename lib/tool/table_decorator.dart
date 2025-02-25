@@ -11,6 +11,17 @@ extension ComparingTimeOfDay on TimeOfDay {
   }
 }
 
+enum TableColumnType {
+  number,
+  percentage,
+  money,
+  enums,
+  boolean,
+  date,
+  datetime,
+  text;
+}
+
 class TableColumn {
   double initX;
   double clientWidth;
@@ -90,6 +101,8 @@ mixin TableDecorator<T extends Model> implements TextFormatter {
         return numberFormat(cell);
       case const (String):
         return cell;
+      case const (Percentage):
+        return cell.format();
       default:
         try {
           return cell.humanize();
