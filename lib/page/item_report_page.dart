@@ -104,7 +104,7 @@ class _ItemReportPageState extends State<ItemReportPage>
     _filter.forEach((key, value) {
       param[key] = value;
     });
-    return server.get('item_sales_percentage_reports',
+    return server.get('item_reports',
         queryParam: param, type: _reportType ?? 'json');
   }
 

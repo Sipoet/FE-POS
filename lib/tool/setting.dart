@@ -32,7 +32,7 @@ class Setting extends ChangeNotifier {
   }
 
   String columnName(String tableName, String columnKey) {
-    return _tableColumns[tableName]?[columnKey]?.name ?? '';
+    return _tableColumns[tableName]?[columnKey]?.humanizeName ?? '';
   }
 
   List<TableColumn> tableColumn(String key) {
