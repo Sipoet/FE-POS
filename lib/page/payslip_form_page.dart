@@ -203,24 +203,23 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                     height: 10,
                   ),
                   TextFormField(
-                    enabled: false,
+                    readOnly: true,
                     decoration: const InputDecoration(
                         labelText: 'Jumlah Hari Kerja',
                         labelStyle: labelStyle,
                         border: OutlineInputBorder()),
                     initialValue: payslip.workDays.toString(),
-                    onSaved: (newValue) {
-                      payslip.workDays = double.parse(newValue.toString());
-                    },
-                    validator: (newValue) {
-                      if (newValue == null || newValue.isEmpty) {
-                        return 'harus diisi';
-                      }
-                      return null;
-                    },
-                    onChanged: (newValue) {
-                      payslip.workDays = double.parse(newValue.toString());
-                    },
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  TextFormField(
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                        labelText: 'Total Hari Kerja',
+                        labelStyle: labelStyle,
+                        border: OutlineInputBorder()),
+                    initialValue: payslip.totalWorkDays.toString(),
                   ),
                   const SizedBox(
                     height: 10,

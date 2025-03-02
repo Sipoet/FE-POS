@@ -24,7 +24,6 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
       TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
   late Server server;
   String? _reportType;
-  bool _isDisplayTable = false;
   late final PlutoGridStateManager _source;
   DateTimeRange _dateRange = DateTimeRange(
       start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
@@ -35,11 +34,12 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
   List _suppliers = [];
   List _brands = [];
   bool? _isConsignment;
+  late final Setting _setting;
   @override
   void initState() {
     flash = Flash();
     server = context.read<Server>();
-    var setting = context.read<Setting>();
+    _setting = context.read<Setting>();
 
     super.initState();
   }
@@ -243,7 +243,9 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
               height: tableHeight,
               child: SyncDataTable2<ItemSalesPeriodReport>(
                 onLoaded: (stateManager) => _source = stateManager,
+                columns: _setting.tableColumn('itemSalesPeriodReport'),
                 showSummary: true,
+                showFilter: true,
                 fixedLeftColumns: 1,
               ),
             ),
