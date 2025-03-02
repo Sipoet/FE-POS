@@ -63,6 +63,7 @@ class Payslip extends Model {
   int paidTimeOff;
   double overtimeHour;
   double workDays;
+  int totalWorkDays;
   int late;
   List<PayslipLine> lines;
   Payslip(
@@ -83,7 +84,10 @@ class Payslip extends Model {
       this.overtimeHour = 0,
       this.late = 0,
       this.workDays = 0,
+      this.totalWorkDays = 0,
       this.lines = const [],
+      super.createdAt,
+      super.updatedAt,
       super.id});
 
   @override
@@ -107,6 +111,9 @@ class Payslip extends Model {
         'overtime_hour': overtimeHour,
         'work_days': workDays,
         'late': late,
+        'total_day': totalWorkDays,
+        'created_at': createdAt,
+        'updated_at': updatedAt,
       };
 
   @override
@@ -123,6 +130,7 @@ class Payslip extends Model {
         startDate: Date.today(),
         endDate: Date.today());
     model.id = int.parse(json['id']);
+    Model.fromModel(model, attributes);
     model.startDate = Date.parse(attributes['start_date']);
     model.endDate = Date.parse(attributes['end_date']);
     model.status = PayslipStatus.fromString(attributes['status']);
@@ -138,6 +146,7 @@ class Payslip extends Model {
     model.overtimeHour = double.parse(attributes['overtime_hour']);
     model.late = attributes['late'];
     model.workDays = double.parse(attributes['work_days']);
+    model.totalWorkDays = attributes['total_day'];
     if (included.isNotEmpty) {
       model.payroll = Model.findRelationData<Payroll>(
               included: included,
