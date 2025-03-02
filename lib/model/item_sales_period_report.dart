@@ -13,6 +13,7 @@ class ItemSalesPeriodReport extends Model {
   Money subtotal;
   Money discountTotal;
   Money salesTotal;
+  bool isConsignment;
 
   ItemSalesPeriodReport({
     required super.id,
@@ -28,26 +29,27 @@ class ItemSalesPeriodReport extends Model {
     required this.subtotal,
     required this.discountTotal,
     required this.salesTotal,
+    this.isConsignment = false,
   });
 
   @override
   factory ItemSalesPeriodReport.fromJson(Map<String, dynamic> json) {
     var attributes = json['attributes'];
     return ItemSalesPeriodReport(
-      id: json['id'],
-      itemCode: attributes['item_code'],
-      itemName: attributes['item_name'],
-      itemTypeName: attributes['item_type_name'],
-      supplierCode: attributes['supplier_code'],
-      brandName: attributes['brand_name'],
-      discountPercentage: Percentage(attributes['discount_percentage']),
-      buyPrice: Money(attributes['buy_price']),
-      sellPrice: Money(attributes['sell_price']),
-      quantity: attributes['quantity'],
-      subtotal: Money(attributes['subtotal']),
-      discountTotal: Money(attributes['discount_total']),
-      salesTotal: Money(attributes['sales_total']),
-    );
+        id: json['id'],
+        itemCode: attributes['item_code'],
+        itemName: attributes['item_name'],
+        itemTypeName: attributes['item_type_name'],
+        supplierCode: attributes['supplier_code'],
+        brandName: attributes['brand_name'],
+        discountPercentage: Percentage(attributes['discount_percentage']),
+        buyPrice: Money(attributes['buy_price']),
+        sellPrice: Money(attributes['sell_price']),
+        quantity: attributes['quantity'],
+        subtotal: Money(attributes['subtotal']),
+        discountTotal: Money(attributes['discount_total']),
+        salesTotal: Money(attributes['sales_total']),
+        isConsignment: attributes['is_consignment'] == true);
   }
 
   @override
@@ -64,5 +66,6 @@ class ItemSalesPeriodReport extends Model {
         'subtotal': subtotal,
         'discount_total': discountTotal,
         'sales_total': salesTotal,
+        'is_consignment': isConsignment,
       };
 }

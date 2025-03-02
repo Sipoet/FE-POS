@@ -114,8 +114,6 @@ class Payslip extends Model {
         'updated_at': updatedAt,
         'late': late,
         'total_day': totalWorkDays,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
       };
 
   @override
