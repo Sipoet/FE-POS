@@ -26,8 +26,7 @@ class _SalesGroupBySupplierReportPageState
       TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
   late Server server;
   String? _reportType;
-  bool _isDisplayTable = false;
-  late SyncDataTableSource<SalesGroupBySupplier> _source;
+  late PlutoGridStateManager _source;
   late Flash flash;
   List _brands = [];
   List _suppliers = [];
@@ -49,7 +48,6 @@ class _SalesGroupBySupplierReportPageState
     _setting = context.read<Setting>();
     flash = Flash();
     _tableColumns = _setting.tableColumn('salesGroupBySupplierReport');
-    _source = SyncDataTableSource<SalesGroupBySupplier>(columns: _tableColumns);
     super.initState();
   }
 
@@ -57,10 +55,7 @@ class _SalesGroupBySupplierReportPageState
   bool get wantKeepAlive => true;
 
   void _displayReport() async {
-    flash.show(
-      const Text('Dalam proses.'),
-      ToastificationType.info,
-    );
+    _source.setShowLoading(true);
     _reportType = 'json';
     _requestReport().then(_displayDatatable,
         onError: ((error, stackTrace) => defaultErrorResponse(error: error)));
@@ -115,7 +110,7 @@ class _SalesGroupBySupplierReportPageState
   }
 
   void _displayDatatable(response) async {
-    flash.hide();
+    _source.setShowLoading(false);
     if (response.statusCode != 200) {
       return;
     }
@@ -125,10 +120,9 @@ class _SalesGroupBySupplierReportPageState
         return SalesGroupBySupplier.fromJson(row);
       }).toList();
 
-      _source =
-          SyncDataTableSource<SalesGroupBySupplier>(columns: whitelistColumns);
-      _source.setData(rawData);
-      _isDisplayTable = true;
+      _source.setTableColumns(whitelistColumns,
+          fixedLeftColumns: _groupKeys.length);
+      _source.setModels(rawData);
     });
   }
 
@@ -278,15 +272,15 @@ class _SalesGroupBySupplierReportPageState
                 ),
               ],
             ),
-            Visibility(visible: _isDisplayTable, child: const Divider()),
-            Visibility(
-              visible: _isDisplayTable,
-              child: SizedBox(
-                height: tableHeight,
-                child: SyncDataTable(
-                  controller: _source,
-                  fixedLeftColumns: _groupKeys.length,
-                ),
+            const Divider(),
+            SizedBox(
+              height: tableHeight,
+              child: SyncDataTable2<SalesGroupBySupplier>(
+                showSummary: true,
+                showFilter: false,
+                columns: _tableColumns,
+                onLoaded: (stateManager) => _source = stateManager,
+                fixedLeftColumns: _groupKeys.length,
               ),
             ),
           ],

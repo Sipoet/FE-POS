@@ -149,7 +149,51 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
   }
 
   Future createOrUpdateDiscount(Discount discount, int index) async {
-    Map body = {'discount': discount};
+    Map body = {
+      'data': {
+        'type': 'discount',
+        'attributes': discount.toJson(),
+        'relationships': {
+          'discount_items': {
+            'data': discount.discountItems
+                .map<Map>((discountItem) => {
+                      'id': discountItem.id,
+                      'type': 'discount_item',
+                      'attributes': discountItem.toJson(),
+                    })
+                .toList(),
+          },
+          'discount_item_types': {
+            'data': discount.discountItemTypes
+                .map<Map>((discountItemType) => {
+                      'id': discountItemType.id,
+                      'type': 'discount_item_type',
+                      'attributes': discountItemType.toJson(),
+                    })
+                .toList(),
+          },
+          'discount_suppliers': {
+            'data': discount.discountSuppliers
+                .map<Map>((discountSupplier) => {
+                      'id': discountSupplier.id,
+                      'type': 'discount_supplier',
+                      'attributes': discountSupplier.toJson(),
+                    })
+                .toList(),
+          },
+          'discount_brands': {
+            'data': discount.discountBrands
+                .map<Map>((discountBrand) => {
+                      'id': discountBrand.id,
+                      'type': 'discount_brand',
+                      'attributes': discountBrand.toJson(),
+                    })
+                .toList(),
+          }
+        }
+      }
+    };
+    debugPrint(body.toString());
     dynamic request;
     if (discount.id == null) {
       request = await _server.post('discounts', body: body);
@@ -167,6 +211,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
         _source.setStatus(index, 'saved');
       });
     } else {
+      debugPrint(request.data['errors'].toString());
       setState(() {
         _source.setStatus(index, 'failed');
       });
@@ -195,14 +240,15 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
               ? DiscountCalculationType.percentage
               : DiscountCalculationType.nominal,
           weight: int.tryParse(row[6]?.value?.toString() ?? '') ?? 0,
-          discount1: Percentage.parse(row[7]?.value?.toString() ?? '0'),
-          discount2: Percentage.parse(row[8]?.value?.toString() ?? '0'),
-          discount3: Percentage.parse(row[9]?.value?.toString() ?? '0'),
-          discount4: Percentage.parse(row[10]?.value?.toString() ?? '0'),
+          discount1: Percentage.parse(row[7]?.value?.toString() ?? '0') / 100,
+          discount2: Percentage.parse(row[8]?.value?.toString() ?? '0') / 100,
+          discount3: Percentage.parse(row[9]?.value?.toString() ?? '0') / 100,
+          discount4: Percentage.parse(row[10]?.value?.toString() ?? '0') / 100,
           startTime: DateTime.parse(row[11]?.value.toString() ?? ''),
           endTime: DateTime.parse(row[12]?.value.toString() ?? ''),
         );
-        List? supplierCodes = row[1]?.value?.toString().split(',').toList();
+        List? supplierCodes =
+            _cleanText(row[1]?.value?.toString())?.split(',').toList();
         if (supplierCodes != null) {
           discount.discountSuppliers = supplierCodes
               .map<DiscountSupplier>(
@@ -210,7 +256,8 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
               .toList();
           discount.supplierCode = discount.discountSuppliers.first.supplierCode;
         }
-        List? brandNames = row[2]?.value?.toString().split(',').toList();
+        List? brandNames =
+            _cleanText(row[2]?.value?.toString())?.split(',').toList();
         if (brandNames != null) {
           discount.discountBrands = brandNames
               .map<DiscountBrand>(
@@ -218,7 +265,8 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
               .toList();
           discount.brandName = discount.discountBrands.first.brandName;
         }
-        List? itemTypeCodes = row[3]?.value?.toString().split(',').toList();
+        List? itemTypeCodes =
+            _cleanText(row[3]?.value?.toString())?.split(',').toList();
         if (itemTypeCodes != null) {
           discount.discountItemTypes = itemTypeCodes
               .map<DiscountItemType>(
@@ -226,7 +274,8 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
               .toList();
           discount.itemType = discount.discountItemTypes.first.itemTypeName;
         }
-        List? itemCodes = row[4]?.value?.toString().split(',').toList();
+        List? itemCodes =
+            _cleanText(row[4]?.value?.toString())?.split(',').toList();
         if (itemCodes != null) {
           discount.discountItems = itemCodes
               .map<DiscountItem>(
@@ -241,6 +290,11 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
       _source.setData(_discounts);
     });
   }
+}
+
+String? _cleanText(String? value) {
+  if (value == null) return value;
+  return value.replaceAll('\r', '').replaceAll('\n', '');
 }
 
 class DiscountMassUploadDatatableSource extends DataTableSource

@@ -292,7 +292,7 @@ class SyncDataTable2<T extends Model> extends StatefulWidget {
     this.onSelected,
     this.showSummary = false,
     this.showCheckboxColumn = false,
-    this.fixedLeftColumns = 1,
+    this.fixedLeftColumns = 0,
   })  : columns = columns ?? const [],
         rows = rows ?? const [];
 
@@ -318,13 +318,21 @@ extension TableStateMananger on PlutoGridStateManager {
     notifyListeners();
   }
 
-  void setTableColumns(List<TableColumn> tableColumns) {
+  void setTableColumns(List<TableColumn> tableColumns,
+      {int fixedLeftColumns = 0,
+      bool showCheckboxColumn = false,
+      bool showFilter = false}) {
     removeColumns(columns);
-    final newColumns = tableColumns
-        .map<PlutoColumn>(
-          (tableColumn) => decorator.decorateColumn(tableColumn),
-        )
-        .toList();
+    final newColumns = tableColumns.asMap().entries.map<PlutoColumn>((entry) {
+      int index = entry.key;
+      TableColumn tableColumn = entry.value;
+      return decorator.decorateColumn(
+        tableColumn,
+        showCheckboxColumn: showCheckboxColumn,
+        showFilter: showFilter,
+        isFrozen: index < fixedLeftColumns,
+      );
+    }).toList();
     insertColumns(0, newColumns);
   }
 }
@@ -336,12 +344,17 @@ class _SyncDataTable2State<T extends Model> extends State<SyncDataTable2<T>>
 
   @override
   void initState() {
-    columns = widget.columns
-        .map<PlutoColumn>((tableColumn) => decorateColumn(tableColumn,
-            listEnumValues: widget.enums[tableColumn.name],
-            showCheckboxColumn: widget.showCheckboxColumn,
-            showFilter: widget.showFilter))
-        .toList();
+    columns = widget.columns.asMap().entries.map<PlutoColumn>((entry) {
+      int index = entry.key;
+      TableColumn tableColumn = entry.value;
+      return decorateColumn(
+        tableColumn,
+        listEnumValues: widget.enums[tableColumn.name],
+        showCheckboxColumn: widget.showCheckboxColumn,
+        showFilter: widget.showFilter,
+        isFrozen: index < widget.fixedLeftColumns,
+      );
+    }).toList();
     rows =
         widget.rows.map<PlutoRow>((row) => decorateRow(row, columns)).toList();
 
@@ -442,7 +455,8 @@ mixin PlutoTableDecorator {
   PlutoColumn decorateColumn(TableColumn tableColumn,
       {List<Enum>? listEnumValues,
       bool showCheckboxColumn = false,
-      bool showFilter = false}) {
+      bool showFilter = false,
+      bool isFrozen = false}) {
     final columnType =
         _parseColumnType(tableColumn, listEnumValues: listEnumValues);
     bool showFooter = [
@@ -459,7 +473,7 @@ mixin PlutoTableDecorator {
     return PlutoColumn(
       readOnly: true,
       enableSorting: tableColumn.canSort,
-      // enableEditingMode: false,
+      enableEditingMode: false,
       textAlign:
           showFooter ? PlutoColumnTextAlign.right : PlutoColumnTextAlign.left,
       title: tableColumn.humanizeName,
@@ -467,6 +481,7 @@ mixin PlutoTableDecorator {
       minWidth: tableColumn.clientWidth,
       width: tableColumn.clientWidth,
       type: columnType,
+      frozen: isFrozen ? PlutoColumnFrozen.start : PlutoColumnFrozen.none,
       enableRowChecked: showCheckboxColumn,
       enableFilterMenuItem: showFilter,
       footerRenderer: showFooter

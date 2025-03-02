@@ -84,6 +84,8 @@ class Payslip extends Model {
       this.late = 0,
       this.workDays = 0,
       this.lines = const [],
+      super.createdAt,
+      super.updatedAt,
       super.id});
 
   @override
@@ -106,6 +108,8 @@ class Payslip extends Model {
         'paid_time_off': paidTimeOff,
         'overtime_hour': overtimeHour,
         'work_days': workDays,
+        'created_at': createdAt,
+        'updated_at': updatedAt,
         'late': late,
       };
 
@@ -123,6 +127,7 @@ class Payslip extends Model {
         startDate: Date.today(),
         endDate: Date.today());
     model.id = int.parse(json['id']);
+    Model.fromModel(model, attributes);
     model.startDate = Date.parse(attributes['start_date']);
     model.endDate = Date.parse(attributes['end_date']);
     model.status = PayslipStatus.fromString(attributes['status']);
