@@ -110,6 +110,8 @@ class Payslip extends Model {
         'paid_time_off': paidTimeOff,
         'overtime_hour': overtimeHour,
         'work_days': workDays,
+        'created_at': createdAt,
+        'updated_at': updatedAt,
         'late': late,
         'total_day': totalWorkDays,
         'created_at': createdAt,

@@ -25,7 +25,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
   late Server server;
   String? _reportType;
   bool _isDisplayTable = false;
-  late final SyncDataTableSource<ItemSalesPeriodReport> _source;
+  late final PlutoGridStateManager _source;
   DateTimeRange _dateRange = DateTimeRange(
       start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
       end: DateTime.now().copyWith(hour: 23, minute: 59, second: 59));
@@ -40,16 +40,12 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
     flash = Flash();
     server = context.read<Server>();
     var setting = context.read<Setting>();
-    _source = SyncDataTableSource<ItemSalesPeriodReport>(
-        columns: setting.tableColumn('itemSalesPeriodReport'));
+
     super.initState();
   }
 
   void _displayReport() async {
-    flash.show(
-      const Text('Dalam proses.'),
-      ToastificationType.info,
-    );
+    _source.setShowLoading(true);
     _reportType = 'json';
     _requestReport().then(_displayDatatable,
         onError: ((error, stackTrace) => defaultErrorResponse(error: error)));
@@ -107,7 +103,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
   }
 
   void _displayDatatable(response) async {
-    flash.hide();
+    _source.setShowLoading(false);
     if (response.statusCode != 200) {
       return;
     }
@@ -116,8 +112,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
       var rawData = data['data'].map<ItemSalesPeriodReport>((row) {
         return ItemSalesPeriodReport.fromJson(row);
       }).toList();
-      _source.setData(rawData);
-      _isDisplayTable = true;
+      _source.setModels(rawData);
     });
   }
 
@@ -243,15 +238,15 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                 ),
               ],
             ),
-            if (_isDisplayTable) const Divider(),
-            if (_isDisplayTable)
-              SizedBox(
-                height: tableHeight,
-                child: SyncDataTable(
-                  controller: _source,
-                  fixedLeftColumns: 1,
-                ),
+            const Divider(),
+            SizedBox(
+              height: tableHeight,
+              child: SyncDataTable2<ItemSalesPeriodReport>(
+                onLoaded: (stateManager) => _source = stateManager,
+                showSummary: true,
+                fixedLeftColumns: 1,
               ),
+            ),
           ],
         ),
       ),
