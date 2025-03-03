@@ -275,7 +275,11 @@ class Percentage {
 
   @override
   String toString() {
-    return "${value.toString()}%";
+    return ((value * 10000).round() / 100).toString();
+  }
+
+  String format() {
+    return "${toString()}%";
   }
 
   bool get isNaN {

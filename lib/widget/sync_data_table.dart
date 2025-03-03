@@ -478,7 +478,7 @@ mixin PlutoTableDecorator {
           showFooter ? PlutoColumnTextAlign.right : PlutoColumnTextAlign.left,
       title: tableColumn.humanizeName,
       field: tableColumn.name,
-      minWidth: tableColumn.clientWidth,
+      minWidth: 50 < tableColumn.clientWidth ? 50 : tableColumn.clientWidth,
       width: tableColumn.clientWidth,
       type: columnType,
       frozen: isFrozen ? PlutoColumnFrozen.start : PlutoColumnFrozen.none,
