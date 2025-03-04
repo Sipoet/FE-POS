@@ -94,7 +94,7 @@ class Discount extends Model {
   String? blacklistItemType;
   String? blacklistBrandName;
   String? blacklistSupplierCode;
-  Percentage discount1;
+  dynamic discount1;
   Percentage? discount2;
   Percentage? discount3;
   Percentage? discount4;
@@ -167,10 +167,13 @@ class Discount extends Model {
     model.blacklistItemType = attributes['blacklist_item_type_name'];
     model.blacklistSupplierCode = attributes['blacklist_supplier_code'];
     model.blacklistBrandName = attributes['blacklist_brand_name'];
-    model.discount1 = Percentage(attributes['discount1']);
-    model.discount2 = Percentage(attributes['discount2']);
-    model.discount3 = Percentage(attributes['discount3']);
-    model.discount4 = Percentage(attributes['discount4']);
+    model.discount1 =
+        model.calculationType == DiscountCalculationType.percentage
+            ? Percentage(attributes['discount1'] ?? 0) / 100
+            : attributes['discount1'];
+    model.discount2 = Percentage(attributes['discount2'] ?? 0) / 100;
+    model.discount3 = Percentage(attributes['discount3'] ?? 0) / 100;
+    model.discount4 = Percentage(attributes['discount4'] ?? 0) / 100;
     model.week1 = attributes['week1'];
     model.week2 = attributes['week2'];
     model.week3 = attributes['week3'];
@@ -343,7 +346,8 @@ class Discount extends Model {
         'weight': weight,
       };
 
-  double get discount1Nominal => discount1.value;
+  double get discount1Nominal =>
+      discount1 is Percentage ? discount1.value * 100 : discount1;
   double? get discount2Nominal => discount2?.value;
   double? get discount3Nominal => discount3?.value;
   double? get discount4Nominal => discount4?.value;

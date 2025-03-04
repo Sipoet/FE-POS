@@ -275,7 +275,7 @@ class Percentage {
 
   @override
   String toString() {
-    return (value * 100).toString();
+    return ((value * 10000).round() / 100).toString();
   }
 
   String format() {

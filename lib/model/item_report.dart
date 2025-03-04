@@ -23,11 +23,15 @@ class ItemReport extends Model {
   int itemOut;
   bool isConsignment;
   DateTime? recentPurchaseDate;
-  Percentage margin;
   Item? item;
   Supplier? supplier;
   Brand? brand;
   ItemType? itemType;
+  Money cogs;
+  Money lastBuyPrice;
+  Percentage margin;
+  int numberOfReturn;
+
   ItemReport(
       {super.id,
       this.itemCode = '',
@@ -52,6 +56,9 @@ class ItemReport extends Model {
       this.purchaseTotal = const Money(0),
       this.margin = const Percentage(0),
       this.itemOut = 0,
+      this.cogs = const Money(0),
+      this.lastBuyPrice = const Money(0),
+      this.numberOfReturn = 0,
       this.stockLeft = 0,
       this.grossProfit = const Money(0),
       this.isConsignment = false,
@@ -75,6 +82,8 @@ class ItemReport extends Model {
     model.stockLeft = double.tryParse(attributes['stock_left'].toString()) ?? 0;
     model.percentageSales = Percentage(attributes['percentage_sales']);
     model.margin = Percentage(attributes['margin'] ?? -1);
+    model.cogs = Money.parse(attributes['cogs'] ?? '0');
+    model.numberOfReturn = attributes['cogs'];
     model.sellPrice =
         Money.tryParse(attributes['sell_price']) ?? const Money(0);
     model.avgBuyPrice =
@@ -126,6 +135,8 @@ class ItemReport extends Model {
         'percentage_sales': percentageSales,
         'sell_price': sellPrice,
         'avg_buy_price': avgBuyPrice,
+        'last_buy_price': lastBuyPrice,
+        'margin': margin,
         'number_of_sales': numberOfSales,
         'sales_total': salesTotal,
         'number_of_purchase': numberOfPurchase,
@@ -134,5 +145,7 @@ class ItemReport extends Model {
         'item_out': itemOut,
         'gross_profit': grossProfit,
         'stock_left': stockLeft,
+        'cogs': cogs,
+        'qty_return': numberOfReturn
       };
 }
