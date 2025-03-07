@@ -133,6 +133,8 @@ class Discount extends Model {
       this.discount2,
       this.discount3,
       this.discount4,
+      super.createdAt,
+      super.updatedAt,
       this.week1 = false,
       this.week2 = false,
       this.week3 = false,
@@ -155,11 +157,13 @@ class Discount extends Model {
         startTime: DateTime.now(),
         endTime: DateTime.now());
     model.id = int.parse(json['id']);
+    Model.fromModel(model, attributes);
     model.code = attributes['code']?.trim();
     model.itemCode = attributes['item_code'];
     model.itemType = attributes['item_type_name'];
     model.supplierCode = attributes['supplier_code'];
     model.brandName = attributes['brand_name'];
+
     model.calculationType = DiscountCalculationType.convertFromString(
         attributes['calculation_type'].toString());
     model.discountType =
@@ -169,8 +173,8 @@ class Discount extends Model {
     model.blacklistBrandName = attributes['blacklist_brand_name'];
     model.discount1 =
         model.calculationType == DiscountCalculationType.percentage
-            ? Percentage(attributes['discount1'] ?? 0) / 100
-            : attributes['discount1'];
+            ? Percentage(attributes['discount1'] ?? 0)
+            : attributes['discount1'] * 100;
     model.discount2 = Percentage(attributes['discount2'] ?? 0) / 100;
     model.discount3 = Percentage(attributes['discount3'] ?? 0) / 100;
     model.discount4 = Percentage(attributes['discount4'] ?? 0) / 100;
@@ -344,6 +348,8 @@ class Discount extends Model {
         'start_time': startTime,
         'end_time': endTime,
         'weight': weight,
+        'created_at': createdAt,
+        'updated_at': updatedAt,
       };
 
   double get discount1Nominal =>

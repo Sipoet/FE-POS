@@ -12,6 +12,7 @@ class NumberFormField<T extends num> extends StatefulWidget {
   final bool readOnly;
   final bool? enabled;
   final FocusNode? focusNode;
+  final String? hintText;
   const NumberFormField(
       {super.key,
       this.initialValue,
@@ -19,6 +20,7 @@ class NumberFormField<T extends num> extends StatefulWidget {
       this.onChanged,
       this.label,
       this.enabled,
+      this.hintText,
       this.validator,
       this.focusNode,
       this.readOnly = false,
@@ -30,10 +32,13 @@ class NumberFormField<T extends num> extends StatefulWidget {
 
 class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>> {
   T? _valueFromInput(String input) {
-    if (T is double) {
+    input = input.replaceAll(',', '');
+    if (T == double) {
       return double.tryParse(input) as T?;
-    } else {
+    } else if (T == int) {
       return int.tryParse(input) as T?;
+    } else {
+      throw 'not support $T';
     }
   }
 
@@ -68,6 +73,7 @@ class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>> {
       decoration: InputDecoration(
           contentPadding: const EdgeInsets.all(5),
           label: widget.label,
+          hintText: widget.hintText,
           border: const OutlineInputBorder()),
       initialValue: widget.initialValue?.toString(),
     );
