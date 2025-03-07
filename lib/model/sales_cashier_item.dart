@@ -4,19 +4,18 @@ export 'package:fe_pos/model/item.dart';
 
 class SalesCashierItem extends Model {
   String itemBarcode;
-  String itemName;
   Item item;
   int quantity;
   String uom;
   Money price;
   Money discountAmount;
+  String? promoCode;
   Percentage? discountPercentage;
   DiscountRule? discountRule;
   int? discountRulePriority;
   Date? expiredDate;
   SalesCashierItem(
       {this.itemBarcode = '',
-      this.itemName = '',
       this.uom = '',
       this.quantity = 0,
       this.price = const Money(0),
@@ -25,6 +24,7 @@ class SalesCashierItem extends Model {
       this.expiredDate,
       this.discountRule,
       this.discountRulePriority,
+      this.promoCode,
       Item? item,
       super.id,
       super.createdAt,
@@ -33,11 +33,13 @@ class SalesCashierItem extends Model {
 
   int? get discountRuleId => discountRule?.id;
 
+  String get itemName => item.name;
   @override
   Map<String, dynamic> toMap() => {
         'item_barcode': itemBarcode,
         'item_name': itemName,
-        // 'keterangan': description,
+        'description': itemName,
+        'uom': uom,
         // 'totalitem': totalItem,
         // 'subtotal': subtotal,
         // 'totalakhir': grandtotal,
@@ -64,14 +66,14 @@ class SalesCashierItem extends Model {
       {SalesCashierItem? model, List included = const []}) {
     var attributes = json['attributes'];
     model ??= SalesCashierItem();
-    model.itemName = attributes['item_name'];
     model.itemBarcode = attributes['item_barcode'];
-    // if (included.isNotEmpty) {
-    //   model.saleItems = Model.findRelationsData<SalesCashierItemItem>(
-    //       included: included,
-    //       relation: json['relationships']['sale_items'],
-    //       convert: SalesCashierItemItem.fromJson);
-    // }
+    if (included.isNotEmpty) {
+      model.item = Model.findRelationData<Item>(
+              included: included,
+              relation: json['relationships']['item'],
+              convert: Item.fromJson) ??
+          Item();
+    }
     Model.fromModel(model, attributes);
     model.id = json['id'];
     // model.userName = attributes['user1'];

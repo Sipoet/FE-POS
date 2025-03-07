@@ -164,6 +164,7 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
       controller: widget.controller,
       readOnly: widget.readOnly,
       focusNode: widget.focusNode,
+      enabled: widget.enabled,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       onChanged: widget.onChanged is Function
           ? (value) {

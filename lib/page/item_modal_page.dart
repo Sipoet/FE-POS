@@ -148,7 +148,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
               rows: itemReports,
               onSelected: (event) {
                 if (event.rowIdx != null) {
-                  selectedItem = itemReports[event.rowIdx!]?.item;
+                  selectedItem = itemReports[event.rowIdx!].item;
                 }
               },
               showFilter: false,
@@ -157,7 +157,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
                 _source?.setShowLoading(true);
               },
               onRowDoubleTap: (event) {
-                selectedItem = itemReports[event.rowIdx]?.item;
+                selectedItem = itemReports[event.rowIdx].item;
                 _select();
               },
             ),
@@ -197,7 +197,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
       'report_type': 'json',
       'sort': 'item_code',
       'search_text': searchText,
-      'include': 'item,item.discount_rules'
+      'include': 'item,discount_rules'
     };
     if (itemTypeName != null) {
       param['filter[item_type_name][eq]'] = itemTypeName;
