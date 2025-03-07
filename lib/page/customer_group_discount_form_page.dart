@@ -6,6 +6,7 @@ import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
+import 'package:fe_pos/widget/percentage_form_field.dart';
 
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/date_form_field.dart';
@@ -76,8 +77,8 @@ class _CustomerGroupDiscountFormPageState
               model: customerGroupDiscount,
               included: response.data['included'] ?? []);
           var tabManager = context.read<TabManager>();
-          tabManager.changeTabHeader(
-              widget, 'Edit Karyawan ${customerGroupDiscount.id}');
+          tabManager.changeTabHeader(widget,
+              'Edit Customer Group Discount ${customerGroupDiscount.id}');
         });
 
         flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
@@ -243,29 +244,19 @@ class _CustomerGroupDiscountFormPageState
                   Visibility(
                     visible: setting.canShow(
                         'customerGroupDiscount', 'discount_percentage'),
-                    child: TextFormField(
+                    child: PercentageFormField(
                       focusNode: _focusNode,
-                      decoration: const InputDecoration(
-                          labelText: 'Persentase',
-                          labelStyle: labelStyle,
-                          border: OutlineInputBorder()),
-                      initialValue:
-                          customerGroupDiscount.discountPercentage.toString(),
-                      onSaved: (newValue) {
+                      label: const Text('Persentase', style: labelStyle),
+                      initialValue: customerGroupDiscount.discountPercentage,
+                      onChanged: (newValue) {
                         customerGroupDiscount.discountPercentage =
-                            Percentage.tryParse(newValue ?? '') ??
-                                customerGroupDiscount.discountPercentage;
+                            newValue ?? const Percentage(0);
                       },
                       validator: (newValue) {
                         if (newValue == null) {
                           return 'harus diisi';
                         }
                         return null;
-                      },
-                      onChanged: (newValue) {
-                        customerGroupDiscount.discountPercentage =
-                            Percentage.tryParse(newValue) ??
-                                customerGroupDiscount.discountPercentage;
                       },
                     ),
                   ),

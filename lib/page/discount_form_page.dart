@@ -34,6 +34,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final TextEditingController _discount2Controller;
   late final TextEditingController _discount3Controller;
   late final TextEditingController _discount4Controller;
+  late final TextEditingController _codeController;
   late final Server server;
   late FocusNode _focusNode;
 
@@ -49,6 +50,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   @override
   void initState() {
     server = context.read<Server>();
+    _codeController = TextEditingController(text: discount.code);
     _discount2Controller =
         TextEditingController(text: discount.discount2Nominal.toString());
     _discount3Controller =
@@ -80,6 +82,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         setState(() {
           Discount.fromJson(json,
               included: response.data['included'], model: discount);
+          _codeController.text = discount.code;
         });
         _focusNode.requestFocus();
       }
@@ -199,7 +202,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       label: Text('kode diskon : ', style: labelStyle),
                       border: OutlineInputBorder(),
                     ),
-                    initialValue: discount.code,
+                    controller: _codeController,
                     onChanged: (value) {
                       discount.code = value;
                     },

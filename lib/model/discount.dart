@@ -175,9 +175,9 @@ class Discount extends Model {
         model.calculationType == DiscountCalculationType.percentage
             ? Percentage(attributes['discount1'] ?? 0)
             : attributes['discount1'] * 100;
-    model.discount2 = Percentage(attributes['discount2'] ?? 0) / 100;
-    model.discount3 = Percentage(attributes['discount3'] ?? 0) / 100;
-    model.discount4 = Percentage(attributes['discount4'] ?? 0) / 100;
+    model.discount2 = Percentage(attributes['discount2'] ?? 0);
+    model.discount3 = Percentage(attributes['discount3'] ?? 0);
+    model.discount4 = Percentage(attributes['discount4'] ?? 0);
     model.week1 = attributes['week1'];
     model.week2 = attributes['week2'];
     model.week3 = attributes['week3'];
