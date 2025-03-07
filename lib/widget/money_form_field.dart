@@ -11,17 +11,20 @@ class MoneyFormField extends StatefulWidget {
   final Widget? label;
   final TextEditingController? controller;
   final bool readOnly;
+  final bool? enabled;
   final FocusNode? focusNode;
-  const MoneyFormField(
-      {super.key,
-      this.initialValue,
-      this.onChanged,
-      this.label,
-      this.validator,
-      this.focusNode,
-      this.onFieldSubmitted,
-      this.readOnly = false,
-      this.controller});
+  const MoneyFormField({
+    super.key,
+    this.initialValue,
+    this.onChanged,
+    this.label,
+    this.validator,
+    this.focusNode,
+    this.onFieldSubmitted,
+    this.readOnly = false,
+    this.enabled,
+    this.controller,
+  });
 
   @override
   State<MoneyFormField> createState() => _MoneyFormFieldState();
@@ -37,6 +40,7 @@ class _MoneyFormFieldState extends State<MoneyFormField> {
       controller: widget.controller,
       readOnly: widget.readOnly,
       focusNode: widget.focusNode,
+      enabled: widget.enabled,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       onChanged: widget.onChanged is Function
           ? (value) {

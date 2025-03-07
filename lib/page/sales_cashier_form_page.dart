@@ -9,6 +9,7 @@ import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_form_field.dart';
+import 'package:fe_pos/widget/money_form_field.dart';
 import 'package:fe_pos/widget/number_form_field.dart';
 
 import 'package:flutter/material.dart';
@@ -95,14 +96,16 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
 
   void addItem(
       {required Item item, required String barcode, required int quantity}) {
-    final salesCashierItem = SalesCashierItem(
+    var salesCashierItem = SalesCashierItem(
       item: item,
       itemBarcode: barcode,
       quantity: quantity,
       price: item.sellPrice,
     );
     checkDiscount(salesCashierItem, item.discountRules);
-    salesCashier.salesCashierItems.add(salesCashierItem);
+    setState(() {
+      salesCashier.salesCashierItems.add(salesCashierItem);
+    });
   }
 
   void checkDiscount(
@@ -171,14 +174,14 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                   runSpacing: 5,
                   children: [
                     Visibility(
-                      visible: true ?? setting.canShow('salesCashier', 'code'),
+                      visible: setting.canShow('salesCashier', 'code'),
                       child: SizedBox(
                         width: 250,
                         height: 35,
                         child: TextFormField(
                           decoration: InputDecoration(
                               contentPadding: const EdgeInsets.all(5),
-                              labelText: 'No Transaksi' ??
+                              labelText:
                                   setting.columnName('salesCashier', 'code'),
                               labelStyle: labelStyle,
                               border: const OutlineInputBorder()),
@@ -188,16 +191,15 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                     ),
                     Text('Lokasi: ${salesCashier.location}'),
                     Visibility(
-                      visible: true ??
+                      visible:
                           setting.canShow('salesCashier', 'transaction_date'),
                       child: SizedBox(
                         width: 250,
                         height: 35,
                         child: DateFormField(
                           label: Text(
-                            'Tanggal' ??
-                                setting.columnName(
-                                    'salesCashier', 'transaction_date'),
+                            setting.columnName(
+                                'salesCashier', 'transaction_date'),
                             style: labelStyle,
                           ),
                           initialValue: salesCashier.transactionDate,
@@ -205,15 +207,13 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                       ),
                     ),
                     Visibility(
-                      visible: true ??
-                          setting.canShow('salesCashier', 'customer_code'),
+                      visible: setting.canShow('salesCashier', 'customer_code'),
                       child: SizedBox(
                         width: 250,
                         height: 35,
                         child: AsyncDropdown<Customer>(
                           label: Text(
-                            'Pelanggan' ??
-                                setting.columnName('salesCashier', 'customer'),
+                            setting.columnName('salesCashier', 'customer'),
                             style: labelStyle,
                           ),
                           textOnSearch: (customer) =>
@@ -224,16 +224,13 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                       ),
                     ),
                     Visibility(
-                      visible: true ??
-                          setting.canShow('salesCashier', 'sales_person'),
+                      visible: setting.canShow('salesCashier', 'sales_person'),
                       child: SizedBox(
                         width: 250,
                         height: 35,
                         child: AsyncDropdown<Customer>(
                           label: Text(
-                            'Sales' ??
-                                setting.columnName(
-                                    'salesCashier', 'sales_person'),
+                            setting.columnName('salesCashier', 'sales_person'),
                             style: labelStyle,
                           ),
                           textOnSearch: (customer) =>
@@ -255,7 +252,9 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                       height: 35,
                       child: NumberFormField<int>(
                         controller: quantityController,
-                        label: const Text('Jumlah', style: labelStyle),
+                        label: Text(
+                            setting.columnName('salesCashier', 'quantity'),
+                            style: labelStyle),
                         onChanged: (value) => setState(() {
                           quantity = value ?? 0;
                         }),
@@ -331,7 +330,7 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                                       Text(salesCashierItem.price.toString())),
                               TableCell(
                                   child: Text(
-                                      "${salesCashierItem.discountAmount.toString()}( ${salesCashierItem.discountPercentage?.toString()} )")),
+                                      "${salesCashierItem.discountAmount.toString()}( ${(salesCashierItem.discountPercentage ?? '0%').toString()} )")),
                               TableCell(
                                   child:
                                       Text(salesCashierItem.total.toString())),
@@ -378,18 +377,15 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Visibility(
-                      visible:
-                          true ?? setting.canShow('salesCashier', 'voucher'),
+                      visible: setting.canShow('salesCashier', 'voucher'),
                       child: SizedBox(
                         width: 250,
                         height: 35,
                         child: TextFormField(
                           decoration: InputDecoration(
                               contentPadding: const EdgeInsets.all(5),
-                              labelText: 'Voucher' ??
-                                  setting.columnName(
-                                      'salesCashier', 'voucher') ??
-                                  'Voucher',
+                              labelText:
+                                  setting.columnName('salesCashier', 'voucher'),
                               labelStyle: labelStyle,
                               border: const OutlineInputBorder()),
                           initialValue: salesCashier.code,
@@ -399,19 +395,17 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                     Row(
                       children: [
                         Visibility(
-                            visible: true ||
-                                setting.canShow('salesCashier',
+                            visible: setting.canShow('salesCashier',
                                     'header_discount_percentage') ||
                                 setting.canShow(
                                     'salesCashier', 'header_discount_amount'),
-                            child: const Text(
-                              'Potongan: ',
+                            child: Text(
+                              '${setting.columnName('salesCashier', 'header_discount_amount')}: ',
                               style: labelStyle,
                             )),
                         Visibility(
-                          visible: true ??
-                              setting.canShow(
-                                  'salesCashier', 'header_discount_percentage'),
+                          visible: setting.canShow(
+                              'salesCashier', 'header_discount_percentage'),
                           child: SizedBox(
                             width: 70,
                             height: 35,
@@ -427,19 +421,13 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                           ),
                         ),
                         Visibility(
-                          visible: true ??
-                              setting.canShow(
-                                  'salesCashier', 'header_discount_amount'),
+                          visible: setting.canShow(
+                              'salesCashier', 'header_discount_amount'),
                           child: SizedBox(
                             width: 250,
                             height: 35,
-                            child: TextFormField(
-                              decoration: const InputDecoration(
-                                  prefixText: 'Rp.',
-                                  contentPadding: EdgeInsets.all(5),
-                                  border: OutlineInputBorder()),
-                              initialValue:
-                                  salesCashier.headerDiscountAmount.toString(),
+                            child: MoneyFormField(
+                              initialValue: salesCashier.headerDiscountAmount,
                             ),
                           ),
                         ),
@@ -451,23 +439,19 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                           style: labelStyle,
                         ),
                         Visibility(
-                          visible: true ??
+                          visible:
                               setting.canShow('salesCashier', 'total_item'),
                           child: SizedBox(
                             width: 70,
                             height: 35,
-                            child: TextFormField(
+                            child: NumberFormField<int>(
                               readOnly: true,
-                              decoration: const InputDecoration(
-                                  contentPadding: EdgeInsets.all(5),
-                                  border: OutlineInputBorder()),
-                              initialValue: salesCashier.totalItem.toString(),
+                              initialValue: salesCashier.totalItem,
                             ),
                           ),
                         ),
                         Visibility(
-                          visible: true ??
-                              setting.canShow('salesCashier', 'subtotal'),
+                          visible: setting.canShow('salesCashier', 'subtotal'),
                           child: SizedBox(
                             width: 250,
                             height: 35,
@@ -492,14 +476,12 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Visibility(
-                      visible:
-                          true ?? setting.canShow('salesCashier', 'tax_type'),
+                      visible: setting.canShow('salesCashier', 'tax_type'),
                       child: DropdownMenu<SalesTaxType>(
                         width: 200,
                         initialSelection: salesCashier.taxType,
-                        label: Text('PPN' ??
-                            setting.columnName('salesCashier', 'tax_type') ??
-                            'PPN'),
+                        label: Text(
+                            setting.columnName('salesCashier', 'tax_type')),
                         dropdownMenuEntries: SalesTaxType.values
                             .map<DropdownMenuEntry<SalesTaxType>>((taxType) =>
                                 DropdownMenuEntry<SalesTaxType>(
@@ -518,7 +500,7 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                           style: labelStyle,
                         ),
                         Visibility(
-                          visible: true ??
+                          visible:
                               setting.canShow('salesCashier', 'tax_percentage'),
                           child: SizedBox(
                             width: 70,
@@ -535,7 +517,7 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                           ),
                         ),
                         Visibility(
-                          visible: true ??
+                          visible:
                               setting.canShow('salesCashier', 'tax_amount'),
                           child: SizedBox(
                             width: 250,
@@ -552,12 +534,12 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                         const SizedBox(
                           width: 10,
                         ),
-                        const Text(
-                          'Selisih Pembulatan: ',
+                        Text(
+                          '${setting.columnName('salesCashier', 'round_amount')}: ',
                           style: labelStyle,
                         ),
                         Visibility(
-                          visible: true ??
+                          visible:
                               setting.canShow('salesCashier', 'round_amount'),
                           child: SizedBox(
                             width: 250,
@@ -582,17 +564,16 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Visibility(
-                      visible:
-                          true ?? setting.canShow('salesCashier', 'location'),
-                      child: Text("Keluar dari: ${salesCashier.location}"),
+                      visible: setting.canShow('salesCashier', 'location'),
+                      child: Text(
+                          "${setting.columnName('salesCashier', 'location')}: ${salesCashier.location}"),
                     ),
                     Visibility(
-                      visible: true ??
-                          setting.canShow('salesCashier', 'round_amount'),
+                      visible: setting.canShow('salesCashier', 'other_cost'),
                       child: Row(
                         children: [
-                          const Text(
-                            'Biaya Lain: ',
+                          Text(
+                            '${setting.canShow('salesCashier', 'other_cost')}: ',
                             style: labelStyle,
                           ),
                           SizedBox(
@@ -616,8 +597,7 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                   height: 10,
                 ),
                 Visibility(
-                  visible:
-                      true ?? setting.canShow('salesCashier', 'description'),
+                  visible: setting.canShow('salesCashier', 'description'),
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 10),
                     child: SizedBox(
@@ -625,8 +605,7 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                       child: TextFormField(
                         decoration: InputDecoration(
                             labelText: setting.columnName(
-                                    'salesCashier', 'description') ??
-                                'Keterangan',
+                                'salesCashier', 'description'),
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,

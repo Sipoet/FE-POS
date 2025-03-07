@@ -83,7 +83,7 @@ class ItemReport extends Model {
     model.percentageSales = Percentage(attributes['percentage_sales']);
     model.margin = Percentage(attributes['margin'] ?? -1);
     model.cogs = Money.parse(attributes['cogs'] ?? '0');
-    model.numberOfReturn = attributes['cogs'];
+    model.numberOfReturn = attributes['qty_return'];
     model.sellPrice =
         Money.tryParse(attributes['sell_price']) ?? const Money(0);
     model.avgBuyPrice =
@@ -136,7 +136,6 @@ class ItemReport extends Model {
         'sell_price': sellPrice,
         'avg_buy_price': avgBuyPrice,
         'last_buy_price': lastBuyPrice,
-        'margin': margin,
         'number_of_sales': numberOfSales,
         'sales_total': salesTotal,
         'number_of_purchase': numberOfPurchase,

@@ -41,7 +41,7 @@ class _SalesCashierPageState extends State<SalesCashierPage>
         columns: setting.tableColumn('salesCashier'),
         fetchData: fetchSalesCashiers);
     if (_source.columns.isNotEmpty) {
-      _source.sortColumn = _source.columns?[1];
+      _source.sortColumn = _source.columns[1];
     }
     _source.isAscending = false;
     Future.delayed(Duration.zero, refreshTable);
@@ -158,7 +158,8 @@ class _SalesCashierPageState extends State<SalesCashierPage>
 
   void addForm() {
     String defaultLocation = 'TOKO';
-    final salesCashier = SalesCashier(location: defaultLocation);
+    final salesCashier =
+        SalesCashier(location: defaultLocation, salesCashierItems: []);
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab('Tambah Penjualan Kasir',

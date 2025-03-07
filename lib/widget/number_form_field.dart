@@ -10,6 +10,7 @@ class NumberFormField<T extends num> extends StatefulWidget {
   final Widget? label;
   final TextEditingController? controller;
   final bool readOnly;
+  final bool? enabled;
   final FocusNode? focusNode;
   const NumberFormField(
       {super.key,
@@ -17,6 +18,7 @@ class NumberFormField<T extends num> extends StatefulWidget {
       this.onFieldSubmitted,
       this.onChanged,
       this.label,
+      this.enabled,
       this.validator,
       this.focusNode,
       this.readOnly = false,
@@ -42,6 +44,7 @@ class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>> {
       controller: widget.controller,
       readOnly: widget.readOnly,
       focusNode: widget.focusNode,
+      enabled: widget.enabled,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       onChanged: widget.onChanged is Function
           ? (value) {

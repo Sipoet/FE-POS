@@ -103,8 +103,6 @@ mixin TableDecorator<T extends Model> implements TextFormatter {
         return cell.format();
       case const (String):
         return cell;
-      case const (Percentage):
-        return cell.format();
       default:
         try {
           return cell.humanize();
