@@ -455,31 +455,32 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       Text(DiscountCalculationType.nominal.humanize()),
                     ],
                   ),
-                  Flexible(
-                      child: NumberFormField<int>(
-                    hintText:
-                        'level paling tinggi yang akan dipakai jika antar aturan diskon konflik',
-                    label: const Text(
-                      'Level Diskon',
-                      style: labelStyle,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: NumberFormField<int>(
+                      hintText:
+                          'level paling tinggi yang akan dipakai jika antar aturan diskon konflik',
+                      label: const Text(
+                        'Level Diskon',
+                        style: labelStyle,
+                      ),
+                      validator: (value) {
+                        if (value == null) {
+                          return 'tidak valid';
+                        } else if (value < 1) {
+                          return 'tidak boleh lebih kecil dari 1';
+                        }
+                        return null;
+                      },
+                      onChanged: ((value) => discount.weight = value ?? 0),
+                      initialValue: discount.weight,
                     ),
-                    validator: (value) {
-                      if (value == null) {
-                        return 'tidak valid';
-                      } else if (value < 1) {
-                        return 'tidak boleh lebih kecil dari 1';
-                      }
-                      return null;
-                    },
-                    onChanged: ((value) => discount.weight = value ?? 0),
-                    initialValue: discount.weight,
-                  )),
+                  ),
                   if (discount.calculationType ==
                       DiscountCalculationType.percentage)
                     Padding(
                       padding: const EdgeInsets.only(top: 10),
-                      child: Flexible(
-                          child: PercentageFormField(
+                      child: PercentageFormField(
                         label: const Text(
                           'Diskon 1',
                           style: labelStyle,
@@ -497,14 +498,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                           discount.discount1 = value;
                         }),
                         initialValue: discount.discount1 as Percentage,
-                      )),
+                      ),
                     ),
                   if (discount.calculationType ==
                       DiscountCalculationType.nominal)
                     Padding(
                       padding: const EdgeInsets.only(top: 10),
-                      child: Flexible(
-                          child: NumberFormField<double>(
+                      child: NumberFormField<double>(
                         label: const Text(
                           'Diskon 1',
                           style: labelStyle,
@@ -522,12 +522,11 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                           discount.discount1 = value;
                         }),
                         initialValue: discount.discount1 as double,
-                      )),
+                      ),
                     ),
                   Padding(
                     padding: const EdgeInsets.only(top: 10),
-                    child: Flexible(
-                        child: PercentageFormField(
+                    child: PercentageFormField(
                       controller: _discount2Controller,
                       readOnly: discount.calculationType ==
                           DiscountCalculationType.nominal,
@@ -544,12 +543,11 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                         return null;
                       },
                       onChanged: ((value) => discount.discount2 = value),
-                    )),
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 10),
-                    child: Flexible(
-                        child: PercentageFormField(
+                    child: PercentageFormField(
                       readOnly: discount.calculationType ==
                           DiscountCalculationType.nominal,
                       controller: _discount3Controller,
@@ -566,12 +564,11 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                         return null;
                       },
                       onChanged: ((value) => discount.discount3 = value),
-                    )),
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 10),
-                    child: Flexible(
-                        child: PercentageFormField(
+                    child: PercentageFormField(
                       readOnly: discount.calculationType ==
                           DiscountCalculationType.nominal,
                       controller: _discount4Controller,
@@ -588,7 +585,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                         return null;
                       },
                       onChanged: ((value) => discount.discount4 = value),
-                    )),
+                    ),
                   ),
                   const SizedBox(
                     height: 10,

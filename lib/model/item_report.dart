@@ -72,7 +72,7 @@ class ItemReport extends Model {
         isConsignment: attributes['is_consignment'],
         cogs: Money.parse(attributes['cogs']),
         numberOfReturn: attributes['qty_return'] ?? 0,
-        margin: Percentage.parse(attributes['margin'] ?? '0'),
+        margin: Percentage(attributes['margin'] ?? 0),
         lastBuyPrice: Money.parse(attributes['last_buy_price'] ?? '0'),
         stockLeft: double.tryParse(attributes['stock_left'].toString()) ?? 0,
         percentageSales: Percentage(attributes['percentage_sales']),
