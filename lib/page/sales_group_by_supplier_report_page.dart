@@ -275,7 +275,7 @@ class _SalesGroupBySupplierReportPageState
             const Divider(),
             SizedBox(
               height: tableHeight,
-              child: SyncDataTable2<SalesGroupBySupplier>(
+              child: SyncDataTable<SalesGroupBySupplier>(
                 showSummary: true,
                 showFilter: false,
                 columns: _tableColumns,

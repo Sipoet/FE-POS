@@ -143,7 +143,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
           SizedBox(
             width: 1200,
             height: 500,
-            child: SyncDataTable2<ItemReport>(
+            child: SyncDataTable<ItemReport>(
               columns: tableColumns,
               rows: itemReports,
               onSelected: (event) {
@@ -216,7 +216,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
               .map<ItemReport>((data) => ItemReport.fromJson(data,
                   included: response.data['included'] ?? []))
               .toList();
-          _source?.setModels(itemReports);
+          _source?.setModels(itemReports, tableColumns);
         });
         _source?.setShowLoading(false);
       }

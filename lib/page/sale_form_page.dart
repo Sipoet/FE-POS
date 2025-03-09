@@ -33,7 +33,8 @@ class _SaleFormPageState extends State<SaleFormPage>
   Sale get sale => widget.sale;
   late final Server _server;
   late final Setting setting;
-  late final SyncDataTableSource<SaleItem> _source;
+  late final PlutoGridStateManager _source;
+  late final List<TableColumn> _columns;
   @override
   bool get wantKeepAlive => true;
   @override
@@ -42,9 +43,7 @@ class _SaleFormPageState extends State<SaleFormPage>
     setting = context.read<Setting>();
     _server = context.read<Server>();
 
-    _source = SyncDataTableSource<SaleItem>(
-        columns: setting.tableColumn('ipos::SaleItem'),
-        sortColumn: setting.tableColumn('ipos::SaleItem')[1]);
+    _columns = setting.tableColumn('ipos::SaleItem');
 
     if (sale.id != null) {
       Future.delayed(Duration.zero, () => fetchSale());
@@ -63,7 +62,7 @@ class _SaleFormPageState extends State<SaleFormPage>
         setState(() {
           Sale.fromJson(response.data['data'],
               included: response.data['included'], model: sale);
-          _source.setData(sale.saleItems);
+          _source.setModels(sale.saleItems, _columns);
         });
       }
     }, onError: (error) {
@@ -360,9 +359,10 @@ class _SaleFormPageState extends State<SaleFormPage>
                   ),
                   SizedBox(
                     height: 500,
-                    child: SyncDataTable(
+                    child: SyncDataTable<SaleItem>(
                       key: const ObjectKey('saleItemDetail'),
-                      controller: _source,
+                      columns: _columns,
+                      onLoaded: (stateManager) => _source = stateManager,
                     ),
                   ),
                 ],

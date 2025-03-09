@@ -123,7 +123,7 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
             const Divider(),
             SizedBox(
               height: 400,
-              child: SyncDataTable2<SalesTransactionReport>(
+              child: SyncDataTable<SalesTransactionReport>(
                 rows: salesTransactionReports,
                 columns: columns,
                 fixedLeftColumns: 1,

@@ -150,7 +150,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
                 const Divider(),
                 SizedBox(
                   height: 500,
-                  child: SyncDataTable2(
+                  child: SyncDataTable(
                     columns: tableColumns,
                     showSummary: true,
                     onLoaded: (stateManager) =>

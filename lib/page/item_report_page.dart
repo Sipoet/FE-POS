@@ -59,7 +59,7 @@ class _ItemReportPageState extends State<ItemReportPage>
           .toList();
       _source.removeAllRows();
       for (final model in models) {
-        _source.appendModel(model);
+        _source.appendModel(model, _setting.tableColumn('itemReport'));
       }
       // } catch (error, stackTrace) {
       //   debugPrint(error.toString());
@@ -151,7 +151,7 @@ class _ItemReportPageState extends State<ItemReportPage>
             Visibility(visible: _isDisplayTable, child: const Divider()),
             SizedBox(
               height: tableHeight,
-              child: SyncDataTable2<ItemReport>(
+              child: SyncDataTable<ItemReport>(
                 showSummary: true,
                 columns: columns,
                 showFilter: false,

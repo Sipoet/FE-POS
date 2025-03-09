@@ -33,7 +33,8 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
   Purchase get purchase => widget.purchase;
   late final Server _server;
   late final Setting setting;
-  late final SyncDataTableSource<PurchaseItem> _source;
+  late final PlutoGridStateManager _source;
+  late final List<TableColumn> _columns;
   double margin = 1;
   String roundType = 'mark';
   double markUpper = 900;
@@ -47,11 +48,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
     flash = Flash();
     setting = context.read<Setting>();
     _server = context.read<Server>();
-
-    _source = SyncDataTableSource<PurchaseItem>(
-        columns: setting.tableColumn('ipos::PurchaseItem'),
-        sortColumn: setting.tableColumn('ipos::PurchaseItem')[1]);
-
+    _columns = setting.tableColumn('ipos::PurchaseItem');
     if (purchase.id != null) {
       Future.delayed(Duration.zero, () => fetchPurchase());
     }
@@ -69,7 +66,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
         setState(() {
           Purchase.fromJson(response.data['data'],
               included: response.data['included'], model: purchase);
-          _source.setData(purchase.purchaseItems);
+          _source.setModels(purchase.purchaseItems, _columns);
         });
       }
     }, onError: (error) {
@@ -597,8 +594,9 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                 ),
                 SizedBox(
                   height: 500,
-                  child: SyncDataTable(
-                    controller: _source,
+                  child: SyncDataTable<PurchaseItem>(
+                    columns: _columns,
+                    onLoaded: (stateManager) => _source = stateManager,
                   ),
                 ),
               ],

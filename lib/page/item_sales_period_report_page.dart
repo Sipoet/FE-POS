@@ -241,7 +241,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
             const Divider(),
             SizedBox(
               height: tableHeight,
-              child: SyncDataTable2<ItemSalesPeriodReport>(
+              child: SyncDataTable<ItemSalesPeriodReport>(
                 onLoaded: (stateManager) => _source = stateManager,
                 columns: _setting.tableColumn('itemSalesPeriodReport'),
                 showSummary: true,
