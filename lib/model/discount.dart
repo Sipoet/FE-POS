@@ -12,6 +12,7 @@ export 'package:fe_pos/tool/custom_type.dart';
 
 enum DiscountCalculationType {
   percentage,
+  specialPrice,
   nominal;
 
   @override
@@ -20,7 +21,10 @@ enum DiscountCalculationType {
       return 'percentage';
     } else if (this == nominal) {
       return 'nominal';
+    } else if (this == specialPrice) {
+      return 'special_price';
     }
+
     return '';
   }
 
@@ -29,6 +33,8 @@ enum DiscountCalculationType {
       return percentage;
     } else if (value == 'nominal') {
       return nominal;
+    } else if (value == 'special_price') {
+      return specialPrice;
     }
     throw '$value is not valid discount calculation type';
   }
@@ -38,6 +44,8 @@ enum DiscountCalculationType {
       return 'persentase';
     } else if (this == nominal) {
       return 'nominal';
+    } else if (this == specialPrice) {
+      return 'Special Price';
     }
     return '';
   }
