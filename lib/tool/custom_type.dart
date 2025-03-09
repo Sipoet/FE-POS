@@ -172,7 +172,7 @@ class Money {
 
   @override
   String toString() {
-    return "$symbol ${value.toString()}";
+    return value.toString();
   }
 
   int compareTo(Money other) {

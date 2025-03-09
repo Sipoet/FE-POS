@@ -388,6 +388,10 @@ class _SyncDataTable2State<T extends Model> extends State<SyncDataTable2<T>>
       onRowDoubleTap: widget.onRowDoubleTap,
       onRowChecked: widget.onRowChecked,
       configuration: PlutoGridConfiguration(
+          scrollbar: const PlutoGridScrollbarConfig(
+            isAlwaysShown: true,
+            scrollbarThickness: 10,
+          ),
           style: PlutoGridStyleConfig(
               borderColor: colorScheme.outline,
               rowColor: colorScheme.secondaryContainer,

@@ -182,7 +182,7 @@ class Discount extends Model {
     model.discount1 =
         model.calculationType == DiscountCalculationType.percentage
             ? Percentage(attributes['discount1'] ?? 0)
-            : attributes['discount1'] * 100;
+            : Money(attributes['discount1'] * 100);
     model.discount2 = Percentage(attributes['discount2'] ?? 0);
     model.discount3 = Percentage(attributes['discount3'] ?? 0);
     model.discount4 = Percentage(attributes['discount4'] ?? 0);
