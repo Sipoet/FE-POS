@@ -39,6 +39,7 @@ class _ItemReportPageState extends State<ItemReportPage>
   bool get wantKeepAlive => true;
 
   void _displayReport() async {
+    _reportType = 'json';
     _source.setShowLoading(true);
     _requestReport(
       page: 1,
@@ -126,7 +127,7 @@ class _ItemReportPageState extends State<ItemReportPage>
     super.build(context);
     final padding = MediaQuery.of(context).padding;
     final size = MediaQuery.of(context).size;
-    double tableHeight = size.height - padding.top - padding.bottom - 150;
+    double tableHeight = size.height - padding.top - padding.bottom - 100;
     tableHeight = tableHeight > 600 ? 600 : tableHeight;
     final columns = _setting.tableColumn('itemReport');
 
