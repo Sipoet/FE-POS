@@ -78,7 +78,7 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
         var data = response.data['data'];
         final salesTransactionReport = SalesTransactionReport.fromJson(data);
         setState(() {
-          stateManager?.appendModel(salesTransactionReport);
+          stateManager?.appendModel(salesTransactionReport, columns);
         });
       }, onError: (error, trace) => defaultErrorResponse(error: error));
       requestControllers.add(request);

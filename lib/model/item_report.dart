@@ -30,6 +30,7 @@ class ItemReport extends Model {
   Money cogs;
   Money lastBuyPrice;
   Percentage margin;
+  Percentage limitProfitDiscount;
   int numberOfReturn;
 
   ItemReport(
@@ -55,6 +56,7 @@ class ItemReport extends Model {
       this.numberOfPurchase = 0,
       this.purchaseTotal = const Money(0),
       this.margin = const Percentage(0),
+      this.limitProfitDiscount = const Percentage(0),
       this.itemOut = 0,
       this.cogs = const Money(0),
       this.lastBuyPrice = const Money(0),
@@ -82,6 +84,8 @@ class ItemReport extends Model {
     model.stockLeft = double.tryParse(attributes['stock_left'].toString()) ?? 0;
     model.percentageSales = Percentage(attributes['percentage_sales']);
     model.margin = Percentage(attributes['margin'] ?? -1);
+    model.limitProfitDiscount =
+        Percentage(attributes['limit_profit_discount'] ?? -1);
     model.cogs = Money.parse(attributes['cogs'] ?? '0');
     model.numberOfReturn = attributes['qty_return'];
     model.sellPrice =
@@ -128,6 +132,7 @@ class ItemReport extends Model {
         'supplier_name': supplierName,
         'store_stock': storeStock,
         'margin': margin,
+        'limit_profit_discount': limitProfitDiscount,
         'is_consignment': isConsignment,
         'warehouse_stock': warehouseStock,
         'brand': brandName,

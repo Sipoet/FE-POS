@@ -1,4 +1,5 @@
 import 'package:fe_pos/tool/custom_type.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/tool/thousand_separator_formatter.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,7 @@ class MoneyFormField extends StatefulWidget {
   State<MoneyFormField> createState() => _MoneyFormFieldState();
 }
 
-class _MoneyFormFieldState extends State<MoneyFormField> {
+class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
   final controller = TextEditingController();
 
   @override
@@ -69,7 +70,7 @@ class _MoneyFormFieldState extends State<MoneyFormField> {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           border: const OutlineInputBorder()),
-      initialValue: widget.initialValue?.toString(),
+      initialValue: numberFormat(widget.initialValue?.value),
     );
   }
 }

@@ -28,6 +28,7 @@ class TableColumn {
   double? excelWidth;
   String name;
   String type;
+  dynamic Function(Map<String, dynamic> model)? renderValue;
   String humanizeName;
   String? path;
   String attributeKey;
@@ -40,6 +41,7 @@ class TableColumn {
       required this.clientWidth,
       this.excelWidth,
       this.path,
+      this.renderValue,
       this.options = const {},
       required this.attributeKey,
       this.type = 'string',

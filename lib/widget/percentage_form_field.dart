@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 class PercentageFormField extends StatefulWidget {
   final Percentage? initialValue;
   final void Function(Percentage? value)? onChanged;
+  final void Function(Percentage? value)? onSaved;
   final void Function(Percentage? value)? onFieldSubmitted;
   final String? Function(Percentage? value)? validator;
   final Widget? label;
@@ -17,6 +18,7 @@ class PercentageFormField extends StatefulWidget {
       this.initialValue,
       this.onChanged,
       this.label,
+      this.onSaved,
       this.validator,
       this.focusNode,
       this.onFieldSubmitted,
@@ -45,6 +47,12 @@ class _PercentageFormFieldState extends State<PercentageFormField> {
       controller: widget.controller,
       readOnly: widget.readOnly,
       focusNode: widget.focusNode,
+      onSaved: widget.onSaved is Function
+          ? (value) {
+              final percent = _valueFromInput(value ?? '');
+              widget.onSaved!(percent);
+            }
+          : null,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       onChanged: widget.onChanged is Function
           ? (value) {

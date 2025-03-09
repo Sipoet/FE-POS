@@ -12,6 +12,7 @@ export 'package:fe_pos/tool/custom_type.dart';
 
 enum DiscountCalculationType {
   percentage,
+  specialPrice,
   nominal;
 
   @override
@@ -20,7 +21,10 @@ enum DiscountCalculationType {
       return 'percentage';
     } else if (this == nominal) {
       return 'nominal';
+    } else if (this == specialPrice) {
+      return 'special_price';
     }
+
     return '';
   }
 
@@ -29,6 +33,8 @@ enum DiscountCalculationType {
       return percentage;
     } else if (value == 'nominal') {
       return nominal;
+    } else if (value == 'special_price') {
+      return specialPrice;
     }
     throw '$value is not valid discount calculation type';
   }
@@ -38,6 +44,8 @@ enum DiscountCalculationType {
       return 'persentase';
     } else if (this == nominal) {
       return 'nominal';
+    } else if (this == specialPrice) {
+      return 'Special Price';
     }
     return '';
   }
@@ -174,10 +182,10 @@ class Discount extends Model {
     model.discount1 =
         model.calculationType == DiscountCalculationType.percentage
             ? Percentage(attributes['discount1'] ?? 0)
-            : attributes['discount1'] * 100;
-    model.discount2 = Percentage(attributes['discount2'] ?? 0) / 100;
-    model.discount3 = Percentage(attributes['discount3'] ?? 0) / 100;
-    model.discount4 = Percentage(attributes['discount4'] ?? 0) / 100;
+            : Money(attributes['discount1'] * 100);
+    model.discount2 = Percentage(attributes['discount2'] ?? 0);
+    model.discount3 = Percentage(attributes['discount3'] ?? 0);
+    model.discount4 = Percentage(attributes['discount4'] ?? 0);
     model.week1 = attributes['week1'];
     model.week2 = attributes['week2'];
     model.week3 = attributes['week3'];

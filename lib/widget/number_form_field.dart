@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/tool/thousand_separator_formatter.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,8 @@ class NumberFormField<T extends num> extends StatefulWidget {
   State<NumberFormField<T>> createState() => _NumberFormFieldState<T>();
 }
 
-class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>> {
+class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
+    with TextFormatter {
   T? _valueFromInput(String input) {
     input = input.replaceAll(',', '');
     if (T == double) {
@@ -75,7 +77,7 @@ class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>> {
           label: widget.label,
           hintText: widget.hintText,
           border: const OutlineInputBorder()),
-      initialValue: widget.initialValue?.toString(),
+      initialValue: numberFormat(widget.initialValue),
     );
   }
 }
