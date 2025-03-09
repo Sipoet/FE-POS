@@ -277,6 +277,7 @@ class SyncDataTable2<T extends Model> extends StatefulWidget {
   final OnSelectedCallback? onSelected;
   final OnRowDoubleTapCallback? onRowDoubleTap;
   final bool showFilter;
+
   const SyncDataTable2({
     super.key,
     this.onPageChanged,
@@ -302,17 +303,18 @@ class SyncDataTable2<T extends Model> extends StatefulWidget {
 
 extension TableStateMananger on PlutoGridStateManager {
   PlutoDeco get decorator => PlutoDeco();
-  void appendModel(model) {
-    appendRows([decorator.decorateRow(model, columns)]);
+
+  void appendModel(model, List<TableColumn> tableColumns) {
+    appendRows([decorator.decorateRow(model, tableColumns)]);
     notifyListeners();
   }
 
-  void setModels(models) {
+  void setModels(models, List<TableColumn> tableColumns) {
     if (rows.isNotEmpty) {
       removeAllRows();
     }
     final rowsTemp = models
-        .map<PlutoRow>((model) => decorator.decorateRow(model, columns))
+        .map<PlutoRow>((model) => decorator.decorateRow(model, tableColumns))
         .toList();
     appendRows(rowsTemp);
     notifyListeners();
@@ -355,8 +357,9 @@ class _SyncDataTable2State<T extends Model> extends State<SyncDataTable2<T>>
         isFrozen: index < widget.fixedLeftColumns,
       );
     }).toList();
-    rows =
-        widget.rows.map<PlutoRow>((row) => decorateRow(row, columns)).toList();
+    rows = widget.rows
+        .map<PlutoRow>((row) => decorateRow(row, widget.columns))
+        .toList();
 
     super.initState();
   }
@@ -430,17 +433,20 @@ mixin PlutoTableDecorator {
     }
   }
 
-  PlutoRow decorateRow(row, List<PlutoColumn> tableColumns) {
+  PlutoRow decorateRow(row, List<TableColumn> tableColumns) {
     final rowMap = row.toMap();
     Map<String, PlutoCell> cells = {};
     for (final tableColumn in tableColumns) {
-      var value = rowMap[tableColumn.field];
+      var value = rowMap[tableColumn.name];
+      if (tableColumn.renderValue != null) {
+        value = tableColumn.renderValue!(rowMap);
+      }
       if (value is Money) {
         value = value.value;
       } else if (value is Percentage) {
         value = value.value * 100;
       }
-      cells[tableColumn.field] = PlutoCell(value: value);
+      cells[tableColumn.name] = PlutoCell(value: value);
     }
 
     return PlutoRow(cells: cells, type: PlutoRowType.normal());

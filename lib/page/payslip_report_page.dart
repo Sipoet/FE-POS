@@ -62,7 +62,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
           tableStateManager?.setTableColumns(tableColumns);
           for (final row in json['data']) {
             final model = PayslipReport.fromJson(row, included: included ?? []);
-            tableStateManager?.appendModel(model);
+            tableStateManager?.appendModel(model, tableColumns);
           }
         });
       }
