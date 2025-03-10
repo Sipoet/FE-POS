@@ -47,6 +47,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   Percentage? discount2;
   Percentage? discount3;
   Percentage? discount4;
+  int tabIndex = 0;
 
   late List<TableColumn> _columns = [];
   late FocusNode _focusNode;
@@ -90,13 +91,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         renderValue: (model) {
           var sellPrice = model['sell_price'];
           if (discount.calculationType == DiscountCalculationType.nominal) {
-            return discount.discount1;
+            return discount.discount1Nominal;
           } else if (discount.calculationType ==
               DiscountCalculationType.percentage) {
             return _calculateChanellingDiscount(sellPrice, discount);
           } else if (discount.calculationType ==
               DiscountCalculationType.specialPrice) {
-            return sellPrice - discount.discount1;
+            return sellPrice - discount.discount1Nominal;
           }
         },
       ),
@@ -109,14 +110,14 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         renderValue: (model) {
           Money sellPrice = model['sell_price'];
           if (discount.calculationType == DiscountCalculationType.nominal) {
-            return sellPrice - discount.discount1;
+            return sellPrice - discount.discount1Nominal;
           } else if (discount.calculationType ==
               DiscountCalculationType.percentage) {
             return sellPrice -
                 _calculateChanellingDiscount(sellPrice, discount);
           } else if (discount.calculationType ==
               DiscountCalculationType.specialPrice) {
-            return discount.discount1;
+            return discount.discount1Nominal;
           }
         },
       ),
@@ -129,7 +130,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
           Money sellPrice = model['sell_price'] ?? const Money(0);
           Money newPrice = sellPrice;
           if (discount.calculationType == DiscountCalculationType.nominal) {
-            newPrice = sellPrice - Money(discount.discount1);
+            newPrice = sellPrice - discount.discount1Nominal;
           } else if (discount.calculationType ==
               DiscountCalculationType.percentage) {
             newPrice =
@@ -244,7 +245,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   Money _calculateChanellingDiscount(Money sellPrice, Discount discount) {
     Money result = sellPrice;
     Money newSellPrice = sellPrice;
-    result = result * discount.discount1.value;
+    result = result * discount.discount1Percentage.value;
     if (discount.discount2 == null) {
       return result;
     }
@@ -435,7 +436,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
               TabBar(
                   controller: _tabController,
                   onTap: (idx) {
-                    if (idx == 2) {
+                    if (idx == 2 && _tabController.indexIsChanging) {
                       refreshTable();
                     }
                   },
@@ -875,13 +876,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                                     value ??
                                                         DiscountCalculationType
                                                             .percentage;
-                                                if (discount.discount1
-                                                    is Money) {
-                                                  discount.discount1 =
-                                                      Percentage(
-                                                          discount.discount1 /
-                                                              100);
-                                                }
                                                 _discount2Controller.text =
                                                     discount.discount2Nominal
                                                         .toString();
@@ -908,12 +902,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                                     value ??
                                                         DiscountCalculationType
                                                             .nominal;
-                                                if (discount.discount1
-                                                    is Percentage) {
-                                                  discount.discount1 = Money(
-                                                      discount
-                                                          .discount1Nominal);
-                                                }
+
                                                 discount.discount2 =
                                                     const Percentage(0);
                                                 discount.discount3 =
@@ -945,11 +934,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                                     value ??
                                                         DiscountCalculationType
                                                             .specialPrice;
-                                                if (discount.discount1
-                                                    is Percentage) {
-                                                  discount.discount1 =
-                                                      discount.discount1Nominal;
-                                                }
+
                                                 discount.discount2 =
                                                     const Percentage(0);
 
@@ -996,7 +981,8 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                             onChanged: ((value) {
                                               discount.discount1 = value;
                                             }),
-                                            initialValue: discount.discount1,
+                                            initialValue:
+                                                discount.discount1Percentage,
                                           ),
                                         ),
                                       if (discount.calculationType !=
@@ -1021,7 +1007,8 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                             onChanged: ((value) {
                                               discount.discount1 = value;
                                             }),
-                                            initialValue: discount.discount1,
+                                            initialValue:
+                                                discount.discount1Nominal,
                                           ),
                                         ),
                                       Padding(

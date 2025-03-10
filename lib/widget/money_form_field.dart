@@ -34,6 +34,11 @@ class MoneyFormField extends StatefulWidget {
 class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
   final controller = TextEditingController();
 
+  Money? _valueFromInput(String input) {
+    input = input.replaceAll(',', '');
+    return Money.tryParse(input);
+  }
+
   @override
   Widget build(BuildContext context) {
     final value = widget.initialValue == null
@@ -48,19 +53,19 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       onChanged: widget.onChanged is Function
           ? (value) {
-              final money = Money.tryParse(value);
+              final money = _valueFromInput(value);
               widget.onChanged!(money);
             }
           : null,
       onFieldSubmitted: widget.onFieldSubmitted is Function
           ? (value) {
-              final money = Money.tryParse(value);
+              final money = _valueFromInput(value);
               widget.onFieldSubmitted!(money);
             }
           : null,
       validator: widget.validator is Function
           ? (String? value) {
-              final money = Money.tryParse(value);
+              final money = _valueFromInput(value ?? '');
               return widget.validator!(money);
             }
           : null,
