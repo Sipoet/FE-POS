@@ -48,6 +48,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   Percentage? discount2;
   Percentage? discount3;
   Percentage? discount4;
+  int tabIndex = 0;
 
   late final List<TableColumn> _columns = [];
   late FocusNode _focusNode;
