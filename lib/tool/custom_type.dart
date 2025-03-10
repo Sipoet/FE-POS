@@ -240,6 +240,10 @@ class Money {
     }
   }
 
+  Money dup() {
+    return Money(value, symbol: symbol, rate: rate);
+  }
+
   String format({int? decimalDigits}) {
     return NumberFormat.currency(
       locale: "id_ID",
@@ -300,7 +304,9 @@ class Money {
   }
 
   Money operator -(var other) {
-    if (other is Money) {
+    if (other == null) {
+      return this;
+    } else if (other is Money) {
       return Money(value - other.value, symbol: symbol);
     } else if (other is num) {
       return Money(value - other, symbol: symbol);
@@ -386,6 +392,10 @@ class Percentage {
     var parsed = double.tryParse(val);
     if (parsed == null) return null;
     return Percentage(parsed / 100);
+  }
+
+  Percentage dup() {
+    return Percentage(value);
   }
 
   @override
