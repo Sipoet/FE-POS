@@ -285,6 +285,12 @@ class Percentage {
 
   @override
   String toString() {
+    if (value.isInfinite) {
+      return 'INFINITE';
+    }
+    if (value.isNaN) {
+      return 'NAN';
+    }
     return ((value * 10000).round() / 100).toString();
   }
 

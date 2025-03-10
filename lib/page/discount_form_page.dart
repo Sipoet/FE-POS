@@ -129,6 +129,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         renderValue: (model) {
           Money sellPrice = model['sell_price'] ?? const Money(0);
           Money newPrice = sellPrice;
+
           if (discount.calculationType == DiscountCalculationType.nominal) {
             newPrice = sellPrice - discount.discount1Nominal;
           } else if (discount.calculationType ==
@@ -178,6 +179,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
 
     Map<String, dynamic> param = {
       'page[page]': '1',
+      'page[limit]': '1000',
       'report_type': 'json',
       'sort': 'item_code',
     };
@@ -239,6 +241,9 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   }
 
   Percentage marginOf(Money sellPrice, Money buyPrice) {
+    if (buyPrice.value == 0) {
+      return const Percentage(0);
+    }
     return Percentage((sellPrice.value / buyPrice.value) - 1);
   }
 
