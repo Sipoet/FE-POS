@@ -36,6 +36,9 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
 
   @override
   Widget build(BuildContext context) {
+    final value = widget.initialValue == null
+        ? null
+        : numberFormat(widget.initialValue?.value);
     return TextFormField(
       enableSuggestions: false,
       controller: widget.controller,
@@ -70,7 +73,7 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           border: const OutlineInputBorder()),
-      initialValue: numberFormat(widget.initialValue?.value),
+      initialValue: value,
     );
   }
 }

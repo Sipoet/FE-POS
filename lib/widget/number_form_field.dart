@@ -46,6 +46,8 @@ class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
 
   @override
   Widget build(BuildContext context) {
+    final value =
+        widget.initialValue == null ? null : numberFormat(widget.initialValue);
     return TextFormField(
       enableSuggestions: false,
       controller: widget.controller,
@@ -77,7 +79,7 @@ class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
           label: widget.label,
           hintText: widget.hintText,
           border: const OutlineInputBorder()),
-      initialValue: numberFormat(widget.initialValue),
+      initialValue: value,
     );
   }
 }
