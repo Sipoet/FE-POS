@@ -125,7 +125,8 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         clientWidth: 180,
         attributeKey: 'profit_after_discount',
         name: 'profit_after_discount',
-        humanizeName: 'Profit Setelah Diskon',
+        type: 'money',
+        humanizeName: 'Jumlah Profit Setelah Diskon',
         renderValue: (model) {
           Money sellPrice = model['sell_price'] ?? const Money(0);
           Money newPrice = sellPrice;
@@ -139,9 +140,30 @@ class _DiscountFormPageState extends State<DiscountFormPage>
               DiscountCalculationType.specialPrice) {
             newPrice = discount.discount1Nominal;
           }
-          final profit = newPrice - model['cogs'];
-          final margin = marginOf(newPrice, model['cogs']);
-          return "${profit.format()} (${margin.format()})";
+          return newPrice - model['cogs'];
+        },
+      ),
+      TableColumn(
+        clientWidth: 180,
+        attributeKey: 'profit_margin_after_discount',
+        name: 'profit_margin_after_discount',
+        type: 'percentage',
+        humanizeName: 'Profit Setelah Diskon(%)',
+        renderValue: (model) {
+          Money sellPrice = model['sell_price'] ?? const Money(0);
+          Money newPrice = sellPrice;
+          if (discount.calculationType == DiscountCalculationType.nominal) {
+            newPrice = sellPrice - discount.discount1Nominal;
+          } else if (discount.calculationType ==
+              DiscountCalculationType.percentage) {
+            newPrice =
+                sellPrice - _calculateChanellingDiscount(sellPrice, discount);
+          } else if (discount.calculationType ==
+              DiscountCalculationType.specialPrice) {
+            newPrice = discount.discount1Nominal;
+          }
+          final margin = _marginOf(newPrice, model['cogs']);
+          return margin;
         },
       ),
     ]);
@@ -178,6 +200,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
 
     Map<String, dynamic> param = {
       'page[page]': '1',
+      'page[limit]': '1000',
       'report_type': 'json',
       'sort': 'item_code',
     };
@@ -238,8 +261,9 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         () => _source.setShowLoading(false));
   }
 
-  Percentage marginOf(Money sellPrice, Money buyPrice) {
-    return Percentage((sellPrice.value / buyPrice.value) - 1);
+  Percentage _marginOf(Money sellPrice, Money buyPrice) {
+    var margin = (sellPrice.value / buyPrice.value) - 1;
+    return Percentage(margin);
   }
 
   Money _calculateChanellingDiscount(Money sellPrice, Discount discount) {
