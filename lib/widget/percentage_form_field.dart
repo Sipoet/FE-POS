@@ -1,4 +1,5 @@
 import 'package:fe_pos/tool/custom_type.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/tool/thousand_separator_formatter.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +30,8 @@ class PercentageFormField extends StatefulWidget {
   State<PercentageFormField> createState() => _PercentageFormFieldState();
 }
 
-class _PercentageFormFieldState extends State<PercentageFormField> {
+class _PercentageFormFieldState extends State<PercentageFormField>
+    with TextFormatter {
   final controller = TextEditingController();
 
   Percentage? _valueFromInput(String input) {
@@ -78,7 +80,9 @@ class _PercentageFormFieldState extends State<PercentageFormField> {
           contentPadding: const EdgeInsets.all(5),
           suffixIcon: const Icon(Icons.percent),
           border: const OutlineInputBorder()),
-      initialValue: widget.initialValue?.toString(),
+      initialValue: widget.initialValue == null
+          ? null
+          : numberFormat(widget.initialValue!.value * 100),
     );
   }
 }

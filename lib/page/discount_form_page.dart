@@ -1,6 +1,7 @@
 import 'package:fe_pos/model/customer_group.dart';
 import 'package:fe_pos/model/item_report.dart';
 import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/tool/file_saver.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -125,7 +126,8 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         clientWidth: 180,
         attributeKey: 'profit_after_discount',
         name: 'profit_after_discount',
-        humanizeName: 'Profit Setelah Diskon',
+        type: 'money',
+        humanizeName: 'Jumlah Profit Setelah Diskon',
         renderValue: (model) {
           Money sellPrice = model['sell_price'] ?? const Money(0);
           Money newPrice = sellPrice;
@@ -138,22 +140,43 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                 sellPrice - _calculateChanellingDiscount(sellPrice, discount);
           } else if (discount.calculationType ==
               DiscountCalculationType.specialPrice) {
-            newPrice = discount.discount1;
+            newPrice = discount.discount1Nominal;
           }
-          final profit = newPrice - model['cogs'];
+          return newPrice - model['cogs'];
+        },
+      ),
+      TableColumn(
+        clientWidth: 180,
+        attributeKey: 'profit_margin_after_discount',
+        name: 'profit_margin_after_discount',
+        type: 'percentage',
+        humanizeName: 'Profit Setelah Diskon(%)',
+        renderValue: (model) {
+          Money sellPrice = model['sell_price'] ?? const Money(0);
+          Money newPrice = sellPrice;
+          if (discount.calculationType == DiscountCalculationType.nominal) {
+            newPrice = sellPrice - discount.discount1Nominal;
+          } else if (discount.calculationType ==
+              DiscountCalculationType.percentage) {
+            newPrice =
+                sellPrice - _calculateChanellingDiscount(sellPrice, discount);
+          } else if (discount.calculationType ==
+              DiscountCalculationType.specialPrice) {
+            newPrice = discount.discount1Nominal;
+          }
           final margin = marginOf(newPrice, model['cogs']);
-          return "${profit.format()} (${margin.format()})";
+          return margin;
         },
       ),
     ]);
     server = context.read<Server>();
     _codeController = TextEditingController(text: discount.code);
     _discount2Controller =
-        TextEditingController(text: discount.discount2Nominal.toString());
+        TextEditingController(text: discount.discount2.toString());
     _discount3Controller =
-        TextEditingController(text: discount.discount3Nominal.toString());
+        TextEditingController(text: discount.discount3.toString());
     _discount4Controller =
-        TextEditingController(text: discount.discount4Nominal.toString());
+        TextEditingController(text: discount.discount4.toString());
     flash = Flash();
     _focusNode = FocusNode();
     super.initState();
@@ -367,6 +390,34 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     }).whenComplete(() => hideLoadingPopup());
   }
 
+  void downloadDiscountItems() {
+    showLoadingPopup();
+    server.get('discounts/${discount.id}/download_items', type: 'xlsx').then(
+        (response) async {
+      if (response.statusCode != 200) {
+        flash.showBanner(
+            title: 'Gagal Download',
+            description: 'Gagal Download discount item ${discount.code}',
+            messageType: ToastificationType.error);
+      }
+      String filename = response.headers.value('content-disposition') ?? '';
+      if (filename.isEmpty) {
+        return;
+      }
+      filename = filename.substring(
+          filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
+      var downloader = const FileSaver();
+      downloader.download(filename, response.data, 'xlsx',
+          onSuccess: (String path) {
+        flash.showBanner(
+            messageType: ToastificationType.success,
+            title: 'Sukses download',
+            description: 'sukses disimpan di $path');
+      });
+    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
+        () => hideLoadingPopup());
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -389,11 +440,22 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   children: [
                     Visibility(
                       visible: discount.id != null,
-                      child: ElevatedButton.icon(
-                          onPressed: () =>
-                              fetchHistoryByRecord('Discount', discount.id),
-                          label: const Text('Riwayat'),
-                          icon: const Icon(Icons.history)),
+                      child: Row(
+                        children: [
+                          ElevatedButton.icon(
+                              onPressed: () =>
+                                  fetchHistoryByRecord('Discount', discount.id),
+                              label: const Text('Riwayat'),
+                              icon: const Icon(Icons.history)),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          ElevatedButton.icon(
+                              onPressed: () => downloadDiscountItems(),
+                              label: const Text('Download'),
+                              icon: const Icon(Icons.download_rounded)),
+                        ],
+                      ),
                     ),
                     const Divider(),
                     TextFormField(
@@ -406,7 +468,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       onChanged: (value) {
                         discount.code = value;
                       },
-                      readOnly: discount.id != null,
                       onSaved: (value) {
                         discount.code = value?.trim() ?? '';
                       },
@@ -881,6 +942,11 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                                     value ??
                                                         DiscountCalculationType
                                                             .percentage;
+                                                if (discount.discount1
+                                                    is Money) {
+                                                  discount.discount1 = discount
+                                                      .discount1Percentage;
+                                                }
                                                 _discount2Controller.text =
                                                     discount.discount2Nominal
                                                         .toString();
@@ -907,7 +973,11 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                                     value ??
                                                         DiscountCalculationType
                                                             .nominal;
-
+                                                if (discount.discount1
+                                                    is Percentage) {
+                                                  discount.discount1 =
+                                                      discount.discount1Nominal;
+                                                }
                                                 discount.discount2 =
                                                     const Percentage(0);
                                                 discount.discount3 =

@@ -2,6 +2,7 @@ import 'package:fe_pos/model/discount.dart';
 import 'package:fe_pos/page/discount_form_page.dart';
 import 'package:fe_pos/page/discount_mass_upload_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/tool/file_saver.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
@@ -229,6 +230,62 @@ class _DiscountPageState extends State<DiscountPage>
     }
   }
 
+  void downloadActiveDiscountItems() {
+    showLoadingPopup();
+    server.get('discounts/download_active_items', type: 'xlsx').then(
+        (response) async {
+      if (response.statusCode != 200) {
+        flash.showBanner(
+            title: 'Gagal Download',
+            description: 'Gagal Download Aktif discount item ',
+            messageType: ToastificationType.error);
+      }
+      String filename = response.headers.value('content-disposition') ?? '';
+      if (filename.isEmpty) {
+        return;
+      }
+      filename = filename.substring(
+          filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
+      var downloader = const FileSaver();
+      downloader.download(filename, response.data, 'xlsx',
+          onSuccess: (String path) {
+        flash.showBanner(
+            messageType: ToastificationType.success,
+            title: 'Sukses download',
+            description: 'sukses disimpan di $path');
+      });
+    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
+        () => hideLoadingPopup());
+  }
+
+  void downloadDiscountItems(discount) {
+    showLoadingPopup();
+    server.get('discounts/${discount.id}/download_items', type: 'xlsx').then(
+        (response) async {
+      if (response.statusCode != 200) {
+        flash.showBanner(
+            title: 'Gagal Download',
+            description: 'Gagal Download discount item ${discount.code}',
+            messageType: ToastificationType.error);
+      }
+      String filename = response.headers.value('content-disposition') ?? '';
+      if (filename.isEmpty) {
+        return;
+      }
+      filename = filename.substring(
+          filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
+      var downloader = const FileSaver();
+      downloader.download(filename, response.data, 'xlsx',
+          onSuccess: (String path) {
+        flash.showBanner(
+            messageType: ToastificationType.success,
+            title: 'Sukses download',
+            description: 'sukses disimpan di $path');
+      });
+    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
+        () => hideLoadingPopup());
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -245,6 +302,12 @@ class _DiscountPageState extends State<DiscountPage>
               },
               tooltip: 'Refresh item promotion',
               icon: const Icon(Icons.refresh)),
+          IconButton(
+              onPressed: () {
+                downloadDiscountItems(discount);
+              },
+              tooltip: 'Download diskon Item',
+              icon: const Icon(Icons.download)),
           IconButton(
               onPressed: () {
                 showConfirmDeleteDialog(discount);
@@ -324,6 +387,13 @@ class _DiscountPageState extends State<DiscountPage>
                             onPressed: () {
                               _controller.close();
                               massUploadDiscount();
+                            },
+                          ),
+                          MenuItemButton(
+                            child: const Text('Download Aktif Diskon item'),
+                            onPressed: () {
+                              _controller.close();
+                              downloadActiveDiscountItems();
                             },
                           ),
                         ],
