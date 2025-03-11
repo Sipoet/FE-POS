@@ -360,8 +360,12 @@ class Discount extends Model {
         'updated_at': updatedAt,
       };
 
-  double get discount1Nominal =>
-      discount1 is Percentage ? discount1.value * 100 : discount1;
+  Percentage get discount1Percentage => discount1 is Money
+      ? Percentage(discount1.value / 100)
+      : discount1 ?? const Percentage(0);
+  Money get discount1Nominal => discount1 is Percentage
+      ? Money(discount1.value * 100)
+      : discount1 ?? const Money(0);
   double? get discount2Nominal => discount2?.value;
   double? get discount3Nominal => discount3?.value;
   double? get discount4Nominal => discount4?.value;
