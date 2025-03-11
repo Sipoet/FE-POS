@@ -289,6 +289,80 @@ class _DiscountPageState extends State<DiscountPage>
         .whenComplete(() => hideLoadingPopup());
   }
 
+  void downloadActiveDiscountItems() {
+    showLoadingPopup();
+    server
+        .get('discounts/download_active_items', type: 'xlsx')
+        .then((response) async {
+          if (response.statusCode != 200) {
+            flash.showBanner(
+              title: 'Gagal Download',
+              description: 'Gagal Download Aktif discount item ',
+              messageType: ToastificationType.error,
+            );
+          }
+          String filename = response.headers.value('content-disposition') ?? '';
+          if (filename.isEmpty) {
+            return;
+          }
+          filename = filename.substring(
+            filename.indexOf('filename="') + 10,
+            filename.indexOf('xlsx";') + 4,
+          );
+          var downloader = const FileSaver();
+          downloader.download(
+            filename,
+            response.data,
+            'xlsx',
+            onSuccess: (String path) {
+              flash.showBanner(
+                messageType: ToastificationType.success,
+                title: 'Sukses download',
+                description: 'sukses disimpan di $path',
+              );
+            },
+          );
+        }, onError: (error) => defaultErrorResponse(error: error))
+        .whenComplete(() => hideLoadingPopup());
+  }
+
+  void downloadDiscountItems(discount) {
+    showLoadingPopup();
+    server
+        .get('discounts/${discount.id}/download_items', type: 'xlsx')
+        .then((response) async {
+          if (response.statusCode != 200) {
+            flash.showBanner(
+              title: 'Gagal Download',
+              description: 'Gagal Download discount item ${discount.code}',
+              messageType: ToastificationType.error,
+            );
+          }
+          String filename = response.headers.value('content-disposition') ?? '';
+          if (filename.isEmpty) {
+            return;
+          }
+          filename = filename.substring(
+            filename.indexOf('filename="') + 10,
+            filename.indexOf('xlsx";') + 4,
+          );
+          var downloader = const FileSaver();
+          downloader.download(
+            filename,
+            response.data,
+            'xlsx',
+            onSuccess: (String path) {
+              flash.showBanner(
+                messageType: ToastificationType.success,
+                title: 'Sukses download',
+                description: 'sukses disimpan di $path',
+              );
+            },
+          );
+        }, onError: (error) => defaultErrorResponse(error: error))
+        .whenComplete(() => hideLoadingPopup());
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
