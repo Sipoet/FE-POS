@@ -24,7 +24,7 @@ class _ItemModalSelectState extends State<ItemModalSelect> {
   }
 
   void fetchItem() {
-    _server.get('item_reports/')
+    _server.get('item_reports/', queryParam: {});
   }
 
   @override
