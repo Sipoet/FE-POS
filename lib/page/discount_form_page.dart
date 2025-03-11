@@ -1,3 +1,21 @@
+import 'package:fe_pos/model/customer_group.dart';
+import 'package:fe_pos/model/item_report.dart';
+import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/tool/file_saver.dart';
+import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/history_popup.dart';
+import 'package:fe_pos/tool/loading_popup.dart';
+import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:fe_pos/widget/async_dropdown.dart';
+import 'package:fe_pos/widget/money_form_field.dart';
+import 'package:fe_pos/widget/number_form_field.dart';
+import 'package:fe_pos/widget/percentage_form_field.dart';
+import 'package:fe_pos/widget/sync_data_table.dart';
+import 'package:flutter/material.dart';
+import 'package:fe_pos/widget/date_range_form_field.dart';
+import 'package:fe_pos/model/discount.dart';
+
 import 'package:provider/provider.dart';
 
 class DiscountFormPage extends StatefulWidget {
