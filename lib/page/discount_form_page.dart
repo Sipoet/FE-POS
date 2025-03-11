@@ -1,6 +1,7 @@
 import 'package:fe_pos/model/customer_group.dart';
 import 'package:fe_pos/model/item_report.dart';
 import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/tool/file_saver.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -361,6 +362,34 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     }).whenComplete(() => hideLoadingPopup());
   }
 
+  void downloadDiscountItems() {
+    showLoadingPopup();
+    server.get('discounts/${discount.id}/download_items', type: 'xlsx').then(
+        (response) async {
+      if (response.statusCode != 200) {
+        flash.showBanner(
+            title: 'Gagal Download',
+            description: 'Gagal Download discount item ${discount.code}',
+            messageType: ToastificationType.error);
+      }
+      String filename = response.headers.value('content-disposition') ?? '';
+      if (filename.isEmpty) {
+        return;
+      }
+      filename = filename.substring(
+          filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
+      var downloader = const FileSaver();
+      downloader.download(filename, response.data, 'xlsx',
+          onSuccess: (String path) {
+        flash.showBanner(
+            messageType: ToastificationType.success,
+            title: 'Sukses download',
+            description: 'sukses disimpan di $path');
+      });
+    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
+        () => hideLoadingPopup());
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -383,11 +412,22 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   children: [
                     Visibility(
                       visible: discount.id != null,
-                      child: ElevatedButton.icon(
-                          onPressed: () =>
-                              fetchHistoryByRecord('Discount', discount.id),
-                          label: const Text('Riwayat'),
-                          icon: const Icon(Icons.history)),
+                      child: Row(
+                        children: [
+                          ElevatedButton.icon(
+                              onPressed: () =>
+                                  fetchHistoryByRecord('Discount', discount.id),
+                              label: const Text('Riwayat'),
+                              icon: const Icon(Icons.history)),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          ElevatedButton.icon(
+                              onPressed: () => downloadDiscountItems(),
+                              label: const Text('Download'),
+                              icon: const Icon(Icons.download_rounded)),
+                        ],
+                      ),
                     ),
                     const Divider(),
                     TextFormField(
@@ -400,7 +440,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       onChanged: (value) {
                         discount.code = value;
                       },
-                      readOnly: discount.id != null,
                       onSaved: (value) {
                         discount.code = value?.trim() ?? '';
                       },
