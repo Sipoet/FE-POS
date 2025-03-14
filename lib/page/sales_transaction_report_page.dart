@@ -20,11 +20,10 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late DateTimeRange range;
   late Server server;
-  List requestControllers = [];
   late Flash flash;
   late List<TableColumn> columns;
   List<SalesTransactionReport> salesTransactionReports = [];
-  late final PlutoGridStateManager? stateManager;
+  late final PlutoGridStateManager stateManager;
 
   @override
   bool get wantKeepAlive => true;
@@ -51,44 +50,26 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
     super.dispose();
   }
 
-  Future _requestReport(DateTimeRange dateRange) async {
-    return server.get('sales/transaction_report', queryParam: {
-      'start_time': dateRange.start.toIso8601String(),
-      'end_time': dateRange.end.toIso8601String(),
-    });
-  }
-
   void _refreshTable(DateTimeRange range) {
-    flash.show(
-      const Text('Dalam proses.'),
-      ToastificationType.info,
-    );
-    var start = range.start;
-    var end = range.end;
-    salesTransactionReports = <SalesTransactionReport>[];
-
-    stateManager?.removeAllRows();
-
-    while (start.isBefore(end)) {
-      var rowDateRange =
-          DateTimeRange(start: beginningOfDay(start), end: endOfDay(start));
-
-      var request = _requestReport(rowDateRange).then((response) {
-        if (response.statusCode != 200) return;
-        var data = response.data['data'];
-        final salesTransactionReport = SalesTransactionReport.fromJson(data);
-        setState(() {
-          stateManager?.appendModel(salesTransactionReport, columns);
-        });
-      }, onError: (error, trace) => defaultErrorResponse(error: error));
-      requestControllers.add(request);
-      start = start.add(const Duration(days: 1));
-    }
-    Future.delayed(const Duration(seconds: 2), (() {
+    stateManager.setShowLoading(true);
+    server.get('sales/daily_transaction_report', queryParam: {
+      'start_date': range.start.toIso8601String(),
+      'end_date': range.end.toIso8601String(),
+    }).then((response) {
+      if (response.statusCode != 200) return;
+      var data = response.data['data'];
       setState(() {
-        flash.hide();
+        salesTransactionReports = data
+            .map<SalesTransactionReport>(
+                (line) => SalesTransactionReport.fromJson(line))
+            .toList();
+        stateManager.setModels(salesTransactionReports, columns);
+        debugPrint('total rows ${salesTransactionReports.length.toString()}');
       });
-    }));
+    },
+        onError: (error, trace) =>
+            defaultErrorResponse(error: error)).whenComplete(
+        () => stateManager.setShowLoading(false));
   }
 
   DateTime beginningOfDay(DateTime date) {
@@ -122,11 +103,11 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
             ),
             const Divider(),
             SizedBox(
-              height: 400,
+              height: 600,
               child: SyncDataTable2<SalesTransactionReport>(
                 rows: salesTransactionReports,
                 columns: columns,
-                fixedLeftColumns: 1,
+                fixedLeftColumns: 2,
                 onLoaded: (state) => stateManager = state,
                 showSummary: true,
               ),

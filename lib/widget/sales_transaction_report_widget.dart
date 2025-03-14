@@ -157,7 +157,7 @@ class _SalesTransactionReportWidgetState
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      'Omzet Kotor',
+                      'Total Penjualan',
                       style: labelStyle,
                     ),
                   ),
@@ -181,7 +181,7 @@ class _SalesTransactionReportWidgetState
                       Padding(
                         padding: const EdgeInsets.all(5),
                         child: Text(
-                          'Gross Profit',
+                          'Omzet Kotor',
                           style: labelStyle,
                         ),
                       ),
@@ -199,7 +199,7 @@ class _SalesTransactionReportWidgetState
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      'Total Transaksi',
+                      'Jumlah Transaksi',
                       style: labelStyle,
                     ),
                   ),
@@ -265,7 +265,7 @@ class _SalesTransactionReportWidgetState
                       Padding(
                         padding: const EdgeInsets.all(5),
                         child: Text(
-                          'Total Debit',
+                          'Total Kartu Debit',
                           style: labelStyle,
                         ),
                       ),
@@ -283,7 +283,7 @@ class _SalesTransactionReportWidgetState
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      'Total Kredit',
+                      'Total Kartu Kredit',
                       style: labelStyle,
                     ),
                   ),
@@ -325,7 +325,7 @@ class _SalesTransactionReportWidgetState
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      'Total Online',
+                      'Total Online Transfer',
                       style: labelStyle,
                     ),
                   ),

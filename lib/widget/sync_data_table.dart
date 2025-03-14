@@ -412,7 +412,7 @@ mixin PlutoTableDecorator {
       case 'date':
         return PlutoColumnType.date(format: 'dd/MM/yyyy');
       case 'datetime':
-        return PlutoColumnType.date(format: 'dd/MM/yyyy HH::mm');
+        return PlutoColumnType.date(format: 'dd/MM/yyyy HH:mm');
       case 'time':
         return PlutoColumnType.time();
       case 'money':
