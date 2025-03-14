@@ -4,7 +4,6 @@ allprojects {
         mavenCentral()
     }
 }
-
 rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
@@ -12,6 +11,7 @@ subprojects {
 subprojects {
     project.evaluationDependsOn(':app')
 }
+
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir

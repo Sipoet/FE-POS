@@ -1,0 +1,2 @@
+D:/Projects/allegra-pos/FE-POS/android/app/.cxx/Debug/1g6y1b32/x86/CMakeFiles/edit_cache.dir
+D:/Projects/allegra-pos/FE-POS/android/app/.cxx/Debug/1g6y1b32/x86/CMakeFiles/rebuild_cache.dir

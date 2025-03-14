@@ -1,4 +1,4 @@
-package com.example.fe_pos
+package com.allegra.fe_pos
 
 import io.flutter.embedding.android.FlutterActivity
 
