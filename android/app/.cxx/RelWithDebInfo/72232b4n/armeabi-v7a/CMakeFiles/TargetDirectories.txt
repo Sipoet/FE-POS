@@ -1,0 +1,2 @@
+D:/Projects/allegra-pos/FE-POS/android/app/.cxx/RelWithDebInfo/72232b4n/armeabi-v7a/CMakeFiles/edit_cache.dir
+D:/Projects/allegra-pos/FE-POS/android/app/.cxx/RelWithDebInfo/72232b4n/armeabi-v7a/CMakeFiles/rebuild_cache.dir
