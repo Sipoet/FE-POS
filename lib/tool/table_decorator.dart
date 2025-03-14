@@ -626,8 +626,12 @@ mixin PlutoTableDecorator {
     }
   }
 
-  PlutoRow decorateRow(row, List<TableColumn> tableColumns) {
-    final rowMap = row.toMap();
+  PlutoRow decorateRow({
+    required Model data,
+    required List<TableColumn> tableColumns,
+    bool isChecked = false,
+  }) {
+    final rowMap = data.toMap();
     Map<String, PlutoCell> cells = {};
     for (final tableColumn in tableColumns) {
       var value = rowMap[tableColumn.name];
@@ -642,7 +646,11 @@ mixin PlutoTableDecorator {
       cells[tableColumn.name] = PlutoCell(value: value);
     }
 
-    return PlutoRow(cells: cells, type: PlutoRowType.normal());
+    return PlutoRow(
+      cells: cells,
+      checked: isChecked,
+      type: PlutoRowType.normal(),
+    );
   }
 
   static const _labelStyle = TextStyle(
@@ -795,3 +803,65 @@ mixin PlutoTableDecorator {
 }
 
 class PlutoDeco with PlutoTableDecorator {}
+
+extension TableStateMananger on PlutoGridStateManager {
+  PlutoDeco get decorator => PlutoDeco();
+
+  void appendModel(model, List<TableColumn> tableColumns) {
+    appendRows([
+      decorator.decorateRow(data: model, tableColumns: tableColumns),
+    ]);
+    notifyListeners();
+  }
+
+  void setModels(models, List<TableColumn> tableColumns) {
+    if (rows.isNotEmpty) {
+      removeAllRows();
+    }
+    final rowsTemp = models
+        .map<PlutoRow>(
+          (model) =>
+              decorator.decorateRow(data: model, tableColumns: tableColumns),
+        )
+        .toList();
+    appendRows(rowsTemp);
+    notifyListeners();
+  }
+
+  void setTableColumns(
+    List<TableColumn> tableColumns, {
+    int fixedLeftColumns = 0,
+    bool showFilter = false,
+  }) {
+    removeColumns(columns);
+    final newColumns = tableColumns.asMap().entries.map<PlutoColumn>((entry) {
+      int index = entry.key;
+      TableColumn tableColumn = entry.value;
+      return decorator.decorateColumn(
+        tableColumn,
+        showFilter: showFilter,
+        isFrozen: index < fixedLeftColumns,
+      );
+    }).toList();
+    insertColumns(0, newColumns);
+  }
+}
+
+class PlutoFilterTypeNot implements PlutoFilterType {
+  @override
+  String get title => 'Not equal';
+
+  @override
+  get compare =>
+      ({
+        required String? base,
+        required String? search,
+        required PlutoColumn? column,
+      }) {
+        var keys = search!.split(',').map((e) => e.toLowerCase()).toList();
+
+        return !keys.contains(base!.trim().toLowerCase());
+      };
+
+  const PlutoFilterTypeNot();
+}
