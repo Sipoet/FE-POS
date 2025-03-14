@@ -124,7 +124,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
     super.build(context);
     final padding = MediaQuery.of(context).padding;
     double tableHeight =
-        MediaQuery.of(context).size.height - padding.top - padding.bottom - 150;
+        MediaQuery.of(context).size.height - padding.top - padding.bottom - 250;
     tableHeight = tableHeight > 600 ? 600 : tableHeight;
 
     return SingleChildScrollView(

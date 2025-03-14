@@ -137,7 +137,7 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
     super.build(context);
     final padding = MediaQuery.of(context).padding;
     final size = MediaQuery.of(context).size;
-    double tableHeight = size.height - padding.top - padding.bottom - 150;
+    double tableHeight = size.height - padding.top - padding.bottom - 250;
     tableHeight = tableHeight > 600 ? 600 : tableHeight;
     return SingleChildScrollView(
       child: Padding(

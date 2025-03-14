@@ -82,6 +82,9 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
 
   @override
   Widget build(BuildContext context) {
+    final padding = MediaQuery.paddingOf(context);
+    double height =
+        MediaQuery.sizeOf(context).height - padding.top - padding.bottom - 250;
     super.build(context);
     return Padding(
       padding: const EdgeInsets.all(10.0),
@@ -103,7 +106,7 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
             ),
             const Divider(),
             SizedBox(
-              height: 600,
+              height: height,
               child: SyncDataTable2<SalesTransactionReport>(
                 rows: salesTransactionReports,
                 columns: columns,
