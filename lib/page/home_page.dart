@@ -131,7 +131,6 @@ class _HomePageState extends State<HomePage>
         startDate = Date.today().beginningOfWeek();
         endDate = Date.today().endOfWeek();
         break;
-      default:
     }
     server.get('sales/transaction_report', queryParam: {
       'start_time': startDate.toDateTime().toIso8601String(),
@@ -266,7 +265,6 @@ class _HomePageState extends State<HomePage>
             Expanded(
               child: ListView.separated(
                 itemBuilder: (context, index) => Container(
-                    constraints: const BoxConstraints(maxWidth: 400),
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                         color: colorScheme.primaryContainer,

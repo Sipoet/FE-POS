@@ -4,6 +4,7 @@ import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/model/sales_transaction_report.dart';
+import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
@@ -85,38 +86,36 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
     final padding = MediaQuery.paddingOf(context);
     double height =
         MediaQuery.sizeOf(context).height - padding.top - padding.bottom - 250;
+    height = height < 285 ? 285 : height;
     super.build(context);
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 350,
-              child: DateRangeFormField(
-                initialDateRange: range,
-                datePickerOnly: true,
-                onChanged: (newRange) {
-                  range = newRange ??
-                      DateTimeRange(start: DateTime.now(), end: DateTime.now());
-                  _refreshTable(range);
-                },
-              ),
+    return VerticalBodyScroll(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 350,
+            child: DateRangeFormField(
+              initialDateRange: range,
+              datePickerOnly: true,
+              onChanged: (newRange) {
+                range = newRange ??
+                    DateTimeRange(start: DateTime.now(), end: DateTime.now());
+                _refreshTable(range);
+              },
             ),
-            const Divider(),
-            SizedBox(
-              height: height,
-              child: SyncDataTable2<SalesTransactionReport>(
-                rows: salesTransactionReports,
-                columns: columns,
-                fixedLeftColumns: 2,
-                onLoaded: (state) => stateManager = state,
-                showSummary: true,
-              ),
+          ),
+          const Divider(),
+          SizedBox(
+            height: height,
+            child: SyncDataTable2<SalesTransactionReport>(
+              rows: salesTransactionReports,
+              columns: columns,
+              fixedLeftColumns: 2,
+              onLoaded: (state) => stateManager = state,
+              showSummary: true,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

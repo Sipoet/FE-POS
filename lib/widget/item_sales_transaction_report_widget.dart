@@ -129,7 +129,7 @@ class _ItemSalesTransactionReportWidgetState
     Size size = MediaQuery.of(context).size;
     final padding = MediaQuery.of(context).padding;
     double width = size.width - padding.left - padding.right - 50;
-    double headerLabelWidth = width - 40;
+
     if (width < 700) {
       width = 700.0;
     }
@@ -140,16 +140,13 @@ class _ItemSalesTransactionReportWidgetState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SizedBox(
-              width: headerLabelWidth,
-              child: Text(
-                widget.label,
-                softWrap: true,
-                style: TextStyle(
-                    fontSize: 18,
-                    color: colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.w900),
-              ),
+            Text(
+              widget.label,
+              softWrap: true,
+              style: TextStyle(
+                  fontSize: 18,
+                  color: colorScheme.onPrimaryContainer,
+                  fontWeight: FontWeight.w900),
             ),
             IconButton.filled(
                 tooltip: 'Refresh Laporan',
@@ -213,7 +210,7 @@ class _ItemSalesTransactionReportWidgetState
               width: width,
               child: Table(
                   border: TableBorder.all(
-                    color: Colors.grey.shade400.withOpacity(0.5),
+                    color: Colors.grey.shade400.withValues(alpha: 0.5),
                   ),
                   columnWidths: const {
                     0: FixedColumnWidth(50),

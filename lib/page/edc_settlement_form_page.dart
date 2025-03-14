@@ -552,8 +552,6 @@ enum EdcSummaryStatus {
         return 'Kurang';
       case greater:
         return 'Lebih';
-      default:
-        return '';
     }
   }
 

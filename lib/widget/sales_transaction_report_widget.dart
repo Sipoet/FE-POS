@@ -106,241 +106,229 @@ class _SalesTransactionReportWidgetState
     var labelStyle = TextStyle(color: colorScheme.onPrimaryContainer);
     var valueStyle = TextStyle(
         color: colorScheme.onPrimaryContainer, fontWeight: FontWeight.bold);
-    Size size = MediaQuery.of(context).size;
-    final padding = MediaQuery.of(context).padding;
-    double width = size.width - padding.left - padding.right - 50;
-    double headerLabelWidth = width - 40;
-
     return Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Laporan penjualan',
+              style: TextStyle(
+                  fontSize: 18,
+                  color: colorScheme.onPrimaryContainer,
+                  fontWeight: FontWeight.w900),
+            ),
+            IconButton.filled(
+                tooltip: 'Refresh Laporan',
+                alignment: Alignment.centerRight,
+                onPressed: () => refreshReport(),
+                icon: const Icon(Icons.refresh_rounded))
+          ],
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+        if (_controller.isAnimating)
+          Center(
+            child: CircularProgressIndicator(
+              value: _controller.value,
+              semanticsLabel: 'Dalam proses data',
+            ),
+          ),
+        if (!_controller.isAnimating) const Divider(),
+        if (!_controller.isAnimating)
+          Table(
+            columnWidths: const {
+              0: FlexColumnWidth(0.5),
+              1: FixedColumnWidth(10)
+            },
             children: [
-              SizedBox(
-                width: headerLabelWidth,
-                child: Text(
-                  'Laporan penjualan',
-                  style: TextStyle(
-                      fontSize: 18,
-                      color: colorScheme.onPrimaryContainer,
-                      fontWeight: FontWeight.w900),
+              TableRow(children: [
+                Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Text(
+                    'Total Penjualan',
+                    style: labelStyle,
+                  ),
                 ),
-              ),
-              IconButton.filled(
-                  tooltip: 'Refresh Laporan',
-                  alignment: Alignment.centerRight,
-                  onPressed: () => refreshReport(),
-                  icon: const Icon(Icons.refresh_rounded))
+                const Text(':'),
+                Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Text(
+                    moneyFormat(salesTransactionReport.totalSales),
+                    textAlign: TextAlign.right,
+                    style: valueStyle,
+                  ),
+                )
+              ]),
+              TableRow(
+                  decoration: BoxDecoration(
+                      color: colorScheme.secondaryContainer,
+                      border: Border.symmetric(
+                          horizontal: BorderSide(color: colorScheme.outline))),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(
+                        'Omzet Kotor',
+                        style: labelStyle,
+                      ),
+                    ),
+                    const Text(':'),
+                    Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(
+                        moneyFormat(salesTransactionReport.grossProfit),
+                        textAlign: TextAlign.right,
+                        style: valueStyle,
+                      ),
+                    )
+                  ]),
+              TableRow(children: [
+                Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Text(
+                    'Jumlah Transaksi',
+                    style: labelStyle,
+                  ),
+                ),
+                const Text(':'),
+                Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Text(
+                    numberFormat(salesTransactionReport.totalTransaction),
+                    textAlign: TextAlign.right,
+                    style: valueStyle,
+                  ),
+                )
+              ]),
+              TableRow(
+                  decoration: BoxDecoration(
+                      color: colorScheme.secondaryContainer,
+                      border: Border.symmetric(
+                          horizontal: BorderSide(color: colorScheme.outline))),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(
+                        'Total Diskon',
+                        style: labelStyle,
+                      ),
+                    ),
+                    const Text(':'),
+                    Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(
+                        moneyFormat(salesTransactionReport.totalDiscount),
+                        textAlign: TextAlign.right,
+                        style: valueStyle,
+                      ),
+                    )
+                  ]),
+              TableRow(children: [
+                Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Text(
+                    'Total Tunai',
+                    style: labelStyle,
+                  ),
+                ),
+                const Text(':'),
+                Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Text(
+                    moneyFormat(salesTransactionReport.totalCash),
+                    textAlign: TextAlign.right,
+                    style: valueStyle,
+                  ),
+                )
+              ]),
+              TableRow(
+                  decoration: BoxDecoration(
+                      color: colorScheme.secondaryContainer,
+                      border: Border.symmetric(
+                          horizontal: BorderSide(color: colorScheme.outline))),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(
+                        'Total Kartu Debit',
+                        style: labelStyle,
+                      ),
+                    ),
+                    const Text(':'),
+                    Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(
+                        moneyFormat(salesTransactionReport.totalDebit),
+                        textAlign: TextAlign.right,
+                        style: valueStyle,
+                      ),
+                    )
+                  ]),
+              TableRow(children: [
+                Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Text(
+                    'Total Kartu Kredit',
+                    style: labelStyle,
+                  ),
+                ),
+                const Text(':'),
+                Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Text(
+                    moneyFormat(salesTransactionReport.totalCredit),
+                    textAlign: TextAlign.right,
+                    style: valueStyle,
+                  ),
+                )
+              ]),
+              TableRow(
+                  decoration: BoxDecoration(
+                      color: colorScheme.secondaryContainer,
+                      border: Border.symmetric(
+                          horizontal: BorderSide(color: colorScheme.outline))),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(
+                        'Total QRIS',
+                        style: labelStyle,
+                      ),
+                    ),
+                    const Text(':'),
+                    Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(
+                        moneyFormat(salesTransactionReport.totalQRIS),
+                        textAlign: TextAlign.right,
+                        style: valueStyle,
+                      ),
+                    )
+                  ]),
+              TableRow(children: [
+                Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Text(
+                    'Total Online Transfer',
+                    style: labelStyle,
+                  ),
+                ),
+                const Text(':'),
+                Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Text(
+                    moneyFormat(salesTransactionReport.totalOnline),
+                    textAlign: TextAlign.right,
+                    style: valueStyle,
+                  ),
+                )
+              ]),
             ],
           ),
-          const SizedBox(
-            height: 10,
-          ),
-          if (_controller.isAnimating)
-            Center(
-              child: CircularProgressIndicator(
-                value: _controller.value,
-                semanticsLabel: 'Dalam proses data',
-              ),
-            ),
-          if (!_controller.isAnimating) const Divider(),
-          if (!_controller.isAnimating)
-            Table(
-              columnWidths: const {
-                0: FlexColumnWidth(0.5),
-                1: FixedColumnWidth(10)
-              },
-              children: [
-                TableRow(children: [
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      'Total Penjualan',
-                      style: labelStyle,
-                    ),
-                  ),
-                  const Text(':'),
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      moneyFormat(salesTransactionReport.totalSales),
-                      textAlign: TextAlign.right,
-                      style: valueStyle,
-                    ),
-                  )
-                ]),
-                TableRow(
-                    decoration: BoxDecoration(
-                        color: colorScheme.secondaryContainer,
-                        border: Border.symmetric(
-                            horizontal:
-                                BorderSide(color: colorScheme.outline))),
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Text(
-                          'Omzet Kotor',
-                          style: labelStyle,
-                        ),
-                      ),
-                      const Text(':'),
-                      Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Text(
-                          moneyFormat(salesTransactionReport.grossProfit),
-                          textAlign: TextAlign.right,
-                          style: valueStyle,
-                        ),
-                      )
-                    ]),
-                TableRow(children: [
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      'Jumlah Transaksi',
-                      style: labelStyle,
-                    ),
-                  ),
-                  const Text(':'),
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      numberFormat(salesTransactionReport.totalTransaction),
-                      textAlign: TextAlign.right,
-                      style: valueStyle,
-                    ),
-                  )
-                ]),
-                TableRow(
-                    decoration: BoxDecoration(
-                        color: colorScheme.secondaryContainer,
-                        border: Border.symmetric(
-                            horizontal:
-                                BorderSide(color: colorScheme.outline))),
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Text(
-                          'Total Diskon',
-                          style: labelStyle,
-                        ),
-                      ),
-                      const Text(':'),
-                      Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Text(
-                          moneyFormat(salesTransactionReport.totalDiscount),
-                          textAlign: TextAlign.right,
-                          style: valueStyle,
-                        ),
-                      )
-                    ]),
-                TableRow(children: [
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      'Total Tunai',
-                      style: labelStyle,
-                    ),
-                  ),
-                  const Text(':'),
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      moneyFormat(salesTransactionReport.totalCash),
-                      textAlign: TextAlign.right,
-                      style: valueStyle,
-                    ),
-                  )
-                ]),
-                TableRow(
-                    decoration: BoxDecoration(
-                        color: colorScheme.secondaryContainer,
-                        border: Border.symmetric(
-                            horizontal:
-                                BorderSide(color: colorScheme.outline))),
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Text(
-                          'Total Kartu Debit',
-                          style: labelStyle,
-                        ),
-                      ),
-                      const Text(':'),
-                      Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Text(
-                          moneyFormat(salesTransactionReport.totalDebit),
-                          textAlign: TextAlign.right,
-                          style: valueStyle,
-                        ),
-                      )
-                    ]),
-                TableRow(children: [
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      'Total Kartu Kredit',
-                      style: labelStyle,
-                    ),
-                  ),
-                  const Text(':'),
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      moneyFormat(salesTransactionReport.totalCredit),
-                      textAlign: TextAlign.right,
-                      style: valueStyle,
-                    ),
-                  )
-                ]),
-                TableRow(
-                    decoration: BoxDecoration(
-                        color: colorScheme.secondaryContainer,
-                        border: Border.symmetric(
-                            horizontal:
-                                BorderSide(color: colorScheme.outline))),
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Text(
-                          'Total QRIS',
-                          style: labelStyle,
-                        ),
-                      ),
-                      const Text(':'),
-                      Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Text(
-                          moneyFormat(salesTransactionReport.totalQRIS),
-                          textAlign: TextAlign.right,
-                          style: valueStyle,
-                        ),
-                      )
-                    ]),
-                TableRow(children: [
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      'Total Online Transfer',
-                      style: labelStyle,
-                    ),
-                  ),
-                  const Text(':'),
-                  Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Text(
-                      moneyFormat(salesTransactionReport.totalOnline),
-                      textAlign: TextAlign.right,
-                      style: valueStyle,
-                    ),
-                  )
-                ]),
-              ],
-            ),
-        ]);
+      ],
+    );
   }
 }

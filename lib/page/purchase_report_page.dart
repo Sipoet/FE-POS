@@ -6,6 +6,7 @@ import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:fe_pos/widget/table_filter_form.dart';
+import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/file_saver.dart';
@@ -138,38 +139,35 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
     final padding = MediaQuery.of(context).padding;
     final size = MediaQuery.of(context).size;
     double tableHeight = size.height - padding.top - padding.bottom - 250;
-    tableHeight = tableHeight > 600 ? 600 : tableHeight;
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TableFilterForm(
-                showCanopy: true,
-                onSubmit: (filter) {
-                  _filter = filter;
-                  _displayReport();
-                },
-                enums: const {
-                  'status': PurchaseReportStatus.values,
-                },
-                onDownload: (filter) {
-                  _filter = filter;
-                  _downloadReport();
-                },
-                columns: _source.columns),
-            const SizedBox(height: 10),
-            Visibility(visible: _isDisplayTable, child: const Divider()),
-            SizedBox(
-              height: tableHeight,
-              child: CustomAsyncDataTable(
-                controller: _source,
-                fixedLeftColumns: 1,
-              ),
+    tableHeight = tableHeight < 400 ? 400 : tableHeight;
+    return VerticalBodyScroll(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TableFilterForm(
+              showCanopy: true,
+              onSubmit: (filter) {
+                _filter = filter;
+                _displayReport();
+              },
+              enums: const {
+                'status': PurchaseReportStatus.values,
+              },
+              onDownload: (filter) {
+                _filter = filter;
+                _downloadReport();
+              },
+              columns: _source.columns),
+          const SizedBox(height: 10),
+          Visibility(visible: _isDisplayTable, child: const Divider()),
+          SizedBox(
+            height: tableHeight,
+            child: CustomAsyncDataTable(
+              controller: _source,
+              fixedLeftColumns: 1,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
