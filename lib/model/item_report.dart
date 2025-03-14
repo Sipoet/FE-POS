@@ -23,7 +23,7 @@ class ItemReport extends Model {
   int itemOut;
   bool isConsignment;
   DateTime? recentPurchaseDate;
-  Item? item;
+  Item item;
   Supplier? supplier;
   Brand? brand;
   ItemType? itemType;
@@ -44,7 +44,7 @@ class ItemReport extends Model {
       this.brandName,
       this.itemType,
       this.supplier,
-      this.item,
+      Item? item,
       this.brand,
       this.storeStock = 0,
       this.warehouseStock = 0,
@@ -64,7 +64,8 @@ class ItemReport extends Model {
       this.stockLeft = 0,
       this.grossProfit = const Money(0),
       this.isConsignment = false,
-      this.recentPurchaseDate});
+      this.recentPurchaseDate})
+      : item = item ?? Item();
   @override
   factory ItemReport.fromJson(Map<String, dynamic> json,
       {List included = const [], ItemReport? model}) {
@@ -104,9 +105,10 @@ class ItemReport extends Model {
     model.recentPurchaseDate =
         DateTime.tryParse(attributes['recent_purchase_date'] ?? '');
     model.item = Model.findRelationData<Item>(
-        relation: json['relationships']?['item'],
-        included: included,
-        convert: Item.fromJson);
+            relation: json['relationships']?['item'],
+            included: included,
+            convert: Item.fromJson) ??
+        model.item;
     model.itemType = Model.findRelationData<ItemType>(
         relation: json['relationships']?['item_type'],
         included: included,

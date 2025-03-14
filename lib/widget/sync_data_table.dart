@@ -60,13 +60,13 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
       return decorateColumn(
         tableColumn,
         listEnumValues: widget.enums[tableColumn.name],
-        showCheckboxColumn: widget.showCheckboxColumn,
         showFilter: widget.showFilter,
         isFrozen: index < widget.fixedLeftColumns,
       );
     }).toList();
     rows = widget.rows
-        .map<PlutoRow>((row) => decorateRow(row, widget.columns))
+        .map<PlutoRow>(
+            (row) => decorateRow(data: row, tableColumns: widget.columns))
         .toList();
 
     super.initState();
@@ -105,43 +105,5 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
               rowColor: colorScheme.secondaryContainer,
               evenRowColor: colorScheme.onPrimary)),
     );
-  }
-}
-
-extension TableStateMananger on PlutoGridStateManager {
-  PlutoDeco get decorator => PlutoDeco();
-
-  void appendModel(model, List<TableColumn> tableColumns) {
-    appendRows([decorator.decorateRow(model, tableColumns)]);
-    notifyListeners();
-  }
-
-  void setModels(models, List<TableColumn> tableColumns) {
-    if (rows.isNotEmpty) {
-      removeAllRows();
-    }
-    final rowsTemp = models
-        .map<PlutoRow>((model) => decorator.decorateRow(model, tableColumns))
-        .toList();
-    appendRows(rowsTemp);
-    notifyListeners();
-  }
-
-  void setTableColumns(List<TableColumn> tableColumns,
-      {int fixedLeftColumns = 0,
-      bool showCheckboxColumn = false,
-      bool showFilter = false}) {
-    removeColumns(columns);
-    final newColumns = tableColumns.asMap().entries.map<PlutoColumn>((entry) {
-      int index = entry.key;
-      TableColumn tableColumn = entry.value;
-      return decorator.decorateColumn(
-        tableColumn,
-        showCheckboxColumn: showCheckboxColumn,
-        showFilter: showFilter,
-        isFrozen: index < fixedLeftColumns,
-      );
-    }).toList();
-    insertColumns(0, newColumns);
   }
 }

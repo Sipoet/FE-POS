@@ -267,25 +267,25 @@ class CustomASyncDataTable2<T extends Model> extends StatefulWidget {
   final Widget? header;
   final bool showCheckboxColumn;
   final bool showSummary;
-  final List<T> rows;
   final List<TableColumn> columns;
-  final void Function(int)? onPageChanged;
+  final Future<DataTableResponse<T>> Function(DataTableRequest) fetchData;
   final Map<String, List<Enum>> enums;
   final OnLoadedCallBack? onLoaded;
   final OnRowCheckedCallback? onRowChecked;
   final OnSelectedCallback? onSelected;
   final OnRowDoubleTapCallback? onRowDoubleTap;
   final bool showFilter;
+  final String primaryKey;
 
   const CustomASyncDataTable2({
     super.key,
-    this.onPageChanged,
+    required this.fetchData,
     this.actions,
     this.onLoaded,
     this.header,
+    this.primaryKey = 'id',
     this.showFilter = true,
     List<TableColumn>? columns,
-    List<T>? rows,
     this.enums = const {},
     this.onRowChecked,
     this.onRowDoubleTap,
@@ -293,8 +293,7 @@ class CustomASyncDataTable2<T extends Model> extends StatefulWidget {
     this.showSummary = false,
     this.showCheckboxColumn = false,
     this.fixedLeftColumns = 0,
-  })  : columns = columns ?? const [],
-        rows = rows ?? const [];
+  }) : columns = columns ?? const [];
 
   @override
   State<CustomASyncDataTable2<T>> createState() =>
@@ -304,7 +303,8 @@ class CustomASyncDataTable2<T extends Model> extends StatefulWidget {
 class _CustomASyncDataTable2State<T extends Model>
     extends State<CustomASyncDataTable2<T>> with PlutoTableDecorator {
   late List<PlutoColumn> columns;
-  late List<PlutoRow> rows;
+  late final PlutoGridStateManager _source;
+  List selectedValues = [];
 
   @override
   void initState() {
@@ -313,17 +313,49 @@ class _CustomASyncDataTable2State<T extends Model>
       TableColumn tableColumn = entry.value;
       return decorateColumn(
         tableColumn,
+        showCheckboxColumn: index == 0 ? widget.showCheckboxColumn : false,
         listEnumValues: widget.enums[tableColumn.name],
-        showCheckboxColumn: widget.showCheckboxColumn,
         showFilter: widget.showFilter,
         isFrozen: index < widget.fixedLeftColumns,
       );
     }).toList();
-    rows = widget.rows
-        .map<PlutoRow>((row) => decorateRow(row, widget.columns))
-        .toList();
 
     super.initState();
+  }
+
+  bool _containsCheckedValue(Map<String, dynamic> row) {
+    return selectedValues.contains(row[widget.primaryKey]);
+  }
+
+  String filterTypeRemote(filterType) {
+    if (filterType is PlutoFilterTypeContains) {
+      return 'like';
+    } else if (filterType is PlutoFilterTypeLessThanOrEqualTo) {
+      return 'lte';
+    } else if (filterType is PlutoFilterTypeNot) {
+      return 'not';
+    } else if (filterType is PlutoFilterTypeEquals) {
+      return 'eq';
+    } else if (filterType is PlutoFilterTypeGreaterThan) {
+      return 'gt';
+    } else if (filterType is PlutoFilterTypeGreaterThanOrEqualTo) {
+      return 'gte';
+    } else if (filterType is PlutoFilterTypeLessThan) {
+      return 'lt';
+    } else {
+      return 'eq';
+    }
+  }
+
+  Map<String, String> remoteFilters() {
+    Map<String, String> filter = {};
+    for (final row in _source.filterRows) {
+      final columnName = row.cells['column']!.value;
+      final comparator = filterTypeRemote(row.cells['type']!.value);
+      final key = 'filter[$columnName][$comparator]';
+      filter[key] = row.cells['value']!.value.toString();
+    }
+    return filter;
   }
 
   @override
@@ -331,14 +363,28 @@ class _CustomASyncDataTable2State<T extends Model>
     final colorScheme = Theme.of(context).colorScheme;
     return PlutoGrid(
       columns: columns,
-      rows: rows,
+      rows: <PlutoRow>[],
+      onSorted: (event) {
+        var sorts = <SortData>[];
+        if (!event.column.sort.isNone) {
+          sorts = [
+            SortData(
+                key: event.column.field,
+                isAscending: event.column.sort.isAscending)
+          ];
+        }
+        var request =
+            DataTableRequest(page: 1, filter: remoteFilters(), sorts: sorts);
+
+        widget.fetchData(request);
+      },
       onLoaded: (PlutoGridOnLoadedEvent event) {
-        final stateManager = event.stateManager;
-        stateManager.setShowColumnFilter(widget.showFilter);
-        stateManager.setShowColumnFooter(widget.showSummary);
-        stateManager.columnFooterHeight = 115.0;
+        _source = event.stateManager;
+        _source.setShowColumnFilter(widget.showFilter);
+        _source.setShowColumnFooter(widget.showSummary);
+        _source.columnFooterHeight = 115.0;
         if (widget.onLoaded is Function) {
-          widget.onLoaded!(stateManager);
+          widget.onLoaded!(_source);
         }
       },
       noRowsWidget: const Text('Data tidak ditemukan'),
@@ -348,8 +394,62 @@ class _CustomASyncDataTable2State<T extends Model>
       mode: PlutoGridMode.selectWithOneTap,
       onSelected: widget.onSelected,
       onRowDoubleTap: widget.onRowDoubleTap,
-      onRowChecked: widget.onRowChecked,
+      onRowChecked: (PlutoGridOnRowCheckedEvent event) {
+        if (!event.isRow) {
+          return;
+        }
+        final value = event.row!.cells[widget.primaryKey]!.value;
+        if (event.isChecked == true) {
+          selectedValues.add(value);
+        } else {
+          selectedValues.remove(value);
+        }
+        if (widget.onRowChecked is Function) {
+          widget.onRowChecked!(event);
+        }
+      },
+      createFooter: (stateManager) {
+        return PlutoLazyPagination(
+          fetch: (event) async {
+            var request = DataTableRequest(page: event.page);
+            final sortColumn = event.sortColumn;
+
+            if (sortColumn != null) {
+              request.sorts = [
+                SortData(
+                    key: event.sortColumn!.field,
+                    isAscending: event.sortColumn!.sort.isAscending),
+              ];
+            }
+            request.filter = remoteFilters();
+            return widget.fetchData(request).then(
+              (DataTableResponse<T> response) {
+                return PlutoLazyPaginationResponse(
+                    rows: response.models
+                        .map<PlutoRow>(
+                          (model) => decorateRow(
+                              isChecked: _containsCheckedValue(model.toMap()),
+                              data: model,
+                              tableColumns: widget.columns),
+                        )
+                        .toList(),
+                    totalPage: response.totalPage);
+              },
+            );
+          },
+          stateManager: stateManager,
+        );
+      },
       configuration: PlutoGridConfiguration(
+          columnFilter: const PlutoGridColumnFilterConfig(filters: [
+            PlutoFilterTypeContains(),
+            PlutoFilterTypeEquals(),
+            PlutoFilterTypeNot(),
+            PlutoFilterTypeLessThan(),
+            PlutoFilterTypeLessThanOrEqualTo(),
+            PlutoFilterTypeGreaterThan(),
+            PlutoFilterTypeGreaterThanOrEqualTo(),
+          ]),
           scrollbar: const PlutoGridScrollbarConfig(
             isAlwaysShown: true,
             scrollbarThickness: 10,
@@ -360,4 +460,27 @@ class _CustomASyncDataTable2State<T extends Model>
               evenRowColor: colorScheme.onPrimary)),
     );
   }
+}
+
+class DataTableRequest {
+  int page;
+  Map<String, dynamic> filter;
+  List<SortData> sorts;
+  DataTableRequest({
+    this.page = 1,
+    this.sorts = const [],
+    this.filter = const {},
+  });
+}
+
+class DataTableResponse<T extends Model> {
+  int totalPage;
+  List<T> models;
+  DataTableResponse({this.totalPage = 0, this.models = const []});
+}
+
+class SortData {
+  String key;
+  bool isAscending;
+  SortData({required this.key, required this.isAscending});
 }
