@@ -150,7 +150,8 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
       return;
     }
 
-    _server.upload('assets', pickedFile).then((response) {
+    _server.upload('assets', file: pickedFile, filename: pickedFile.name).then(
+        (response) {
       if (response.statusCode == 201) {
         setState(() {
           employee.imageCode = response.data['data']['attributes']['code'];

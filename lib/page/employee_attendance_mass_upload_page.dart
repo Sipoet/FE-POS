@@ -1,6 +1,7 @@
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
+import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/employee_attendance.dart';
@@ -8,7 +9,6 @@ import 'package:fe_pos/model/session_state.dart';
 
 import 'package:fe_pos/tool/setting.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:image_picker/image_picker.dart';
 
 import 'package:provider/provider.dart';
 
@@ -25,6 +25,7 @@ class _EmployeeAttendanceMassUploadPageState
     with
         AutomaticKeepAliveClientMixin,
         LoadingPopup,
+        PlatformChecker,
         TextFormatter,
         DefaultResponse {
   late Server _server;
@@ -229,9 +230,20 @@ class _EmployeeAttendanceMassUploadPageState
     if (result == null) {
       return;
     }
-    final file = XFile(result.files.single.path!);
+    Future<dynamic> request;
+    if (isWeb()) {
+      final file = result.files.first;
+      request = _server.upload('employee_attendances/mass_upload',
+          bytes: file.bytes!.toList(), filename: file.name);
+    } else {
+      final file = result.xFiles.first;
+      request = _server.upload('employee_attendances/mass_upload',
+          file: file, filename: file.name);
+    }
+
     showLoadingPopup();
-    _server.upload('employee_attendances/mass_upload', file).then((response) {
+
+    request.then((response) {
       if (response.statusCode == 201) {
         final responseBody = response.data['data'] as List;
         setState(() {

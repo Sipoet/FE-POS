@@ -43,11 +43,12 @@ class _MobileLayoutState extends State<MobileLayout>
         'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: $version | Allegra POS';
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 30,
         title: Tooltip(
           message: message,
           child: Text(
             message,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
       ),

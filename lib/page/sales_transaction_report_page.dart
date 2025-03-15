@@ -4,6 +4,7 @@ import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/model/sales_transaction_report.dart';
+import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
@@ -20,11 +21,10 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late DateTimeRange range;
   late Server server;
-  List requestControllers = [];
   late Flash flash;
   late List<TableColumn> columns;
   List<SalesTransactionReport> salesTransactionReports = [];
-  late final PlutoGridStateManager? stateManager;
+  late final PlutoGridStateManager stateManager;
 
   @override
   bool get wantKeepAlive => true;
@@ -51,44 +51,26 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
     super.dispose();
   }
 
-  Future _requestReport(DateTimeRange dateRange) async {
-    return server.get('sales/transaction_report', queryParam: {
-      'start_time': dateRange.start.toIso8601String(),
-      'end_time': dateRange.end.toIso8601String(),
-    });
-  }
-
   void _refreshTable(DateTimeRange range) {
-    flash.show(
-      const Text('Dalam proses.'),
-      ToastificationType.info,
-    );
-    var start = range.start;
-    var end = range.end;
-    salesTransactionReports = <SalesTransactionReport>[];
-
-    stateManager?.removeAllRows();
-
-    while (start.isBefore(end)) {
-      var rowDateRange =
-          DateTimeRange(start: beginningOfDay(start), end: endOfDay(start));
-
-      var request = _requestReport(rowDateRange).then((response) {
-        if (response.statusCode != 200) return;
-        var data = response.data['data'];
-        final salesTransactionReport = SalesTransactionReport.fromJson(data);
-        setState(() {
-          stateManager?.appendModel(salesTransactionReport, columns);
-        });
-      }, onError: (error, trace) => defaultErrorResponse(error: error));
-      requestControllers.add(request);
-      start = start.add(const Duration(days: 1));
-    }
-    Future.delayed(const Duration(seconds: 2), (() {
+    stateManager.setShowLoading(true);
+    server.get('sales/daily_transaction_report', queryParam: {
+      'start_date': range.start.toIso8601String(),
+      'end_date': range.end.toIso8601String(),
+    }).then((response) {
+      if (response.statusCode != 200) return;
+      var data = response.data['data'];
       setState(() {
-        flash.hide();
+        salesTransactionReports = data
+            .map<SalesTransactionReport>(
+                (line) => SalesTransactionReport.fromJson(line))
+            .toList();
+        stateManager.setModels(salesTransactionReports, columns);
+        debugPrint('total rows ${salesTransactionReports.length.toString()}');
       });
-    }));
+    },
+        onError: (error, trace) =>
+            defaultErrorResponse(error: error)).whenComplete(
+        () => stateManager.setShowLoading(false));
   }
 
   DateTime beginningOfDay(DateTime date) {
@@ -101,38 +83,39 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
 
   @override
   Widget build(BuildContext context) {
+    final padding = MediaQuery.paddingOf(context);
+    double height =
+        MediaQuery.sizeOf(context).height - padding.top - padding.bottom - 250;
+    height = height < 285 ? 285 : height;
     super.build(context);
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 350,
-              child: DateRangeFormField(
-                initialDateRange: range,
-                datePickerOnly: true,
-                onChanged: (newRange) {
-                  range = newRange ??
-                      DateTimeRange(start: DateTime.now(), end: DateTime.now());
-                  _refreshTable(range);
-                },
-              ),
+    return VerticalBodyScroll(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 350,
+            child: DateRangeFormField(
+              initialDateRange: range,
+              datePickerOnly: true,
+              onChanged: (newRange) {
+                range = newRange ??
+                    DateTimeRange(start: DateTime.now(), end: DateTime.now());
+                _refreshTable(range);
+              },
             ),
-            const Divider(),
-            SizedBox(
-              height: 400,
-              child: SyncDataTable<SalesTransactionReport>(
-                rows: salesTransactionReports,
-                columns: columns,
-                fixedLeftColumns: 1,
-                onLoaded: (state) => stateManager = state,
-                showSummary: true,
-              ),
+          ),
+          const Divider(),
+          SizedBox(
+            height: height,
+            child: SyncDataTable<SalesTransactionReport>(
+              rows: salesTransactionReports,
+              columns: columns,
+              fixedLeftColumns: 2,
+              onLoaded: (state) => stateManager = state,
+              showSummary: true,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

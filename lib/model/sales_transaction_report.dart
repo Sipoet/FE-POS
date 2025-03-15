@@ -35,8 +35,9 @@ class SalesTransactionReport extends Model {
     return SalesTransactionReport(
       id: "${attributes['start_time']}-${attributes['end_time']}",
       range: DateTimeRange(
-          start: DateTime.parse(attributes['start_time']),
-          end: DateTime.parse(attributes['end_time'])),
+        start: DateTime.parse(attributes['start_time']).toLocal(),
+        end: DateTime.parse(attributes['end_time']).toLocal(),
+      ),
       totalSales: Money.tryParse(attributes['sales_total']) ?? const Money(0),
       totalDebit: Money.tryParse(attributes['debit_total']) ?? const Money(0),
       totalCredit: Money.tryParse(attributes['credit_total']) ?? const Money(0),
@@ -64,7 +65,7 @@ class SalesTransactionReport extends Model {
         'discount_total': totalDiscount,
         'num_of_transaction': totalTransaction,
         'gross_profit': grossProfit,
-        'start_time': Date.parse(startDate.toIso8601String()),
-        'end_time': Date.parse(endDate.toIso8601String()),
+        'start_time': range.start,
+        'end_time': range.end,
       };
 }

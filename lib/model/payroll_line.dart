@@ -99,8 +99,6 @@ enum PayrollFormula {
         return 'fulltime_hour_per_day';
       case proportionalCommission:
         return 'Komisi Proporsional';
-      default:
-        throw 'invalid Payroll formula';
     }
   }
 

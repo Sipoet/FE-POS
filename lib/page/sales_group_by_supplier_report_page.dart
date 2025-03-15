@@ -6,6 +6,7 @@ import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
+import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -156,135 +157,132 @@ class _SalesGroupBySupplierReportPageState
     final padding = MediaQuery.of(context).padding;
     double tableHeight =
         MediaQuery.of(context).size.height - padding.top - padding.bottom - 150;
-    tableHeight = tableHeight > 600 ? 600 : tableHeight;
+    tableHeight = tableHeight < 400 ? 400 : tableHeight;
 
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Filter',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            Form(
-              key: _formState,
-              child: Wrap(
-                direction: Axis.horizontal,
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  SizedBox(
-                      width: 350,
-                      child: DropdownSearch.multiSelection(
-                        dropdownDecoratorProps: const DropDownDecoratorProps(
-                            dropdownSearchDecoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                label: Text(
-                                  'Group Berdasarkan',
-                                  style: _filterLabelStyle,
-                                ))),
-                        items: groupList,
-                        onChanged: (value) => _groupKeys = value,
-                        validator: (value) {
-                          if (value?.isEmpty ?? true) {
-                            return 'harus diisi';
-                          }
-                          return null;
-                        },
-                        itemAsString: (item) {
-                          return _setting.columnName(
-                              'salesGroupBySupplierReport', item);
-                        },
-                      )),
-                  SizedBox(
-                      width: 350,
-                      child: AsyncDropdownMultiple<Brand>(
-                        label: const Text('Merek :', style: _filterLabelStyle),
-                        key: const ValueKey('brandSelect'),
-                        textOnSearch: (Brand brand) => brand.name,
-                        converter: Brand.fromJson,
-                        attributeKey: 'merek',
-                        path: '/brands',
-                        onSaved: (value) => _brands = value == null
-                            ? []
-                            : value.map<String>((e) => e.name).toList(),
-                      )),
-                  SizedBox(
-                      width: 350,
-                      child: AsyncDropdownMultiple<ItemType>(
-                        label: const Text('Jenis/Departemen :',
-                            style: _filterLabelStyle),
-                        key: const ValueKey('itemTypeSelect'),
-                        textOnSearch: (itemType) =>
-                            "${itemType.name} - ${itemType.description}",
-                        textOnSelected: (itemType) => itemType.name,
-                        converter: ItemType.fromJson,
-                        attributeKey: 'jenis',
-                        path: '/item_types',
-                        onSaved: (value) => _itemTypes = value == null
-                            ? []
-                            : value.map<String>((e) => e.name).toList(),
-                      )),
-                  SizedBox(
-                    width: 350,
-                    child: AsyncDropdownMultiple<Supplier>(
-                      label: const Text('Supplier :', style: _filterLabelStyle),
-                      key: const ValueKey('supplierSelect'),
-                      attributeKey: 'nama',
-                      path: '/suppliers',
-                      textOnSearch: (supplier) =>
-                          "${supplier.code} - ${supplier.name}",
-                      textOnSelected: (supplier) => supplier.code,
-                      converter: Supplier.fromJson,
-                      onSaved: (value) => _suppliers = value == null
-                          ? []
-                          : value.map<String>((e) => e.code).toList(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            Wrap(
-              runSpacing: 10,
+    return VerticalBodyScroll(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Filter',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 10),
+          Form(
+            key: _formState,
+            child: Wrap(
+              direction: Axis.horizontal,
               spacing: 10,
+              runSpacing: 10,
               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    if (_formState.currentState!.validate()) {
-                      _formState.currentState!.save();
-                      _displayReport();
-                    }
-                  },
-                  child: const Text('Tampilkan'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (_formState.currentState!.validate()) {
-                      _formState.currentState!.save();
-                      _downloadReport();
-                    }
-                  },
-                  child: const Text('Download'),
+                SizedBox(
+                    width: 350,
+                    child: DropdownSearch.multiSelection(
+                      dropdownDecoratorProps: const DropDownDecoratorProps(
+                          dropdownSearchDecoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              label: Text(
+                                'Group Berdasarkan',
+                                style: _filterLabelStyle,
+                              ))),
+                      items: groupList,
+                      onChanged: (value) => _groupKeys = value,
+                      validator: (value) {
+                        if (value?.isEmpty ?? true) {
+                          return 'harus diisi';
+                        }
+                        return null;
+                      },
+                      itemAsString: (item) {
+                        return _setting.columnName(
+                            'salesGroupBySupplierReport', item);
+                      },
+                    )),
+                SizedBox(
+                    width: 350,
+                    child: AsyncDropdownMultiple<Brand>(
+                      label: const Text('Merek :', style: _filterLabelStyle),
+                      key: const ValueKey('brandSelect'),
+                      textOnSearch: (Brand brand) => brand.name,
+                      converter: Brand.fromJson,
+                      attributeKey: 'merek',
+                      path: '/brands',
+                      onSaved: (value) => _brands = value == null
+                          ? []
+                          : value.map<String>((e) => e.name).toList(),
+                    )),
+                SizedBox(
+                    width: 350,
+                    child: AsyncDropdownMultiple<ItemType>(
+                      label: const Text('Jenis/Departemen :',
+                          style: _filterLabelStyle),
+                      key: const ValueKey('itemTypeSelect'),
+                      textOnSearch: (itemType) =>
+                          "${itemType.name} - ${itemType.description}",
+                      textOnSelected: (itemType) => itemType.name,
+                      converter: ItemType.fromJson,
+                      attributeKey: 'jenis',
+                      path: '/item_types',
+                      onSaved: (value) => _itemTypes = value == null
+                          ? []
+                          : value.map<String>((e) => e.name).toList(),
+                    )),
+                SizedBox(
+                  width: 350,
+                  child: AsyncDropdownMultiple<Supplier>(
+                    label: const Text('Supplier :', style: _filterLabelStyle),
+                    key: const ValueKey('supplierSelect'),
+                    attributeKey: 'nama',
+                    path: '/suppliers',
+                    textOnSearch: (supplier) =>
+                        "${supplier.code} - ${supplier.name}",
+                    textOnSelected: (supplier) => supplier.code,
+                    converter: Supplier.fromJson,
+                    onSaved: (value) => _suppliers = value == null
+                        ? []
+                        : value.map<String>((e) => e.code).toList(),
+                  ),
                 ),
               ],
             ),
-            const Divider(),
-            SizedBox(
-              height: tableHeight,
-              child: SyncDataTable<SalesGroupBySupplier>(
-                showSummary: true,
-                showFilter: false,
-                columns: _tableColumns,
-                onLoaded: (stateManager) => _source = stateManager,
-                fixedLeftColumns: _groupKeys.length,
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Wrap(
+            runSpacing: 10,
+            spacing: 10,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  if (_formState.currentState!.validate()) {
+                    _formState.currentState!.save();
+                    _displayReport();
+                  }
+                },
+                child: const Text('Tampilkan'),
               ),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formState.currentState!.validate()) {
+                    _formState.currentState!.save();
+                    _downloadReport();
+                  }
+                },
+                child: const Text('Download'),
+              ),
+            ],
+          ),
+          const Divider(),
+          SizedBox(
+            height: tableHeight,
+            child: SyncDataTable<SalesGroupBySupplier>(
+              showSummary: true,
+              showFilter: false,
+              columns: _tableColumns,
+              onLoaded: (stateManager) => _source = stateManager,
+              fixedLeftColumns: _groupKeys.length,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -30,8 +30,6 @@ enum PaymentProviderStatus {
         return 'Tidak Aktif';
       case active:
         return 'Aktif';
-      default:
-        throw 'not valid payslip status';
     }
   }
 }
