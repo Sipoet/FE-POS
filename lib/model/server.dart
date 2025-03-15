@@ -80,10 +80,13 @@ class Server extends ChangeNotifier {
     }
   }
 
-  Future upload(String path, XFile file) async {
-    String fileName = file.path.split('/').last;
-    FormData formData = FormData.fromMap({
-      "file": await MultipartFile.fromFile(file.path, filename: fileName),
+  Future upload(String path,
+      {List<int>? bytes, String? filename, XFile? file}) async {
+    FormData formData;
+    formData = FormData.fromMap({
+      "file": bytes != null
+          ? MultipartFile.fromBytes(bytes, filename: filename)
+          : await MultipartFile.fromFile(file!.path, filename: filename),
     });
     Uri url = generateUrl(path, {});
     return dio.postUri(url,
