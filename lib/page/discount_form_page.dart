@@ -49,7 +49,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   Percentage? discount3;
   Percentage? discount4;
 
-  late List<TableColumn> _columns = [];
+  late final List<TableColumn> _columns = [];
   late FocusNode _focusNode;
   final _whitelistColumns = [
     'item_code',

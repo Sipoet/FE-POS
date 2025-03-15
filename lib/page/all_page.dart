@@ -1,4 +1,4 @@
-library all_page;
+library;
 
 export 'testing_page.dart';
 

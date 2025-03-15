@@ -401,7 +401,6 @@ class _SyncDataTable2State<T extends Model> extends State<SyncDataTable2<T>>
 }
 
 mixin PlutoTableDecorator {
-  final String _formatPercentage = '';
   final String _formatNumber = '#,###.#';
   final String _locale = 'id_ID';
   PlutoColumnType _parseColumnType(TableColumn tableColumn,
