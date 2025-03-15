@@ -1,9 +1,11 @@
 import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/payslip.dart';
+import 'package:fe_pos/page/payslip_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
@@ -38,8 +40,10 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
   void initState() {
     _server = context.read<Server>();
     _setting = context.read<Setting>();
+    final tabManager = context.read<TabManager>();
     flash = Flash();
-    _source = GeneratePayslipDatatableSource(setting: _setting);
+    _source = GeneratePayslipDatatableSource(
+        tabManager: tabManager, setting: _setting);
     super.initState();
     Future.delayed(Duration.zero, () => _focusNode.requestFocus());
   }
@@ -254,11 +258,13 @@ class GeneratePayslipDatatableSource extends DataTableSource
   List<Payslip> rows = [];
   List selected = [];
   List status = [];
+  TabManager tabManager;
   final Setting setting;
   bool isAscending = true;
   int sortColumn = 0;
 
-  GeneratePayslipDatatableSource({required this.setting});
+  GeneratePayslipDatatableSource(
+      {required this.setting, required this.tabManager});
 
   void setData(data) {
     rows = data;
@@ -291,12 +297,19 @@ class GeneratePayslipDatatableSource extends DataTableSource
   List<DataCell> decoratePayslip(int index) {
     final payslip = rows[index];
     return <DataCell>[
-      DataCell(SelectableText(payslip.employee.name)),
+      DataCell(
+          onTap: () => _openPayslipForm(payslip),
+          SelectableText(payslip.employee.name)),
       DataCell(SelectableText(dateFormat(payslip.startDate))),
       DataCell(SelectableText(dateFormat(payslip.endDate))),
       DataCell(SelectableText(numberFormat(payslip.grossSalary))),
       DataCell(SelectableText(numberFormat(payslip.nettSalary))),
     ];
+  }
+
+  void _openPayslipForm(Payslip payslip) {
+    tabManager.addTab('Edit SLip Gaji ${payslip.id}',
+        PayslipFormPage(key: ObjectKey(payslip), payslip: payslip));
   }
 
   @override

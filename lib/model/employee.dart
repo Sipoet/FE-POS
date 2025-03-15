@@ -225,5 +225,8 @@ class Employee extends Model {
         'bank_register_name': bankRegisterName,
       };
 
-  void updateAttributes() {}
+  @override
+  String toString() {
+    return "$code - $name";
+  }
 }

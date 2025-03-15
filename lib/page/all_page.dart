@@ -31,6 +31,7 @@ export 'employee_attendance_page.dart';
 export 'employee_leave_page.dart';
 export 'employee_page.dart';
 export 'holiday_page.dart';
+export 'book_payslip_line_page.dart';
 
 // sale
 export 'cashier_session_page.dart';
