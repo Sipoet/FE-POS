@@ -230,12 +230,20 @@ class _EmployeeAttendanceMassUploadPageState
     if (result == null) {
       return;
     }
-    var file = result.files.first;
+    Future<dynamic> request;
+    if (isWeb()) {
+      final file = result.files.first;
+      request = _server.upload('employee_attendances/mass_upload',
+          bytes: file.bytes!.toList(), filename: file.name);
+    } else {
+      final file = result.xFiles.first;
+      request = _server.upload('employee_attendances/mass_upload',
+          file: file, filename: file.name);
+    }
+
     showLoadingPopup();
-    _server
-        .upload('employee_attendances/mass_upload',
-            bytes: file.bytes!.toList(), filename: file.name)
-        .then((response) {
+
+    request.then((response) {
       if (response.statusCode == 201) {
         final responseBody = response.data['data'] as List;
         setState(() {
