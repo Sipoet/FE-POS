@@ -5,6 +5,11 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+dependencies {
+    implementation("com.google.errorprone:error_prone_annotations:2.36.0") // required by flutter_secure_storage
+    implementation("com.github.spotbugs:spotbugs-annotations:4.9.2") // required by flutter_secure_storage
+}
+
 android {
     namespace = "com.allegra.fe_pos"
     compileSdk = flutter.compileSdkVersion
