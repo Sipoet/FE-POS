@@ -1,4 +1,4 @@
-library dropdown_remote_multiple_menu;
+library;
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:fe_pos/model/server.dart';

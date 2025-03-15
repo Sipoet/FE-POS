@@ -40,8 +40,6 @@ enum PayslipStatus {
         return 'terbayar';
       case cancelled:
         return 'dibatalkan';
-      default:
-        throw 'not valid payslip status';
     }
   }
 }

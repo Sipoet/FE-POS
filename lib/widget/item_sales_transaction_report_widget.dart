@@ -213,7 +213,7 @@ class _ItemSalesTransactionReportWidgetState
               width: width,
               child: Table(
                   border: TableBorder.all(
-                    color: Colors.grey.shade400.withOpacity(0.5),
+                    color: Colors.grey.shade400.withValues(alpha: 0.5),
                   ),
                   columnWidths: const {
                     0: FixedColumnWidth(50),

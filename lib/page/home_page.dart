@@ -131,7 +131,6 @@ class _HomePageState extends State<HomePage>
         startDate = Date.today().beginningOfWeek();
         endDate = Date.today().endOfWeek();
         break;
-      default:
     }
     server.get('sales/transaction_report', queryParam: {
       'start_time': startDate.toDateTime().toIso8601String(),

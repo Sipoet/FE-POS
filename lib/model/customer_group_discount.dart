@@ -20,8 +20,6 @@ enum CustomerGroupDiscountPeriodType {
         return 'day_of_week';
       case weekOfMonth:
         return 'week_of_month';
-      default:
-        return '';
     }
   }
 
@@ -50,8 +48,6 @@ enum CustomerGroupDiscountPeriodType {
         return 'Mingguan';
       case weekOfMonth:
         return 'Minggu dalam Bulan';
-      default:
-        return '';
     }
   }
 }

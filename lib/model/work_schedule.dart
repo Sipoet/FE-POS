@@ -21,8 +21,6 @@ enum ActiveWeekWorkSchedule {
         return 'first_week_of_month';
       case lastWeekOfMonth:
         return 'last_week_of_month';
-      default:
-        return super.toString();
     }
   }
 
@@ -55,8 +53,6 @@ enum ActiveWeekWorkSchedule {
         return 'Minggu Pertama per bulan';
       case lastWeekOfMonth:
         return 'Minggu terakhir per bulan';
-      default:
-        return '';
     }
   }
 }

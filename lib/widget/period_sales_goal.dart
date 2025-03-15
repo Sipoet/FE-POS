@@ -20,8 +20,6 @@ enum Period {
         return 'Mingguan';
       case year:
         return 'Tahunan';
-      default:
-        return '';
     }
   }
 }
@@ -49,8 +47,6 @@ class PeriodSalesGoal extends StatelessWidget with TextFormatter {
         return today.beginningOfWeek();
       case Period.day:
         return today;
-      default:
-        throw "not supported";
     }
   }
 
@@ -65,8 +61,6 @@ class PeriodSalesGoal extends StatelessWidget with TextFormatter {
         return today.endOfWeek();
       case Period.day:
         return today;
-      default:
-        throw "not supported";
     }
   }
 

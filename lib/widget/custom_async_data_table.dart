@@ -84,7 +84,7 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
           border: Border.all(width: 2, color: colorScheme.outline)),
       controller: _paginatorController,
       border: TableBorder.all(
-          width: 1, color: colorScheme.outline.withOpacity(0.5)),
+          width: 1, color: colorScheme.outline.withValues(alpha: 0.5)),
       empty: const Text('Data tidak ditemukan'),
       columns: (columns).map<DataColumn2>((tableColumn) {
             return DataColumn2(
@@ -162,7 +162,7 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
       availableRowsPerPage: const [10, 20, 50, 100],
       headingRowColor:
           WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        return colorScheme.secondaryContainer.withOpacity(0.08);
+        return colorScheme.secondaryContainer.withValues(alpha: 0.08);
       }),
     );
   }
