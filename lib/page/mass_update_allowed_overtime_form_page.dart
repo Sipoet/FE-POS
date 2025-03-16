@@ -29,16 +29,15 @@ class _MassUpdateAllowedOvertimeFormPageState
   DateTime _dateTime = DateTime.now();
   bool _allowOvertime = true;
   int? _shift;
-  late final SyncDataTableSource<EmployeeAttendance> _source;
+  late final PlutoGridStateManager _source;
   late final Flash flash;
+  late final Setting setting;
 
   @override
   void initState() {
     _server = context.read<Server>();
     flash = Flash();
-    final setting = context.read<Setting>();
-    _source = SyncDataTableSource<EmployeeAttendance>(
-        columns: setting.tableColumn('employeeAttendance'));
+    setting = context.read<Setting>();
     super.initState();
     Future.delayed(Duration.zero, () => _focusNode.requestFocus());
   }
@@ -136,11 +135,12 @@ class _MassUpdateAllowedOvertimeFormPageState
                           },
                           child: const Text('submit')),
                     ),
-                    Visibility(
-                        visible: _source.sortedData.isNotEmpty,
-                        child: SizedBox(
-                            height: 600,
-                            child: SyncDataTable(controller: _source)))
+                    SizedBox(
+                        height: 600,
+                        child: SyncDataTable<EmployeeAttendance>(
+                          columns: setting.tableColumn('employeeAttendance'),
+                          onLoaded: (stateManager) => _source = stateManager,
+                        ))
                   ],
                 ),
               ),
@@ -150,6 +150,7 @@ class _MassUpdateAllowedOvertimeFormPageState
   }
 
   void _submit() async {
+    _source.setShowLoading(true);
     Map body = {
       'employee_ids': _employees.map((e) => e.id).toList(),
       'shift': _shift,
@@ -171,7 +172,8 @@ class _MassUpdateAllowedOvertimeFormPageState
                 included: json['included'] ?? []))
             .toList();
         setState(() {
-          _source.setData(employeeAttendances);
+          _source.setModels(
+              employeeAttendances, setting.tableColumn('employeeAttendance'));
         });
       } else {
         final flash = Flash();
@@ -182,6 +184,6 @@ class _MassUpdateAllowedOvertimeFormPageState
       }
     }, onError: (error) {
       defaultErrorResponse(error: error);
-    });
+    }).whenComplete(() => _source.setShowLoading(false));
   }
 }

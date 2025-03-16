@@ -1188,7 +1188,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                 ),
                                 SizedBox(
                                   height: 550,
-                                  child: SyncDataTable2<ItemReport>(
+                                  child: SyncDataTable<ItemReport>(
                                     columns: _columns,
                                     fixedLeftColumns: 2,
                                     onLoaded: (stateManager) =>

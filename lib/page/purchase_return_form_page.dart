@@ -33,7 +33,8 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
   PurchaseReturn get purchaseReturn => widget.purchaseReturn;
   late final Server _server;
   late final Setting setting;
-  late final SyncDataTableSource<PurchaseReturnItem> _source;
+  late final PlutoGridStateManager _source;
+  late final List<TableColumn> _columns;
   @override
   bool get wantKeepAlive => true;
   @override
@@ -41,11 +42,7 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
     flash = Flash();
     setting = context.read<Setting>();
     _server = context.read<Server>();
-
-    _source = SyncDataTableSource<PurchaseReturnItem>(
-        columns: setting.tableColumn('ipos::PurchaseReturnItem'),
-        sortColumn: setting.tableColumn('ipos::PurchaseReturnItem')[1]);
-
+    _columns = setting.tableColumn('ipos::PurchaseReturnItem');
     if (purchaseReturn.id != null) {
       Future.delayed(Duration.zero, () => fetchPurchaseReturn());
     }
@@ -63,7 +60,7 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
         setState(() {
           PurchaseReturn.fromJson(response.data['data'],
               included: response.data['included'], model: purchaseReturn);
-          _source.setData(purchaseReturn.purchaseItems);
+          _source.setModels(purchaseReturn.purchaseItems, _columns);
         });
       }
     }, onError: (error) {
@@ -428,8 +425,9 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
                 ),
                 SizedBox(
                   height: 500,
-                  child: SyncDataTable(
-                    controller: _source,
+                  child: SyncDataTable<PurchaseReturnItem>(
+                    columns: _columns,
+                    onLoaded: (stateManager) => _source = stateManager,
                   ),
                 ),
               ],

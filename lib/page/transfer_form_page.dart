@@ -33,7 +33,8 @@ class _TransferFormPageState extends State<TransferFormPage>
   Transfer get transfer => widget.transfer;
   late final Server _server;
   late final Setting setting;
-  late final SyncDataTableSource<TransferItem> _source;
+  late final PlutoGridStateManager _source;
+  late final List<TableColumn> _columns;
   @override
   bool get wantKeepAlive => true;
   @override
@@ -41,10 +42,7 @@ class _TransferFormPageState extends State<TransferFormPage>
     flash = Flash();
     setting = context.read<Setting>();
     _server = context.read<Server>();
-
-    _source = SyncDataTableSource<TransferItem>(
-        columns: setting.tableColumn('ipos::TransferItem'),
-        sortColumn: setting.tableColumn('ipos::TransferItem')[1]);
+    _columns = setting.tableColumn('ipos::TransferItem');
 
     if (transfer.id != null) {
       Future.delayed(Duration.zero, () => fetchTransfer());
@@ -63,7 +61,7 @@ class _TransferFormPageState extends State<TransferFormPage>
         setState(() {
           Transfer.fromJson(response.data['data'],
               included: response.data['included'], model: transfer);
-          _source.setData(transfer.transferItems);
+          _source.setModels(transfer.transferItems, _columns);
         });
       }
     }, onError: (error) {
@@ -245,8 +243,9 @@ class _TransferFormPageState extends State<TransferFormPage>
                   ),
                   SizedBox(
                     height: 500,
-                    child: SyncDataTable(
-                      controller: _source,
+                    child: SyncDataTable<TransferItem>(
+                      columns: _columns,
+                      onLoaded: (stateManager) => _source = stateManager,
                     ),
                   ),
                 ],

@@ -3,12 +3,23 @@ import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 export 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
-import 'package:fe_pos/widget/custom_async_data_table.dart';
+import 'package:pluto_grid/pluto_grid.dart';
 
 extension ComparingTimeOfDay on TimeOfDay {
   int compareTo(TimeOfDay val2) {
     return toString().compareTo(val2.toString());
   }
+}
+
+enum TableColumnType {
+  number,
+  percentage,
+  money,
+  enums,
+  boolean,
+  date,
+  datetime,
+  text;
 }
 
 class TableColumn {
@@ -130,4 +141,276 @@ mixin TableDecorator<T extends Model> implements TextFormatter {
     }
     return rows;
   }
+}
+
+mixin PlutoTableDecorator {
+  final String _formatPercentage = '';
+  final String _formatNumber = '#,###.#';
+  final String _locale = 'id_ID';
+  PlutoColumnType _parseColumnType(TableColumn tableColumn,
+      {List<Enum>? listEnumValues}) {
+    switch (tableColumn.type) {
+      case 'string':
+        return PlutoColumnType.text();
+      case 'date':
+        return PlutoColumnType.date(format: 'dd/MM/yyyy');
+      case 'datetime':
+        return PlutoColumnType.date(format: 'dd/MM/yyyy HH::mm');
+      case 'time':
+        return PlutoColumnType.time();
+      case 'money':
+        return PlutoColumnType.currency(
+            locale: _locale,
+            // format: _formatNumber,
+            symbol: 'Rp',
+            decimalDigits: 2);
+      case 'enum':
+        return PlutoColumnType.select(
+            listEnumValues ?? tableColumn.options['enums'] ?? []);
+      case 'percentage':
+      case 'decimal':
+      case 'integer':
+      case 'double':
+      case 'float':
+        return PlutoColumnType.number(locale: _locale, format: _formatNumber);
+      case 'boolean':
+        return PlutoColumnType.select([true, false]);
+      default:
+        return PlutoColumnType.text();
+    }
+  }
+
+  PlutoRow decorateRow(
+      {required Model data,
+      required List<TableColumn> tableColumns,
+      bool isChecked = false}) {
+    final rowMap = data.toMap();
+    Map<String, PlutoCell> cells = {};
+    for (final tableColumn in tableColumns) {
+      var value = rowMap[tableColumn.name];
+      if (tableColumn.renderValue != null) {
+        value = tableColumn.renderValue!(rowMap);
+      }
+      if (value is Money) {
+        value = value.value;
+      } else if (value is Percentage) {
+        value = value.value * 100;
+      }
+      cells[tableColumn.name] = PlutoCell(value: value);
+    }
+
+    return PlutoRow(
+        cells: cells, checked: isChecked, type: PlutoRowType.normal());
+  }
+
+  static const _labelStyle = TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.bold,
+      color: Color.fromRGBO(56, 142, 60, 1));
+  static const _footerStyle = TextStyle(fontWeight: FontWeight.bold);
+
+  PlutoColumn decorateColumn(TableColumn tableColumn,
+      {List<Enum>? listEnumValues,
+      bool showFilter = false,
+      bool showCheckboxColumn = false,
+      bool isFrozen = false}) {
+    final columnType =
+        _parseColumnType(tableColumn, listEnumValues: listEnumValues);
+    bool showFooter = [
+      'money',
+      'decimal',
+      'integer',
+      'float',
+      'double',
+      'percentage',
+    ].contains(tableColumn.type);
+    final isCurrency = tableColumn.type == 'money';
+    final format = _formatNumber;
+
+    return PlutoColumn(
+      readOnly: true,
+      enableSorting: tableColumn.canSort,
+      enableEditingMode: false,
+      textAlign:
+          showFooter ? PlutoColumnTextAlign.right : PlutoColumnTextAlign.left,
+      title: tableColumn.humanizeName,
+      field: tableColumn.name,
+      minWidth: 50 < tableColumn.clientWidth ? 50 : tableColumn.clientWidth,
+      width: tableColumn.clientWidth,
+      type: columnType,
+      frozen: isFrozen ? PlutoColumnFrozen.start : PlutoColumnFrozen.none,
+      enableRowChecked: showCheckboxColumn,
+      enableFilterMenuItem: showFilter,
+      footerRenderer: showFooter
+          ? (rendererContext) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Visibility(
+                    visible: tableColumn.type != 'percentage',
+                    child: PlutoAggregateColumnFooter(
+                      padding: const EdgeInsets.only(top: 5.0),
+                      rendererContext: rendererContext,
+                      formatAsCurrency: isCurrency,
+                      type: PlutoAggregateColumnType.sum,
+                      format: format,
+                      locale: _locale,
+                      alignment: Alignment.topLeft,
+                      titleSpanBuilder: (text) {
+                        return [
+                          const WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: Tooltip(
+                              message: 'Total Penjumlahan',
+                              child: Text(
+                                'SUM',
+                                style: _labelStyle,
+                              ),
+                            ),
+                          ),
+                          const TextSpan(text: ' : '),
+                          TextSpan(text: text, style: _footerStyle),
+                        ];
+                      },
+                    ),
+                  ),
+                  PlutoAggregateColumnFooter(
+                    padding: const EdgeInsets.only(top: 5.0),
+                    rendererContext: rendererContext,
+                    formatAsCurrency: isCurrency,
+                    type: PlutoAggregateColumnType.min,
+                    format: format,
+                    locale: _locale,
+                    alignment: Alignment.topLeft,
+                    titleSpanBuilder: (text) {
+                      return [
+                        const WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Tooltip(
+                            message: 'Minimum',
+                            child: Text(
+                              'MIN',
+                              style: _labelStyle,
+                            ),
+                          ),
+                        ),
+                        const TextSpan(text: '  : '),
+                        TextSpan(text: text, style: _footerStyle),
+                      ];
+                    },
+                  ),
+                  PlutoAggregateColumnFooter(
+                    padding: const EdgeInsets.only(top: 5.0),
+                    rendererContext: rendererContext,
+                    formatAsCurrency: isCurrency,
+                    type: PlutoAggregateColumnType.average,
+                    format: format,
+                    locale: _locale,
+                    alignment: Alignment.topLeft,
+                    titleSpanBuilder: (text) {
+                      return [
+                        const WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Tooltip(
+                            message: 'Rata-rata',
+                            child: Text(
+                              'AVG',
+                              style: _labelStyle,
+                            ),
+                          ),
+                        ),
+                        const TextSpan(text: '  : '),
+                        TextSpan(text: text, style: _footerStyle),
+                      ];
+                    },
+                  ),
+                  PlutoAggregateColumnFooter(
+                    padding: const EdgeInsets.only(top: 5.0),
+                    rendererContext: rendererContext,
+                    formatAsCurrency: isCurrency,
+                    type: PlutoAggregateColumnType.max,
+                    format: format,
+                    locale: _locale,
+                    alignment: Alignment.topLeft,
+                    titleSpanBuilder: (text) {
+                      return [
+                        const WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Tooltip(
+                            message: 'Maksimum',
+                            child: Text(
+                              'MAX',
+                              style: _labelStyle,
+                            ),
+                          ),
+                        ),
+                        const TextSpan(text: ' : '),
+                        TextSpan(text: text, style: _footerStyle),
+                      ];
+                    },
+                  ),
+                ],
+              );
+            }
+          : null,
+    );
+  }
+}
+
+class PlutoDeco with PlutoTableDecorator {}
+
+extension TableStateMananger on PlutoGridStateManager {
+  PlutoDeco get decorator => PlutoDeco();
+
+  void appendModel(model, List<TableColumn> tableColumns) {
+    appendRows(
+        [decorator.decorateRow(data: model, tableColumns: tableColumns)]);
+    notifyListeners();
+  }
+
+  void setModels(models, List<TableColumn> tableColumns) {
+    if (rows.isNotEmpty) {
+      removeAllRows();
+    }
+    final rowsTemp = models
+        .map<PlutoRow>((model) =>
+            decorator.decorateRow(data: model, tableColumns: tableColumns))
+        .toList();
+    appendRows(rowsTemp);
+    notifyListeners();
+  }
+
+  void setTableColumns(List<TableColumn> tableColumns,
+      {int fixedLeftColumns = 0, bool showFilter = false}) {
+    removeColumns(columns);
+    final newColumns = tableColumns.asMap().entries.map<PlutoColumn>((entry) {
+      int index = entry.key;
+      TableColumn tableColumn = entry.value;
+      return decorator.decorateColumn(
+        tableColumn,
+        showFilter: showFilter,
+        isFrozen: index < fixedLeftColumns,
+      );
+    }).toList();
+    insertColumns(0, newColumns);
+  }
+}
+
+class PlutoFilterTypeNot implements PlutoFilterType {
+  @override
+  String get title => 'Not equal';
+
+  @override
+  get compare => ({
+        required String? base,
+        required String? search,
+        required PlutoColumn? column,
+      }) {
+        var keys = search!.split(',').map((e) => e.toLowerCase()).toList();
+
+        return !keys.contains(base!.trim().toLowerCase());
+      };
+
+  const PlutoFilterTypeNot();
 }

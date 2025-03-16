@@ -193,7 +193,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
               const Divider(),
               SizedBox(
                 height: 500,
-                child: SyncDataTable2(
+                child: SyncDataTable(
                   columns: tableColumns,
                   showSummary: true,
                   onLoaded: (stateManager) => tableStateManager = stateManager,
