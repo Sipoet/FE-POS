@@ -15,18 +15,19 @@ class Setting extends ChangeNotifier {
   void setTableColumns(Map<String, dynamic> data) {
     for (final key in data.keys.toList()) {
       _tableColumns[key] = {};
-      for (Map row in data[key]) {
-        final columnKey = row['name'];
+      for (Map row in data[key]['data']) {
+        final columnKey = row['id'];
+        final attributes = row['attributes'];
         _tableColumns[key]![columnKey] = TableColumn(
-            name: row['name'],
-            attributeKey: row['attribute_key'],
-            path: row['path'],
-            humanizeName: row['humanize_name'],
-            type: row['type'],
-            clientWidth: double.tryParse(row['client_width'].toString()) ?? 175,
-            canFilter: row['can_filter'] ?? true,
-            canSort: row['can_sort'] ?? true,
-            excelWidth: double.tryParse(row['excel_width'].toString()));
+            name: attributes['name'],
+            humanizeName: attributes['humanize_name'],
+            type: attributes['type'],
+            inputOptions: attributes['input_options'],
+            clientWidth:
+                double.tryParse(attributes['client_width'].toString()) ?? 175,
+            canFilter: attributes['can_filter'] ?? true,
+            canSort: attributes['can_sort'] ?? true,
+            excelWidth: double.tryParse(attributes['excel_width'].toString()));
       }
     }
   }

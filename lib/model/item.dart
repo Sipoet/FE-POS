@@ -17,8 +17,9 @@ class Item extends Model {
   Supplier? supplier;
   ItemType itemType;
   Brand? brand;
-  Money hpp;
+  Money cogs;
   Money sellPrice;
+  String uom;
   Item(
       {this.code = '',
       this.name = '',
@@ -27,24 +28,26 @@ class Item extends Model {
       this.supplierCode,
       this.supplier,
       this.brand,
+      this.uom = '',
       Money? sellPrice,
-      Money? hpp,
+      Money? cogs,
       ItemType? itemType,
       super.id})
       : itemType = itemType ?? ItemType(),
-        hpp = hpp ?? const Money(0),
+        cogs = cogs ?? const Money(0),
         sellPrice = sellPrice ?? const Money(0);
 
   @override
   Map<String, dynamic> toMap() => {
-        'kodeitem': code,
-        'namaitem': name,
-        'supplier.nama': supplier?.name,
-        'supplier.kode': supplierCode,
-        'brand.merek': brandName,
-        'item_type.jenis': itemTypeName,
-        'hargajual1': sellPrice,
-        'hargapokok': hpp,
+        'code': code,
+        'name': name,
+        'supplier_name': supplier?.name,
+        'supplier_code': supplierCode,
+        'brand_name': brandName,
+        'item_type_name': itemTypeName,
+        'sell_price': sellPrice,
+        'cogs': cogs,
+        'uom': uom
       };
 
   @override
@@ -53,14 +56,15 @@ class Item extends Model {
     var attributes = json['attributes'];
     model ??= Item();
     model.id = json['id'];
-    model.code = attributes['kodeitem'];
-    model.name = attributes['namaitem'];
-    model.brandName = attributes['merek'];
-    model.itemTypeName = attributes['jenis'];
-    model.supplierCode = attributes['supplier1'];
-    model.hpp = Money.tryParse(attributes['hargapokok']) ?? model.hpp;
+    model.code = attributes['code'];
+    model.name = attributes['name'];
+    model.brandName = attributes['brand_name'] ?? '';
+    model.itemTypeName = attributes['item_type_name'] ?? '';
+    model.supplierCode = attributes['supplier_code'] ?? '';
+    model.cogs = Money.tryParse(attributes['cogs']) ?? model.cogs;
+    model.uom = attributes['uom'] ?? '';
     model.sellPrice =
-        Money.tryParse(attributes['hargajual1']) ?? model.sellPrice;
+        Money.tryParse(attributes['sell_price']) ?? model.sellPrice;
     model.supplier = Model.findRelationData<Supplier>(
         relation: json['relationships']['supplier'],
         included: included,

@@ -287,7 +287,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
   }
 
   Widget linkFilter(TableColumn column) {
-    final attributes = column.attributeKey.split('.');
+    final attributes = column.inputOptions['attribute_key']!.split('.');
     final attributeKey = attributes.length > 1 ? attributes[1] : 'name';
     return Container(
       width: 300,

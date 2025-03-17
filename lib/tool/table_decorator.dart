@@ -1,5 +1,7 @@
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
+import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
 export 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
@@ -31,10 +33,10 @@ class TableColumn {
   dynamic Function(Map<String, dynamic> model)? renderValue;
   String humanizeName;
   String? path;
-  String attributeKey;
+  String? attributeKey;
   bool canSort;
   bool canFilter;
-  Map<String, dynamic> options = {};
+  Map<String, dynamic> inputOptions = {};
 
   TableColumn(
       {this.initX = 0,
@@ -42,13 +44,14 @@ class TableColumn {
       this.excelWidth,
       this.path,
       this.renderValue,
-      this.options = const {},
-      required this.attributeKey,
+      Map<String, dynamic>? inputOptions,
+      this.attributeKey = '',
       this.type = 'string',
       this.canSort = true,
       this.canFilter = true,
       required this.name,
-      required this.humanizeName});
+      required this.humanizeName})
+      : inputOptions = inputOptions ?? const {};
 
   bool isNumeric() {
     return ['float', 'decimal', 'int', 'money', 'percentage'].contains(type);
@@ -147,6 +150,7 @@ mixin PlutoTableDecorator {
   final String _formatPercentage = '';
   final String _formatNumber = '#,###.#';
   final String _locale = 'id_ID';
+  late final Server server;
   PlutoColumnType _parseColumnType(TableColumn tableColumn,
       {List<Enum>? listEnumValues}) {
     switch (tableColumn.type) {
@@ -164,9 +168,12 @@ mixin PlutoTableDecorator {
             // format: _formatNumber,
             symbol: 'Rp',
             decimalDigits: 2);
+      case 'link':
+        return PlutoColumnTypeModelSelect(
+            inputOptions: tableColumn.inputOptions);
       case 'enum':
         return PlutoColumnType.select(
-            listEnumValues ?? tableColumn.options['enums'] ?? []);
+            listEnumValues ?? tableColumn.inputOptions['enums'] ?? []);
       case 'percentage':
       case 'decimal':
       case 'integer':
@@ -395,6 +402,11 @@ extension TableStateMananger on PlutoGridStateManager {
     }).toList();
     insertColumns(0, newColumns);
   }
+
+  void refreshTable() {
+    eventManager!.addEvent(PlutoGridChangeColumnSortEvent(
+        column: columns.first, oldSort: PlutoColumnSort.none));
+  }
 }
 
 class PlutoFilterTypeNot implements PlutoFilterType {
@@ -413,4 +425,50 @@ class PlutoFilterTypeNot implements PlutoFilterType {
       };
 
   const PlutoFilterTypeNot();
+}
+
+class PlutoColumnTypeModelSelect implements PlutoColumnType {
+  @override
+  final dynamic defaultValue;
+
+  @override
+  String get title => 'Select';
+
+  final Map<String, dynamic> inputOptions;
+
+  const PlutoColumnTypeModelSelect({
+    this.defaultValue,
+    required this.inputOptions,
+  });
+
+  @override
+  bool isValid(dynamic value) => value != null;
+
+  @override
+  int compare(dynamic a, dynamic b) {
+    return _compareWithNull(a, b, () {
+      return a.compareTo(b);
+    });
+  }
+
+  @override
+  dynamic makeCompareValue(dynamic v) {
+    return v;
+  }
+
+  int _compareWithNull(
+    dynamic a,
+    dynamic b,
+    int Function() resolve,
+  ) {
+    if (a == null || b == null) {
+      return a == b
+          ? 0
+          : a == null
+              ? -1
+              : 1;
+    }
+
+    return resolve();
+  }
 }

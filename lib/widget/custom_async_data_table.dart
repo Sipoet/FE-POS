@@ -1,10 +1,12 @@
 import 'package:data_table_2/data_table_2.dart';
+import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 
 import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/tool/table_decorator.dart';
 import 'package:pluto_grid/pluto_grid.dart';
+import 'package:provider/provider.dart';
 export 'package:pluto_grid/pluto_grid.dart';
 
 class CustomAsyncDataTable extends StatefulWidget {
@@ -262,7 +264,7 @@ typedef OnSelectedCallback = void Function(PlutoGridOnSelectedEvent event);
 typedef OnRowDoubleTapCallback = void Function(
     PlutoGridOnRowDoubleTapEvent event);
 
-class CustomASyncDataTable2<T extends Model> extends StatefulWidget {
+class CustomAsyncDataTable2<T extends Model> extends StatefulWidget {
   final int fixedLeftColumns;
   final List<Widget>? actions;
   final Widget? header;
@@ -278,7 +280,7 @@ class CustomASyncDataTable2<T extends Model> extends StatefulWidget {
   final bool showFilter;
   final String primaryKey;
 
-  const CustomASyncDataTable2({
+  const CustomAsyncDataTable2({
     super.key,
     required this.fetchData,
     this.actions,
@@ -297,18 +299,19 @@ class CustomASyncDataTable2<T extends Model> extends StatefulWidget {
   }) : columns = columns ?? const [];
 
   @override
-  State<CustomASyncDataTable2<T>> createState() =>
-      _CustomASyncDataTable2State<T>();
+  State<CustomAsyncDataTable2<T>> createState() =>
+      _CustomAsyncDataTable2State<T>();
 }
 
-class _CustomASyncDataTable2State<T extends Model>
-    extends State<CustomASyncDataTable2<T>> with PlutoTableDecorator {
+class _CustomAsyncDataTable2State<T extends Model>
+    extends State<CustomAsyncDataTable2<T>> with PlutoTableDecorator {
   late List<PlutoColumn> columns;
   late final PlutoGridStateManager _source;
   List selectedValues = [];
 
   @override
   void initState() {
+    server = context.read<Server>();
     columns = widget.columns.asMap().entries.map<PlutoColumn>((entry) {
       int index = entry.key;
       TableColumn tableColumn = entry.value;
