@@ -4,6 +4,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_sortable_wrap/flutter_sortable_wrap.dart';
 import 'package:provider/provider.dart';
 export 'package:fe_pos/model/server.dart';
 
@@ -74,11 +75,12 @@ class _AsyncDropdownMultipleState<T extends Object>
       label: 'Data tidak Ditemukan', value: '', enabled: false);
   late final Server server;
   CancelToken _cancelToken = CancelToken();
-
+  late final String Function(T) textFormat;
   @override
   void initState() {
     server = context.read<Server>();
     _focusNode = widget.focusNode ?? FocusNode();
+    textFormat = widget.textOnSelected ?? widget.textOnSearch;
     super.initState();
   }
 
@@ -135,72 +137,64 @@ class _AsyncDropdownMultipleState<T extends Object>
       suffixProps: const DropdownSuffixProps(
           clearButtonProps: ClearButtonProps(isVisible: true)),
       dropdownBuilder: (context, selectedItems) {
-        final textFormat = widget.textOnSelected ?? widget.textOnSearch;
-        final lengthItems = selectedItems.length <= widget.selectedDisplayLimit
-            ? selectedItems.length
-            : widget.selectedDisplayLimit + 1;
-
-        return Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: List<Widget>.generate(lengthItems, (index) {
-            if (index == widget.selectedDisplayLimit) {
-              return const Text('.....');
-            }
-            final selectedItem = selectedItems[index];
-            final pillWidget = Container(
-              padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 5),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: const BorderRadius.all(Radius.elliptical(10, 10)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                      child: Text(
-                    textFormat(selectedItem),
-                    style: const TextStyle(
-                        decoration: TextDecoration.none,
-                        fontSize: 14,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black),
-                  )),
-                  IconButton(
-                      onPressed: () {
-                        setState(() {
-                          selectedItems.remove(selectedItem);
-                          if (widget.onChanged != null) {
-                            widget.onChanged!(selectedItems);
-                          }
-                        });
-                      },
-                      icon: const Icon(Icons.close_rounded))
-                ],
-              ),
-            );
-            return Draggable<T>(
-              data: selectedItem,
-              childWhenDragging: const SizedBox(
-                width: 10,
-              ),
-              feedback: pillWidget,
-              child: DragTarget<T>(builder: (
-                BuildContext context,
-                List<dynamic> accepted,
-                List<dynamic> rejected,
-              ) {
-                return pillWidget;
-              }, onAcceptWithDetails: (DragTargetDetails<T> details) {
-                setState(() {
-                  final index = selectedItems.indexOf(selectedItem);
-                  selectedItems.removeAt(selectedItems.indexOf(details.data));
-                  selectedItems.insert(index, details.data);
-                });
-              }),
-            );
-          }).toList(),
-        );
+        Widget moreWidget = selectedItems.length > widget.selectedDisplayLimit
+            ? IgnorePointer(
+                ignoring: true,
+                child: Text(
+                  '.....',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              )
+            : IgnorePointer(ignoring: true, child: SizedBox());
+        return SortableWrap(
+            onSorted: (int oldIndex, int newIndex) {
+              setState(() {
+                var item = selectedItems[oldIndex];
+                selectedItems.removeAt(oldIndex);
+                selectedItems.insert(newIndex, item);
+              });
+            },
+            spacing: 10,
+            runSpacing: 15,
+            children: List<Widget>.generate(
+                selectedItems.length > widget.selectedDisplayLimit
+                    ? widget.selectedDisplayLimit
+                    : selectedItems.length, (index) {
+              final item = selectedItems[index];
+              return Container(
+                padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 5),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  borderRadius:
+                      const BorderRadius.all(Radius.elliptical(10, 10)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                        child: Text(
+                      textFormat(item),
+                      style: const TextStyle(
+                          decoration: TextDecoration.none,
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.black),
+                    )),
+                    IconButton(
+                        onPressed: () {
+                          setState(() {
+                            selectedItems.remove(item);
+                            if (widget.onChanged != null) {
+                              widget.onChanged!(selectedItems);
+                            }
+                          });
+                        },
+                        icon: const Icon(Icons.close_rounded))
+                  ],
+                ),
+              );
+            })
+              ..add(moreWidget));
       },
       popupProps: PopupPropsMultiSelection.menu(
         searchDelay: widget.delayedSearch,
@@ -225,8 +219,6 @@ class _AsyncDropdownMultipleState<T extends Object>
 
   Future<List<T>> getData(String filter, LoadProps? prop) async {
     int page = (prop!.skip / widget.recordLimit).round() + 1;
-    debugPrint(
-        'take ${prop?.take.toString()}, skip ${prop?.skip.toString()}, page ${page.toString()}');
     var response = await request(server, page, filter, _cancelToken).onError(
         (error, stackTrace) =>
             {defaultErrorResponse(error: error, valueWhenError: [])});

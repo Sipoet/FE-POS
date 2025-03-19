@@ -339,6 +339,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
+  flutter_sortable_wrap:
+    dependency: "direct main"
+    description:
+      name: flutter_sortable_wrap
+      sha256: "1c53fe9c14863a7441ae1ca9e33181ca7779d6897dd73858006f8ce751e82222"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.5"
   flutter_test:
     dependency: "direct dev"
     description: flutter
