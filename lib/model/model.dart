@@ -5,8 +5,17 @@ abstract class Model {
   dynamic id;
   DateTime? createdAt;
   DateTime? updatedAt;
-  Model({this.createdAt, this.updatedAt, this.id});
+  Map rawData;
+  Model({this.createdAt, this.updatedAt, this.id, this.rawData = const {}});
   Map<String, dynamic> toMap();
+
+  Map<String, dynamic> asMap() {
+    Map<String, dynamic> value = toMap();
+    value['created_at'] = createdAt;
+    value['updated_at'] = updatedAt;
+    value['id'] = id;
+    return value;
+  }
 
   Map<String, dynamic> toJson() {
     var json = toMap();
@@ -24,11 +33,16 @@ abstract class Model {
     return json;
   }
 
+  dynamic operator [](key) {
+    return rawData[key];
+  }
+
   bool get isNewRecord => id == null;
 
   static void fromModel(Model model, Map attributes) {
     model.createdAt = DateTime.tryParse(attributes['created_at'] ?? '');
     model.updatedAt = DateTime.tryParse(attributes['updated_at'] ?? '');
+    model.rawData = attributes;
   }
 
   static T? findRelationData<T extends Model>(

@@ -148,7 +148,7 @@ class _HomePageState extends State<HomePage>
           .copyWith(hour: 6, minute: 59, second: 59, millisecond: 99)
           .toIso8601String()
     }).then((response) {
-      if (response.statusCode == 200) {
+      if (mounted && response.statusCode == 200) {
         var data = response.data['data'];
         final salesTransactionReport = SalesTransactionReport.fromJson(data);
         setState(() {

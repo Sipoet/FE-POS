@@ -1,4 +1,3 @@
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
@@ -431,7 +430,6 @@ class PlutoColumnTypeModelSelect implements PlutoColumnType {
   @override
   final dynamic defaultValue;
 
-  @override
   String get title => 'Select';
 
   final Map<String, dynamic> inputOptions;
