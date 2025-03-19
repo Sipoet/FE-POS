@@ -175,15 +175,15 @@ class _SalesGroupBySupplierReportPageState
               children: [
                 SizedBox(
                     width: 350,
-                    child: DropdownSearch.multiSelection(
-                      dropdownDecoratorProps: const DropDownDecoratorProps(
-                          dropdownSearchDecoration: InputDecoration(
+                    child: DropdownSearch<String>.multiSelection(
+                      decoratorProps: const DropDownDecoratorProps(
+                          decoration: InputDecoration(
                               border: OutlineInputBorder(),
                               label: Text(
                                 'Group Berdasarkan',
                                 style: _filterLabelStyle,
                               ))),
-                      items: groupList,
+                      items: (searchText, props) => groupList,
                       onChanged: (value) => _groupKeys = value,
                       validator: (value) {
                         if (value?.isEmpty ?? true) {

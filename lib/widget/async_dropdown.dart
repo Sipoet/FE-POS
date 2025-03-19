@@ -36,7 +36,7 @@ class AsyncDropdownMultiple<T extends Object> extends StatefulWidget {
       this.onSaved,
       this.focusNode,
       this.selectedDisplayLimit = 6,
-      this.recordLimit = 50,
+      this.recordLimit = 10,
       required this.textOnSearch,
       this.textOnSelected,
       this.compareValue,
@@ -117,7 +117,7 @@ class _AsyncDropdownMultipleState<T extends Object>
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
     return DropdownSearch<T>.multiSelection(
-      asyncItems: getData,
+      items: (a, b) => getData(a, b),
       onChanged: widget.onChanged,
       onSaved: widget.onSaved,
       validator: widget.validator,
@@ -132,7 +132,8 @@ class _AsyncDropdownMultipleState<T extends Object>
           return true;
         });
       },
-      clearButtonProps: const ClearButtonProps(isVisible: true),
+      suffixProps: const DropdownSuffixProps(
+          clearButtonProps: ClearButtonProps(isVisible: true)),
       dropdownBuilder: (context, selectedItems) {
         final textFormat = widget.textOnSelected ?? widget.textOnSearch;
         final lengthItems = selectedItems.length <= widget.selectedDisplayLimit
@@ -202,24 +203,31 @@ class _AsyncDropdownMultipleState<T extends Object>
         );
       },
       popupProps: PopupPropsMultiSelection.menu(
-          searchDelay: widget.delayedSearch,
-          searchFieldProps: TextFieldProps(
-            focusNode: _focusNode,
-          ),
-          onItemAdded: (selectedItems, addedItem) => _focusNode.requestFocus(),
-          showSearchBox: true,
-          showSelectedItems: true,
-          isFilterOnline: true),
-      dropdownDecoratorProps: DropDownDecoratorProps(
-          dropdownSearchDecoration: InputDecoration(
+        searchDelay: widget.delayedSearch,
+        searchFieldProps: TextFieldProps(
+          focusNode: _focusNode,
+        ),
+        onItemAdded: (selectedItems, addedItem) => _focusNode.requestFocus(),
+        showSearchBox: true,
+        showSelectedItems: true,
+        infiniteScrollProps: InfiniteScrollProps(
+          loadingMoreBuilder: (p0, loadedItems) => Text('Loading data'),
+          loadProps: LoadProps(skip: 0, take: widget.recordLimit),
+        ),
+      ),
+      decoratorProps: DropDownDecoratorProps(
+          decoration: InputDecoration(
         label: widget.label,
         border: const OutlineInputBorder(),
       )),
     );
   }
 
-  Future<List<T>> getData(String filter) async {
-    var response = await request(server, 1, filter, _cancelToken).onError(
+  Future<List<T>> getData(String filter, LoadProps? prop) async {
+    int page = (prop!.skip / widget.recordLimit).round() + 1;
+    debugPrint(
+        'take ${prop?.take.toString()}, skip ${prop?.skip.toString()}, page ${page.toString()}');
+    var response = await request(server, page, filter, _cancelToken).onError(
         (error, stackTrace) =>
             {defaultErrorResponse(error: error, valueWhenError: [])});
     if (response.statusCode == 200) {
@@ -253,7 +261,7 @@ class AsyncDropdown<T> extends StatefulWidget {
       this.onSaved,
       this.focusNode,
       this.selectedDisplayLimit = 6,
-      this.recordLimit = 50,
+      this.recordLimit = 10,
       required this.textOnSearch,
       this.textOnSelected,
       this.compareValue,
@@ -334,7 +342,7 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
   Widget build(BuildContext context) {
     final textFormat = widget.textOnSelected ?? widget.textOnSearch;
     return DropdownSearch<T>(
-      asyncItems: getData,
+      items: (a, b) => getData(a, b),
       onChanged: widget.onChanged,
       onSaved: widget.onSaved,
       validator: widget.validator,
@@ -349,30 +357,35 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
           return true;
         });
       },
-      clearButtonProps: ClearButtonProps(isVisible: widget.allowClear),
+      suffixProps: DropdownSuffixProps(
+          clearButtonProps: ClearButtonProps(isVisible: widget.allowClear)),
       dropdownBuilder: (context, selectedItem) {
         if (selectedItem == null) {
           return const SizedBox();
         }
         return SelectableText(textFormat(selectedItem));
       },
-      popupProps: PopupPropsMultiSelection.menu(
-          searchDelay: widget.delayedSearch,
-          searchFieldProps: TextFieldProps(focusNode: _focusNode),
-          onItemAdded: (selectedItems, addedItem) => _focusNode.requestFocus(),
-          showSearchBox: true,
-          showSelectedItems: true,
-          isFilterOnline: true),
-      dropdownDecoratorProps: DropDownDecoratorProps(
-          dropdownSearchDecoration: InputDecoration(
+      popupProps: PopupProps.menu(
+        searchDelay: widget.delayedSearch,
+        searchFieldProps: TextFieldProps(focusNode: _focusNode),
+        onItemsLoaded: (selectedItems) => _focusNode.requestFocus(),
+        showSearchBox: true,
+        showSelectedItems: true,
+        infiniteScrollProps: InfiniteScrollProps(
+          loadProps: LoadProps(skip: 0, take: widget.recordLimit),
+        ),
+      ),
+      decoratorProps: DropDownDecoratorProps(
+          decoration: InputDecoration(
         label: widget.label,
         border: const OutlineInputBorder(),
       )),
     );
   }
 
-  Future<List<T>> getData(String filter) async {
-    var response = await request(server, 1, filter, _cancelToken).onError(
+  Future<List<T>> getData(String filter, LoadProps? prop) async {
+    int page = (prop!.skip / widget.recordLimit).round() + 1;
+    var response = await request(server, page, filter, _cancelToken).onError(
         (error, stackTrace) =>
             {defaultErrorResponse(error: error, valueWhenError: [])});
     if (response.statusCode == 200) {
