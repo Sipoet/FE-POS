@@ -19,6 +19,7 @@ class Item extends Model {
   Brand? brand;
   Money cogs;
   Money sellPrice;
+  String? description;
   String uom;
   Item(
       {this.code = '',
@@ -27,6 +28,7 @@ class Item extends Model {
       this.brandName,
       this.supplierCode,
       this.supplier,
+      this.description,
       this.brand,
       this.uom = '',
       Money? sellPrice,
@@ -58,6 +60,7 @@ class Item extends Model {
     model.id = json['id'];
     model.code = attributes['code'];
     model.name = attributes['name'];
+    model.description = attributes['description'];
     model.brandName = attributes['brand_name'] ?? '';
     model.itemTypeName = attributes['item_type_name'] ?? '';
     model.supplierCode = attributes['supplier_code'] ?? '';

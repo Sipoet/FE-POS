@@ -7,7 +7,7 @@ import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/desktop_layout.dart';
 import 'package:fe_pos/widget/mobile_layout.dart';
 import 'package:flutter/material.dart';
-import 'package:fe_pos/page/all_page.dart';
+import 'package:fe_pos/page/menu_page.dart';
 import 'package:fe_pos/page/home_page.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/model/menu.dart';
