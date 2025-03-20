@@ -3,7 +3,6 @@ import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
-import 'package:fe_pos/widget/table_filter_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
@@ -16,24 +15,20 @@ class BrandPage extends StatefulWidget {
 }
 
 class _BrandPageState extends State<BrandPage> with DefaultResponse {
-  late final CustomAsyncDataTableSource _source;
+  late final PlutoGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<Brand> brands = [];
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
-  Map _filter = {};
 
   @override
   void initState() {
     server = context.read<Server>();
     flash = Flash();
     setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<Brand>(
-      columns: setting.tableColumn('ipos::Brand'),
-      fetchData: fetchBrands,
-    );
+
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
@@ -45,23 +40,26 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<Brand>> fetchBrands(
+  Future<DataTableResponse<Brand>> fetchBrands(
       {int page = 1,
-      int limit = 100,
-      bool isAscending = false,
-      TableColumn? sortColumn}) {
-    String orderKey = sortColumn?.name ?? 'merek';
+      int limit = 20,
+      List<SortData> sorts = const [],
+      Map filter = const {}}) {
+    var sort = sorts.isEmpty ? null : sorts.first;
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
       'page[limit]': limit.toString(),
-      'include': 'employee',
-      'sort': '${isAscending ? '' : '-'}$orderKey',
+      'sort': sort == null
+          ? ''
+          : sort.isAscending
+              ? sort.key
+              : "-${sort.key}",
     };
-    _filter.forEach((key, value) {
+    filter.forEach((key, value) {
       param[key] = value;
     });
     try {
@@ -79,9 +77,8 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
                 Brand.fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         brands.addAll(models);
-        final totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<Brand>(totalRows: totalRows, models: models);
+        final totalPage = responseBody['meta']?['total_pages'] ?? 1;
+        return DataTableResponse<Brand>(totalPage: totalPage, models: models);
       },
           onError: (error, stackTrace) =>
               defaultErrorResponse(error: error, valueWhenError: []));
@@ -90,7 +87,7 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
           title: e.toString(),
           description: trace.toString(),
           messageType: ToastificationType.error);
-      return Future(() => ResponseResult<Brand>(totalRows: 0, models: []));
+      return Future(() => DataTableResponse<Brand>(totalPage: 0, models: []));
     }
   }
 
@@ -145,13 +142,6 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
         padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
-            TableFilterForm(
-              columns: _source.columns,
-              onSubmit: (value) {
-                _filter = value;
-                refreshTable();
-              },
-            ),
             Padding(
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(
@@ -181,8 +171,13 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
             ),
             SizedBox(
               height: 600,
-              child: CustomAsyncDataTable(
-                controller: _source,
+              child: CustomAsyncDataTable2<Brand>(
+                onLoaded: (stateManager) => _source = stateManager,
+                columns: setting.tableColumn('ipos::Brand'),
+                fetchData: (request) => fetchBrands(
+                    page: request.page,
+                    filter: request.filter,
+                    sorts: request.sorts),
                 fixedLeftColumns: 0,
               ),
             ),

@@ -3,7 +3,6 @@ import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
-import 'package:fe_pos/widget/table_filter_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
@@ -16,22 +15,18 @@ class SupplierPage extends StatefulWidget {
 }
 
 class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
-  late final CustomAsyncDataTableSource<Supplier> _source;
+  late final PlutoGridStateManager _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
-  Map _filter = {};
 
   @override
   void initState() {
     server = context.read<Server>();
     flash = Flash();
     setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<Supplier>(
-        columns: setting.tableColumn('ipos::Supplier'),
-        fetchData: fetchSuppliers);
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
@@ -43,22 +38,26 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDatasource();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<Supplier>> fetchSuppliers(
+  Future<DataTableResponse<Supplier>> fetchSuppliers(
       {int page = 1,
       int limit = 100,
-      TableColumn? sortColumn,
-      bool isAscending = true}) {
-    String orderKey = sortColumn?.name ?? 'kode';
+      List<SortData> sorts = const [],
+      Map filter = const {}}) {
+    var sort = sorts.isEmpty ? null : sorts.first;
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
       'page[limit]': limit.toString(),
-      'sort': '${isAscending ? '' : '-'}$orderKey',
+      'sort': sort == null
+          ? ''
+          : sort.isAscending
+              ? sort.key
+              : "-${sort.key}",
     };
-    _filter.forEach((key, value) {
+    filter.forEach((key, value) {
       param[key] = value;
     });
     try {
@@ -76,9 +75,9 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
             .map<Supplier>((json) => Supplier.fromJson(json,
                 included: responseBody['included'] ?? []))
             .toList();
-        final totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<Supplier>(models: models, totalRows: totalRows);
+        final totalPage = responseBody['meta']?['total_pages'] ?? 1;
+        return DataTableResponse<Supplier>(
+            models: models, totalPage: totalPage);
       },
               onError: (error, stackTrace) =>
                   defaultErrorResponse(error: error, valueWhenError: []));
@@ -87,7 +86,7 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
           title: e.toString(),
           description: trace.toString(),
           messageType: ToastificationType.error);
-      return Future(() => ResponseResult<Supplier>(models: []));
+      return Future(() => DataTableResponse<Supplier>(models: []));
     }
   }
 
@@ -142,13 +141,6 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
         padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
-            TableFilterForm(
-              columns: _source.columns,
-              onSubmit: (value) {
-                _filter = value;
-                refreshTable();
-              },
-            ),
             Padding(
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(
@@ -178,9 +170,15 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
             ),
             SizedBox(
               height: 600,
-              child: CustomAsyncDataTable(
-                controller: _source,
+              child: CustomAsyncDataTable2<Supplier>(
+                onLoaded: (stateManager) => _source = stateManager,
                 fixedLeftColumns: 0,
+                fetchData: (request) => fetchSuppliers(
+                  page: request.page,
+                  sorts: request.sorts,
+                  filter: request.filter,
+                ),
+                columns: setting.tableColumn('ipos::Supplier'),
               ),
             ),
           ],

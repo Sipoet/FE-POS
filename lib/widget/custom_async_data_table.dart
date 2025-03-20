@@ -376,6 +376,7 @@ class _CustomAsyncDataTable2State<T extends Model>
     final itemBefore = selectedItems[title] ?? [];
     return showDialog<List<Item>>(
         context: context,
+        barrierDismissible: false,
         builder: (BuildContext context) {
           return AlertDialog(
               title: Row(
@@ -388,7 +389,7 @@ class _CustomAsyncDataTable2State<T extends Model>
                   IconButton(
                     onPressed: () {
                       selectedItems[title] = itemBefore;
-                      Navigator.of(context).pop();
+                      Navigator.of(context).pop(itemBefore);
                     },
                     icon: Icon(Icons.close),
                   )

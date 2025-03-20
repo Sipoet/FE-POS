@@ -84,7 +84,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     _columns.addAll([
       TableColumn(
         clientWidth: 180,
-        attributeKey: 'discount_amount',
         type: 'money',
         name: 'discount_amount',
         humanizeName: 'Jumlah Diskon',
@@ -107,7 +106,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       ),
       TableColumn(
         clientWidth: 180,
-        attributeKey: 'sell_price_after_discount',
         type: 'money',
         name: 'sell_price_after_discount',
         humanizeName: 'Harga Setelah Diskon',
@@ -132,7 +130,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       ),
       TableColumn(
         clientWidth: 180,
-        attributeKey: 'profit_after_discount',
         name: 'profit_after_discount',
         type: 'money',
         humanizeName: 'Jumlah Profit Setelah Diskon',
@@ -158,7 +155,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       ),
       TableColumn(
         clientWidth: 180,
-        attributeKey: 'profit_margin_after_discount',
         name: 'profit_margin_after_discount',
         type: 'percentage',
         humanizeName: 'Profit Setelah Diskon(%)',

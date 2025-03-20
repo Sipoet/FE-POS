@@ -31,6 +31,7 @@ class _RoleFormPageState extends State<RoleFormPage>
   final codeInputWidget = TextEditingController();
   final focusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
+  late final Server server;
   Role get role => widget.role;
 
   @override
@@ -39,6 +40,7 @@ class _RoleFormPageState extends State<RoleFormPage>
   @override
   void initState() {
     flash = Flash();
+    server = context.read<Server>();
     super.initState();
     if (role.id != null) {
       Future.delayed(Duration.zero, fetchRole);
@@ -47,7 +49,7 @@ class _RoleFormPageState extends State<RoleFormPage>
 
   void fetchRole() {
     showLoadingPopup();
-    final server = context.read<Server>();
+
     server.get('roles/${role.id}', queryParam: {
       'include': 'column_authorizes,access_authorizes,role_work_schedules'
     }).then((response) {
@@ -506,14 +508,18 @@ class _RoleFormPageState extends State<RoleFormPage>
                                         converter: (json,
                                                 {List included = const []}) =>
                                             json['id'].toString(),
-                                        request: (server, offset, searchText,
-                                            cancelToken) {
+                                        request: (
+                                            {int page = 1,
+                                            int limit = 20,
+                                            String searchText = '',
+                                            required CancelToken cancelToken}) {
                                           return server.get(
                                               'roles/action_names',
                                               queryParam: {
                                                 'search_text': searchText,
                                                 'controller_name':
-                                                    accessAuthorize.controller
+                                                    accessAuthorize.controller,
+                                                'page[page]': page
                                               },
                                               cancelToken: cancelToken);
                                         },
@@ -594,8 +600,11 @@ class _RoleFormPageState extends State<RoleFormPage>
                                         converter: (json,
                                                 {List included = const []}) =>
                                             json['id'].toString(),
-                                        request: (server, offset, searchText,
-                                            cancelToken) {
+                                        request: (
+                                            {int page = 1,
+                                            int limit = 20,
+                                            String searchText = '',
+                                            required CancelToken cancelToken}) {
                                           return server.get(
                                               'roles/column_names',
                                               queryParam: {

@@ -47,9 +47,10 @@ class _PayrollReportPageState extends State<PayrollReportPage>
         setState(() {
           tableColumns = json['meta']['table_columns'].map<TableColumn>((row) {
             return TableColumn(
-                clientWidth: double.parse(row['client_width'] ?? '200'),
+                clientWidth:
+                    double.parse((row['client_width'] ?? '200').toString()),
                 type: row['type'],
-                attributeKey: row['attribute_key'],
+                inputOptions: {'attribute_key': row['attribute_key']},
                 name: row['name'],
                 humanizeName: row['humanize_name']);
           }).toList();

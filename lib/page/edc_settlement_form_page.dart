@@ -138,11 +138,15 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
           textOnSearch: (paymentProvider) => paymentProvider.name,
           selected: edcSettlement.paymentProvider,
           converter: PaymentProvider.fromJson,
-          request: (server, page, searchText, cancelToken) {
+          request: (
+              {int page = 1,
+              int limit = 20,
+              String searchText = '',
+              required CancelToken cancelToken}) {
             return server.get('payment_providers',
                 queryParam: {
                   'page[page]': page.toString(),
-                  'page[limit]': '20',
+                  'page[limit]': limit.toString(),
                   'search_text': searchText,
                   'filter[status][eq]': PaymentProviderStatus.active.toString(),
                 },
@@ -222,13 +226,17 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
             }
             return null;
           },
-          request: (server, page, searchText, cancelToken) {
+          request: (
+              {int page = 1,
+              int limit = 20,
+              String searchText = '',
+              required CancelToken cancelToken}) {
             final paymentProviderId =
                 edcSettlement.paymentProviderId.toString();
             return server.get('payment_provider_edcs',
                 queryParam: {
                   'page[page]': page.toString(),
-                  'page[limit]': '20',
+                  'page[limit]': limit.toString(),
                   'search_text': searchText,
                   'filter[payment_provider_id][eq]': paymentProviderId,
                 },

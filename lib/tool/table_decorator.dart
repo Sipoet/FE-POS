@@ -4,6 +4,7 @@ import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 export 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:pluto_grid/pluto_grid.dart';
@@ -33,20 +34,18 @@ class TableColumn {
   String type;
   Widget Function(PlutoColumnRendererContext rendererContext)? renderBody;
   String humanizeName;
-  String? path;
-  String? attributeKey;
   bool canSort;
   bool canFilter;
+  PlutoColumnFrozen frozen;
   Map<String, dynamic> inputOptions = {};
 
   TableColumn(
       {this.initX = 0,
       required this.clientWidth,
       this.excelWidth,
-      this.path,
       this.renderBody,
+      this.frozen = PlutoColumnFrozen.none,
       Map<String, dynamic>? inputOptions,
-      this.attributeKey = '',
       this.type = 'string',
       this.canSort = true,
       this.canFilter = true,
@@ -64,7 +63,7 @@ mixin TableDecorator<T extends Model> implements TextFormatter {
     switch (columnType) {
       // case 'image':
       // return Image.network('assets/${val}')
-      case 'link':
+      case 'model':
       case 'date':
       case 'datetime':
         return Align(
@@ -119,7 +118,8 @@ mixin TableDecorator<T extends Model> implements TextFormatter {
   }
 
   DataCell decorateValue(jsonData, TableColumn column) {
-    final cell = jsonData[column.attributeKey] ?? jsonData[column.name];
+    final cell =
+        jsonData[column.inputOptions['attribute_key']] ?? jsonData[column.name];
     final val = _formatData(cell);
     return DataCell(Tooltip(
       message: val,
@@ -197,6 +197,9 @@ mixin PlutoTableDecorator {
     Map<String, PlutoCell> cells = {};
     for (final tableColumn in tableColumns) {
       var value = rowMap[tableColumn.name];
+      if (value is Percentage || value is Money) {
+        value = value.value;
+      }
       cells[tableColumn.name] = PlutoCell(value: value);
     }
     return PlutoRow(
@@ -248,12 +251,12 @@ mixin PlutoTableDecorator {
       minWidth: 50 < tableColumn.clientWidth ? 50 : tableColumn.clientWidth,
       width: tableColumn.clientWidth,
       type: columnType,
-      frozen: isFrozen ? PlutoColumnFrozen.start : PlutoColumnFrozen.none,
+      frozen: isFrozen ? PlutoColumnFrozen.start : tableColumn.frozen,
       enableRowChecked: showCheckboxColumn,
       enableFilterMenuItem: showFilter,
       renderer: tableColumn.renderBody ??
           (rendererContext) {
-            var value = rendererContext.cell.value;
+            var value = rendererContext.cell.value ?? '';
             if (tableColumn.type == 'model' && value is Model) {
               return InkWell(
                 onTap: () => _openModelDetailPage(
@@ -261,7 +264,9 @@ mixin PlutoTableDecorator {
                   value: value,
                   tabManager: tabManager,
                 ),
-                child: Text(value.toString()),
+                child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(value.toString())),
               );
             }
             if (value is double) {
@@ -269,11 +274,15 @@ mixin PlutoTableDecorator {
                 value = Money(value).format();
               } else if (tableColumn.type == 'Percentage') {
                 value = Percentage(value).format();
+              } else {
+                value = NumberFormat(",##0.##", "en_US").format(value);
               }
               return Align(
                   alignment: Alignment.topRight, child: SelectableText(value));
             }
-            return SelectableText(value.toString());
+            return Align(
+                alignment: Alignment.topLeft,
+                child: SelectableText(value.toString()));
           },
       footerRenderer: showFooter
           ? (rendererContext) {
@@ -281,8 +290,8 @@ mixin PlutoTableDecorator {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Visibility(
-                    visible: tableColumn.type != 'percentage',
+                  Offstage(
+                    offstage: tableColumn.type == 'percentage',
                     child: PlutoAggregateColumnFooter(
                       padding: const EdgeInsets.only(top: 5.0),
                       rendererContext: rendererContext,

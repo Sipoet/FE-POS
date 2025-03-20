@@ -60,9 +60,7 @@ class AsyncDropdownMultiple<T extends Object> extends StatefulWidget {
   final T Function(Map<String, dynamic>, {List included}) converter;
   final Widget? label;
   final bool Function(T, T)? compareValue;
-  final Future Function(
-          Server server, int page, String searchText, CancelToken cancelToken)?
-      request;
+  final RequestRemote? request;
 
   @override
   State<AsyncDropdownMultiple<T>> createState() =>
@@ -90,21 +88,22 @@ class _AsyncDropdownMultipleState<T extends Object>
     super.dispose();
   }
 
-  Future Function(
-          Server server, int page, String searchText, CancelToken cancelToken)
-      get request =>
-          widget.request ??
-          (Server server, int page, String searchText,
-              CancelToken cancelToken) {
-            _cancelToken = CancelToken();
-            return server.get(widget.path!,
-                queryParam: {
-                  'search_text': searchText,
-                  'page[page]': page.toString(),
-                  'page[limit]': widget.recordLimit.toString(),
-                },
-                cancelToken: _cancelToken);
-          };
+  RequestRemote get request =>
+      widget.request ??
+      (
+          {int page = 1,
+          int limit = 20,
+          String searchText = '',
+          required CancelToken cancelToken}) {
+        _cancelToken = cancelToken;
+        return server.get(widget.path!,
+            queryParam: {
+              'search_text': searchText,
+              'page[page]': page.toString(),
+              'page[limit]': limit.toString(),
+            },
+            cancelToken: _cancelToken);
+      };
 
   bool compareResult(T a, T b) {
     if (widget.compareValue == null) {
@@ -220,8 +219,12 @@ class _AsyncDropdownMultipleState<T extends Object>
 
   Future<List<T>> getData(String filter, LoadProps? prop) async {
     int page = (prop!.skip / widget.recordLimit).round() + 1;
-    var response = await request(server, page, filter, _cancelToken).onError(
-        (error, stackTrace) =>
+    var response = await request(
+            page: page,
+            limit: widget.recordLimit,
+            searchText: filter,
+            cancelToken: _cancelToken)
+        .onError((error, stackTrace) =>
             {defaultErrorResponse(error: error, valueWhenError: [])});
     if (response.statusCode == 200) {
       Map responseBody = response.data;
@@ -238,6 +241,9 @@ class _AsyncDropdownMultipleState<T extends Object>
         .toList();
   }
 }
+
+typedef RequestRemote = Future Function(
+    {int page, int limit, String searchText, required CancelToken cancelToken});
 
 class AsyncDropdown<T> extends StatefulWidget {
   const AsyncDropdown(
@@ -278,9 +284,7 @@ class AsyncDropdown<T> extends StatefulWidget {
   final T Function(Map<String, dynamic>, {List included}) converter;
   final Widget? label;
   final bool Function(T, T)? compareValue;
-  final Future Function(
-          Server server, int page, String searchText, CancelToken cancelToken)?
-      request;
+  final RequestRemote? request;
 
   @override
   State<AsyncDropdown<T>> createState() => _AsyncDropdownState<T>();
@@ -307,21 +311,22 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
     super.dispose();
   }
 
-  Future Function(
-          Server server, int page, String searchText, CancelToken cancelToken)
-      get request =>
-          widget.request ??
-          (Server server, int page, String searchText,
-              CancelToken cancelToken) {
-            _cancelToken = CancelToken();
-            return server.get(widget.path!,
-                queryParam: {
-                  'search_text': searchText,
-                  'page[page]': page.toString(),
-                  'page[limit]': widget.recordLimit.toString(),
-                },
-                cancelToken: _cancelToken);
-          };
+  RequestRemote get request =>
+      widget.request ??
+      (
+          {int page = 1,
+          String searchText = '',
+          int limit = 20,
+          required CancelToken cancelToken}) {
+        _cancelToken = cancelToken;
+        return server.get(widget.path!,
+            queryParam: {
+              'search_text': searchText,
+              'page[page]': page.toString(),
+              'page[limit]': widget.recordLimit.toString(),
+            },
+            cancelToken: cancelToken);
+      };
 
   bool compareResult(T a, T b) {
     if (widget.compareValue == null) {
@@ -379,9 +384,13 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
 
   Future<List<T>> getData(String filter, LoadProps? prop) async {
     int page = (prop!.skip / widget.recordLimit).round() + 1;
-    var response = await request(server, page, filter, _cancelToken).onError(
-        (error, stackTrace) =>
-            {defaultErrorResponse(error: error, valueWhenError: [])});
+    var response = await request(
+      page: page,
+      limit: widget.recordLimit,
+      searchText: filter,
+      cancelToken: _cancelToken,
+    ).onError((error, stackTrace) =>
+        {defaultErrorResponse(error: error, valueWhenError: [])});
     if (response.statusCode == 200) {
       Map responseBody = response.data;
       return convertToOptions(

@@ -57,7 +57,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                 clientWidth:
                     double.parse(row['client_width']?.toString() ?? '200'),
                 type: row['type'],
-                attributeKey: row['attribute_key'],
+                inputOptions: {'attribute_key': row['attribute_key']},
                 name: row['name'],
                 humanizeName: row['humanize_name']);
           }).toList();

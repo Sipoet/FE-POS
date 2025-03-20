@@ -96,8 +96,12 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                           "${employee.code} - ${employee.name}",
                       textOnSelected: (employee) => employee.code,
                       converter: Employee.fromJson,
-                      request: (server, page, searchText, cancelToken) {
-                        return server.get('employees',
+                      request: (
+                          {int page = 1,
+                          int limit = 20,
+                          String searchText = '',
+                          required CancelToken cancelToken}) {
+                        return _server.get('employees',
                             queryParam: {
                               'field[employee]': 'code,name',
                               'search_text': searchText,

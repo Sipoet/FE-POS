@@ -3,7 +3,7 @@ import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
-import 'package:fe_pos/widget/table_filter_form.dart';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
@@ -16,22 +16,19 @@ class ItemTypePage extends StatefulWidget {
 }
 
 class _ItemTypePageState extends State<ItemTypePage> with DefaultResponse {
-  late final CustomAsyncDataTableSource<ItemType> _source;
+  late final PlutoGridStateManager _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
-  Map _filter = {};
 
   @override
   void initState() {
     server = context.read<Server>();
     flash = Flash();
     setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<ItemType>(
-        columns: setting.tableColumn('ipos::ItemType'),
-        fetchData: fetchItemTypes);
+
     Future.delayed(Duration.zero, refreshTable);
     super.initState();
   }
@@ -43,22 +40,26 @@ class _ItemTypePageState extends State<ItemTypePage> with DefaultResponse {
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<ItemType>> fetchItemTypes(
+  Future<DataTableResponse<ItemType>> fetchItemTypes(
       {int page = 1,
-      int limit = 100,
-      TableColumn? sortColumn,
-      bool isAscending = true}) {
-    String orderKey = sortColumn?.name ?? 'jenis';
+      int limit = 20,
+      List<SortData> sorts = const [],
+      Map filter = const {}}) {
+    var sort = sorts.isEmpty ? null : sorts.first;
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
       'page[limit]': limit.toString(),
-      'sort': '${isAscending ? '' : '-'}$orderKey',
+      'sort': sort == null
+          ? ''
+          : sort.isAscending
+              ? sort.key
+              : "-${sort.key}",
     };
-    _filter.forEach((key, value) {
+    filter.forEach((key, value) {
       param[key] = value;
     });
     try {
@@ -78,9 +79,9 @@ class _ItemTypePageState extends State<ItemTypePage> with DefaultResponse {
             .toList();
 
         flash.hide();
-        final totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<ItemType>(models: models, totalRows: totalRows);
+        final totalPage = responseBody['meta']?['total_pages'] ?? 1;
+        return DataTableResponse<ItemType>(
+            models: models, totalPage: totalPage);
       },
               onError: (error, stackTrace) =>
                   defaultErrorResponse(error: error, valueWhenError: []));
@@ -89,7 +90,7 @@ class _ItemTypePageState extends State<ItemTypePage> with DefaultResponse {
           title: e.toString(),
           description: trace.toString(),
           messageType: ToastificationType.error);
-      return Future(() => ResponseResult<ItemType>(models: []));
+      return Future(() => DataTableResponse<ItemType>(models: []));
     }
   }
 
@@ -144,13 +145,6 @@ class _ItemTypePageState extends State<ItemTypePage> with DefaultResponse {
         padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
-            TableFilterForm(
-              columns: _source.columns,
-              onSubmit: (value) {
-                _filter = value;
-                refreshTable();
-              },
-            ),
             Padding(
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(
@@ -180,8 +174,13 @@ class _ItemTypePageState extends State<ItemTypePage> with DefaultResponse {
             ),
             SizedBox(
               height: 600,
-              child: CustomAsyncDataTable(
-                controller: _source,
+              child: CustomAsyncDataTable2<ItemType>(
+                onLoaded: (stateManager) => _source = stateManager,
+                columns: setting.tableColumn('ipos::ItemType'),
+                fetchData: (request) => fetchItemTypes(
+                    page: request.page,
+                    filter: request.filter,
+                    sorts: request.sorts),
                 fixedLeftColumns: 0,
               ),
             ),

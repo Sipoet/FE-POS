@@ -322,15 +322,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           'Payroll',
                           style: labelStyle,
                         ),
-                        request: (server, offset, searchText, cancelToken) {
-                          return server.get('payrolls',
-                              queryParam: {
-                                'search_text': searchText,
-                                'field[payroll]': 'name',
-                                'page[offset]': offset.toString(),
-                              },
-                              cancelToken: cancelToken);
-                        },
+                        path: 'payrolls',
                         textOnSearch: (payroll) => payroll.name,
                         attributeKey: 'name',
                         onChanged: (payroll) {
