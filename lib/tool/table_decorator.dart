@@ -1,4 +1,6 @@
 import 'package:fe_pos/model/model.dart';
+import 'package:fe_pos/tool/model_route.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +31,7 @@ class TableColumn {
   double? excelWidth;
   String name;
   String type;
-  dynamic Function(Map<String, dynamic> model)? renderValue;
+  Widget Function(PlutoColumnRendererContext rendererContext)? renderBody;
   String humanizeName;
   String? path;
   String? attributeKey;
@@ -42,7 +44,7 @@ class TableColumn {
       required this.clientWidth,
       this.excelWidth,
       this.path,
-      this.renderValue,
+      this.renderBody,
       Map<String, dynamic>? inputOptions,
       this.attributeKey = '',
       this.type = 'string',
@@ -146,7 +148,6 @@ mixin TableDecorator<T extends Model> implements TextFormatter {
 }
 
 mixin PlutoTableDecorator {
-  final String _formatPercentage = '';
   final String _formatNumber = '#,###.#';
   final String _locale = 'id_ID';
   late final Server server;
@@ -167,9 +168,11 @@ mixin PlutoTableDecorator {
             // format: _formatNumber,
             symbol: 'Rp',
             decimalDigits: 2);
-      case 'link':
+      case 'model':
         return PlutoColumnTypeModelSelect(
-            inputOptions: tableColumn.inputOptions);
+            path: tableColumn.inputOptions['path'],
+            modelName: tableColumn.inputOptions['model_name'],
+            attributeKey: tableColumn.inputOptions['attribute_key']);
       case 'enum':
         return PlutoColumnType.select(
             listEnumValues ?? tableColumn.inputOptions['enums'] ?? []);
@@ -194,19 +197,19 @@ mixin PlutoTableDecorator {
     Map<String, PlutoCell> cells = {};
     for (final tableColumn in tableColumns) {
       var value = rowMap[tableColumn.name];
-      if (tableColumn.renderValue != null) {
-        value = tableColumn.renderValue!(rowMap);
-      }
-      if (value is Money) {
-        value = value.value;
-      } else if (value is Percentage) {
-        value = value.value * 100;
-      }
       cells[tableColumn.name] = PlutoCell(value: value);
     }
-
     return PlutoRow(
         cells: cells, checked: isChecked, type: PlutoRowType.normal());
+  }
+
+  void _openModelDetailPage(
+      {required PlutoColumnTypeModelSelect columnType,
+      required TabManager tabManager,
+      required Model value}) {
+    final route = ModelRoute();
+    tabManager.addTab(
+        "Detail ${columnType.modelName}", route.detailPageOf(value));
   }
 
   static const _labelStyle = TextStyle(
@@ -218,6 +221,7 @@ mixin PlutoTableDecorator {
   PlutoColumn decorateColumn(TableColumn tableColumn,
       {List<Enum>? listEnumValues,
       bool showFilter = false,
+      required TabManager tabManager,
       bool showCheckboxColumn = false,
       bool isFrozen = false}) {
     final columnType =
@@ -247,6 +251,30 @@ mixin PlutoTableDecorator {
       frozen: isFrozen ? PlutoColumnFrozen.start : PlutoColumnFrozen.none,
       enableRowChecked: showCheckboxColumn,
       enableFilterMenuItem: showFilter,
+      renderer: tableColumn.renderBody ??
+          (rendererContext) {
+            var value = rendererContext.cell.value;
+            if (tableColumn.type == 'model' && value is Model) {
+              return InkWell(
+                onTap: () => _openModelDetailPage(
+                  columnType: columnType as PlutoColumnTypeModelSelect,
+                  value: value,
+                  tabManager: tabManager,
+                ),
+                child: Text(value.toString()),
+              );
+            }
+            if (value is double) {
+              if (tableColumn.type == 'money') {
+                value = Money(value).format();
+              } else if (tableColumn.type == 'Percentage') {
+                value = Percentage(value).format();
+              }
+              return Align(
+                  alignment: Alignment.topRight, child: SelectableText(value));
+            }
+            return SelectableText(value.toString());
+          },
       footerRenderer: showFooter
           ? (rendererContext) {
               return Column(
@@ -388,13 +416,16 @@ extension TableStateMananger on PlutoGridStateManager {
   }
 
   void setTableColumns(List<TableColumn> tableColumns,
-      {int fixedLeftColumns = 0, bool showFilter = false}) {
+      {int fixedLeftColumns = 0,
+      bool showFilter = false,
+      required TabManager tabManager}) {
     removeColumns(columns);
     final newColumns = tableColumns.asMap().entries.map<PlutoColumn>((entry) {
       int index = entry.key;
       TableColumn tableColumn = entry.value;
       return decorator.decorateColumn(
         tableColumn,
+        tabManager: tabManager,
         showFilter: showFilter,
         isFrozen: index < fixedLeftColumns,
       );
@@ -431,21 +462,24 @@ class PlutoColumnTypeModelSelect implements PlutoColumnType {
   final dynamic defaultValue;
 
   String get title => 'Select';
-
-  final Map<String, dynamic> inputOptions;
+  final String modelName;
+  final String attributeKey;
+  final String path;
 
   const PlutoColumnTypeModelSelect({
     this.defaultValue,
-    required this.inputOptions,
+    required this.modelName,
+    required this.attributeKey,
+    required this.path,
   });
 
   @override
-  bool isValid(dynamic value) => value != null;
+  bool isValid(dynamic value) => value is Model;
 
   @override
   int compare(dynamic a, dynamic b) {
     return _compareWithNull(a, b, () {
-      return a.compareTo(b);
+      return a.toString().compareTo(b.toString());
     });
   }
 

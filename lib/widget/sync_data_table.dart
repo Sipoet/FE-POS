@@ -1,7 +1,9 @@
+import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/tool/table_decorator.dart';
 import 'package:pluto_grid/pluto_grid.dart';
+import 'package:provider/provider.dart';
 export 'package:pluto_grid/pluto_grid.dart';
 
 typedef OnLoadedCallBack = void Function(PlutoGridStateManager stateManager);
@@ -54,11 +56,13 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
 
   @override
   void initState() {
+    final tabManager = context.read<TabManager>();
     columns = widget.columns.asMap().entries.map<PlutoColumn>((entry) {
       int index = entry.key;
       TableColumn tableColumn = entry.value;
       return decorateColumn(
         tableColumn,
+        tabManager: tabManager,
         listEnumValues: widget.enums[tableColumn.name],
         showFilter: widget.showFilter,
         isFrozen: index < widget.fixedLeftColumns,

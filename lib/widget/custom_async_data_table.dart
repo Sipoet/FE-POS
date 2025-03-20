@@ -1,5 +1,6 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:fe_pos/model/item.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 
@@ -313,11 +314,13 @@ class _CustomAsyncDataTable2State<T extends Model>
   @override
   void initState() {
     server = context.read<Server>();
+    final tabManager = context.read<TabManager>();
     columns = widget.columns.asMap().entries.map<PlutoColumn>((entry) {
       int index = entry.key;
       TableColumn tableColumn = entry.value;
       return decorateColumn(
         tableColumn,
+        tabManager: tabManager,
         showCheckboxColumn: index == 0 ? widget.showCheckboxColumn : false,
         listEnumValues: widget.enums[tableColumn.name],
         showFilter: widget.showFilter,
@@ -460,8 +463,8 @@ class _CustomAsyncDataTable2State<T extends Model>
               showRemoteOptions(
                       searchText: event.filterValue,
                       title: event.column.title,
-                      path: columType.inputOptions['path'],
-                      attributeKey: columType.inputOptions['attribute_key'])
+                      path: columType.path,
+                      attributeKey: columType.attributeKey)
                   .then((items) {
                 if (items == null) return;
                 final filterValue = items
