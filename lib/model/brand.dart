@@ -8,8 +8,8 @@ class Brand extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'ketmerek': description,
-        'merek': name,
+        'description': description,
+        'name': name,
       };
 
   @override
@@ -23,8 +23,8 @@ class Brand extends Model {
     var attributes = json['attributes'];
     model ??= Brand();
     model.id = json['id'];
-    model.description = attributes['ketmerek'] ?? '';
-    model.name = attributes['merek'];
+    model.description = attributes['description'] ?? '';
+    model.name = attributes['name'];
     return model;
   }
 }

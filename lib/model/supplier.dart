@@ -27,15 +27,15 @@ class Supplier extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'kode': code,
-        'nama': name,
+        'code': code,
+        'name': name,
         'bank': bank,
-        'norek': account,
-        'atasnama': accountRegisterName,
-        'alamat': address,
-        'kontak': contact,
-        'kota': city,
-        'keterangan': description,
+        'account': account,
+        'account_register_name': accountRegisterName,
+        'address': address,
+        'contact': contact,
+        'city': city,
+        'description': description,
       };
 
   @override
@@ -49,16 +49,16 @@ class Supplier extends Model {
     var attributes = json['attributes'];
     model ??= Supplier();
     model.id = json['id'];
-    model.code = attributes['kode'];
-    model.name = attributes['nama'];
+    model.code = attributes['code'];
+    model.name = attributes['name'];
     model.bank = attributes['bank'];
-    model.account = attributes['norek'];
-    model.accountRegisterName = attributes['atasnama'];
-    model.address = attributes['alamat'];
-    model.contact = attributes['kontak'];
+    model.account = attributes['account'];
+    model.accountRegisterName = attributes['account_register_name'];
+    model.address = attributes['address'];
+    model.contact = attributes['contact'];
     model.email = attributes['email'];
-    model.city = attributes['kota'];
-    model.description = attributes['keterangan'];
+    model.city = attributes['city'];
+    model.description = attributes['description'];
     return model;
   }
 }

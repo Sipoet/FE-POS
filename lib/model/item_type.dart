@@ -7,8 +7,8 @@ class ItemType extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'ketjenis': description,
-        'jenis': name,
+        'description': description,
+        'name': name,
       };
 
   @override
@@ -22,8 +22,8 @@ class ItemType extends Model {
     var attributes = json['attributes'];
     model ??= ItemType();
     model.id = json['id'];
-    model.description = attributes['ketjenis'];
-    model.name = attributes['jenis'];
+    model.description = attributes['description'];
+    model.name = attributes['name'];
     return model;
   }
 }
