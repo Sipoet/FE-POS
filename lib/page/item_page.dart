@@ -1,7 +1,9 @@
 import 'package:fe_pos/model/item.dart';
+import 'package:fe_pos/page/form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
 
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
@@ -23,15 +25,38 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
   List<Item> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
-  late final Setting setting;
+  late final List<TableColumn> columns;
 
   @override
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    final setting = context.read<Setting>();
 
+    final actionColumn = TableColumn(
+      clientWidth: 200,
+      name: 'action',
+      humanizeName: 'Action',
+      frozen: PlutoColumnFrozen.end,
+      renderBody: (rendererContext) {
+        return Row(
+          children: [
+            IconButton(
+              onPressed: () => _openEditForm(rendererContext.rowIdx),
+              icon: Icon(Icons.edit),
+            )
+          ],
+        );
+      },
+    );
+    columns = setting.tableColumn('ipos::Item')..add(actionColumn);
     super.initState();
+  }
+
+  void _openEditForm(int index) {
+    final item = items[index];
+    final tabManager = context.read<TabManager>();
+    tabManager.addTab('Edit item ${item.code}', ItemFormPage(item: item));
   }
 
   @override
@@ -71,12 +96,12 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
       if (responseBody['data'] is! List) {
         throw 'error: invalid data type ${response.data.toString()}';
       }
-      final models = responseBody['data']
+      items = responseBody['data']
           .map<Item>((json) =>
               Item.fromJson(json, included: responseBody['included'] ?? []))
           .toList();
       final totalPage = responseBody['meta']?['total_pages'] ?? 1;
-      return DataTableResponse<Item>(totalPage: totalPage, models: models);
+      return DataTableResponse<Item>(totalPage: totalPage, models: items);
     },
             onError: (error, stackTrace) =>
                 defaultErrorResponse(error: error, valueWhenError: []));
@@ -141,7 +166,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
                 sorts: request.sorts,
                 filter: request.filter,
               ),
-              columns: setting.tableColumn('ipos::Item'),
+              columns: columns,
             ),
           ),
         ],
