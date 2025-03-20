@@ -12,6 +12,11 @@ class ItemType extends Model {
       };
 
   @override
+  String toString() {
+    return name;
+  }
+
+  @override
   factory ItemType.fromJson(Map<String, dynamic> json,
       {ItemType? model, List included = const []}) {
     var attributes = json['attributes'];

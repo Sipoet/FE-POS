@@ -13,6 +13,11 @@ class Brand extends Model {
       };
 
   @override
+  String toString() {
+    return name;
+  }
+
+  @override
   factory Brand.fromJson(Map<String, dynamic> json,
       {Brand? model, List included = const []}) {
     var attributes = json['attributes'];

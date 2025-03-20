@@ -33,6 +33,9 @@ class _SupplierFormPageState extends State<SupplierFormPage> {
                 label: Text(_setting.columnName('supplier', 'code')),
                 border: OutlineInputBorder()),
           ),
+          const SizedBox(
+            height: 10,
+          ),
           TextFormField(
             initialValue: supplier.name,
             readOnly: true,
@@ -40,14 +43,20 @@ class _SupplierFormPageState extends State<SupplierFormPage> {
                 label: Text(_setting.columnName('supplier', 'name')),
                 border: OutlineInputBorder()),
           ),
+          const SizedBox(
+            height: 10,
+          ),
           TextFormField(
             initialValue: supplier.address,
             readOnly: true,
             minLines: 3,
-            maxLength: 5,
+            maxLines: 5,
             decoration: InputDecoration(
                 label: Text(_setting.columnName('supplier', 'address')),
                 border: OutlineInputBorder()),
+          ),
+          const SizedBox(
+            height: 10,
           ),
           TextFormField(
             initialValue: supplier.contact,
@@ -56,6 +65,9 @@ class _SupplierFormPageState extends State<SupplierFormPage> {
                 label: Text(_setting.columnName('supplier', 'contact')),
                 border: OutlineInputBorder()),
           ),
+          const SizedBox(
+            height: 10,
+          ),
           TextFormField(
             initialValue: supplier.bank,
             readOnly: true,
@@ -63,12 +75,18 @@ class _SupplierFormPageState extends State<SupplierFormPage> {
                 label: Text(_setting.columnName('supplier', 'bank')),
                 border: OutlineInputBorder()),
           ),
+          const SizedBox(
+            height: 10,
+          ),
           TextFormField(
             initialValue: supplier.account,
             readOnly: true,
             decoration: InputDecoration(
                 label: Text(_setting.columnName('supplier', 'account')),
                 border: OutlineInputBorder()),
+          ),
+          const SizedBox(
+            height: 10,
           ),
           TextFormField(
             initialValue: supplier.accountRegisterName,

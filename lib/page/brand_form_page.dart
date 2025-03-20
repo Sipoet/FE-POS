@@ -33,6 +33,9 @@ class _BrandFormPageState extends State<BrandFormPage> {
                 label: Text(_setting.columnName('brand', 'name')),
                 border: OutlineInputBorder()),
           ),
+          const SizedBox(
+            height: 10,
+          ),
           TextFormField(
             initialValue: brand.description,
             readOnly: true,

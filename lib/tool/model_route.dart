@@ -1,58 +1,42 @@
 import 'package:fe_pos/page/menu_page.dart';
 import 'package:fe_pos/page/form_page.dart';
-import 'package:fe_pos/model/model.dart';
-import 'package:fe_pos/model/supplier.dart';
-import 'package:fe_pos/model/item.dart';
-import 'package:fe_pos/model/brand.dart';
-import 'package:fe_pos/model/item_type.dart';
-
+import 'package:fe_pos/model/all_model.dart';
 import 'package:flutter/material.dart';
 
 class ModelRoute {
   const ModelRoute();
 
-  Type classOf(String text) {
-    switch (text) {
-      case 'supplier':
-        return Supplier;
-      case 'item':
-        return Item;
-      case 'brand':
-        return Brand;
-      case 'item_type':
-        return ItemType;
-      default:
-        throw 'model not found';
-    }
+  static const Map<String, Widget> _tablePages = {
+    'supplier': SupplierPage(),
+    'item': ItemPage(),
+    'brand': BrandPage(),
+    'item_type': ItemTypePage(),
+  };
+
+  static const Map<String, Type> _modelList = {
+    'supplier': Supplier,
+    'item': Item,
+    'brand': Brand,
+    'item_type': ItemType,
+  };
+
+  Type classOf(String className) {
+    return _modelList[className]!;
   }
 
-  Widget tablePageOf(String model) {
-    Type klass = classOf(model);
-    switch (klass) {
-      case Supplier:
-        return SupplierPage();
-      case Item:
-        return ItemPage();
-      case Brand:
-        return BrandPage();
-      case ItemType:
-        return ItemTypePage();
-      default:
-        throw 'model not registered';
-    }
+  Widget tablePageOf(String className) {
+    return _tablePages[className]!;
   }
 
   Widget detailPageOf(Model model) {
     switch (model.runtimeType) {
-      case Supplier:
+      case const (Supplier):
         return SupplierFormPage(supplier: model as Supplier);
-      case Item:
+      case const (Item):
         return ItemFormPage(item: model as Item);
-      case Brand:
-        return BrandFormPage(
-          brand: model as Brand,
-        );
-      case ItemType:
+      case const (Brand):
+        return BrandFormPage(brand: model as Brand);
+      case const (ItemType):
         return ItemTypeFormPage(itemType: model as ItemType);
       default:
         throw 'model not registered';

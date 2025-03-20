@@ -43,6 +43,9 @@ class Item extends Model {
   Map<String, dynamic> toMap() => {
         'code': code,
         'name': name,
+        'supplier': supplier,
+        'brand': brand,
+        'item_type': itemType,
         'supplier_name': supplier?.name,
         'supplier_code': supplierCode,
         'brand_name': brandName,
@@ -51,6 +54,11 @@ class Item extends Model {
         'cogs': cogs,
         'uom': uom
       };
+
+  @override
+  String toString() {
+    return name;
+  }
 
   @override
   factory Item.fromJson(Map<String, dynamic> json,

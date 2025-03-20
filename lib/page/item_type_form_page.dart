@@ -33,6 +33,9 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage> {
                 label: Text(_setting.columnName('itemType', 'name')),
                 border: OutlineInputBorder()),
           ),
+          const SizedBox(
+            height: 10,
+          ),
           TextFormField(
             initialValue: itemType.description,
             readOnly: true,

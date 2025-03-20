@@ -88,17 +88,21 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         type: 'money',
         name: 'discount_amount',
         humanizeName: 'Jumlah Diskon',
-        renderValue: (model) {
-          var sellPrice = model['sell_price'];
+        renderBody: (PlutoColumnRendererContext rendererContext) {
+          Money sellPrice =
+              Money(rendererContext.row.cells['sell_price']?.value ?? 0);
+          String value = '';
           if (discount.calculationType == DiscountCalculationType.nominal) {
-            return discount.discount1Nominal;
+            value = discount.discount1Nominal.format();
           } else if (discount.calculationType ==
               DiscountCalculationType.percentage) {
-            return _calculateChanellingDiscount(sellPrice, discount);
+            value = _calculateChanellingDiscount(sellPrice, discount).format();
           } else if (discount.calculationType ==
               DiscountCalculationType.specialPrice) {
-            return sellPrice - discount.discount1Nominal;
+            value = (sellPrice - discount.discount1Nominal).format();
           }
+          return Align(
+              alignment: Alignment.topRight, child: SelectableText(value));
         },
       ),
       TableColumn(
@@ -107,18 +111,23 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         type: 'money',
         name: 'sell_price_after_discount',
         humanizeName: 'Harga Setelah Diskon',
-        renderValue: (model) {
-          Money sellPrice = model['sell_price'];
+        renderBody: (PlutoColumnRendererContext rendererContext) {
+          Money sellPrice =
+              Money(rendererContext.row.cells['sell_price']?.value ?? 0);
+          String value = '';
           if (discount.calculationType == DiscountCalculationType.nominal) {
-            return sellPrice - discount.discount1Nominal;
+            value = (sellPrice - discount.discount1Nominal).format();
           } else if (discount.calculationType ==
               DiscountCalculationType.percentage) {
-            return sellPrice -
-                _calculateChanellingDiscount(sellPrice, discount);
+            value =
+                (sellPrice - _calculateChanellingDiscount(sellPrice, discount))
+                    .format();
           } else if (discount.calculationType ==
               DiscountCalculationType.specialPrice) {
-            return discount.discount1Nominal;
+            value = discount.discount1Nominal.format();
           }
+          return Align(
+              alignment: Alignment.topRight, child: SelectableText(value));
         },
       ),
       TableColumn(
@@ -127,8 +136,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         name: 'profit_after_discount',
         type: 'money',
         humanizeName: 'Jumlah Profit Setelah Diskon',
-        renderValue: (model) {
-          Money sellPrice = model['sell_price'] ?? const Money(0);
+        renderBody: (PlutoColumnRendererContext rendererContext) {
+          Money sellPrice =
+              Money(rendererContext.row.cells['sell_price']?.value ?? 0);
+          Money cogs = Money(rendererContext.row.cells['cogs']?.value ?? 0);
           Money newPrice = sellPrice;
           if (discount.calculationType == DiscountCalculationType.nominal) {
             newPrice = sellPrice - discount.discount1Nominal;
@@ -140,7 +151,9 @@ class _DiscountFormPageState extends State<DiscountFormPage>
               DiscountCalculationType.specialPrice) {
             newPrice = discount.discount1Nominal;
           }
-          return newPrice - model['cogs'];
+          return Align(
+              alignment: Alignment.topRight,
+              child: SelectableText((newPrice - cogs).format()));
         },
       ),
       TableColumn(
@@ -149,8 +162,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         name: 'profit_margin_after_discount',
         type: 'percentage',
         humanizeName: 'Profit Setelah Diskon(%)',
-        renderValue: (model) {
-          Money sellPrice = model['sell_price'] ?? const Money(0);
+        renderBody: (PlutoColumnRendererContext rendererContext) {
+          Money sellPrice =
+              Money(rendererContext.row.cells['sell_price']?.value ?? 0);
+          Money cogs = Money(rendererContext.row.cells['cogs']?.value ?? 0);
           Money newPrice = sellPrice;
           if (discount.calculationType == DiscountCalculationType.nominal) {
             newPrice = sellPrice - discount.discount1Nominal;
@@ -162,8 +177,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
               DiscountCalculationType.specialPrice) {
             newPrice = discount.discount1Nominal;
           }
-          final margin = _marginOf(newPrice, model['cogs']);
-          return margin;
+          final margin = _marginOf(newPrice, cogs);
+          return Align(
+              alignment: Alignment.topRight,
+              child: SelectableText(margin.format()));
         },
       ),
     ]);

@@ -3,7 +3,7 @@ import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
-import 'package:fe_pos/widget/table_filter_form.dart';
+
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -60,7 +60,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
     filter.forEach((key, value) {
       param[key] = value;
     });
-    // try {
+
     return server
         .get('items', queryParam: param, cancelToken: cancelToken)
         .then((response) {
@@ -80,13 +80,6 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
     },
             onError: (error, stackTrace) =>
                 defaultErrorResponse(error: error, valueWhenError: []));
-    // } catch (e, trace) {
-    //   flash.showBanner(
-    //       title: e.toString(),
-    //       description: trace.toString(),
-    //       messageType: ToastificationType.error);
-    //   throw 'error';
-    // }
   }
 
   void searchChanged(value) {

@@ -34,12 +34,18 @@ class _ItemFormPageState extends State<ItemFormPage> {
                 label: Text(_setting.columnName('item', 'code')),
                 border: OutlineInputBorder()),
           ),
+          const SizedBox(
+            height: 10,
+          ),
           TextFormField(
             initialValue: item.name,
             readOnly: true,
             decoration: InputDecoration(
                 label: Text(_setting.columnName('item', 'name')),
                 border: OutlineInputBorder()),
+          ),
+          const SizedBox(
+            height: 10,
           ),
           TextFormField(
             initialValue: item.description,
@@ -50,12 +56,18 @@ class _ItemFormPageState extends State<ItemFormPage> {
                 label: Text(_setting.columnName('item', 'description')),
                 border: OutlineInputBorder()),
           ),
+          const SizedBox(
+            height: 10,
+          ),
           TextFormField(
             initialValue: item.brandName,
             readOnly: true,
             decoration: InputDecoration(
                 label: Text(_setting.columnName('item', 'brand_name')),
                 border: OutlineInputBorder()),
+          ),
+          const SizedBox(
+            height: 10,
           ),
           TextFormField(
             initialValue: item.uom,
@@ -64,10 +76,16 @@ class _ItemFormPageState extends State<ItemFormPage> {
                 label: Text(_setting.columnName('item', 'uom')),
                 border: OutlineInputBorder()),
           ),
+          const SizedBox(
+            height: 10,
+          ),
           MoneyFormField(
             initialValue: item.cogs,
             readOnly: true,
             label: Text(_setting.columnName('item', 'cogs')),
+          ),
+          const SizedBox(
+            height: 10,
           ),
           MoneyFormField(
             initialValue: item.sellPrice,
