@@ -208,8 +208,8 @@ mixin PlutoTableDecorator {
       required TabManager tabManager,
       required Model value}) {
     final route = ModelRoute();
-    tabManager.addTab(
-        "Detail ${columnType.modelName}", route.detailPageOf(value));
+    tabManager.addTab("Detail ${columnType.modelName} ${value.id}",
+        route.detailPageOf(value));
   }
 
   static const _labelStyle = TextStyle(
