@@ -204,6 +204,7 @@ class _AsyncDropdownMultipleState<T extends Object>
         onItemAdded: (selectedItems, addedItem) => _focusNode.requestFocus(),
         showSearchBox: true,
         showSelectedItems: true,
+        disableFilter: true,
         infiniteScrollProps: InfiniteScrollProps(
           loadingMoreBuilder: (p0, loadedItems) => Text('Loading data'),
           loadProps: LoadProps(skip: 0, take: widget.recordLimit),
@@ -363,6 +364,7 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
         onItemsLoaded: (selectedItems) => _focusNode.requestFocus(),
         showSearchBox: true,
         showSelectedItems: true,
+        disableFilter: true,
         infiniteScrollProps: InfiniteScrollProps(
           loadProps: LoadProps(skip: 0, take: widget.recordLimit),
         ),
