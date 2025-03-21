@@ -1,10 +1,10 @@
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/tool/model_route.dart';
+import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 export 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:pluto_grid/pluto_grid.dart';
@@ -22,8 +22,60 @@ enum TableColumnType {
   enums,
   boolean,
   date,
+  image,
+  url,
   datetime,
+  model,
+  timeOnly,
+  action,
   text;
+
+  bool isText() => this == text;
+  bool isNumber() => this == number;
+  bool isPercentage() => this == percentage;
+  bool isMoney() => this == money;
+  bool isEnums() => this == enums;
+  bool isBool() => this == boolean;
+  bool isDate() => this == date;
+  bool isDatetime() => this == datetime;
+  bool isModel() => this == model;
+  bool isTimeOnly() => this == timeOnly;
+  bool isAction() => this == action;
+
+  static TableColumnType fromString(String value) {
+    switch (value) {
+      case 'decimal':
+      case 'float':
+      case 'integer':
+      case 'double':
+      case 'number':
+        return number;
+      case 'percentage':
+        return percentage;
+      case 'money':
+        return money;
+      case 'enum':
+        return enums;
+      case 'boolean':
+        return boolean;
+      case 'date':
+        return date;
+      case 'datetime':
+        return datetime;
+      case 'time':
+        return timeOnly;
+      case 'string':
+      case 'text':
+        return text;
+      case 'link':
+      case 'model':
+        return model;
+      case 'image':
+        return image;
+      default:
+        throw 'invalid column type $value';
+    }
+  }
 }
 
 class TableColumn {
@@ -31,7 +83,7 @@ class TableColumn {
   double clientWidth;
   double? excelWidth;
   String name;
-  String type;
+  TableColumnType type;
   Widget Function(PlutoColumnRendererContext rendererContext)? renderBody;
   String humanizeName;
   bool canSort;
@@ -46,26 +98,28 @@ class TableColumn {
       this.renderBody,
       this.frozen = PlutoColumnFrozen.none,
       Map<String, dynamic>? inputOptions,
-      this.type = 'string',
+      this.type = TableColumnType.text,
       this.canSort = true,
-      this.canFilter = true,
+      bool? canFilter,
       required this.name,
       required this.humanizeName})
-      : inputOptions = inputOptions ?? const {};
+      : inputOptions = inputOptions ?? const {},
+        canFilter = canFilter ?? !type.isAction();
 
   bool isNumeric() {
-    return ['float', 'decimal', 'int', 'money', 'percentage'].contains(type);
+    return type.isNumber() || type.isMoney() || type.isPercentage();
   }
 }
 
 mixin TableDecorator<T extends Model> implements TextFormatter {
-  Widget _decorateCell(String val, String columnType) {
+  Widget _decorateCell(String val, TableColumnType columnType) {
     switch (columnType) {
       // case 'image':
       // return Image.network('assets/${val}')
-      case 'model':
-      case 'date':
-      case 'datetime':
+      case TableColumnType.model:
+      case TableColumnType.text:
+      case TableColumnType.date:
+      case TableColumnType.datetime:
         return Align(
           alignment: Alignment.centerLeft,
           child: Text(
@@ -73,10 +127,8 @@ mixin TableDecorator<T extends Model> implements TextFormatter {
             overflow: TextOverflow.ellipsis,
           ),
         );
-      case 'money':
-      case 'double':
-      case 'decimal':
-      case 'integer':
+      case TableColumnType.money:
+      case TableColumnType.number:
         return Align(
             alignment: Alignment.centerRight,
             child: Text(
@@ -147,42 +199,40 @@ mixin TableDecorator<T extends Model> implements TextFormatter {
   }
 }
 
-mixin PlutoTableDecorator {
+mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
+  late final TabManager tabManager;
   final String _formatNumber = '#,###.#';
   final String _locale = 'id_ID';
   late final Server server;
   PlutoColumnType _parseColumnType(TableColumn tableColumn,
       {List<Enum>? listEnumValues}) {
     switch (tableColumn.type) {
-      case 'string':
+      case TableColumnType.text:
         return PlutoColumnType.text();
-      case 'date':
+      case TableColumnType.date:
         return PlutoColumnType.date(format: 'dd/MM/yyyy');
-      case 'datetime':
+      case TableColumnType.datetime:
         return PlutoColumnType.date(format: 'dd/MM/yyyy HH::mm');
-      case 'time':
+      case TableColumnType.timeOnly:
         return PlutoColumnType.time();
-      case 'money':
+      case TableColumnType.money:
         return PlutoColumnType.currency(
             locale: _locale,
             // format: _formatNumber,
             symbol: 'Rp',
             decimalDigits: 2);
-      case 'model':
+      case TableColumnType.model:
         return PlutoColumnTypeModelSelect(
             path: tableColumn.inputOptions['path'],
             modelName: tableColumn.inputOptions['model_name'],
             attributeKey: tableColumn.inputOptions['attribute_key']);
-      case 'enum':
+      case TableColumnType.enums:
         return PlutoColumnType.select(
             listEnumValues ?? tableColumn.inputOptions['enums'] ?? []);
-      case 'percentage':
-      case 'decimal':
-      case 'integer':
-      case 'double':
-      case 'float':
+      case TableColumnType.percentage:
+      case TableColumnType.number:
         return PlutoColumnType.number(locale: _locale, format: _formatNumber);
-      case 'boolean':
+      case TableColumnType.boolean:
         return PlutoColumnType.select([true, false]);
       default:
         return PlutoColumnType.text();
@@ -207,12 +257,15 @@ mixin PlutoTableDecorator {
   }
 
   void _openModelDetailPage(
-      {required PlutoColumnTypeModelSelect columnType,
-      required TabManager tabManager,
-      required Model value}) {
+      {required TableColumn tableColumn, required Model value}) {
     final route = ModelRoute();
-    tabManager.addTab("Detail ${columnType.modelName} ${value.id}",
-        route.detailPageOf(value));
+    if (isDesktop()) {
+      tabManager.setSafeAreaContent(
+          "${tableColumn.humanizeName} ${value.id}", route.detailPageOf(value));
+    } else {
+      tabManager.addTab(
+          "${tableColumn.humanizeName} ${value.id}", route.detailPageOf(value));
+    }
   }
 
   static const _labelStyle = TextStyle(
@@ -229,15 +282,7 @@ mixin PlutoTableDecorator {
       bool isFrozen = false}) {
     final columnType =
         _parseColumnType(tableColumn, listEnumValues: listEnumValues);
-    bool showFooter = [
-      'money',
-      'decimal',
-      'integer',
-      'float',
-      'double',
-      'percentage',
-    ].contains(tableColumn.type);
-    final isCurrency = tableColumn.type == 'money';
+    bool showFooter = tableColumn.isNumeric();
     final format = _formatNumber;
 
     return PlutoColumn(
@@ -254,15 +299,15 @@ mixin PlutoTableDecorator {
       frozen: isFrozen ? PlutoColumnFrozen.start : tableColumn.frozen,
       enableRowChecked: showCheckboxColumn,
       enableFilterMenuItem: showFilter,
+      enableContextMenu: !tableColumn.type.isAction(),
       renderer: tableColumn.renderBody ??
           (rendererContext) {
             var value = rendererContext.cell.value ?? '';
-            if (tableColumn.type == 'model' && value is Model) {
+            if (tableColumn.type.isModel() && value is Model) {
               return InkWell(
                 onTap: () => _openModelDetailPage(
-                  columnType: columnType as PlutoColumnTypeModelSelect,
+                  tableColumn: tableColumn,
                   value: value,
-                  tabManager: tabManager,
                 ),
                 child: Align(
                     alignment: Alignment.topLeft,
@@ -270,12 +315,12 @@ mixin PlutoTableDecorator {
               );
             }
             if (value is double) {
-              if (tableColumn.type == 'money') {
+              if (tableColumn.type.isMoney()) {
                 value = Money(value).format();
-              } else if (tableColumn.type == 'Percentage') {
+              } else if (tableColumn.type.isPercentage()) {
                 value = Percentage(value).format();
               } else {
-                value = NumberFormat(",##0.##", "en_US").format(value);
+                value = numberFormat(value);
               }
               return Align(
                   alignment: Alignment.topRight, child: SelectableText(value));
@@ -291,11 +336,11 @@ mixin PlutoTableDecorator {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Offstage(
-                    offstage: tableColumn.type == 'percentage',
+                    offstage: tableColumn.type.isPercentage(),
                     child: PlutoAggregateColumnFooter(
                       padding: const EdgeInsets.only(top: 5.0),
                       rendererContext: rendererContext,
-                      formatAsCurrency: isCurrency,
+                      formatAsCurrency: tableColumn.type.isMoney(),
                       type: PlutoAggregateColumnType.sum,
                       format: format,
                       locale: _locale,
@@ -321,7 +366,7 @@ mixin PlutoTableDecorator {
                   PlutoAggregateColumnFooter(
                     padding: const EdgeInsets.only(top: 5.0),
                     rendererContext: rendererContext,
-                    formatAsCurrency: isCurrency,
+                    formatAsCurrency: tableColumn.type.isMoney(),
                     type: PlutoAggregateColumnType.min,
                     format: format,
                     locale: _locale,
@@ -346,7 +391,7 @@ mixin PlutoTableDecorator {
                   PlutoAggregateColumnFooter(
                     padding: const EdgeInsets.only(top: 5.0),
                     rendererContext: rendererContext,
-                    formatAsCurrency: isCurrency,
+                    formatAsCurrency: tableColumn.type.isMoney(),
                     type: PlutoAggregateColumnType.average,
                     format: format,
                     locale: _locale,
@@ -371,7 +416,7 @@ mixin PlutoTableDecorator {
                   PlutoAggregateColumnFooter(
                     padding: const EdgeInsets.only(top: 5.0),
                     rendererContext: rendererContext,
-                    formatAsCurrency: isCurrency,
+                    formatAsCurrency: tableColumn.type.isMoney(),
                     type: PlutoAggregateColumnType.max,
                     format: format,
                     locale: _locale,
@@ -401,7 +446,7 @@ mixin PlutoTableDecorator {
   }
 }
 
-class PlutoDeco with PlutoTableDecorator {}
+class PlutoDeco with PlutoTableDecorator, PlatformChecker, TextFormatter {}
 
 extension TableStateMananger on PlutoGridStateManager {
   PlutoDeco get decorator => PlutoDeco();

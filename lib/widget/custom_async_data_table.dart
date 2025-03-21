@@ -1,5 +1,6 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:fe_pos/model/item.dart';
+import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
@@ -306,7 +307,8 @@ class CustomAsyncDataTable2<T extends Model> extends StatefulWidget {
 }
 
 class _CustomAsyncDataTable2State<T extends Model>
-    extends State<CustomAsyncDataTable2<T>> with PlutoTableDecorator {
+    extends State<CustomAsyncDataTable2<T>>
+    with PlutoTableDecorator, PlatformChecker, TextFormatter {
   late List<PlutoColumn> columns;
   late final PlutoGridStateManager _source;
   List selectedValues = [];
@@ -314,7 +316,7 @@ class _CustomAsyncDataTable2State<T extends Model>
   @override
   void initState() {
     server = context.read<Server>();
-    final tabManager = context.read<TabManager>();
+    tabManager = context.read<TabManager>();
     columns = widget.columns.asMap().entries.map<PlutoColumn>((entry) {
       int index = entry.key;
       TableColumn tableColumn = entry.value;

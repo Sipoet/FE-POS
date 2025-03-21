@@ -1,4 +1,6 @@
+import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/tool/table_decorator.dart';
@@ -50,13 +52,13 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
 }
 
 class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
-    with PlutoTableDecorator {
+    with PlutoTableDecorator, PlatformChecker, TextFormatter {
   late List<PlutoColumn> columns;
   late List<PlutoRow> rows;
 
   @override
   void initState() {
-    final tabManager = context.read<TabManager>();
+    tabManager = context.read<TabManager>();
     columns = widget.columns.asMap().entries.map<PlutoColumn>((entry) {
       int index = entry.key;
       TableColumn tableColumn = entry.value;

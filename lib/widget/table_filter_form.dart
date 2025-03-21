@@ -138,23 +138,21 @@ class _TableFilterFormState extends State<TableFilterForm> {
 
   Widget formFilter(TableColumn column) {
     switch (column.type) {
-      case 'string':
+      case TableColumnType.text:
         return textFilter(column);
-      case 'integer':
-      case 'float':
-      case 'decimal':
-      case 'money':
-      case 'percentage':
+      case TableColumnType.money:
+      case TableColumnType.percentage:
+      case TableColumnType.number:
         return numberFilter(column);
-      case 'boolean':
+      case TableColumnType.boolean:
         return boolFilter(column);
-      case 'date':
+      case TableColumnType.date:
         return dateFilter(column, datePickerOnly: true);
-      case 'datetime':
+      case TableColumnType.datetime:
         return dateFilter(column);
-      case 'enum':
+      case TableColumnType.enums:
         return enumFilter(column);
-      case 'model':
+      case TableColumnType.model:
         return linkFilter(column);
       default:
         return SizedBox(
@@ -176,8 +174,8 @@ class _TableFilterFormState extends State<TableFilterForm> {
     }
   }
 
-  String decorateTimeRange(DateTimeRange range, String type) {
-    if (type == 'date') {
+  String decorateTimeRange(DateTimeRange range, TableColumnType type) {
+    if (type.isDate()) {
       return [
         Date.parsingDateTime(range.start).toIso8601String(),
         Date.parsingDateTime(range.end).toIso8601String()
