@@ -57,6 +57,9 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     'item_type_name',
     'brand_name',
     'supplier_code',
+    'stock_left',
+    'warehouse_stock',
+    'store_stock',
     'cogs',
     'margin',
     'limit_profit_discount',
@@ -84,7 +87,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     _columns.addAll([
       TableColumn(
         clientWidth: 180,
-        type: 'money',
+        type: TableColumnType.money,
         name: 'discount_amount',
         humanizeName: 'Jumlah Diskon',
         renderBody: (PlutoColumnRendererContext rendererContext) {
@@ -106,7 +109,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       ),
       TableColumn(
         clientWidth: 180,
-        type: 'money',
+        type: TableColumnType.money,
         name: 'sell_price_after_discount',
         humanizeName: 'Harga Setelah Diskon',
         renderBody: (PlutoColumnRendererContext rendererContext) {
@@ -131,7 +134,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       TableColumn(
         clientWidth: 180,
         name: 'profit_after_discount',
-        type: 'money',
+        type: TableColumnType.money,
         humanizeName: 'Jumlah Profit Setelah Diskon',
         renderBody: (PlutoColumnRendererContext rendererContext) {
           Money sellPrice =
@@ -156,7 +159,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       TableColumn(
         clientWidth: 180,
         name: 'profit_margin_after_discount',
-        type: 'percentage',
+        type: TableColumnType.percentage,
         humanizeName: 'Profit Setelah Diskon(%)',
         renderBody: (PlutoColumnRendererContext rendererContext) {
           Money sellPrice =
