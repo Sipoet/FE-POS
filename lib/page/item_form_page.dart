@@ -123,7 +123,7 @@ class _ItemFormPageState extends State<ItemFormPage>
       if (mounted && response.statusCode == 200) {
         setState(() {
           Item.fromJson(response.data['data'],
-              included: response.data['included'], model: item);
+              included: response.data['included'] ?? [], model: item);
         });
 
         _flash.show(Text('Sukses simpan item'), ToastificationType.success);
