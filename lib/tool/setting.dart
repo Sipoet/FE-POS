@@ -21,7 +21,7 @@ class Setting extends ChangeNotifier {
         _tableColumns[key]![columnKey] = TableColumn(
             name: attributes['name'],
             humanizeName: attributes['humanize_name'],
-            type: attributes['type'],
+            type: TableColumnType.fromString(attributes['type'] as String),
             inputOptions: attributes['input_options'],
             clientWidth:
                 double.tryParse(attributes['client_width'].toString()) ?? 175,
