@@ -22,11 +22,35 @@ class _ItemFormPageState extends State<ItemFormPage>
   Item get item => widget.item;
   late final Setting _setting;
   late final Flash _flash;
+  late final Server _server;
+  final Map<String, TextEditingController> _controller = {};
+
   @override
   void initState() {
     _flash = Flash();
     _setting = context.read<Setting>();
     super.initState();
+    _server = context.read<Server>();
+    item.toMap().forEach((key, value) {
+      _controller[key] = TextEditingController(text: value.toString());
+    });
+    super.initState();
+    if (item.rawData.isEmpty) {
+      Future.delayed(Duration.zero, fetchItem);
+    }
+  }
+
+  void fetchItem() {
+    showLoadingPopup();
+    _server.get('items/${item.id}').then((response) {
+      if (mounted && response.statusCode == 200) {
+        Item.fromJson(response.data['data'],
+            included: response.data['included'] ?? [], model: item);
+        item.toMap().forEach((key, value) {
+          _controller[key]!.text = value.toString();
+        });
+      }
+    }).whenComplete(() => hideLoadingPopup());
   }
 
   @override
@@ -35,7 +59,7 @@ class _ItemFormPageState extends State<ItemFormPage>
       child: Column(
         children: [
           TextFormField(
-            initialValue: item.code,
+            controller: _controller['code'],
             readOnly: true,
             decoration: InputDecoration(
                 label: Text(_setting.columnName('item', 'code')),
@@ -45,7 +69,7 @@ class _ItemFormPageState extends State<ItemFormPage>
             height: 10,
           ),
           TextFormField(
-            initialValue: item.name,
+            controller: _controller['name'],
             readOnly: true,
             decoration: InputDecoration(
                 label: Text(_setting.columnName('item', 'name')),
@@ -55,7 +79,47 @@ class _ItemFormPageState extends State<ItemFormPage>
             height: 10,
           ),
           TextFormField(
-            initialValue: item.description,
+            controller: _controller['brand_name'],
+            readOnly: true,
+            decoration: InputDecoration(
+                label: Text(_setting.columnName('item', 'brand_name')),
+                border: OutlineInputBorder()),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          TextFormField(
+            controller: _controller['item_type_name'],
+            readOnly: true,
+            decoration: InputDecoration(
+                label: Text(_setting.columnName('item', 'item_type_name')),
+                border: OutlineInputBorder()),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          TextFormField(
+            controller: _controller['supplier_code'],
+            readOnly: true,
+            decoration: InputDecoration(
+                label: Text(_setting.columnName('item', 'supplier_code')),
+                border: OutlineInputBorder()),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          TextFormField(
+            controller: _controller['uom'],
+            readOnly: true,
+            decoration: InputDecoration(
+                label: Text(_setting.columnName('item', 'uom')),
+                border: OutlineInputBorder()),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          TextFormField(
+            controller: _controller['description'],
             readOnly: true,
             minLines: 3,
             maxLines: 5,
@@ -66,28 +130,8 @@ class _ItemFormPageState extends State<ItemFormPage>
           const SizedBox(
             height: 10,
           ),
-          TextFormField(
-            initialValue: item.brandName,
-            readOnly: true,
-            decoration: InputDecoration(
-                label: Text(_setting.columnName('item', 'brand_name')),
-                border: OutlineInputBorder()),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          TextFormField(
-            initialValue: item.uom,
-            readOnly: true,
-            decoration: InputDecoration(
-                label: Text(_setting.columnName('item', 'uom')),
-                border: OutlineInputBorder()),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
           MoneyFormField(
-            initialValue: item.cogs,
+            controller: _controller['cogs'],
             onChanged: (value) => item.cogs = value ?? item.cogs,
             label: Text(_setting.columnName('item', 'cogs')),
           ),
@@ -95,7 +139,7 @@ class _ItemFormPageState extends State<ItemFormPage>
             height: 10,
           ),
           MoneyFormField(
-            initialValue: item.sellPrice,
+            controller: _controller['sell_price'],
             onChanged: (value) => item.sellPrice = value ?? item.sellPrice,
             label: Text(_setting.columnName('item', 'sell_price')),
           ),

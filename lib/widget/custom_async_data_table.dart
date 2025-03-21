@@ -46,6 +46,7 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
   @override
   void initState() {
     _dataSource.paginatorController = _paginatorController;
+    _dataSource.tabManager = context.read<TabManager>();
     if (_dataSource.sortColumn != null) {
       _sortColumnIndex = _dataSource.columns.indexOf(_dataSource.sortColumn!);
       _sortAscending = _dataSource.isAscending;
@@ -176,7 +177,7 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
 }
 
 class CustomAsyncDataTableSource<T extends Model> extends AsyncDataTableSource
-    with TableDecorator<T>, TextFormatter {
+    with TableDecorator<T>, TextFormatter, PlatformChecker {
   final List<TableColumn> columns;
   late List<T> sortedData = [];
   TableColumn? sortColumn;

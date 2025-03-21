@@ -111,17 +111,31 @@ class TableColumn {
   }
 }
 
-mixin TableDecorator<T extends Model> implements TextFormatter {
+mixin TableDecorator<T extends Model>
+    implements TextFormatter, PlatformChecker {
+  late final TabManager tabManager;
+
+  void _openModelDetailPage(
+      {required TableColumn tableColumn, required Model value}) {
+    final route = ModelRoute();
+    if (isDesktop()) {
+      tabManager.setSafeAreaContent(
+          "${tableColumn.humanizeName} ${value.id}", route.detailPageOf(value));
+    } else {
+      tabManager.addTab(
+          "${tableColumn.humanizeName} ${value.id}", route.detailPageOf(value));
+    }
+  }
+
   Widget _decorateCell(String val, TableColumnType columnType) {
     switch (columnType) {
       // case 'image':
       // return Image.network('assets/${val}')
-      case TableColumnType.model:
       case TableColumnType.text:
       case TableColumnType.date:
       case TableColumnType.datetime:
         return Align(
-          alignment: Alignment.centerLeft,
+          alignment: Alignment.topLeft,
           child: Text(
             val,
             overflow: TextOverflow.ellipsis,
@@ -130,13 +144,13 @@ mixin TableDecorator<T extends Model> implements TextFormatter {
       case TableColumnType.money:
       case TableColumnType.number:
         return Align(
-            alignment: Alignment.centerRight,
+            alignment: Alignment.topRight,
             child: Text(
               val,
               overflow: TextOverflow.ellipsis,
             ));
       default:
-        return Align(alignment: Alignment.centerLeft, child: Text(val));
+        return Align(alignment: Alignment.topLeft, child: Text(val));
     }
   }
 
@@ -169,10 +183,23 @@ mixin TableDecorator<T extends Model> implements TextFormatter {
     }
   }
 
-  DataCell decorateValue(jsonData, TableColumn column) {
-    final cell =
-        jsonData[column.inputOptions['attribute_key']] ?? jsonData[column.name];
+  DataCell decorateValue(T model, TableColumn column) {
+    final jsonData = model.toMap();
+    final cell = jsonData[column.name];
     final val = _formatData(cell);
+    if (column.type.isModel()) {
+      return DataCell(
+          Align(
+            alignment: Alignment.topLeft,
+            child: Text(
+              val,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          onTap: () => _openModelDetailPage(
+              tableColumn: column,
+              value: jsonData[column.inputOptions['model_name']]));
+    }
     return DataCell(Tooltip(
       message: val,
       triggerMode: TooltipTriggerMode.longPress,
@@ -184,9 +211,8 @@ mixin TableDecorator<T extends Model> implements TextFormatter {
       {List<TableColumn> columns = const [],
       int index = 0,
       List<Widget> Function(T model, int index)? actionButtons}) {
-    var jsonData = model.toMap();
     var rows = columns
-        .map<DataCell>((column) => decorateValue(jsonData, column))
+        .map<DataCell>((column) => decorateValue(model, column))
         .toList();
     if (actionButtons != null) {
       rows.add(DataCell(Row(

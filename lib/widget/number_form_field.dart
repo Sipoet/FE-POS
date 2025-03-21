@@ -43,6 +43,15 @@ class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
   }
 
   @override
+  void initState() {
+    widget.controller?.addListener(() {
+      widget.controller!.text =
+          numberFormat(_valueFromInput(widget.controller!.text));
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TextFormField(
       enableSuggestions: false,

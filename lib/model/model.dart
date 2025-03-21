@@ -28,13 +28,15 @@ abstract class Model {
         json[key] = object.toIso8601String();
       } else if (object is Enum) {
         json[key] = object.toString();
+      } else if (object is String) {
+        json[key] = object.trim();
       }
     });
     return json;
   }
 
   dynamic operator [](key) {
-    return rawData[key];
+    return toMap()[key];
   }
 
   bool get isNewRecord => id == null;

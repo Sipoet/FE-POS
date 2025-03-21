@@ -43,6 +43,15 @@ class _PercentageFormFieldState extends State<PercentageFormField>
   }
 
   @override
+  void initState() {
+    widget.controller?.addListener(() {
+      widget.controller!.text =
+          numberFormat(_valueFromInput(widget.controller!.text)?.value);
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TextFormField(
       enableSuggestions: false,

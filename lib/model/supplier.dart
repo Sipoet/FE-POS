@@ -49,6 +49,7 @@ class Supplier extends Model {
     var attributes = json['attributes'];
     model ??= Supplier();
     model.id = json['id'];
+    Model.fromModel(model, attributes);
     model.code = attributes['code'];
     model.name = attributes['name'];
     model.bank = attributes['bank'];

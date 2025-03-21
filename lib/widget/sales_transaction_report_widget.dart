@@ -102,9 +102,9 @@ class _SalesTransactionReportWidgetState
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    var colorScheme = Theme.of(context).colorScheme;
-    var labelStyle = TextStyle(color: colorScheme.onPrimaryContainer);
-    var valueStyle = TextStyle(
+    final colorScheme = Theme.of(context).colorScheme;
+    final labelStyle = TextStyle(color: colorScheme.onPrimaryContainer);
+    final valueStyle = TextStyle(
         color: colorScheme.onPrimaryContainer, fontWeight: FontWeight.bold);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,8 +140,8 @@ class _SalesTransactionReportWidgetState
         if (!_controller.isAnimating)
           Table(
             columnWidths: const {
-              0: FixedColumnWidth(200),
-              1: FixedColumnWidth(10)
+              2: FixedColumnWidth(180),
+              1: FixedColumnWidth(10),
             },
             children: [
               TableRow(children: [

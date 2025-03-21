@@ -23,6 +23,7 @@ class Brand extends Model {
     var attributes = json['attributes'];
     model ??= Brand();
     model.id = json['id'];
+    Model.fromModel(model, attributes);
     model.description = attributes['description'] ?? '';
     model.name = attributes['name'];
     return model;

@@ -175,7 +175,7 @@ class _EmployeePageState extends State<EmployeePage>
                   ? EmployeeStatus.inactive
                   : EmployeeStatus.active;
             });
-
+            _source.refreshDatasource();
             flash.showBanner(
                 title: 'Sukses',
                 description: 'karyawan ${employee.code} sukses $statusName',
@@ -222,6 +222,7 @@ class _EmployeePageState extends State<EmployeePage>
               setState(() {
                 Employee.fromJson(response.data['data'], model: employee);
               });
+              _source.refreshDatasource();
             }, onError: (error, stack) {
               defaultErrorResponse(error: error);
             });

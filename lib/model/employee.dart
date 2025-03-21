@@ -204,6 +204,8 @@ class Employee extends Model {
   Map<String, dynamic> toMap() => {
         'code': code.trim(),
         'name': name,
+        'role': role,
+        'payroll': payroll,
         'role.name': role.name,
         'role_id': role.id,
         'status': status,

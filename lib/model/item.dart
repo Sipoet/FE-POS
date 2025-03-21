@@ -66,6 +66,7 @@ class Item extends Model {
     var attributes = json['attributes'];
     model ??= Item();
     model.id = json['id'];
+    Model.fromModel(model, attributes);
     model.code = attributes['code'];
     model.name = attributes['name'];
     model.description = attributes['description'];

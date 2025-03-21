@@ -38,4 +38,9 @@ class Payroll extends Model {
         convert: PayrollLine.fromJson);
     return model;
   }
+
+  @override
+  String toString() {
+    return name;
+  }
 }
