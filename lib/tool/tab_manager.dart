@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pluto_layout/pluto_layout.dart';
 import 'package:tabbed_view/tabbed_view.dart';
 
 class TabManager extends ChangeNotifier {
@@ -10,6 +11,46 @@ class TabManager extends ChangeNotifier {
   List<Widget?> get tabViews => controller.tabs
       .map<Widget?>((tabItemDetail) => tabItemDetail.content)
       .toList();
+  Widget? _safeAreaContent;
+  Widget? get safeAreaContent => _safeAreaContent;
+
+  void setSafeAreaContent(String title, Widget content) {
+    _safeAreaContent = SizedBox(
+      width: 400,
+      key: ValueKey(title),
+      child: Padding(
+        padding: EdgeInsets.all(5),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 5),
+                  child: Text(
+                    title,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                IconButton(
+                    onPressed: () => removeRightContent(),
+                    icon: Icon(Icons.close))
+              ],
+            ),
+            content,
+          ],
+        ),
+      ),
+    );
+    notifyListeners();
+  }
+
+  void removeRightContent() {
+    PlutoLayoutActions.hideAllTabView();
+    debugPrint('click close');
+    _safeAreaContent = null;
+    notifyListeners();
+  }
 
   int emptyIndex = 0;
   TabManager({tabItemDetails = const []})

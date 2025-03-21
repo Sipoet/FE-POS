@@ -44,6 +44,7 @@ class _DesktopLayoutState extends State<DesktopLayout>
   @override
   Widget build(BuildContext context) {
     final tabManager = context.watch<TabManager>();
+    debugPrint('build desktop again');
     final message =
         'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: $version | Allegra POS';
     return Scaffold(
@@ -71,6 +72,11 @@ class _DesktopLayoutState extends State<DesktopLayout>
               menuTree: widget.menuTree,
             ),
           ),
+          right: PlutoLayoutContainer(
+              child: tabManager.safeAreaContent ??
+                  SizedBox(
+                    width: 5,
+                  )),
           body: PlutoLayoutContainer(
             backgroundColor: Theme.of(context).colorScheme.surface,
             child: Padding(
