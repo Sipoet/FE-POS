@@ -163,4 +163,7 @@ class ItemReport extends Model {
         'cogs': cogs,
         'qty_return': numberOfReturn
       };
+
+  @override
+  String get modelValue => itemCode;
 }

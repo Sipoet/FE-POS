@@ -106,4 +106,7 @@ class Sale extends Model {
     model.bankCode = attributes['bank_code'] ?? '';
     return model;
   }
+
+  @override
+  String get modelValue => code;
 }

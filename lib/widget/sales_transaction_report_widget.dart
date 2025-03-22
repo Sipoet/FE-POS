@@ -140,7 +140,8 @@ class _SalesTransactionReportWidgetState
         if (!_controller.isAnimating)
           Table(
             columnWidths: const {
-              2: FixedColumnWidth(180),
+              2: FlexColumnWidth(2.5),
+              3: FlexColumnWidth(1),
               1: FixedColumnWidth(10),
             },
             children: [

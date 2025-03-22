@@ -122,4 +122,7 @@ class PurchaseReturnItem extends Model {
     Model.fromModel(model, attributes);
     return model;
   }
+
+  @override
+  String get modelValue => id.toString();
 }

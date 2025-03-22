@@ -68,4 +68,6 @@ class ItemSalesPeriodReport extends Model {
         'sales_total': salesTotal,
         'is_consignment': isConsignment,
       };
+  @override
+  String get modelValue => itemCode;
 }

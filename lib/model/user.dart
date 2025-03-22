@@ -85,4 +85,7 @@ class User extends Model {
     model.role = role ?? model.role;
     return model;
   }
+
+  @override
+  String get modelValue => username;
 }

@@ -176,10 +176,10 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
         if (!_controller.isAnimating) const Divider(),
         if (!_controller.isAnimating)
           Table(
-            // columnWidths: const {
-            //   0: FlexColumnWidth(0.5),
-            //   1: FixedColumnWidth(10)
-            // },
+            columnWidths: const {
+              3: FlexColumnWidth(2),
+              2: FlexColumnWidth(0.5)
+            },
             border: TableBorder.all(
               color: Colors.grey.shade400.withValues(alpha: 0.5),
             ),
@@ -283,9 +283,8 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
   }
 
   void _openSaleDetail(Sale sale) {
-    debugPrint('clicked');
     final tabManager = context.read<TabManager>();
-    tabManager.addTab(
-        'Detail Penjualan ${sale.code}', SaleFormPage(sale: sale));
+    tabManager.setSafeAreaContent(
+        'Penjualan ${sale.code}', SaleFormPage(sale: sale));
   }
 }

@@ -92,4 +92,9 @@ class Item extends Model {
         convert: Brand.fromJson);
     return model;
   }
+
+  Percentage get margin => Percentage(1 - (sellPrice / cogs).value);
+
+  @override
+  String get modelValue => "$code - $name";
 }

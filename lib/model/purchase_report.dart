@@ -181,4 +181,6 @@ class PurchaseReport extends Model {
         'debt_amount': debtAmount,
         'status': status.humanize(),
       };
+  @override
+  String get modelValue => code;
 }

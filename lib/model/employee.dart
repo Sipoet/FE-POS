@@ -228,7 +228,5 @@ class Employee extends Model {
       };
 
   @override
-  String toString() {
-    return "$code - $name";
-  }
+  String get modelValue => "$code - $name";
 }

@@ -68,4 +68,7 @@ class Transfer extends Model {
 
     return model;
   }
+
+  @override
+  String get modelValue => code;
 }

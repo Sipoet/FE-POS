@@ -27,4 +27,7 @@ class Holiday extends Model {
     model.date = Date.tryParse(attributes['date'] ?? '') ?? model.date;
     return model;
   }
+
+  @override
+  String get modelValue => description ?? '';
 }

@@ -107,4 +107,7 @@ class EdcSettlement extends Model {
         relation: json['relationships']?['cashier_session']);
     return model;
   }
+
+  @override
+  String get modelValue => id.toString();
 }

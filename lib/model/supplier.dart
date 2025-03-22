@@ -62,4 +62,7 @@ class Supplier extends Model {
     model.description = attributes['description'];
     return model;
   }
+
+  @override
+  String get modelValue => id.toString();
 }

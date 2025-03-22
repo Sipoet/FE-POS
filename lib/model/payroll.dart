@@ -40,7 +40,5 @@ class Payroll extends Model {
   }
 
   @override
-  String toString() {
-    return name;
-  }
+  String get modelValue => name;
 }

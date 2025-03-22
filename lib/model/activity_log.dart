@@ -36,4 +36,7 @@ class ActivityLog extends Model {
         createdAt: DateTime.tryParse(attributes['created_at'] ?? ''),
         event: attributes['event']);
   }
+
+  @override
+  String get modelValue => '$event - $itemType - ${id.toString()}';
 }

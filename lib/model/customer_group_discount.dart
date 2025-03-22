@@ -95,6 +95,7 @@ class CustomerGroupDiscount extends Model {
         'start_active_date': startActiveDate,
         'end_active_date': endActiveDate,
         'level': level,
+        'customer_group': customerGroup,
         'customer_group_code': customerGroupCode,
         'variable1': variable1,
         'variable2': variable2,
@@ -136,4 +137,7 @@ class CustomerGroupDiscount extends Model {
         model.customerGroup;
     return model;
   }
+
+  @override
+  String get modelValue => customerGroupCode;
 }

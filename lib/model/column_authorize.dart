@@ -24,4 +24,7 @@ class ColumnAuthorize extends Model {
         attributes['column'].map<String>((e) => e.toString()).toList();
     return model;
   }
+
+  @override
+  String get modelValue => '$table ${column.join(',')}';
 }

@@ -30,4 +30,7 @@ class DiscountItemType extends Model {
         'item_type.jenis': itemTypeName,
         'is_exclude': isExclude
       };
+
+  @override
+  String get modelValue => itemType?.modelValue ?? '';
 }

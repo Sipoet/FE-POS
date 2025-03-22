@@ -13,9 +13,7 @@ class Brand extends Model {
       };
 
   @override
-  String toString() {
-    return name;
-  }
+  String get modelValue => name;
 
   @override
   factory Brand.fromJson(Map<String, dynamic> json,

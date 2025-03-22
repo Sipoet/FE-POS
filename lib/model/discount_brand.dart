@@ -30,4 +30,7 @@ class DiscountBrand extends Model {
         'brand.merek': brandName,
         'is_exclude': isExclude
       };
+
+  @override
+  String get modelValue => brand?.modelValue ?? '';
 }

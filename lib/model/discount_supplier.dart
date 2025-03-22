@@ -30,4 +30,7 @@ class DiscountSupplier extends Model {
         'supplier.kode': supplierCode,
         'is_exclude': isExclude
       };
+
+  @override
+  String get modelValue => supplier?.modelValue ?? '';
 }

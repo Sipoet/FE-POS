@@ -186,20 +186,18 @@ mixin TableDecorator<T extends Model>
   DataCell decorateValue(T model, TableColumn column) {
     final jsonData = model.toMap();
     final cell = jsonData[column.name];
-    final val = _formatData(cell);
-    if (column.type.isModel()) {
+    if (column.type.isModel() && cell is Model) {
       return DataCell(
           Align(
             alignment: Alignment.topLeft,
             child: Text(
-              val,
+              cell.modelValue,
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          onTap: () => _openModelDetailPage(
-              tableColumn: column,
-              value: jsonData[column.inputOptions['model_name']]));
+          onTap: () => _openModelDetailPage(tableColumn: column, value: cell));
     }
+    final val = _formatData(cell);
     return DataCell(Tooltip(
       message: val,
       triggerMode: TooltipTriggerMode.longPress,
@@ -230,6 +228,7 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
   final String _formatNumber = '#,###.#';
   final String _locale = 'id_ID';
   late final Server server;
+  final route = ModelRoute();
   PlutoColumnType _parseColumnType(TableColumn tableColumn,
       {List<Enum>? listEnumValues}) {
     switch (tableColumn.type) {
@@ -284,7 +283,6 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
 
   void _openModelDetailPage(
       {required TableColumn tableColumn, required Model value}) {
-    final route = ModelRoute();
     if (isDesktop()) {
       tabManager.setSafeAreaContent(
           "${tableColumn.humanizeName} ${value.id}", route.detailPageOf(value));
@@ -337,7 +335,7 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
                 ),
                 child: Align(
                     alignment: Alignment.topLeft,
-                    child: Text(value.toString())),
+                    child: Text(value.modelValue)),
               );
             }
             if (value is double) {
@@ -559,7 +557,7 @@ class PlutoColumnTypeModelSelect implements PlutoColumnType {
   @override
   int compare(dynamic a, dynamic b) {
     return _compareWithNull(a, b, () {
-      return a.toString().compareTo(b.toString());
+      return a.modelValue.compareTo(b.modelValue);
     });
   }
 

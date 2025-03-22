@@ -82,4 +82,7 @@ class EmployeeDayOff extends Model {
     model.dayOfWeek = attributes['day_of_week'];
     return model;
   }
+
+  @override
+  String get modelValue => "${dayOfWeek.toString()} - ${activeWeek.toString()}";
 }

@@ -69,4 +69,9 @@ class BookPayslipLine extends Model {
     model.transactionDate = Date.parse(attributes['transaction_date']);
     return model;
   }
+
+  @override
+  String get modelValue =>
+      description ??
+      '${group.toString()} ${payrollType.modelValue} ${id.toString()}';
 }

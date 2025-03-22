@@ -39,6 +39,8 @@ abstract class Model {
     return toMap()[key];
   }
 
+  String get modelValue;
+
   bool get isNewRecord => id == null;
 
   static void fromModel(Model model, Map attributes) {

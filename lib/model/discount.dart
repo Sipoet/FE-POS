@@ -369,4 +369,7 @@ class Discount extends Model {
   double? get discount2Nominal => discount2?.value;
   double? get discount3Nominal => discount3?.value;
   double? get discount4Nominal => discount4?.value;
+
+  @override
+  String get modelValue => code;
 }

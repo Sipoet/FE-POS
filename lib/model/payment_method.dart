@@ -107,4 +107,6 @@ class PaymentMethod extends Model {
         'provider': providerCode,
         'payment_type': paymentType,
       };
+  @override
+  String get modelValue => name;
 }
