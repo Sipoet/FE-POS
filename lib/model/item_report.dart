@@ -111,22 +111,28 @@ class ItemReport extends Model {
             relation: json['relationships']?['item'],
             included: included,
             convert: Item.fromJson) ??
-        Item(id: model.itemCode);
+        Item(id: model.itemCode, code: model.itemCode, name: model.itemName);
     model.itemType = Model.findRelationData<ItemType>(
             relation: json['relationships']?['item_type'],
             included: included,
             convert: ItemType.fromJson) ??
-        ItemType(id: model.itemTypeName);
+        ItemType(
+            id: model.itemTypeName,
+            name: model.itemTypeName,
+            description: model.itemTypeDesc);
     model.brand = Model.findRelationData<Brand>(
             relation: json['relationships']?['brand'],
             included: included,
             convert: Brand.fromJson) ??
-        Brand(id: model.brandName);
+        Brand(id: model.brandName, name: model.brandName ?? '');
     model.supplier = Model.findRelationData<Supplier>(
             relation: json['relationships']?['supplier'],
             included: included,
             convert: Supplier.fromJson) ??
-        Supplier(id: model.supplierCode);
+        Supplier(
+            id: model.supplierCode,
+            code: model.supplierCode,
+            name: model.supplierName);
     return model;
   }
 

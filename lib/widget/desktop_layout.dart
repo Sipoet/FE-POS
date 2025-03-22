@@ -6,6 +6,7 @@ import 'package:fe_pos/model/menu.dart';
 import 'package:pluto_layout/pluto_layout.dart';
 import 'package:pluto_menu_bar/pluto_menu_bar.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_resizable_container/flutter_resizable_container.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:tabbed_view/tabbed_view.dart';
 
@@ -44,7 +45,6 @@ class _DesktopLayoutState extends State<DesktopLayout>
   @override
   Widget build(BuildContext context) {
     final tabManager = context.watch<TabManager>();
-    debugPrint('build desktop again');
     final message =
         'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: $version | Allegra POS';
     return Scaffold(
@@ -72,30 +72,39 @@ class _DesktopLayoutState extends State<DesktopLayout>
               menuTree: widget.menuTree,
             ),
           ),
-          right: PlutoLayoutContainer(
-              child: tabManager.safeAreaContent ??
-                  SizedBox(
-                    width: 5,
-                  )),
           body: PlutoLayoutContainer(
             backgroundColor: Theme.of(context).colorScheme.surface,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 10.0),
-              child: TabbedViewTheme(
-                data: TabbedViewThemeData.classic(
-                    colorSet: Colors.grey, fontSize: 16),
-                child: TabbedView(
-                    onTabSelection: (tabIndex) =>
-                        tabManager.selectedIndex = tabIndex ?? -1,
-                    onTabClose: (tabIndex, tabData) {
-                      tabManager.goTo(tabIndex - 1);
-                    },
-                    controller: tabManager.controller),
-              ),
+            child: ResizableContainer(
+              direction: Axis.horizontal,
+              divider: ResizableDivider(
+                  thickness: 5, padding: 5, color: Colors.blueGrey.shade300),
+              children: [
+                ResizableChild(minSize: 500, child: tabViewWidget(tabManager)),
+                if (tabManager.safeAreaContent != null)
+                  ResizableChild(
+                      minSize: 350,
+                      maxSize: 800,
+                      child: tabManager.safeAreaContent!),
+              ],
             ),
           ),
         ));
   }
+
+  Widget tabViewWidget(TabManager tabManager) => Padding(
+        padding: const EdgeInsets.only(top: 10.0),
+        child: TabbedViewTheme(
+          data:
+              TabbedViewThemeData.classic(colorSet: Colors.grey, fontSize: 16),
+          child: TabbedView(
+              onTabSelection: (tabIndex) =>
+                  tabManager.selectedIndex = tabIndex ?? -1,
+              onTabClose: (tabIndex, tabData) {
+                tabManager.goTo(tabIndex - 1);
+              },
+              controller: tabManager.controller),
+        ),
+      );
 }
 
 class TopMenuBar extends StatefulWidget {

@@ -29,7 +29,7 @@ class _SupplierFormPageState extends State<SupplierFormPage>
       _controller[key] = TextEditingController(text: value.toString());
     });
     super.initState();
-    if (supplier.rawData.isEmpty) {
+    if (supplier.rawData.isEmpty || !supplier.isNewRecord) {
       Future.delayed(Duration.zero, fetchSupplier);
     }
   }

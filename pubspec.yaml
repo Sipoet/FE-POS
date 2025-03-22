@@ -59,6 +59,7 @@ dependencies:
   pluto_menu_bar: ^3.0.1
   tabbed_view: ^1.19.1
   flutter_sortable_wrap: ^1.0.5
+  flutter_resizable_container: ^3.0.4
 dev_dependencies:
   flutter_test:
     sdk: flutter

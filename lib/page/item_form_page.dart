@@ -29,7 +29,6 @@ class _ItemFormPageState extends State<ItemFormPage>
   void initState() {
     _flash = Flash();
     _setting = context.read<Setting>();
-    super.initState();
     _server = context.read<Server>();
     item.toMap().forEach((key, value) {
       _controller[key] = TextEditingController(text: value.toString());
@@ -46,8 +45,11 @@ class _ItemFormPageState extends State<ItemFormPage>
       if (mounted && response.statusCode == 200) {
         Item.fromJson(response.data['data'],
             included: response.data['included'] ?? [], model: item);
-        item.toMap().forEach((key, value) {
-          _controller[key]!.text = value.toString();
+
+        setState(() {
+          item.toMap().forEach((key, value) {
+            _controller[key]!.text = value.toString();
+          });
         });
       }
     }).whenComplete(() => hideLoadingPopup());
@@ -132,15 +134,27 @@ class _ItemFormPageState extends State<ItemFormPage>
           ),
           MoneyFormField(
             controller: _controller['cogs'],
-            onChanged: (value) => item.cogs = value ?? item.cogs,
+            onChanged: (value) {
+              item.cogs = value ?? item.cogs;
+              _controller['margin']!.text = item.margin.toString();
+            },
             label: Text(_setting.columnName('item', 'cogs')),
           ),
           const SizedBox(
             height: 10,
           ),
+          Align(
+              alignment: Alignment.centerLeft,
+              child: Text('Margin: ${item.margin.format()}')),
+          const SizedBox(
+            height: 10,
+          ),
           MoneyFormField(
             controller: _controller['sell_price'],
-            onChanged: (value) => item.sellPrice = value ?? item.sellPrice,
+            onChanged: (value) {
+              item.sellPrice = value ?? item.sellPrice;
+              _controller['margin']!.text = item.margin.toString();
+            },
             label: Text(_setting.columnName('item', 'sell_price')),
           ),
           const SizedBox(

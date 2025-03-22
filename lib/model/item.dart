@@ -56,11 +56,6 @@ class Item extends Model {
       };
 
   @override
-  String toString() {
-    return name;
-  }
-
-  @override
   factory Item.fromJson(Map<String, dynamic> json,
       {Item? model, List included = const []}) {
     var attributes = json['attributes'];
@@ -93,7 +88,9 @@ class Item extends Model {
     return model;
   }
 
-  Percentage get margin => Percentage(1 - (sellPrice / cogs).value);
+  Percentage get margin => cogs == Money(0)
+      ? Percentage(0)
+      : Percentage((sellPrice / cogs).value - 1);
 
   @override
   String get modelValue => "$code - $name";

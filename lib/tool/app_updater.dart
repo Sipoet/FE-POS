@@ -150,10 +150,8 @@ mixin AppUpdater<T extends StatefulWidget> on State<T>
                 : null;
             OpenFile.open(filePath, type: type).then((openFileResponse) {
               if (openFileResponse.type != ResultType.done) {
-                debugPrint('====error open file ${openFileResponse.message}');
                 return;
               } else {
-                debugPrint('====success open file');
                 navigator.pop();
               }
             }, onError: (error) => defaultErrorResponse(error: error));

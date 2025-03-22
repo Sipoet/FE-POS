@@ -65,7 +65,6 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
                 (line) => SalesTransactionReport.fromJson(line))
             .toList();
         stateManager.setModels(salesTransactionReports, columns);
-        debugPrint('total rows ${salesTransactionReports.length.toString()}');
       });
     },
         onError: (error, trace) =>

@@ -460,7 +460,6 @@ class _CustomAsyncDataTable2State<T extends Model>
         _source.setShowColumnFooter(widget.showSummary);
         _source.columnFooterHeight = 130.0;
         _source.eventManager!.listener((event) {
-          debugPrint("listener ${event.type.toString()}");
           if (event is PlutoGridChangeColumnFilterEvent) {
             final columType = event.column.type;
             if (columType is PlutoColumnTypeModelSelect) {
@@ -568,7 +567,9 @@ class _CustomAsyncDataTable2State<T extends Model>
             ],
             debounceMilliseconds: 500,
             resolveDefaultColumnFilter: (column, resolver) {
-              if (column.type is PlutoColumnTypeModelSelect) {
+              if (column.type is PlutoColumnTypeModelSelect ||
+                  column.type is PlutoColumnTypeNumber ||
+                  column.type is PlutoColumnTypeCurrency) {
                 return resolver<PlutoFilterTypeEquals>();
               } else {
                 return resolver<PlutoFilterTypeContains>();

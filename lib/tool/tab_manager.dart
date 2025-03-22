@@ -15,20 +15,22 @@ class TabManager extends ChangeNotifier {
   Widget? get safeAreaContent => _safeAreaContent;
 
   void setSafeAreaContent(String title, Widget content) {
-    _safeAreaContent = SizedBox(
-      width: 400,
-      key: ValueKey(title),
+    _safeAreaContent = SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.all(5),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
+              spacing: 10,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Padding(
                   padding: const EdgeInsets.only(left: 5),
                   child: Text(
                     title,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: true,
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),

@@ -283,6 +283,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.23"
+  flutter_resizable_container:
+    dependency: "direct main"
+    description:
+      name: flutter_resizable_container
+      sha256: "3f1db9f40620692dce5473902a5a20d9ab1094e251050662b7d3ea7725919c05"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.4"
   flutter_riverpod:
     dependency: transitive
     description:
