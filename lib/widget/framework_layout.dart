@@ -159,7 +159,16 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     key: 'salesTransactionReport',
                   ),
                   Menu(
-                    icon: Icons.pages,
+                    icon: Icons.line_axis,
+                    isClosed: true,
+                    label: 'Grafik Transaksi Penjualan Periode',
+                    isDisabled:
+                        !setting.isAuthorize('sale', 'transactionReport'),
+                    pageFunct: () => const SalesTransactionGraphPage(),
+                    key: 'salesTransactionGraph',
+                  ),
+                  Menu(
+                    icon: Icons.table_chart,
                     isClosed: true,
                     label: 'Item Penjualan Periode',
                     isDisabled:
@@ -168,7 +177,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     key: 'itemSalesPeriodReport',
                   ),
                   Menu(
-                    icon: Icons.pages,
+                    icon: Icons.table_chart,
                     isClosed: true,
                     label: 'Laporan Grup Penjualan',
                     isDisabled:
