@@ -135,8 +135,9 @@ class _ItemFormPageState extends State<ItemFormPage>
           MoneyFormField(
             controller: _controller['cogs'],
             onChanged: (value) {
-              item.cogs = value ?? item.cogs;
-              _controller['margin']!.text = item.margin.toString();
+              setState(() {
+                item.cogs = value ?? item.cogs;
+              });
             },
             label: Text(_setting.columnName('item', 'cogs')),
           ),
@@ -152,8 +153,9 @@ class _ItemFormPageState extends State<ItemFormPage>
           MoneyFormField(
             controller: _controller['sell_price'],
             onChanged: (value) {
-              item.sellPrice = value ?? item.sellPrice;
-              _controller['margin']!.text = item.margin.toString();
+              setState(() {
+                item.sellPrice = value ?? item.sellPrice;
+              });
             },
             label: Text(_setting.columnName('item', 'sell_price')),
           ),

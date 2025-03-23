@@ -26,9 +26,7 @@ class AllegraPos extends StatelessWidget {
           title: 'Allegra POS',
           theme: ThemeData(
             fontFamily: 'Lato',
-            textTheme: Theme.of(context)
-                .textTheme
-                .apply(fontSizeFactor: 1.2, fontFamily: 'Lato'),
+            textTheme: Theme.of(context).textTheme.apply(fontFamily: 'Lato'),
             useMaterial3: true,
             colorScheme: ColorScheme.fromSeed(
                 seedColor: const Color.fromARGB(255, 135, 239, 154)),
@@ -45,6 +43,14 @@ class AllegraPos extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
+          builder: (_, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: MediaQuery.of(context)
+                  .textScaler
+                  .clamp(minScaleFactor: 0.8, maxScaleFactor: 1.2),
+            ),
+            child: child!,
+          ),
           supportedLocales: const [
             Locale('en'),
             Locale('id'),
