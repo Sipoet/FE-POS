@@ -5,6 +5,7 @@ export 'testing_page.dart';
 // report group
 export 'item_report_page.dart';
 export 'sales_transaction_report_page.dart';
+export 'sales_transaction_graph_page.dart';
 export 'item_sales_period_report_page.dart';
 export 'sales_group_by_supplier_report_page.dart';
 export 'payslip_report_page.dart';
