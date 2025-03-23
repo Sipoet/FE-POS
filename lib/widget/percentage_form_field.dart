@@ -56,10 +56,16 @@ class _PercentageFormFieldState extends State<PercentageFormField>
   }
 
   @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TextFormField(
       enableSuggestions: false,
-      controller: _controller,
+      controller: widget.controller == null ? null : _controller,
       readOnly: widget.readOnly,
       focusNode: widget.focusNode,
       onSaved: widget.onSaved is Function

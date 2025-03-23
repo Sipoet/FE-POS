@@ -360,12 +360,12 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
           TableCell(
               child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(edcSummary.totalInSystem.toString()),
+            child: Text(edcSummary.totalInSystem.format()),
           )),
         TableCell(
             child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text(edcSummary.totalInInput.toString()),
+          child: Text(edcSummary.totalInInput.format()),
         )),
         TableCell(
             child: Padding(

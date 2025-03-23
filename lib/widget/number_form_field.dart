@@ -31,7 +31,7 @@ class NumberFormField<T extends num> extends StatefulWidget {
 
 class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
     with TextFormatter {
-  late final TextEditingController? _controller;
+  late TextEditingController? _controller;
 
   T? _valueFromInput(String input) {
     input = input.replaceAll(',', '');
@@ -42,6 +42,12 @@ class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
     } else {
       throw 'not support $T';
     }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
   }
 
   @override
@@ -59,9 +65,11 @@ class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
 
   @override
   Widget build(BuildContext context) {
+    final value =
+        widget.initialValue == null ? null : numberFormat(widget.initialValue);
     return TextFormField(
       enableSuggestions: false,
-      controller: _controller,
+      controller: widget.controller == null ? null : _controller,
       readOnly: widget.readOnly,
       focusNode: widget.focusNode,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -89,7 +97,7 @@ class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
           label: widget.label,
           hintText: widget.hintText,
           border: const OutlineInputBorder()),
-      initialValue: numberFormat(widget.initialValue),
+      initialValue: value,
     );
   }
 }

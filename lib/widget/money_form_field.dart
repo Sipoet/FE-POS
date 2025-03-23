@@ -52,13 +52,19 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
   }
 
   @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final value = widget.initialValue == null
         ? null
         : numberFormat(widget.initialValue?.value);
     return TextFormField(
       enableSuggestions: false,
-      controller: _controller,
+      controller: widget.controller == null ? null : _controller,
       readOnly: widget.readOnly,
       focusNode: widget.focusNode,
       enabled: widget.enabled,
