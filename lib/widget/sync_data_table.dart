@@ -72,7 +72,7 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
     }).toList();
     rows = widget.rows
         .map<PlutoRow>(
-            (row) => decorateRow(data: row, tableColumns: widget.columns))
+            (row) => decorateRow(model: row, tableColumns: widget.columns))
         .toList();
 
     super.initState();

@@ -90,21 +90,19 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         type: TableColumnType.money,
         name: 'discount_amount',
         humanizeName: 'Jumlah Diskon',
-        renderBody: (PlutoColumnRendererContext rendererContext) {
-          Money sellPrice =
-              Money(rendererContext.row.cells['sell_price']?.value ?? 0);
-          String value = '';
+        getValue: (Model model) {
+          model = model as ItemReport;
+          Money sellPrice = model.sellPrice;
           if (discount.calculationType == DiscountCalculationType.nominal) {
-            value = discount.discount1Nominal.format();
+            return discount.discount1Nominal;
           } else if (discount.calculationType ==
               DiscountCalculationType.percentage) {
-            value = _calculateChanellingDiscount(sellPrice, discount).format();
+            return _calculateChanellingDiscount(sellPrice, discount);
           } else if (discount.calculationType ==
               DiscountCalculationType.specialPrice) {
-            value = (sellPrice - discount.discount1Nominal).format();
+            return (sellPrice - discount.discount1Nominal);
           }
-          return Align(
-              alignment: Alignment.topRight, child: SelectableText(value));
+          return null;
         },
       ),
       TableColumn(
@@ -112,23 +110,20 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         type: TableColumnType.money,
         name: 'sell_price_after_discount',
         humanizeName: 'Harga Setelah Diskon',
-        renderBody: (PlutoColumnRendererContext rendererContext) {
-          Money sellPrice =
-              Money(rendererContext.row.cells['sell_price']?.value ?? 0);
-          String value = '';
+        getValue: (Model model) {
+          model = model as ItemReport;
+          Money sellPrice = model.sellPrice;
           if (discount.calculationType == DiscountCalculationType.nominal) {
-            value = (sellPrice - discount.discount1Nominal).format();
+            return sellPrice - discount.discount1Nominal;
           } else if (discount.calculationType ==
               DiscountCalculationType.percentage) {
-            value =
-                (sellPrice - _calculateChanellingDiscount(sellPrice, discount))
-                    .format();
+            return sellPrice -
+                _calculateChanellingDiscount(sellPrice, discount);
           } else if (discount.calculationType ==
               DiscountCalculationType.specialPrice) {
-            value = discount.discount1Nominal.format();
+            return discount.discount1Nominal;
           }
-          return Align(
-              alignment: Alignment.topRight, child: SelectableText(value));
+          return null;
         },
       ),
       TableColumn(
@@ -136,10 +131,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         name: 'profit_after_discount',
         type: TableColumnType.money,
         humanizeName: 'Jumlah Profit Setelah Diskon',
-        renderBody: (PlutoColumnRendererContext rendererContext) {
-          Money sellPrice =
-              Money(rendererContext.row.cells['sell_price']?.value ?? 0);
-          Money cogs = Money(rendererContext.row.cells['cogs']?.value ?? 0);
+        getValue: (Model model) {
+          model = model as ItemReport;
+          Money sellPrice = model.sellPrice;
+          Money cogs = model.cogs;
           Money newPrice = sellPrice;
           if (discount.calculationType == DiscountCalculationType.nominal) {
             newPrice = sellPrice - discount.discount1Nominal;
@@ -151,9 +146,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
               DiscountCalculationType.specialPrice) {
             newPrice = discount.discount1Nominal;
           }
-          return Align(
-              alignment: Alignment.topRight,
-              child: SelectableText((newPrice - cogs).format()));
+          return newPrice - cogs;
         },
       ),
       TableColumn(
@@ -161,10 +154,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         name: 'profit_margin_after_discount',
         type: TableColumnType.percentage,
         humanizeName: 'Profit Setelah Diskon(%)',
-        renderBody: (PlutoColumnRendererContext rendererContext) {
-          Money sellPrice =
-              Money(rendererContext.row.cells['sell_price']?.value ?? 0);
-          Money cogs = Money(rendererContext.row.cells['cogs']?.value ?? 0);
+        getValue: (Model model) {
+          model = model as ItemReport;
+          Money sellPrice = model.sellPrice;
+          Money cogs = model.cogs;
           Money newPrice = sellPrice;
           if (discount.calculationType == DiscountCalculationType.nominal) {
             newPrice = sellPrice - discount.discount1Nominal;
@@ -176,10 +169,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
               DiscountCalculationType.specialPrice) {
             newPrice = discount.discount1Nominal;
           }
-          final margin = _marginOf(newPrice, cogs);
-          return Align(
-              alignment: Alignment.topRight,
-              child: SelectableText(margin.format()));
+          if (cogs == Money(0)) {
+            return Percentage(0);
+          }
+          return _marginOf(newPrice, cogs);
         },
       ),
     ]);
@@ -225,35 +218,35 @@ class _DiscountFormPageState extends State<DiscountFormPage>
           discount.items.map((line) => line.code).toList().join(',');
     }
     if (discount.suppliers.isNotEmpty) {
-      param['filter[supplier_code][eq]'] =
+      param['filter[supplier][eq]'] =
           discount.suppliers.map((line) => line.code).toList().join(',');
     }
     if (discount.itemTypes.isNotEmpty) {
-      param['filter[item_type_name][eq]'] =
+      param['filter[item_type][eq]'] =
           discount.itemTypes.map((line) => line.name).toList().join(',');
     }
     if (discount.brands.isNotEmpty) {
-      param['filter[brand_name][eq]'] =
+      param['filter[brand][eq]'] =
           discount.brands.map((line) => line.name).toList().join(',');
     }
     if (discount.blacklistItems.isNotEmpty) {
-      param['filter[item_code][not]'] =
+      param['filter[item][not]'] =
           discount.blacklistItems.map((line) => line.code).toList().join(',');
     }
     if (discount.blacklistSuppliers.isNotEmpty) {
-      param['filter[supplier_code][not]'] = discount.blacklistSuppliers
+      param['filter[supplier][not]'] = discount.blacklistSuppliers
           .map((line) => line.code)
           .toList()
           .join(',');
     }
     if (discount.blacklistItemTypes.isNotEmpty) {
-      param['filter[item_type_name][not]'] = discount.blacklistItemTypes
+      param['filter[item_type][not]'] = discount.blacklistItemTypes
           .map((line) => line.name)
           .toList()
           .join(',');
     }
     if (discount.blacklistBrands.isNotEmpty) {
-      param['filter[brand_name][not]'] =
+      param['filter[brand][not]'] =
           discount.blacklistBrands.map((line) => line.name).toList().join(',');
     }
     server.get('item_reports', queryParam: param).then((response) {

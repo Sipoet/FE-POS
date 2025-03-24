@@ -543,7 +543,7 @@ class _CustomAsyncDataTable2State<T extends Model>
                         .map<PlutoRow>(
                           (model) => decorateRow(
                               isChecked: _containsCheckedValue(model.toMap()),
-                              data: model,
+                              model: model,
                               tableColumns: widget.columns),
                         )
                         .toList(),

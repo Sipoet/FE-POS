@@ -85,6 +85,7 @@ class TableColumn {
   String name;
   TableColumnType type;
   Widget Function(PlutoColumnRendererContext rendererContext)? renderBody;
+  dynamic Function(Model model)? getValue;
   String humanizeName;
   bool canSort;
   bool canFilter;
@@ -96,6 +97,7 @@ class TableColumn {
       required this.clientWidth,
       this.excelWidth,
       this.renderBody,
+      this.getValue,
       this.frozen = PlutoColumnFrozen.none,
       Map<String, dynamic>? inputOptions,
       this.type = TableColumnType.text,
@@ -255,6 +257,7 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
         return PlutoColumnType.select(
             listEnumValues ?? tableColumn.inputOptions['enums'] ?? []);
       case TableColumnType.percentage:
+        return PlutoColumnTypePercentage();
       case TableColumnType.number:
         return PlutoColumnType.number(locale: _locale, format: _formatNumber);
       case TableColumnType.boolean:
@@ -265,15 +268,15 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
   }
 
   PlutoRow decorateRow(
-      {required Model data,
+      {required Model model,
       required List<TableColumn> tableColumns,
       bool isChecked = false}) {
-    final rowMap = data.toMap();
+    final rowMap = model.toMap();
     Map<String, PlutoCell> cells = {};
     for (final tableColumn in tableColumns) {
       var value = rowMap[tableColumn.name];
-      if (value is Percentage || value is Money) {
-        value = value.value;
+      if (tableColumn.getValue != null) {
+        value = tableColumn.getValue!(model);
       }
       cells[tableColumn.name] = PlutoCell(value: value);
     }
@@ -338,17 +341,21 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
                     child: Text(value.modelValue)),
               );
             }
-            if (value is double) {
-              if (tableColumn.type.isMoney()) {
-                value = Money(value).format();
-              } else if (tableColumn.type.isPercentage()) {
-                value = Percentage(value).format();
-              } else {
-                value = numberFormat(value);
-              }
+
+            if (value is Money || value is Percentage) {
               return Align(
-                  alignment: Alignment.topRight, child: SelectableText(value));
+                  alignment: Alignment.topRight,
+                  child: SelectableText(value.format()));
+            } else if (value is double && tableColumn.type.isMoney()) {
+              return Align(
+                  alignment: Alignment.topRight,
+                  child: SelectableText(moneyFormat(value)));
+            } else if (value is num) {
+              return Align(
+                  alignment: Alignment.topRight,
+                  child: SelectableText(numberFormat(value)));
             }
+
             return Align(
                 alignment: Alignment.topLeft,
                 child: SelectableText(value.toString()));
@@ -477,7 +484,7 @@ extension TableStateMananger on PlutoGridStateManager {
 
   void appendModel(model, List<TableColumn> tableColumns) {
     appendRows(
-        [decorator.decorateRow(data: model, tableColumns: tableColumns)]);
+        [decorator.decorateRow(model: model, tableColumns: tableColumns)]);
     notifyListeners();
   }
 
@@ -487,7 +494,7 @@ extension TableStateMananger on PlutoGridStateManager {
     }
     final rowsTemp = models
         .map<PlutoRow>((model) =>
-            decorator.decorateRow(data: model, tableColumns: tableColumns))
+            decorator.decorateRow(model: model, tableColumns: tableColumns))
         .toList();
     appendRows(rowsTemp);
     notifyListeners();
@@ -565,6 +572,82 @@ class PlutoColumnTypeModelSelect implements PlutoColumnType {
   dynamic makeCompareValue(dynamic v) {
     return v;
   }
+
+  int _compareWithNull(
+    dynamic a,
+    dynamic b,
+    int Function() resolve,
+  ) {
+    if (a == null || b == null) {
+      return a == b
+          ? 0
+          : a == null
+              ? -1
+              : 1;
+    }
+
+    return resolve();
+  }
+}
+
+class PlutoColumnTypePercentage implements PlutoColumnType {
+  @override
+  final Percentage? defaultValue;
+
+  const PlutoColumnTypePercentage({this.defaultValue});
+
+  @override
+  int compare(dynamic a, dynamic b) {
+    return _compareWithNull(a, b, () {
+      return a.compareTo(b);
+    });
+  }
+
+  @override
+  dynamic makeCompareValue(dynamic v) {
+    return v?.value;
+  }
+
+  @override
+  bool isValid(dynamic value) => value is Percentage;
+
+  int _compareWithNull(
+    dynamic a,
+    dynamic b,
+    int Function() resolve,
+  ) {
+    if (a == null || b == null) {
+      return a == b
+          ? 0
+          : a == null
+              ? -1
+              : 1;
+    }
+
+    return resolve();
+  }
+}
+
+class PlutoColumnTypeMoney implements PlutoColumnType {
+  @override
+  final Percentage? defaultValue;
+
+  const PlutoColumnTypeMoney({this.defaultValue});
+
+  @override
+  int compare(dynamic a, dynamic b) {
+    return _compareWithNull(a, b, () {
+      return a.compareTo(b);
+    });
+  }
+
+  @override
+  dynamic makeCompareValue(dynamic v) {
+    return v;
+  }
+
+  @override
+  bool isValid(dynamic value) => value is Percentage;
 
   int _compareWithNull(
     dynamic a,
