@@ -97,7 +97,7 @@ class LeftMenubar extends StatefulWidget {
 }
 
 class _LeftMenubarState extends State<LeftMenubar>
-    with SessionState, DefaultResponse, AppUpdater {
+    with SessionState, DefaultResponse, AppUpdater, PlatformChecker {
   Map<String, bool> iconStatus = {};
   late final TabManager tabManager;
   @override
@@ -110,13 +110,15 @@ class _LeftMenubarState extends State<LeftMenubar>
   Widget build(BuildContext context) {
     final menuWidgets = listMenuNested(widget.menuTree);
     final server = context.read<Server>();
-    menuWidgets.add(ListTile(
-      leading: const Icon(Icons.update),
-      onTap: () {
-        checkUpdate(server, isManual: true);
-      },
-      title: const Text('Check Update App'),
-    ));
+    if (!isWeb()) {
+      menuWidgets.add(ListTile(
+        leading: const Icon(Icons.update),
+        onTap: () {
+          checkUpdate(server, isManual: true);
+        },
+        title: const Text('Check Update App'),
+      ));
+    }
     menuWidgets.add(ListTile(
       leading: const Icon(Icons.power_settings_new),
       onTap: () {

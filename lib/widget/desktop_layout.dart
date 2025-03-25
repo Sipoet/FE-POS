@@ -60,10 +60,11 @@ class _DesktopLayoutState extends State<DesktopLayout>
             ),
           ),
           actions: [
-            IconButton(
-                onPressed: () => checkUpdate(server, isManual: true),
-                tooltip: 'Check Update App',
-                icon: Icon(Icons.update)),
+            if (!isWeb())
+              IconButton(
+                  onPressed: () => checkUpdate(server, isManual: true),
+                  tooltip: 'Check Update App',
+                  icon: Icon(Icons.update)),
             IconButton(
               icon: const Icon(Icons.power_settings_new),
               tooltip: 'Logout',
