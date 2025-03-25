@@ -519,7 +519,7 @@ class _RoleFormPageState extends State<RoleFormPage>
                                                 'search_text': searchText,
                                                 'controller_name':
                                                     accessAuthorize.controller,
-                                                'page[page]': page
+                                                'page[page]': page.toString(),
                                               },
                                               cancelToken: cancelToken);
                                         },
@@ -610,7 +610,9 @@ class _RoleFormPageState extends State<RoleFormPage>
                                               queryParam: {
                                                 'search_text': searchText,
                                                 'table_name':
-                                                    columnAuthorize.table
+                                                    columnAuthorize.table,
+                                                'page[page]': page.toString(),
+                                                'page[limit]': '50',
                                               },
                                               cancelToken: cancelToken);
                                         }),
