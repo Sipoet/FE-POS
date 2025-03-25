@@ -280,7 +280,8 @@ class _EmployeePageState extends State<EmployeePage>
               columns: _source.columns,
               enums: const {
                 'status': EmployeeStatus.values,
-                'marital_status': EmployeeMaritalStatus.values
+                'marital_status': EmployeeMaritalStatus.values,
+                'religion': Religion.values,
               },
               onSubmit: (filter) {
                 _filter = filter;

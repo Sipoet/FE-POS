@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/holiday.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
@@ -143,6 +144,22 @@ class _HolidayFormPageState extends State<HolidayFormPage>
                         firstDate: DateTime(2023),
                         lastDate: DateTime.now().add(const Duration(days: 31)),
                         initialValue: holiday.date),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  DropdownMenu<Religion>(
+                    width: 200,
+                    menuHeight: 200,
+                    label: Text('Agama'),
+                    initialSelection: holiday.religion,
+                    onSelected: (value) =>
+                        holiday.religion = value ?? holiday.religion,
+                    dropdownMenuEntries: Religion.values
+                        .map<DropdownMenuEntry<Religion>>((religion) =>
+                            DropdownMenuEntry<Religion>(
+                                value: religion, label: religion.humanize()))
+                        .toList(),
                   ),
                   const SizedBox(
                     height: 10,

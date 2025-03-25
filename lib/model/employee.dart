@@ -10,6 +10,76 @@ import 'package:fe_pos/model/work_schedule.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/model/work_schedule.dart';
 
+enum Religion {
+  buddhism,
+  catholic,
+  christian,
+  hindu,
+  islam,
+  khonghucu,
+  other;
+
+  @override
+  String toString() {
+    switch (this) {
+      case catholic:
+        return 'catholic';
+      case christian:
+        return 'christian';
+      case buddhism:
+        return 'buddhism';
+      case hindu:
+        return 'hindu';
+      case khonghucu:
+        return 'khonghucu';
+      case islam:
+        return 'islam';
+      case other:
+        return 'other';
+    }
+  }
+
+  factory Religion.fromString(String value) {
+    switch (value) {
+      case 'catholic':
+        return catholic;
+      case 'christian':
+        return christian;
+      case 'buddhism':
+        return buddhism;
+      case 'hindu':
+        return hindu;
+      case 'khonghucu':
+        return khonghucu;
+      case 'islam':
+        return islam;
+      case 'other':
+        return other;
+      default:
+        throw '$value is not valid employee status';
+    }
+  }
+
+  String humanize() {
+    switch (this) {
+      case catholic:
+        return 'Katolik';
+      case christian:
+        return 'Kristen';
+      case buddhism:
+        return 'Budha';
+      case hindu:
+        return 'Hindu';
+      case khonghucu:
+        return 'Khonghucu';
+      case islam:
+        return 'Islam';
+      case other:
+        return 'Other';
+    }
+  }
+}
+
 enum EmployeeStatus {
   active,
   inactive;
@@ -113,7 +183,8 @@ class Employee extends Model {
   String? description;
   String? bankRegisterName;
   String? taxNumber;
-
+  String? email;
+  Religion religion;
   String? imageCode;
   String code;
   int shift;
@@ -126,6 +197,8 @@ class Employee extends Model {
       this.name = '',
       Role? role,
       this.payroll,
+      this.email,
+      this.religion = Religion.other,
       this.debt = const Money(0),
       Date? startWorkingDate,
       this.endWorkingDate,
@@ -197,6 +270,8 @@ class Employee extends Model {
     model.imageCode = attributes['image_code'];
     model.shift = attributes['shift'];
     model.bankRegisterName = attributes['bank_register_name'];
+    model.religion = Religion.fromString(attributes['religion']);
+    model.email = attributes['email'];
     return model;
   }
 
@@ -205,6 +280,7 @@ class Employee extends Model {
         'code': code.trim(),
         'name': name,
         'role': role,
+        'email': email,
         'payroll': payroll,
         'role.name': role.name,
         'role_id': role.id,
@@ -224,6 +300,9 @@ class Employee extends Model {
         'payroll.name': payroll?.name,
         'marital_status': maritalStatus,
         'tax_number': taxNumber,
+        'religion': religion,
+        'created_at': createdAt,
+        'updated_at': updatedAt,
         'bank_register_name': bankRegisterName,
       };
 
