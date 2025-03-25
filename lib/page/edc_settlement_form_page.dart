@@ -5,10 +5,9 @@ import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
-import 'package:fe_pos/tool/thousand_separator_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
+import 'package:fe_pos/widget/money_form_field.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class EdcSettlementFormPage extends StatefulWidget {
@@ -188,18 +187,10 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
       TableCell(
           child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: TextFormField(
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            ThousandSeparatorFormatter(),
-          ],
-          decoration: const InputDecoration(border: OutlineInputBorder()),
-          initialValue: edcSettlement.amount.value.toString(),
+        child: MoneyFormField(
+          initialValue: edcSettlement.amount,
           onChanged: (value) {
-            edcSettlement.amount =
-                Money.tryParse(value.replaceAll(RegExp(r','), '')) ??
-                    const Money(0);
+            edcSettlement.amount = value ?? const Money(0);
           },
         ),
       )),
