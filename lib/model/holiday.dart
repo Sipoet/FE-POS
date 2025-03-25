@@ -26,7 +26,9 @@ class Holiday extends Model {
     model ??= Holiday();
     model.id = json['id'];
     Model.fromModel(model, attributes);
-    model.religion = Religion.fromString(attributes['religion']);
+    model.religion = attributes['religion'] == null
+        ? null
+        : Religion.fromString(attributes['religion']);
     model.description = attributes['description'];
     model.date = Date.tryParse(attributes['date'] ?? '') ?? model.date;
     return model;

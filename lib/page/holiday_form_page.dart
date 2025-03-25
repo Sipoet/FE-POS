@@ -169,9 +169,12 @@ class _HolidayFormPageState extends State<HolidayFormPage>
                     child: TextFormField(
                       decoration: const InputDecoration(
                           label: Text(
-                        'Deskripsi',
-                        style: labelStyle,
-                      )),
+                            'Deskripsi',
+                            style: labelStyle,
+                          ),
+                          border: OutlineInputBorder()),
+                      minLines: 3,
+                      maxLines: 5,
                       onChanged: (value) => holiday.description = value,
                       initialValue: holiday.description,
                     ),

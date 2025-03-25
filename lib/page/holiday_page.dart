@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/holiday.dart';
@@ -201,6 +202,7 @@ class _HolidayPageState extends State<HolidayPage>
           children: [
             TableFilterForm(
               columns: _source.columns,
+              enums: {'religion': Religion.values},
               onSubmit: (filter) {
                 _filter = filter;
                 refreshTable();

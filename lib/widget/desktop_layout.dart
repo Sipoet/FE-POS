@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,7 @@ class _DesktopLayoutState extends State<DesktopLayout>
         TickerProviderStateMixin,
         SessionState,
         PlatformChecker,
+        AppUpdater,
         DefaultResponse {
   final List<String> disableClosedTabs = ['Home'];
   String version = '';
@@ -45,6 +47,7 @@ class _DesktopLayoutState extends State<DesktopLayout>
   @override
   Widget build(BuildContext context) {
     final tabManager = context.watch<TabManager>();
+    final server = context.read<Server>();
     final message =
         'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: $version | Allegra POS';
     return Scaffold(
@@ -58,12 +61,17 @@ class _DesktopLayoutState extends State<DesktopLayout>
           ),
           actions: [
             IconButton(
+                onPressed: () => checkUpdate(server, isManual: true),
+                tooltip: 'Check Update App',
+                icon: Icon(Icons.update)),
+            IconButton(
               icon: const Icon(Icons.power_settings_new),
+              tooltip: 'Logout',
               onPressed: () {
                 final server = context.read<Server>();
                 logout(server);
               },
-            )
+            ),
           ],
         ),
         body: PlutoLayout(

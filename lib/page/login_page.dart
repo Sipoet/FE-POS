@@ -48,6 +48,12 @@ class _LoginPageState extends State<LoginPage>
     return Scaffold(
       appBar: AppBar(
         title: Text('Login | VERSION: $version'),
+        actions: [
+          IconButton(
+              onPressed: () => checkUpdate(server, isManual: true),
+              tooltip: 'Check Update App',
+              icon: Icon(Icons.update)),
+        ],
       ),
       body: Center(
           child: Container(
