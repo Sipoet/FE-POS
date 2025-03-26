@@ -283,7 +283,11 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
 
   void _removeEdcSettlement(EdcSettlement edcSettlement) {
     setState(() {
-      edcSettlements.remove(edcSettlement);
+      if (edcSettlement.isNewRecord) {
+        edcSettlements.remove(edcSettlement);
+      } else {
+        edcSettlement.flagDestroy();
+      }
     });
   }
 
@@ -437,6 +441,8 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
                                   decoration: const BoxDecoration()),
                             ] +
                             edcSettlements
+                                .where((edcSettlement) =>
+                                    !edcSettlement.isDestroyed)
                                 .map<TableRow>(
                                     (edcSettlement) => _rowForm(edcSettlement))
                                 .toList()),
