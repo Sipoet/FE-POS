@@ -8,10 +8,10 @@ import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
+import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:fe_pos/widget/money_form_field.dart';
 import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/percentage_form_field.dart';
-import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/model/discount.dart';
@@ -198,7 +198,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     });
   }
 
-  void refreshTable() {
+  Future<DataTableResponse<ItemReport>> fetchItem(DataTableRequest request) {
     _source.setShowLoading(true);
     setState(() {
       discount1 = discount.discount1;
@@ -206,15 +206,18 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       discount3 = discount.discount3;
       discount4 = discount.discount4;
     });
-
+    var sortParams = request.sorts
+        .map<String>((sort) => sort.isAscending ? sort.key : "-${sort.key}")
+        .toList()
+        .join(',');
     Map<String, dynamic> param = {
-      'page[page]': '1',
-      'page[limit]': '1000',
+      'page[page]': request.page.toString(),
+      'page[limit]': '50',
       'report_type': 'json',
-      'sort': 'item_code',
+      'sort': sortParams,
     };
     if (discount.items.isNotEmpty) {
-      param['filter[item_code][eq]'] =
+      param['filter[item][eq]'] =
           discount.items.map((line) => line.code).toList().join(',');
     }
     if (discount.suppliers.isNotEmpty) {
@@ -249,7 +252,15 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       param['filter[brand][not]'] =
           discount.blacklistBrands.map((line) => line.name).toList().join(',');
     }
-    server.get('item_reports', queryParam: param).then((response) {
+    request.filter.forEach((key, value) {
+      if (param[key] == null) {
+        param[key] = value;
+      } else {
+        param[key] = "${param[key]},$value";
+      }
+    });
+
+    return server.get('item_reports', queryParam: param).then((response) {
       try {
         if (response.statusCode != 200) {
           flash.showBanner(
@@ -261,13 +272,21 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         final models = data['data'].map<ItemReport>((row) {
           return ItemReport.fromJson(row, included: data['included'] ?? []);
         }).toList();
-        _source.setModels(models, _columns);
+        return DataTableResponse<ItemReport>(
+            models: models, totalPage: data['meta']['total_pages']);
       } catch (error, stackTrace) {
         debugPrint(error.toString());
         debugPrint(stackTrace.toString());
+        return DataTableResponse<ItemReport>();
       }
-    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => _source.setShowLoading(false));
+    }, onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse<ItemReport>();
+    }).whenComplete(() => _source.setShowLoading(false));
+  }
+
+  void refreshTable() {
+    _source.refreshTable();
   }
 
   Percentage _marginOf(Money sellPrice, Money buyPrice) {
@@ -376,7 +395,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
           setState(() {
             discount.id = int.tryParse(data['id']);
             discount.code = data['attributes']['code'];
-            var tabManager = context.read<TabManager>();
+            final tabManager = context.read<TabManager>();
             tabManager.changeTabHeader(
                 widget, 'Edit discount ${discount.code}');
           });
@@ -423,10 +442,16 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         () => hideLoadingPopup());
   }
 
+  static const labelStyle =
+      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    const labelStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+
+    final padding = MediaQuery.of(context).padding;
+    final size = MediaQuery.of(context).size;
+    double tableHeight = size.height - padding.top - padding.bottom - 250;
+    tableHeight = tableHeight < 400 ? 400 : tableHeight;
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Padding(
@@ -1196,9 +1221,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                   height: 10,
                                 ),
                                 SizedBox(
-                                  height: 550,
-                                  child: SyncDataTable<ItemReport>(
+                                  height: tableHeight,
+                                  child: CustomAsyncDataTable2<ItemReport>(
                                     columns: _columns,
+                                    fetchData: (request) => fetchItem(request),
                                     fixedLeftColumns: 2,
                                     onLoaded: (stateManager) =>
                                         _source = stateManager,
