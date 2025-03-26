@@ -278,7 +278,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
             ),
           ));
     }
-    return TableRow(children: rows);
+    return TableRow(key: ObjectKey(edcSettlement), children: rows);
   }
 
   void _removeEdcSettlement(EdcSettlement edcSettlement) {

@@ -380,7 +380,8 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                                     style: labelStyle))),
                       ],
                       rows: payslip.lines
-                          .map<DataRow>((payslipLine) => DataRow(cells: [
+                          .map<DataRow>((payslipLine) =>
+                              DataRow(key: ObjectKey(payslipLine), cells: [
                                 DataCell(DropdownMenu<PayrollGroup>(
                                   initialSelection: payslipLine.group,
                                   onSelected: (value) => payslipLine.group =
