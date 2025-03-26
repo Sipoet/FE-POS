@@ -267,7 +267,8 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                     style: labelStyle))),
                       ],
                       rows: payroll.lines
-                          .map<DataRow>((payrollLine) => DataRow(cells: [
+                          .map<DataRow>((payrollLine) =>
+                              DataRow(key: ObjectKey(payrollLine), cells: [
                                 DataCell(DropdownMenu<PayrollGroup>(
                                   initialSelection: payrollLine.group,
                                   onSelected: (value) => payrollLine.group =

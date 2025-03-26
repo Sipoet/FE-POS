@@ -6,6 +6,7 @@ abstract class Model {
   DateTime? createdAt;
   DateTime? updatedAt;
   Map rawData;
+  bool _flagDestroyed = false;
   Model({this.createdAt, this.updatedAt, this.id, this.rawData = const {}});
   Map<String, dynamic> toMap();
 
@@ -14,11 +15,22 @@ abstract class Model {
     value['created_at'] = createdAt;
     value['updated_at'] = updatedAt;
     value['id'] = id;
+    value['_destroy'] = _flagDestroyed;
     return value;
   }
 
+  bool get isDestroyed => _flagDestroyed;
+
+  void flagDestroy() {
+    _flagDestroyed = true;
+  }
+
+  void unflagDestroy() {
+    _flagDestroyed = false;
+  }
+
   Map<String, dynamic> toJson() {
-    var json = toMap();
+    var json = asMap();
     json.forEach((key, object) {
       if (object is Money) {
         json[key] = object.value;

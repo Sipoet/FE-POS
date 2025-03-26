@@ -32,7 +32,7 @@ class MoneyFormField extends StatefulWidget {
 }
 
 class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
-  late final TextEditingController? _controller;
+  TextEditingController? _controller;
   Money? _valueFromInput(String input) {
     input = input.replaceAll(',', '');
     return Money.tryParse(input);

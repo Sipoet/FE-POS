@@ -31,7 +31,7 @@ class NumberFormField<T extends num> extends StatefulWidget {
 
 class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
     with TextFormatter {
-  late TextEditingController? _controller;
+  TextEditingController? _controller;
 
   T? _valueFromInput(String input) {
     input = input.replaceAll(',', '');

@@ -32,7 +32,7 @@ class PercentageFormField extends StatefulWidget {
 
 class _PercentageFormFieldState extends State<PercentageFormField>
     with TextFormatter {
-  late final TextEditingController? _controller;
+  TextEditingController? _controller;
 
   Percentage? _valueFromInput(String input) {
     final percentValue = double.tryParse(input);
