@@ -289,6 +289,11 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               isDisabled: !setting.isAuthorize('saleItem', 'index'),
               pageFunct: () => const SaleItemPage(),
             ),
+            Menu(
+                icon: Icons.monetization_on,
+                label: 'Cek Harga',
+                key: 'check_price',
+                pageFunct: () => const CheckPricePage()),
           ]),
       Menu(
           icon: Icons.inventory,

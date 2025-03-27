@@ -21,7 +21,6 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
   final bool showSummary;
   final List<T> rows;
   final List<TableColumn> columns;
-  final void Function(int)? onPageChanged;
   final Map<String, List<Enum>> enums;
   final OnLoadedCallBack? onLoaded;
   final OnRowCheckedCallback? onRowChecked;
@@ -31,7 +30,6 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
 
   const SyncDataTable({
     super.key,
-    this.onPageChanged,
     this.actions,
     this.onLoaded,
     this.showFilter = true,

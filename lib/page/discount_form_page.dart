@@ -52,8 +52,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final List<TableColumn> _columns = [];
   late FocusNode _focusNode;
   final _whitelistColumns = [
-    'item_code',
-    'item_name',
+    'item',
     'item_type_name',
     'brand_name',
     'supplier_code',
