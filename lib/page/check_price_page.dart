@@ -2,11 +2,11 @@ import 'package:fe_pos/model/item_with_discount.dart';
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
-import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_barcode_scanner_plus/flutter_barcode_scanner_plus.dart';
 
 class CheckPricePage extends StatefulWidget {
   const CheckPricePage({super.key});
@@ -65,7 +65,18 @@ class _CheckPricePageState extends State<CheckPricePage>
     super.initState();
   }
 
-  void _openCamera() {}
+  void _openCamera() {
+    FlutterBarcodeScanner.scanBarcode(
+            '#ff6666', 'Batal', true, ScanMode.BARCODE)
+        .then((res) {
+      if (res.isNotEmpty && res != '-1') {
+        setState(() {
+          finalSearch = res;
+        });
+        _searchItem();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,23 +87,39 @@ class _CheckPricePageState extends State<CheckPricePage>
     return VerticalBodyScroll(
       child: Column(
         children: [
-          ElevatedButton.icon(
-              icon: Icon(Icons.camera_alt_outlined),
-              onPressed: () => _openCamera(),
-              label: Text('Open Camera')),
-          const SizedBox(
-            height: 10,
+          Offstage(
+            offstage: !(isIOS() || isAndroid()),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: ElevatedButton.icon(
+                  icon: Icon(
+                    Icons.camera_alt_outlined,
+                    size: 45,
+                  ),
+                  onPressed: () => _openCamera(),
+                  label: Text('Open Camera')),
+            ),
           ),
           TextFormField(
             controller: _controller,
             onFieldSubmitted: (value) {
+              setState(() {
+                finalSearch = value;
+                _controller.text = '';
+              });
               _searchItem();
             },
             decoration: InputDecoration(
                 label: Text('Barcode / keterangan barang'),
                 border: OutlineInputBorder(),
                 suffixIcon: IconButton(
-                    onPressed: _searchItem, icon: Icon(Icons.search))),
+                    onPressed: () {
+                      setState(() {
+                        finalSearch = _controller.text;
+                        _controller.text = '';
+                      });
+                    },
+                    icon: Icon(Icons.search))),
           ),
           const SizedBox(
             height: 10,
@@ -117,11 +144,6 @@ class _CheckPricePageState extends State<CheckPricePage>
   }
 
   void _searchItem() {
-    setState(() {
-      finalSearch = _controller.text;
-      _controller.text = '';
-    });
-
     if (finalSearch == null || finalSearch!.trim().isEmpty) {
       return;
     }

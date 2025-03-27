@@ -64,6 +64,7 @@ class _LoadingPageState extends State<LoadingPage>
         AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
         permissions.addAll([
           Permission.requestInstallPackages,
+          Permission.camera,
         ]);
         if (androidInfo.version.sdkInt <= 32) {
           permissions.add(Permission.storage);
