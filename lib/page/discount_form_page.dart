@@ -977,13 +977,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                                       .discount1Percentage;
                                                 }
                                                 _discount2Controller.text =
-                                                    discount.discount2Nominal
+                                                    discount.discount2
                                                         .toString();
                                                 _discount3Controller.text =
-                                                    discount.discount3Nominal
+                                                    discount.discount3
                                                         .toString();
                                                 _discount4Controller.text =
-                                                    discount.discount4Nominal
+                                                    discount.discount4
                                                         .toString();
                                               });
                                             },
@@ -1014,13 +1014,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                                 discount.discount4 =
                                                     discount.discount2;
                                                 _discount2Controller.text =
-                                                    discount.discount2Nominal
+                                                    discount.discount2
                                                         .toString();
                                                 _discount3Controller.text =
-                                                    discount.discount3Nominal
+                                                    discount.discount3
                                                         .toString();
                                                 _discount4Controller.text =
-                                                    discount.discount4Nominal
+                                                    discount.discount4
                                                         .toString();
                                               });
                                             },
@@ -1051,13 +1051,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                                 discount.discount4 =
                                                     discount.discount2;
                                                 _discount2Controller.text =
-                                                    discount.discount2Nominal
+                                                    discount.discount2
                                                         .toString();
                                                 _discount3Controller.text =
-                                                    discount.discount3Nominal
+                                                    discount.discount3
                                                         .toString();
                                                 _discount4Controller.text =
-                                                    discount.discount4Nominal
+                                                    discount.discount4
                                                         .toString();
                                               });
                                             },

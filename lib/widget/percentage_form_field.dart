@@ -39,7 +39,7 @@ class _PercentageFormFieldState extends State<PercentageFormField>
     if (percentValue == null) {
       return null;
     }
-    return Percentage(percentValue / 100);
+    return Percentage(percentValue / 100.0);
   }
 
   @override

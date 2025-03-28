@@ -20,7 +20,8 @@ class _CheckPricePageState extends State<CheckPricePage>
   String? finalSearch;
   late final Server _server;
   final _controller = TextEditingController();
-  late final PlutoGridStateManager _source;
+  PlutoGridStateManager? _source;
+  List<ItemWithDiscount> models = [];
   final List<TableColumn> _columns = [
     TableColumn(
         clientWidth: 120,
@@ -78,8 +79,11 @@ class _CheckPricePageState extends State<CheckPricePage>
     });
   }
 
+  static const labelStyle = TextStyle(fontWeight: FontWeight.bold);
+
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final padding = MediaQuery.of(context).padding;
     final size = MediaQuery.of(context).size;
     double tableHeight = size.height - padding.top - padding.bottom - 280;
@@ -90,7 +94,7 @@ class _CheckPricePageState extends State<CheckPricePage>
           Offstage(
             offstage: !(isIOS() || isAndroid()),
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(top: 10, bottom: 10),
               child: ElevatedButton.icon(
                   icon: Icon(
                     Icons.camera_alt_outlined,
@@ -132,11 +136,168 @@ class _CheckPricePageState extends State<CheckPricePage>
               )),
           SizedBox(
             height: tableHeight,
-            child: SyncDataTable(
-              showFilter: false,
-              columns: _columns,
-              onLoaded: (stateManager) => _source = stateManager,
-            ),
+            child: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+              if (size.height > size.width || size.height <= 420) {
+                return ListView(
+                  children: models
+                      .map<Widget>((model) => Card(
+                            surfaceTintColor: colorScheme.outline,
+                            child: ListTile(
+                              key: ValueKey(model.code),
+                              title: RichText(
+                                text: TextSpan(
+                                    text: "Kode Item: ",
+                                    style: TextStyle(color: Colors.black),
+                                    children: [
+                                      TextSpan(
+                                          text: model.code, style: labelStyle)
+                                    ]),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Table(
+                                    columnWidths: {
+                                      0: FlexColumnWidth(1),
+                                      1: FlexColumnWidth(2)
+                                    },
+                                    border: TableBorder(
+                                      horizontalInside: BorderSide(
+                                        color: Colors.grey.shade400
+                                            .withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                    children: [
+                                      TableRow(children: [
+                                        TableCell(
+                                            child: Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: Text(
+                                            'Nama Item',
+                                            style: labelStyle,
+                                          ),
+                                        )),
+                                        TableCell(
+                                            child: Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: Text(
+                                            model.name,
+                                          ),
+                                        ))
+                                      ]),
+                                      TableRow(children: [
+                                        TableCell(
+                                            child: Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: Text(
+                                            'Harga Jual',
+                                            style: labelStyle,
+                                          ),
+                                        )),
+                                        TableCell(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Align(
+                                              alignment: Alignment.topRight,
+                                              child: Text(model.sellPrice
+                                                  .format(decimalDigits: 0)),
+                                            ),
+                                          ),
+                                        ),
+                                      ]),
+                                      if (model.discountDesc != null &&
+                                          model.discountDesc!.isNotEmpty)
+                                        TableRow(children: [
+                                          TableCell(
+                                              child: Padding(
+                                            padding: const EdgeInsets.all(5.0),
+                                            child: Text(
+                                              'Diskon',
+                                              style: labelStyle,
+                                            ),
+                                          )),
+                                          TableCell(
+                                              child: Padding(
+                                            padding: const EdgeInsets.all(5.0),
+                                            child: Text(
+                                              model.discountDesc ?? '',
+                                            ),
+                                          ))
+                                        ]),
+                                      if (model.sellPrice !=
+                                          model.sellPriceAfterDiscount)
+                                        TableRow(children: [
+                                          TableCell(
+                                              child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Harga Setelah Diskon',
+                                              style: labelStyle,
+                                            ),
+                                          )),
+                                          TableCell(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Align(
+                                                alignment: Alignment.topRight,
+                                                child: Text(model
+                                                    .sellPriceAfterDiscount
+                                                    .format(decimalDigits: 0)),
+                                              ),
+                                            ),
+                                          ),
+                                        ]),
+                                      TableRow(children: [
+                                        TableCell(
+                                            child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            'Stok',
+                                            style: labelStyle,
+                                          ),
+                                        )),
+                                        TableCell(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                                "TOKO: ${model.storeStock}, Gudang: ${model.warehouseStock}"),
+                                          ),
+                                        ),
+                                      ]),
+                                      TableRow(children: [
+                                        TableCell(
+                                            child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            'Satuan',
+                                            style: labelStyle,
+                                          ),
+                                        )),
+                                        TableCell(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(model.uom),
+                                          ),
+                                        ),
+                                      ]),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ))
+                      .toList(),
+                );
+              } else {
+                return SyncDataTable(
+                  showFilter: false,
+                  columns: _columns,
+                  onLoaded: (stateManager) => _source = stateManager,
+                );
+              }
+            }),
           ),
         ],
       ),
@@ -147,21 +308,24 @@ class _CheckPricePageState extends State<CheckPricePage>
     if (finalSearch == null || finalSearch!.trim().isEmpty) {
       return;
     }
-    _source.setShowLoading(true);
+    _source?.setShowLoading(true);
     _server.get('items/with_discount', queryParam: {
       'search_text': finalSearch,
       'page[page]': '1',
       'page[limit]': '100'
     }).then((response) {
-      if (response.statusCode == 200) {
+      if (mounted && response.statusCode == 200) {
         final data = response.data;
-        final models = data['data']
-            .map<ItemWithDiscount>((row) => ItemWithDiscount.fromJson(row,
-                included: data['included'] ?? []))
-            .toList();
-        _source.setModels(models, _columns);
+        setState(() {
+          models = data['data']
+              .map<ItemWithDiscount>((row) => ItemWithDiscount.fromJson(row,
+                  included: data['included'] ?? []))
+              .toList();
+        });
+
+        _source?.setModels(models, _columns);
       }
     }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => _source.setShowLoading(false));
+        () => _source?.setShowLoading(false));
   }
 }

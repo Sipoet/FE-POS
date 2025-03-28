@@ -192,7 +192,7 @@ class _UserFormPageState extends State<UserFormPage>
                     height: 10,
                   ),
                   Visibility(
-                    visible: setting.canShow('user', 'role_id'),
+                    visible: setting.canShow('user', 'role'),
                     child: AsyncDropdown<Role>(
                       allowClear: false,
                       converter: Role.fromJson,
