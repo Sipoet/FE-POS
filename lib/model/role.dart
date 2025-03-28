@@ -55,4 +55,7 @@ class Role extends Model {
     model.name = attributes['name'];
     return model;
   }
+
+  @override
+  String get modelValue => name;
 }

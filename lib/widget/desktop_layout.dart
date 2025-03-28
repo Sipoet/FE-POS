@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:fe_pos/model/menu.dart';
 import 'package:pluto_layout/pluto_layout.dart';
 import 'package:pluto_menu_bar/pluto_menu_bar.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_resizable_container/flutter_resizable_container.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:tabbed_view/tabbed_view.dart';
 
@@ -29,6 +31,7 @@ class _DesktopLayoutState extends State<DesktopLayout>
         TickerProviderStateMixin,
         SessionState,
         PlatformChecker,
+        AppUpdater,
         DefaultResponse {
   final List<String> disableClosedTabs = ['Home'];
   String version = '';
@@ -44,6 +47,7 @@ class _DesktopLayoutState extends State<DesktopLayout>
   @override
   Widget build(BuildContext context) {
     final tabManager = context.watch<TabManager>();
+    final server = context.read<Server>();
     final message =
         'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: $version | Allegra POS';
     return Scaffold(
@@ -56,13 +60,19 @@ class _DesktopLayoutState extends State<DesktopLayout>
             ),
           ),
           actions: [
+            if (!isWeb())
+              IconButton(
+                  onPressed: () => checkUpdate(server, isManual: true),
+                  tooltip: 'Check Update App',
+                  icon: Icon(Icons.update)),
             IconButton(
               icon: const Icon(Icons.power_settings_new),
+              tooltip: 'Logout',
               onPressed: () {
                 final server = context.read<Server>();
                 logout(server);
               },
-            )
+            ),
           ],
         ),
         body: PlutoLayout(
@@ -73,23 +83,37 @@ class _DesktopLayoutState extends State<DesktopLayout>
           ),
           body: PlutoLayoutContainer(
             backgroundColor: Theme.of(context).colorScheme.surface,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 10.0),
-              child: TabbedViewTheme(
-                data: TabbedViewThemeData.classic(
-                    colorSet: Colors.grey, fontSize: 16),
-                child: TabbedView(
-                    onTabSelection: (tabIndex) =>
-                        tabManager.selectedIndex = tabIndex ?? -1,
-                    onTabClose: (tabIndex, tabData) {
-                      tabManager.goTo(tabIndex - 1);
-                    },
-                    controller: tabManager.controller),
-              ),
+            child: ResizableContainer(
+              direction: Axis.horizontal,
+              divider: ResizableDivider(
+                  thickness: 5, padding: 5, color: Colors.blueGrey.shade300),
+              children: [
+                ResizableChild(minSize: 500, child: tabViewWidget(tabManager)),
+                if (tabManager.safeAreaContent != null)
+                  ResizableChild(
+                      minSize: 350,
+                      maxSize: 800,
+                      child: tabManager.safeAreaContent!),
+              ],
             ),
           ),
         ));
   }
+
+  Widget tabViewWidget(TabManager tabManager) => Padding(
+        padding: const EdgeInsets.only(top: 10.0),
+        child: TabbedViewTheme(
+          data:
+              TabbedViewThemeData.classic(colorSet: Colors.grey, fontSize: 16),
+          child: TabbedView(
+              onTabSelection: (tabIndex) =>
+                  tabManager.selectedIndex = tabIndex ?? -1,
+              onTabClose: (tabIndex, tabData) {
+                tabManager.goTo(tabIndex - 1);
+              },
+              controller: tabManager.controller),
+        ),
+      );
 }
 
 class TopMenuBar extends StatefulWidget {

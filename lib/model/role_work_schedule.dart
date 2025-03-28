@@ -58,4 +58,7 @@ class RoleWorkSchedule extends Model {
     model.isFlexible = attributes['is_flexible'];
     return model;
   }
+
+  @override
+  String get modelValue => id.toString();
 }

@@ -65,11 +65,11 @@ class Payslip extends Model {
   int late;
   List<PayslipLine> lines;
   Payslip(
-      {required this.employee,
-      required this.payroll,
+      {Employee? employee,
+      Payroll? payroll,
       this.status = PayslipStatus.draft,
-      required this.startDate,
-      required this.endDate,
+      Date? startDate,
+      Date? endDate,
       this.paymentTime,
       this.grossSalary = 0,
       this.notes,
@@ -86,13 +86,19 @@ class Payslip extends Model {
       this.lines = const [],
       super.createdAt,
       super.updatedAt,
-      super.id});
+      super.id})
+      : employee = employee ?? Employee(),
+        payroll = payroll ?? Payroll(name: ''),
+        startDate = startDate ?? Date.today(),
+        endDate = endDate ?? Date.today();
 
   @override
   Map<String, dynamic> toMap() => {
-        'employee.name': employee.name,
+        'employee_name': employee.name,
         'employee_id': employee.id,
         'payroll_id': payroll.id,
+        'payroll': payroll,
+        'employee': employee,
         'payroll.name': payroll.name,
         'status': status.toString(),
         'start_date': startDate,
@@ -163,4 +169,7 @@ class Payslip extends Model {
     }
     return model;
   }
+
+  @override
+  String get modelValue => id.toString();
 }

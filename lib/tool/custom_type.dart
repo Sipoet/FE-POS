@@ -49,6 +49,50 @@ class TimeDay extends TimeOfDay {
   }
 }
 
+extension DateTimeExt on DateTime {
+  DateTime beginningOfDay() {
+    return copyWith(
+        hour: 0, minute: 0, second: 0, microsecond: 0, millisecond: 0);
+  }
+
+  DateTime endOfDay() {
+    return add(Duration(days: 1))
+        .beginningOfDay()
+        .subtract(Duration(milliseconds: 1));
+  }
+
+  DateTime beginningOfWeek() {
+    int dayT = weekday;
+    return subtract(Duration(days: dayT - 1)).beginningOfDay();
+  }
+
+  DateTime endOfWeek() {
+    int dayT = 7 - weekday;
+    return add(Duration(days: dayT)).endOfDay();
+  }
+
+  DateTime beginningOfMonth() {
+    return DateTime(year, month, 1);
+  }
+
+  DateTime endOfMonth() {
+    if (month == 12) {
+      return DateTime(year, month, 31).endOfDay();
+    } else {
+      return DateTime(year, month + 1, 1)
+          .subtract(const Duration(milliseconds: 1));
+    }
+  }
+
+  DateTime beginningOfYear() {
+    return DateTime(year, 1, 1);
+  }
+
+  DateTime endOfYear() {
+    return DateTime(year, 12, 31).endOfWeek();
+  }
+}
+
 class Date extends DateTime {
   Date(
     super.year, [

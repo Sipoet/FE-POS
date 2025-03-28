@@ -3,6 +3,7 @@ import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class TableFilterForm extends StatefulWidget {
   final List<TableColumn> columns;
@@ -137,23 +138,21 @@ class _TableFilterFormState extends State<TableFilterForm> {
 
   Widget formFilter(TableColumn column) {
     switch (column.type) {
-      case 'string':
+      case TableColumnType.text:
         return textFilter(column);
-      case 'integer':
-      case 'float':
-      case 'decimal':
-      case 'money':
-      case 'percentage':
+      case TableColumnType.money:
+      case TableColumnType.percentage:
+      case TableColumnType.number:
         return numberFilter(column);
-      case 'boolean':
+      case TableColumnType.boolean:
         return boolFilter(column);
-      case 'date':
+      case TableColumnType.date:
         return dateFilter(column, datePickerOnly: true);
-      case 'datetime':
+      case TableColumnType.datetime:
         return dateFilter(column);
-      case 'enum':
+      case TableColumnType.enums:
         return enumFilter(column);
-      case 'link':
+      case TableColumnType.model:
         return linkFilter(column);
       default:
         return SizedBox(
@@ -175,8 +174,8 @@ class _TableFilterFormState extends State<TableFilterForm> {
     }
   }
 
-  String decorateTimeRange(DateTimeRange range, String type) {
-    if (type == 'date') {
+  String decorateTimeRange(DateTimeRange range, TableColumnType type) {
+    if (type.isDate()) {
       return [
         Date.parsingDateTime(range.start).toIso8601String(),
         Date.parsingDateTime(range.end).toIso8601String()
@@ -287,8 +286,8 @@ class _TableFilterFormState extends State<TableFilterForm> {
   }
 
   Widget linkFilter(TableColumn column) {
-    final attributes = column.attributeKey.split('.');
-    final attributeKey = attributes.length > 1 ? attributes[1] : 'name';
+    final modelName = column.inputOptions['model_name'] ?? '';
+    final attributeKey = column.inputOptions['attribute_key'] ?? 'id';
     return Container(
       width: 300,
       constraints: const BoxConstraints(minHeight: 50),
@@ -298,17 +297,22 @@ class _TableFilterFormState extends State<TableFilterForm> {
             "${value['id'].toString()} - ${value['attributes'][attributeKey]}",
         textOnSelected: (value) => value['id'].toString(),
         label: Text(column.humanizeName, style: _labelStyle),
-        request: (server, page, searchText, cancelToken) {
-          return server.get(column.path ?? '',
+        request: (
+            {int page = 1,
+            int limit = 20,
+            String searchText = '',
+            CancelToken? cancelToken}) {
+          final server = context.read<Server>();
+          return server.get(column.inputOptions['path'] ?? '',
               queryParam: {
                 'search_text': searchText,
-                'fields[${attributes[0]}]': attributes[1],
+                'fields[$modelName]': attributeKey,
                 'page[page]': page.toString(),
-                'page[limit]': '100'
+                'page[limit]': limit.toString(),
               },
               cancelToken: cancelToken);
         },
-        attributeKey: attributes[1],
+        attributeKey: attributeKey,
         onSaved: (value) {
           if (value != null && value.isNotEmpty) {
             final decoratedValue =

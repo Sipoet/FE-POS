@@ -4,6 +4,7 @@ import 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
@@ -115,6 +116,7 @@ class _SalesGroupBySupplierReportPageState
     if (response.statusCode != 200) {
       return;
     }
+    final tabManager = context.read<TabManager>();
     var data = response.data;
     setState(() {
       var rawData = data['data'].map<SalesGroupBySupplier>((row) {
@@ -122,7 +124,7 @@ class _SalesGroupBySupplierReportPageState
       }).toList();
 
       _source.setTableColumns(whitelistColumns,
-          fixedLeftColumns: _groupKeys.length);
+          fixedLeftColumns: _groupKeys.length, tabManager: tabManager);
       _source.setModels(rawData, whitelistColumns);
     });
   }
@@ -175,15 +177,15 @@ class _SalesGroupBySupplierReportPageState
               children: [
                 SizedBox(
                     width: 350,
-                    child: DropdownSearch.multiSelection(
-                      dropdownDecoratorProps: const DropDownDecoratorProps(
-                          dropdownSearchDecoration: InputDecoration(
+                    child: DropdownSearch<String>.multiSelection(
+                      decoratorProps: const DropDownDecoratorProps(
+                          decoration: InputDecoration(
                               border: OutlineInputBorder(),
                               label: Text(
                                 'Group Berdasarkan',
                                 style: _filterLabelStyle,
                               ))),
-                      items: groupList,
+                      items: (searchText, props) => groupList,
                       onChanged: (value) => _groupKeys = value,
                       validator: (value) {
                         if (value?.isEmpty ?? true) {

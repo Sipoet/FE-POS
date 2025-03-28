@@ -165,6 +165,12 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     }, onError: (error) => defaultErrorResponse(error: error));
   }
 
+  bool isValidEmail(String value) {
+    return RegExp(
+            r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$')
+        .hasMatch(value);
+  }
+
   void loadImage(String imageCode) async {
     final response =
         await _server.get('assets/$imageCode', responseType: 'file');
@@ -221,6 +227,12 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                       onChanged: (newValue) {
                         employee.code = newValue.toString();
                       },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Harus diisi';
+                        }
+                        return null;
+                      },
                       controller: codeInputWidget,
                     ),
                   ),
@@ -239,7 +251,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                         employee.name = newValue.toString();
                       },
                       validator: (newValue) {
-                        if (newValue == null) {
+                        if (newValue == null || newValue.isEmpty) {
                           return 'harus diisi';
                         }
                         return null;
@@ -254,7 +266,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   ),
                   Visibility(
                     visible: setting.isAuthorize('role', 'index') &&
-                        setting.canShow('employee', 'role_id'),
+                        setting.canShow('employee', 'role'),
                     child: Flexible(
                       child: AsyncDropdown<Role>(
                         path: '/roles',
@@ -266,6 +278,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                         onChanged: (role) {
                           employee.role = role ?? Role(name: '');
                         },
+                        allowClear: false,
                         textOnSearch: (role) => role.name,
                         converter: Role.fromJson,
                         selected: employee.role,
@@ -316,21 +329,13 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   ),
                   Visibility(
                       visible: setting.isAuthorize('payroll', 'index') &&
-                          setting.canShow('employee', 'payroll_id'),
+                          setting.canShow('employee', 'payroll'),
                       child: AsyncDropdown<Payroll>(
                         label: const Text(
                           'Payroll',
                           style: labelStyle,
                         ),
-                        request: (server, offset, searchText, cancelToken) {
-                          return server.get('payrolls',
-                              queryParam: {
-                                'search_text': searchText,
-                                'field[payroll]': 'name',
-                                'page[offset]': offset.toString(),
-                              },
-                              cancelToken: cancelToken);
-                        },
+                        path: 'payrolls',
                         textOnSearch: (payroll) => payroll.name,
                         attributeKey: 'name',
                         onChanged: (payroll) {
@@ -339,6 +344,43 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                         converter: Payroll.fromJson,
                         selected: employee.payroll,
                       )),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  DropdownMenu<Religion>(
+                    width: 200,
+                    menuHeight: 200,
+                    label: Text('Agama'),
+                    initialSelection: employee.religion,
+                    onSelected: (value) =>
+                        employee.religion = value ?? employee.religion,
+                    dropdownMenuEntries: Religion.values
+                        .map<DropdownMenuEntry<Religion>>((religion) =>
+                            DropdownMenuEntry<Religion>(
+                                value: religion, label: religion.humanize()))
+                        .toList(),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                        labelText: 'Email Karyawan',
+                        labelStyle: labelStyle,
+                        border: OutlineInputBorder()),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) return null;
+                      return isValidEmail(value) ? null : 'Email tidak valid';
+                    },
+                    keyboardType: TextInputType.emailAddress,
+                    initialValue: employee.email,
+                    onSaved: (newValue) {
+                      employee.email = newValue.toString();
+                    },
+                    onChanged: (newValue) {
+                      employee.email = newValue.toString();
+                    },
+                  ),
                   const SizedBox(
                     height: 10,
                   ),

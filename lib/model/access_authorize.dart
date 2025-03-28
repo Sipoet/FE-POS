@@ -23,4 +23,7 @@ class AccessAuthorize extends Model {
         attributes['action'].map<String>((e) => e.toString()).toList();
     return model;
   }
+
+  @override
+  String get modelValue => '$controller - ${action.join(',')}';
 }

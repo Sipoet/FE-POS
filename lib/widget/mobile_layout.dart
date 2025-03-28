@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +44,10 @@ class _MobileLayoutState extends State<MobileLayout>
         'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: $version | Allegra POS';
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 30,
+        toolbarHeight:
+            MediaQuery.of(context).orientation == Orientation.portrait
+                ? null
+                : 30,
         title: Tooltip(
           message: message,
           child: Text(
@@ -93,7 +97,7 @@ class LeftMenubar extends StatefulWidget {
 }
 
 class _LeftMenubarState extends State<LeftMenubar>
-    with SessionState, DefaultResponse {
+    with SessionState, DefaultResponse, AppUpdater, PlatformChecker {
   Map<String, bool> iconStatus = {};
   late final TabManager tabManager;
   @override
@@ -106,6 +110,15 @@ class _LeftMenubarState extends State<LeftMenubar>
   Widget build(BuildContext context) {
     final menuWidgets = listMenuNested(widget.menuTree);
     final server = context.read<Server>();
+    if (!isWeb()) {
+      menuWidgets.add(ListTile(
+        leading: const Icon(Icons.update),
+        onTap: () {
+          checkUpdate(server, isManual: true);
+        },
+        title: const Text('Check Update App'),
+      ));
+    }
     menuWidgets.add(ListTile(
       leading: const Icon(Icons.power_settings_new),
       onTap: () {

@@ -70,4 +70,7 @@ class SalesGroupBySupplier extends Model {
         'gross_profit': grossProfit,
         'last_purchase_date': lastPurchaseDate,
       };
+
+  @override
+  String get modelValue => id.toString();
 }

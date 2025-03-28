@@ -32,7 +32,7 @@ class PercentageFormField extends StatefulWidget {
 
 class _PercentageFormFieldState extends State<PercentageFormField>
     with TextFormatter {
-  final controller = TextEditingController();
+  TextEditingController? _controller;
 
   Percentage? _valueFromInput(String input) {
     final percentValue = double.tryParse(input);
@@ -43,10 +43,29 @@ class _PercentageFormFieldState extends State<PercentageFormField>
   }
 
   @override
+  void initState() {
+    if (widget.controller != null) {
+      _controller = TextEditingController(
+          text: numberFormat(_valueFromInput(widget.controller!.text)?.value));
+    }
+    widget.controller?.addListener(() {
+      _controller!.text =
+          numberFormat(_valueFromInput(widget.controller!.text)?.value);
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TextFormField(
       enableSuggestions: false,
-      controller: widget.controller,
+      controller: widget.controller == null ? null : _controller,
       readOnly: widget.readOnly,
       focusNode: widget.focusNode,
       onSaved: widget.onSaved is Function

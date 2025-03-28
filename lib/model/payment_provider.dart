@@ -90,4 +90,7 @@ class PaymentProvider extends Model {
         relation: json['relationships']?['payment_provider_edcs']);
     return model;
   }
+
+  @override
+  String get modelValue => bankOrProvider;
 }

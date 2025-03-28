@@ -28,6 +28,9 @@ class CashierSession extends Model {
       };
 
   @override
+  String get modelValue => date.format();
+
+  @override
   factory CashierSession.fromJson(Map<String, dynamic> json,
       {CashierSession? model, List included = const []}) {
     var attributes = json['attributes'];

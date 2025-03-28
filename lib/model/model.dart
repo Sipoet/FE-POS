@@ -5,11 +5,32 @@ abstract class Model {
   dynamic id;
   DateTime? createdAt;
   DateTime? updatedAt;
-  Model({this.createdAt, this.updatedAt, this.id});
+  Map rawData;
+  bool _flagDestroyed = false;
+  Model({this.createdAt, this.updatedAt, this.id, this.rawData = const {}});
   Map<String, dynamic> toMap();
 
+  Map<String, dynamic> asMap() {
+    Map<String, dynamic> value = toMap();
+    value['created_at'] = createdAt;
+    value['updated_at'] = updatedAt;
+    value['id'] = id;
+    value['_destroy'] = _flagDestroyed;
+    return value;
+  }
+
+  bool get isDestroyed => _flagDestroyed;
+
+  void flagDestroy() {
+    _flagDestroyed = true;
+  }
+
+  void unflagDestroy() {
+    _flagDestroyed = false;
+  }
+
   Map<String, dynamic> toJson() {
-    var json = toMap();
+    var json = asMap();
     json.forEach((key, object) {
       if (object is Money) {
         json[key] = object.value;
@@ -19,16 +40,25 @@ abstract class Model {
         json[key] = object.toIso8601String();
       } else if (object is Enum) {
         json[key] = object.toString();
+      } else if (object is String) {
+        json[key] = object.trim();
       }
     });
     return json;
   }
+
+  dynamic operator [](key) {
+    return toMap()[key];
+  }
+
+  String get modelValue;
 
   bool get isNewRecord => id == null;
 
   static void fromModel(Model model, Map attributes) {
     model.createdAt = DateTime.tryParse(attributes['created_at'] ?? '');
     model.updatedAt = DateTime.tryParse(attributes['updated_at'] ?? '');
+    model.rawData = attributes;
   }
 
   static T? findRelationData<T extends Model>(

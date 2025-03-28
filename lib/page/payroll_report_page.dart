@@ -4,6 +4,7 @@ import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/file_saver.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_form_field.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
@@ -38,6 +39,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
   void searchReport() {
     showLoadingPopup();
     tableStateManager?.removeAllRows();
+    final tabManager = context.read<TabManager>();
     fetchReport(reportType: 'json').then((response) {
       if (response.statusCode == 200) {
         final json = response.data;
@@ -45,13 +47,15 @@ class _PayrollReportPageState extends State<PayrollReportPage>
         setState(() {
           tableColumns = json['meta']['table_columns'].map<TableColumn>((row) {
             return TableColumn(
-                clientWidth: double.parse(row['client_width'] ?? '200'),
+                clientWidth:
+                    double.parse((row['client_width'] ?? '200').toString()),
                 type: row['type'],
-                attributeKey: row['attribute_key'],
+                inputOptions: {'attribute_key': row['attribute_key']},
                 name: row['name'],
                 humanizeName: row['humanize_name']);
           }).toList();
-          tableStateManager?.setTableColumns(tableColumns);
+          tableStateManager?.setTableColumns(tableColumns,
+              tabManager: tabManager);
           for (final row in json['data']) {
             final model = PayrollReport.fromJson(row, included: included ?? []);
             tableStateManager?.appendModel(model, tableColumns);

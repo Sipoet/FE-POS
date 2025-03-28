@@ -94,4 +94,7 @@ class WorkSchedule extends Model {
         ActiveWeekWorkSchedule.fromString(attributes['active_week']);
     return model;
   }
+
+  @override
+  String get modelValue => id.toString();
 }

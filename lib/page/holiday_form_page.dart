@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/holiday.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
@@ -147,14 +148,33 @@ class _HolidayFormPageState extends State<HolidayFormPage>
                   const SizedBox(
                     height: 10,
                   ),
+                  DropdownMenu<Religion>(
+                    width: 200,
+                    menuHeight: 200,
+                    label: Text('Agama'),
+                    initialSelection: holiday.religion,
+                    onSelected: (value) =>
+                        holiday.religion = value ?? holiday.religion,
+                    dropdownMenuEntries: Religion.values
+                        .map<DropdownMenuEntry<Religion>>((religion) =>
+                            DropdownMenuEntry<Religion>(
+                                value: religion, label: religion.humanize()))
+                        .toList(),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   Visibility(
                     visible: setting.canShow('holiday', 'description'),
                     child: TextFormField(
                       decoration: const InputDecoration(
                           label: Text(
-                        'Deskripsi',
-                        style: labelStyle,
-                      )),
+                            'Deskripsi',
+                            style: labelStyle,
+                          ),
+                          border: OutlineInputBorder()),
+                      minLines: 3,
+                      maxLines: 5,
                       onChanged: (value) => holiday.description = value,
                       initialValue: holiday.description,
                     ),

@@ -102,9 +102,9 @@ class _SalesTransactionReportWidgetState
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    var colorScheme = Theme.of(context).colorScheme;
-    var labelStyle = TextStyle(color: colorScheme.onPrimaryContainer);
-    var valueStyle = TextStyle(
+    final colorScheme = Theme.of(context).colorScheme;
+    final labelStyle = TextStyle(color: colorScheme.onPrimaryContainer);
+    final valueStyle = TextStyle(
         color: colorScheme.onPrimaryContainer, fontWeight: FontWeight.bold);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,27 +140,34 @@ class _SalesTransactionReportWidgetState
         if (!_controller.isAnimating)
           Table(
             columnWidths: const {
-              0: FlexColumnWidth(0.5),
-              1: FixedColumnWidth(10)
+              2: FlexColumnWidth(2.5),
+              3: FlexColumnWidth(1),
+              1: FixedColumnWidth(10),
             },
             children: [
               TableRow(children: [
-                Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Text(
-                    'Total Penjualan',
-                    style: labelStyle,
+                TableCell(
+                  child: Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: Text(
+                      'Total Penjualan',
+                      style: labelStyle,
+                    ),
                   ),
                 ),
-                const Text(':'),
-                Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Text(
-                    moneyFormat(salesTransactionReport.totalSales),
-                    textAlign: TextAlign.right,
-                    style: valueStyle,
+                TableCell(
+                  child: const Text(':'),
+                ),
+                TableCell(
+                  child: Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: Text(
+                      moneyFormat(salesTransactionReport.totalSales),
+                      textAlign: TextAlign.right,
+                      style: valueStyle,
+                    ),
                   ),
-                )
+                ),
               ]),
               TableRow(
                   decoration: BoxDecoration(
@@ -168,40 +175,48 @@ class _SalesTransactionReportWidgetState
                       border: Border.symmetric(
                           horizontal: BorderSide(color: colorScheme.outline))),
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Text(
-                        'Omzet Kotor',
-                        style: labelStyle,
+                    TableCell(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          'Omzet Kotor',
+                          style: labelStyle,
+                        ),
                       ),
                     ),
-                    const Text(':'),
-                    Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Text(
-                        moneyFormat(salesTransactionReport.grossProfit),
-                        textAlign: TextAlign.right,
-                        style: valueStyle,
+                    TableCell(child: const Text(':')),
+                    TableCell(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          moneyFormat(salesTransactionReport.grossProfit),
+                          textAlign: TextAlign.right,
+                          style: valueStyle,
+                        ),
                       ),
                     )
                   ]),
               TableRow(children: [
-                Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Text(
-                    'Jumlah Transaksi',
-                    style: labelStyle,
+                TableCell(
+                  child: Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: Text(
+                      'Jumlah Transaksi',
+                      style: labelStyle,
+                    ),
                   ),
                 ),
-                const Text(':'),
-                Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Text(
-                    numberFormat(salesTransactionReport.totalTransaction),
-                    textAlign: TextAlign.right,
-                    style: valueStyle,
+                TableCell(child: const Text(':')),
+                TableCell(
+                  child: Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: Text(
+                      numberFormat(salesTransactionReport.totalTransaction),
+                      textAlign: TextAlign.right,
+                      style: valueStyle,
+                    ),
                   ),
-                )
+                ),
               ]),
               TableRow(
                   decoration: BoxDecoration(
@@ -209,38 +224,45 @@ class _SalesTransactionReportWidgetState
                       border: Border.symmetric(
                           horizontal: BorderSide(color: colorScheme.outline))),
                   children: [
-                    Padding(
+                    TableCell(
+                        child: Padding(
                       padding: const EdgeInsets.all(5),
                       child: Text(
                         'Total Diskon',
                         style: labelStyle,
                       ),
-                    ),
-                    const Text(':'),
-                    Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Text(
-                        moneyFormat(salesTransactionReport.totalDiscount),
-                        textAlign: TextAlign.right,
-                        style: valueStyle,
+                    )),
+                    TableCell(child: const Text(':')),
+                    TableCell(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          moneyFormat(salesTransactionReport.totalDiscount),
+                          textAlign: TextAlign.right,
+                          style: valueStyle,
+                        ),
                       ),
                     )
                   ]),
               TableRow(children: [
-                Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Text(
-                    'Total Tunai',
-                    style: labelStyle,
+                TableCell(
+                  child: Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: Text(
+                      'Total Tunai',
+                      style: labelStyle,
+                    ),
                   ),
                 ),
-                const Text(':'),
-                Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Text(
-                    moneyFormat(salesTransactionReport.totalCash),
-                    textAlign: TextAlign.right,
-                    style: valueStyle,
+                TableCell(child: const Text(':')),
+                TableCell(
+                  child: Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: Text(
+                      moneyFormat(salesTransactionReport.totalCash),
+                      textAlign: TextAlign.right,
+                      style: valueStyle,
+                    ),
                   ),
                 )
               ]),
@@ -250,40 +272,44 @@ class _SalesTransactionReportWidgetState
                       border: Border.symmetric(
                           horizontal: BorderSide(color: colorScheme.outline))),
                   children: [
-                    Padding(
+                    TableCell(
+                        child: Padding(
                       padding: const EdgeInsets.all(5),
                       child: Text(
                         'Total Kartu Debit',
                         style: labelStyle,
                       ),
-                    ),
-                    const Text(':'),
-                    Padding(
+                    )),
+                    TableCell(child: const Text(':')),
+                    TableCell(
+                        child: Padding(
                       padding: const EdgeInsets.all(5),
                       child: Text(
                         moneyFormat(salesTransactionReport.totalDebit),
                         textAlign: TextAlign.right,
                         style: valueStyle,
                       ),
-                    )
+                    ))
                   ]),
               TableRow(children: [
-                Padding(
+                TableCell(
+                    child: Padding(
                   padding: const EdgeInsets.all(5),
                   child: Text(
                     'Total Kartu Kredit',
                     style: labelStyle,
                   ),
-                ),
-                const Text(':'),
-                Padding(
+                )),
+                TableCell(child: const Text(':')),
+                TableCell(
+                    child: Padding(
                   padding: const EdgeInsets.all(5),
                   child: Text(
                     moneyFormat(salesTransactionReport.totalCredit),
                     textAlign: TextAlign.right,
                     style: valueStyle,
                   ),
-                )
+                ))
               ]),
               TableRow(
                   decoration: BoxDecoration(
@@ -291,40 +317,44 @@ class _SalesTransactionReportWidgetState
                       border: Border.symmetric(
                           horizontal: BorderSide(color: colorScheme.outline))),
                   children: [
-                    Padding(
+                    TableCell(
+                        child: Padding(
                       padding: const EdgeInsets.all(5),
                       child: Text(
                         'Total QRIS',
                         style: labelStyle,
                       ),
-                    ),
-                    const Text(':'),
-                    Padding(
+                    )),
+                    TableCell(child: const Text(':')),
+                    TableCell(
+                        child: Padding(
                       padding: const EdgeInsets.all(5),
                       child: Text(
                         moneyFormat(salesTransactionReport.totalQRIS),
                         textAlign: TextAlign.right,
                         style: valueStyle,
                       ),
-                    )
+                    ))
                   ]),
               TableRow(children: [
-                Padding(
+                TableCell(
+                    child: Padding(
                   padding: const EdgeInsets.all(5),
                   child: Text(
                     'Total Online Transfer',
                     style: labelStyle,
                   ),
-                ),
-                const Text(':'),
-                Padding(
+                )),
+                TableCell(child: const Text(':')),
+                TableCell(
+                    child: Padding(
                   padding: const EdgeInsets.all(5),
                   child: Text(
                     moneyFormat(salesTransactionReport.totalOnline),
                     textAlign: TextAlign.right,
                     style: valueStyle,
                   ),
-                )
+                ))
               ]),
             ],
           ),

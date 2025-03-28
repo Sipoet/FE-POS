@@ -41,4 +41,7 @@ class PayrollType extends Model {
     model.initial = attributes['initial'] ?? '';
     return model;
   }
+
+  @override
+  String get modelValue => name;
 }

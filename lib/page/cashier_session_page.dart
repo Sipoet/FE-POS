@@ -23,7 +23,7 @@ class _CashierSessionPageState extends State<CashierSessionPage>
   late final Server server;
   late final Setting setting;
   CashierSession cashierSession = CashierSession();
-
+  bool _isTodayCashierFetched = false;
   @override
   bool get wantKeepAlive => true;
 
@@ -48,6 +48,7 @@ class _CashierSessionPageState extends State<CashierSessionPage>
         setState(() {
           cashierSession = CashierSession.fromJson(json['data'],
               included: json['included'] ?? []);
+          _isTodayCashierFetched = true;
         });
       }
     }, onError: (error) {
@@ -61,7 +62,6 @@ class _CashierSessionPageState extends State<CashierSessionPage>
   }
 
   void _createCashierSessionToday() {
-    hideLoadingPopup();
     showLoadingPopup();
     final bodyParams = {
       'data': {'type': 'cashier_session', 'attributes': cashierSession.toJson()}
@@ -72,6 +72,7 @@ class _CashierSessionPageState extends State<CashierSessionPage>
         setState(() {
           cashierSession = CashierSession.fromJson(json['data'],
               included: json['included'] ?? []);
+          _isTodayCashierFetched = true;
         });
       }
     }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
@@ -107,7 +108,7 @@ class _CashierSessionPageState extends State<CashierSessionPage>
                       MenuItemButton(
                         onPressed: () {
                           _menuController.close();
-                          openTodayEdcSettlement();
+                          if (_isTodayCashierFetched) openTodayEdcSettlement();
                         },
                         child: const Text('EDC Settlement Hari ini'),
                       ),

@@ -1,7 +1,11 @@
+import 'package:fe_pos/tool/platform_checker.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/tool/table_decorator.dart';
 import 'package:pluto_grid/pluto_grid.dart';
+import 'package:provider/provider.dart';
 export 'package:pluto_grid/pluto_grid.dart';
 
 typedef OnLoadedCallBack = void Function(PlutoGridStateManager stateManager);
@@ -17,7 +21,6 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
   final bool showSummary;
   final List<T> rows;
   final List<TableColumn> columns;
-  final void Function(int)? onPageChanged;
   final Map<String, List<Enum>> enums;
   final OnLoadedCallBack? onLoaded;
   final OnRowCheckedCallback? onRowChecked;
@@ -27,7 +30,6 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
 
   const SyncDataTable({
     super.key,
-    this.onPageChanged,
     this.actions,
     this.onLoaded,
     this.showFilter = true,
@@ -48,17 +50,19 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
 }
 
 class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
-    with PlutoTableDecorator {
+    with PlutoTableDecorator, PlatformChecker, TextFormatter {
   late List<PlutoColumn> columns;
   late List<PlutoRow> rows;
 
   @override
   void initState() {
+    tabManager = context.read<TabManager>();
     columns = widget.columns.asMap().entries.map<PlutoColumn>((entry) {
       int index = entry.key;
       TableColumn tableColumn = entry.value;
       return decorateColumn(
         tableColumn,
+        tabManager: tabManager,
         listEnumValues: widget.enums[tableColumn.name],
         showFilter: widget.showFilter,
         isFrozen: index < widget.fixedLeftColumns,
@@ -66,7 +70,7 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
     }).toList();
     rows = widget.rows
         .map<PlutoRow>(
-            (row) => decorateRow(data: row, tableColumns: widget.columns))
+            (row) => decorateRow(model: row, tableColumns: widget.columns))
         .toList();
 
     super.initState();

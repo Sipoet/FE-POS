@@ -1,9 +1,15 @@
 import 'package:data_table_2/data_table_2.dart';
+import 'package:fe_pos/model/item.dart';
+import 'package:fe_pos/tool/platform_checker.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
+import 'package:fe_pos/widget/async_dropdown.dart';
+
 import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/tool/table_decorator.dart';
 import 'package:pluto_grid/pluto_grid.dart';
+import 'package:provider/provider.dart';
 export 'package:pluto_grid/pluto_grid.dart';
 
 class CustomAsyncDataTable extends StatefulWidget {
@@ -40,6 +46,7 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
   @override
   void initState() {
     _dataSource.paginatorController = _paginatorController;
+    _dataSource.tabManager = context.read<TabManager>();
     if (_dataSource.sortColumn != null) {
       _sortColumnIndex = _dataSource.columns.indexOf(_dataSource.sortColumn!);
       _sortAscending = _dataSource.isAscending;
@@ -170,7 +177,7 @@ class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
 }
 
 class CustomAsyncDataTableSource<T extends Model> extends AsyncDataTableSource
-    with TableDecorator<T>, TextFormatter {
+    with TableDecorator<T>, TextFormatter, PlatformChecker {
   final List<TableColumn> columns;
   late List<T> sortedData = [];
   TableColumn? sortColumn;
@@ -261,7 +268,7 @@ typedef OnSelectedCallback = void Function(PlutoGridOnSelectedEvent event);
 typedef OnRowDoubleTapCallback = void Function(
     PlutoGridOnRowDoubleTapEvent event);
 
-class CustomASyncDataTable2<T extends Model> extends StatefulWidget {
+class CustomAsyncDataTable2<T extends Model> extends StatefulWidget {
   final int fixedLeftColumns;
   final List<Widget>? actions;
   final Widget? header;
@@ -277,7 +284,7 @@ class CustomASyncDataTable2<T extends Model> extends StatefulWidget {
   final bool showFilter;
   final String primaryKey;
 
-  const CustomASyncDataTable2({
+  const CustomAsyncDataTable2({
     super.key,
     required this.fetchData,
     this.actions,
@@ -296,23 +303,27 @@ class CustomASyncDataTable2<T extends Model> extends StatefulWidget {
   }) : columns = columns ?? const [];
 
   @override
-  State<CustomASyncDataTable2<T>> createState() =>
-      _CustomASyncDataTable2State<T>();
+  State<CustomAsyncDataTable2<T>> createState() =>
+      _CustomAsyncDataTable2State<T>();
 }
 
-class _CustomASyncDataTable2State<T extends Model>
-    extends State<CustomASyncDataTable2<T>> with PlutoTableDecorator {
+class _CustomAsyncDataTable2State<T extends Model>
+    extends State<CustomAsyncDataTable2<T>>
+    with PlutoTableDecorator, PlatformChecker, TextFormatter {
   late List<PlutoColumn> columns;
   late final PlutoGridStateManager _source;
   List selectedValues = [];
 
   @override
   void initState() {
+    server = context.read<Server>();
+    tabManager = context.read<TabManager>();
     columns = widget.columns.asMap().entries.map<PlutoColumn>((entry) {
       int index = entry.key;
       TableColumn tableColumn = entry.value;
       return decorateColumn(
         tableColumn,
+        tabManager: tabManager,
         showCheckboxColumn: index == 0 ? widget.showCheckboxColumn : false,
         listEnumValues: widget.enums[tableColumn.name],
         showFilter: widget.showFilter,
@@ -358,6 +369,71 @@ class _CustomASyncDataTable2State<T extends Model>
     return filter;
   }
 
+  Map<String, List<Item>> selectedItems = {};
+  Future<List<Item>?> showRemoteOptions({
+    required String path,
+    required String attributeKey,
+    String searchText = '',
+    String title = '',
+  }) {
+    final itemBefore = selectedItems[title] ?? [];
+    return showDialog<List<Item>>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Filter $title',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      selectedItems[title] = itemBefore;
+                      Navigator.of(context).pop(itemBefore);
+                    },
+                    icon: Icon(Icons.close),
+                  )
+                ],
+              ),
+              content: Column(
+                children: [
+                  SizedBox(
+                    width: 400,
+                    child: AsyncDropdownMultiple<Item>(
+                      path: path,
+                      width: 400,
+                      selecteds: itemBefore,
+                      textOnSearch: (item) => _itemText(item, attributeKey),
+                      converter: (json, {included = const []}) {
+                        var model = Item(id: json['id']);
+                        Model.fromModel(model, json['attributes']);
+                        return model;
+                      },
+                      onChanged: (List<Item> items) =>
+                          selectedItems[title] = items,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  ElevatedButton(
+                    onPressed: () =>
+                        Navigator.of(context).pop(selectedItems[title]),
+                    child: Text('Submit'),
+                  ),
+                ],
+              ));
+        });
+  }
+
+  String _itemText(Item item, String attributeKey) {
+    final key = attributeKey.split('.').last;
+    return "${item.id.toString()} - ${item[key].toString()}";
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -382,14 +458,52 @@ class _CustomASyncDataTable2State<T extends Model>
         _source = event.stateManager;
         _source.setShowColumnFilter(widget.showFilter);
         _source.setShowColumnFooter(widget.showSummary);
-        _source.columnFooterHeight = 115.0;
+        _source.columnFooterHeight = 130.0;
+        _source.eventManager!.listener((event) {
+          if (event is PlutoGridChangeColumnFilterEvent) {
+            final columType = event.column.type;
+            if (columType is PlutoColumnTypeModelSelect) {
+              showRemoteOptions(
+                      searchText: event.filterValue,
+                      title: event.column.title,
+                      path: columType.path,
+                      attributeKey: columType.attributeKey)
+                  .then((items) {
+                if (items == null) return;
+                final filterValue = items
+                    .map<String>((item) => item.id.toString())
+                    .toList()
+                    .join(',');
+                List<PlutoRow> filterRows = _source.filterRows
+                    .where((filterRow) =>
+                        filterRow.cells['column']!.value ==
+                            event.column.field &&
+                        filterRow.cells['type']!.value is PlutoFilterTypeEquals)
+                    .toList();
+                if (filterRows.isEmpty) {
+                  _source.filterRows.add(FilterHelper.createFilterRow(
+                    filterType: PlutoFilterTypeEquals(),
+                    filterValue: filterValue,
+                    columnField: event.column.field,
+                  ));
+                } else {
+                  filterRows.first.cells['value'] =
+                      PlutoCell(value: filterValue);
+                }
+                _source.setFilterRows(_source.filterRows);
+                _source.refreshTable();
+              });
+            }
+          }
+        });
+
         if (widget.onLoaded is Function) {
           widget.onLoaded!(_source);
         }
       },
       noRowsWidget: const Text('Data tidak ditemukan'),
       onChanged: (PlutoGridOnChangedEvent event) {
-        debugPrint(event.toString());
+        debugPrint("onchanged ${event.toString()}");
       },
       mode: PlutoGridMode.selectWithOneTap,
       onSelected: widget.onSelected,
@@ -429,7 +543,7 @@ class _CustomASyncDataTable2State<T extends Model>
                         .map<PlutoRow>(
                           (model) => decorateRow(
                               isChecked: _containsCheckedValue(model.toMap()),
-                              data: model,
+                              model: model,
                               tableColumns: widget.columns),
                         )
                         .toList(),
@@ -441,15 +555,27 @@ class _CustomASyncDataTable2State<T extends Model>
         );
       },
       configuration: PlutoGridConfiguration(
-          columnFilter: const PlutoGridColumnFilterConfig(filters: [
-            PlutoFilterTypeContains(),
-            PlutoFilterTypeEquals(),
-            PlutoFilterTypeNot(),
-            PlutoFilterTypeLessThan(),
-            PlutoFilterTypeLessThanOrEqualTo(),
-            PlutoFilterTypeGreaterThan(),
-            PlutoFilterTypeGreaterThanOrEqualTo(),
-          ]),
+          columnFilter: PlutoGridColumnFilterConfig(
+            filters: [
+              PlutoFilterTypeContains(),
+              PlutoFilterTypeEquals(),
+              PlutoFilterTypeNot(),
+              PlutoFilterTypeLessThan(),
+              PlutoFilterTypeLessThanOrEqualTo(),
+              PlutoFilterTypeGreaterThan(),
+              PlutoFilterTypeGreaterThanOrEqualTo(),
+            ],
+            debounceMilliseconds: 500,
+            resolveDefaultColumnFilter: (column, resolver) {
+              if (column.type is PlutoColumnTypeModelSelect ||
+                  column.type is PlutoColumnTypeNumber ||
+                  column.type is PlutoColumnTypeCurrency) {
+                return resolver<PlutoFilterTypeEquals>();
+              } else {
+                return resolver<PlutoFilterTypeContains>();
+              }
+            },
+          ),
           scrollbar: const PlutoGridScrollbarConfig(
             isAlwaysShown: true,
             scrollbarThickness: 10,

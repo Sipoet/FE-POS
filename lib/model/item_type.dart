@@ -7,9 +7,14 @@ class ItemType extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'ketjenis': description,
-        'jenis': name,
+        'description': description,
+        'name': name,
       };
+
+  @override
+  String toString() {
+    return name;
+  }
 
   @override
   factory ItemType.fromJson(Map<String, dynamic> json,
@@ -17,8 +22,11 @@ class ItemType extends Model {
     var attributes = json['attributes'];
     model ??= ItemType();
     model.id = json['id'];
-    model.description = attributes['ketjenis'];
-    model.name = attributes['jenis'];
+    Model.fromModel(model, attributes);
+    model.description = attributes['description'];
+    model.name = attributes['name'];
     return model;
   }
+  @override
+  String get modelValue => name;
 }

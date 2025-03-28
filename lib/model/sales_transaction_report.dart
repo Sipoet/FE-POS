@@ -68,4 +68,7 @@ class SalesTransactionReport extends Model {
         'start_time': range.start,
         'end_time': range.end,
       };
+
+  @override
+  String get modelValue => id.toString();
 }

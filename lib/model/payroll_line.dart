@@ -191,4 +191,6 @@ class PayrollLine extends Model {
     model.description = attributes['description'];
     return model;
   }
+  @override
+  String get modelValue => id;
 }

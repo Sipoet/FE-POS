@@ -17,6 +17,22 @@ mixin PlatformChecker {
     }
   }
 
+  bool isAndroid() {
+    return TargetPlatform.android == defaultTargetPlatform;
+  }
+
+  bool isIOS() {
+    return TargetPlatform.iOS == defaultTargetPlatform;
+  }
+
+  bool isWindows() {
+    return TargetPlatform.windows == defaultTargetPlatform;
+  }
+
+  bool isMac() {
+    return TargetPlatform.macOS == defaultTargetPlatform;
+  }
+
   bool isDesktop() {
     return !isMobile();
   }

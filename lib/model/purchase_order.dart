@@ -137,4 +137,7 @@ class PurchaseOrder extends Model {
     model.supplierCode = attributes['kodesupel'];
     return model;
   }
+
+  @override
+  String get modelValue => code;
 }

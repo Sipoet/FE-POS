@@ -37,4 +37,7 @@ class CustomerGroup extends Model {
     model.discount = Percentage.parse(attributes['potongan']);
     return model;
   }
+
+  @override
+  String get modelValue => "$code - $name";
 }

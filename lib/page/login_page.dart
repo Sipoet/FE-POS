@@ -48,6 +48,13 @@ class _LoginPageState extends State<LoginPage>
     return Scaffold(
       appBar: AppBar(
         title: Text('Login | VERSION: $version'),
+        actions: [
+          if (!isWeb())
+            IconButton(
+                onPressed: () => checkUpdate(server, isManual: true),
+                tooltip: 'Check Update App',
+                icon: Icon(Icons.update)),
+        ],
       ),
       body: Center(
           child: Container(
@@ -197,9 +204,9 @@ class _LoginPageState extends State<LoginPage>
     Setting setting = context.read<Setting>();
     server.get('settings').then((response) {
       if (response.statusCode == 200) {
-        setting.setTableColumns(response.data['data']['table_columns']);
+        setting.setTableColumns(response.data['table_columns']);
         setting.menus = {};
-        response.data['data']['menus'].forEach((String key, value) {
+        response.data['menus'].forEach((String key, value) {
           setting.menus[key] = value.map<String>((e) => e.toString()).toList();
         });
       }

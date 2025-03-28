@@ -18,7 +18,7 @@ mixin AppUpdater<T extends StatefulWidget> on State<T>
   late String latestVersion;
   late String localVersion;
   String _message = '';
-  void checkUpdate(Server server) async {
+  void checkUpdate(Server server, {bool isManual = false}) async {
     if (kIsWeb) {
       return;
     }
@@ -35,6 +35,15 @@ mixin AppUpdater<T extends StatefulWidget> on State<T>
         latestVersion = doc['version'];
         if (isOlderVersion()) {
           _showConfirmDialog(server, platform);
+        } else if (isManual) {
+          toastification.show(
+            title: Text(
+              'App already up to date',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            autoCloseDuration: Duration(seconds: 3),
+            type: ToastificationType.info,
+          );
         }
       }
     }, onError: (error) => defaultErrorResponse(error: error));
@@ -150,10 +159,8 @@ mixin AppUpdater<T extends StatefulWidget> on State<T>
                 : null;
             OpenFile.open(filePath, type: type).then((openFileResponse) {
               if (openFileResponse.type != ResultType.done) {
-                debugPrint('====error open file ${openFileResponse.message}');
                 return;
               } else {
-                debugPrint('====success open file');
                 navigator.pop();
               }
             }, onError: (error) => defaultErrorResponse(error: error));

@@ -29,4 +29,7 @@ class PaymentProviderEdc extends Model {
     model.merchantId = attributes['merchant_id'] ?? '';
     return model;
   }
+
+  @override
+  String get modelValue => "$terminalId - $merchantId";
 }

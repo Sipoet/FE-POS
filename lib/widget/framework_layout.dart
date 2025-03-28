@@ -7,7 +7,7 @@ import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/desktop_layout.dart';
 import 'package:fe_pos/widget/mobile_layout.dart';
 import 'package:flutter/material.dart';
-import 'package:fe_pos/page/all_page.dart';
+import 'package:fe_pos/page/menu_page.dart';
 import 'package:fe_pos/page/home_page.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/model/menu.dart';
@@ -106,6 +106,13 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 isDisabled: !setting.isAuthorize('holiday', 'index'),
                 pageFunct: () => const HolidayPage(),
                 key: 'holiday'),
+            Menu(
+                icon: Icons.calendar_month,
+                isClosed: true,
+                label: 'BOOK PAYSLIP LINE',
+                isDisabled: !setting.isAuthorize('bookPayslipLine', 'index'),
+                pageFunct: () => const BookPayslipLinePage(),
+                key: 'bookPayslipLine'),
           ]),
       Menu(
           icon: Icons.pages,
@@ -152,7 +159,16 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     key: 'salesTransactionReport',
                   ),
                   Menu(
-                    icon: Icons.pages,
+                    icon: Icons.line_axis,
+                    isClosed: true,
+                    label: 'Grafik Transaksi Penjualan Periode',
+                    isDisabled:
+                        !setting.isAuthorize('sale', 'transactionReport'),
+                    pageFunct: () => const SalesTransactionGraphPage(),
+                    key: 'salesTransactionGraph',
+                  ),
+                  Menu(
+                    icon: Icons.table_chart,
                     isClosed: true,
                     label: 'Item Penjualan Periode',
                     isDisabled:
@@ -161,7 +177,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     key: 'itemSalesPeriodReport',
                   ),
                   Menu(
-                    icon: Icons.pages,
+                    icon: Icons.table_chart,
                     isClosed: true,
                     label: 'Laporan Grup Penjualan',
                     isDisabled:
@@ -280,28 +296,34 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               // isDisabled: !setting.isAuthorize('saleItem', 'index'),
               pageFunct: () => const SalesCashierPage(),
             ),
+            Menu(
+                icon: Icons.monetization_on,
+                label: 'Cek Harga',
+                key: 'check_price',
+                isDisabled: !setting.isAuthorize('item', 'withDiscount'),
+                pageFunct: () => const CheckPricePage()),
           ]),
-
       Menu(
-          icon: Icons.inventory,
-          label: 'Persediaan',
-          children: [
-            Menu(
-              icon: Icons.shopping_bag,
-              label: 'Transfer Item',
-              key: 'transfer',
-              isDisabled: !setting.isAuthorize('transfer', 'index'),
-              pageFunct: () => const TransferPage(),
-            ),
-            Menu(
-              icon: Icons.shopping_bag,
-              label: 'Detail Transfer Item',
-              key: 'transferItem',
-              isDisabled: !setting.isAuthorize('transfer', 'index'),
-              pageFunct: () => const TransferItemPage(),
-            )
-          ],
-          key: 'inventory'),
+        icon: Icons.inventory,
+        label: 'Persediaan',
+        key: 'inventory',
+        children: [
+          Menu(
+            icon: Icons.shopping_bag,
+            label: 'Transfer Item',
+            key: 'transfer',
+            isDisabled: !setting.isAuthorize('transfer', 'index'),
+            pageFunct: () => const TransferPage(),
+          ),
+          Menu(
+            icon: Icons.shopping_bag,
+            label: 'Detail Transfer Item',
+            key: 'transferItem',
+            isDisabled: !setting.isAuthorize('transfer', 'index'),
+            pageFunct: () => const TransferItemPage(),
+          )
+        ],
+      ),
       Menu(
           icon: Icons.table_chart,
           isClosed: true,

@@ -1,9 +1,12 @@
 import 'package:fe_pos/model/item.dart';
+import 'package:fe_pos/page/form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
-import 'package:fe_pos/widget/table_filter_form.dart';
+
+import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
@@ -16,25 +19,45 @@ class ItemPage extends StatefulWidget {
 }
 
 class _ItemPageState extends State<ItemPage> with DefaultResponse {
-  late final CustomAsyncDataTableSource<Item> _source;
+  late final PlutoGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<Item> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
-  late final Setting setting;
-  Map _filter = {};
+  late final List<TableColumn> columns;
 
   @override
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<Item>(
-        columns: setting.tableColumn('ipos::Item'), fetchData: fetchItems);
+    final setting = context.read<Setting>();
 
-    Future.delayed(Duration.zero, refreshTable);
+    final actionColumn = TableColumn(
+      clientWidth: 100,
+      name: 'action',
+      type: TableColumnType.action,
+      humanizeName: 'Action',
+      frozen: PlutoColumnFrozen.end,
+      renderBody: (rendererContext) {
+        return Row(
+          children: [
+            IconButton(
+              onPressed: () => _openEditForm(rendererContext.rowIdx),
+              icon: Icon(Icons.edit),
+            )
+          ],
+        );
+      },
+    );
+    columns = setting.tableColumn('ipos::Item')..add(actionColumn);
     super.initState();
+  }
+
+  void _openEditForm(int index) {
+    final item = items[index];
+    final tabManager = context.read<TabManager>();
+    tabManager.addTab('Edit item ${item.code}', ItemFormPage(item: item));
   }
 
   @override
@@ -43,54 +66,46 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
     super.dispose();
   }
 
-  Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
-  }
-
-  Future<ResponseResult<Item>> fetchItems(
+  Future<DataTableResponse<Item>> fetchItems(
       {int page = 1,
-      int limit = 50,
-      TableColumn? sortColumn,
-      bool isAscending = true}) {
-    String orderKey = sortColumn?.name ?? 'kodeitem';
+      int limit = 20,
+      List<SortData> sorts = const [],
+      Map filter = const {}}) {
+    var sort = sorts.isEmpty ? null : sorts.first;
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
       'page[limit]': limit.toString(),
       'include': 'supplier,brand,item_type',
-      'sort': '${isAscending ? '' : '-'}$orderKey',
+      'sort': sort == null
+          ? ''
+          : sort.isAscending
+              ? sort.key
+              : "-${sort.key}",
     };
-    _filter.forEach((key, value) {
+    filter.forEach((key, value) {
       param[key] = value;
     });
-    try {
-      return server
-          .get('items', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<Item>((json) =>
-                Item.fromJson(json, included: responseBody['included'] ?? []))
-            .toList();
-        final totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<Item>(totalRows: totalRows, models: models);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      throw 'error';
-    }
+
+    return server
+        .get('items', queryParam: param, cancelToken: cancelToken)
+        .then((response) {
+      if (response.statusCode != 200) {
+        throw 'error: ${response.data.toString()}';
+      }
+      Map responseBody = response.data;
+      if (responseBody['data'] is! List) {
+        throw 'error: invalid data type ${response.data.toString()}';
+      }
+      items = responseBody['data']
+          .map<Item>((json) =>
+              Item.fromJson(json, included: responseBody['included'] ?? []))
+          .toList();
+      final totalPage = responseBody['meta']?['total_pages'] ?? 1;
+      return DataTableResponse<Item>(totalPage: totalPage, models: items);
+    },
+            onError: (error, stackTrace) =>
+                defaultErrorResponse(error: error, valueWhenError: []));
   }
 
   void searchChanged(value) {
@@ -107,56 +122,59 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
     }
   }
 
+  void refreshTable() {
+    _source.refreshTable();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          children: [
-            TableFilterForm(
-              columns: _source.columns,
-              onSubmit: (value) {
-                _filter = value;
-                refreshTable();
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10, bottom: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
+    final padding = MediaQuery.of(context).padding;
+    final size = MediaQuery.of(context).size;
+    double tableHeight = size.height - padding.top - padding.bottom - 250;
+    tableHeight = tableHeight < 400 ? 400 : tableHeight;
+    return VerticalBodyScroll(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 10, bottom: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _searchText = '';
+                    });
+                    refreshTable();
+                  },
+                  tooltip: 'Reset Table',
+                  icon: const Icon(Icons.refresh),
+                ),
+                SizedBox(
+                  width: 150,
+                  child: TextField(
+                    decoration: const InputDecoration(hintText: 'Search Text'),
+                    onChanged: searchChanged,
+                    onSubmitted: searchChanged,
                   ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            SizedBox(
-              height: 600,
-              child: CustomAsyncDataTable(
-                controller: _source,
-                fixedLeftColumns: 1,
+          ),
+          SizedBox(
+            height: tableHeight,
+            child: CustomAsyncDataTable2<Item>(
+              onLoaded: (stateManager) => _source = stateManager,
+              fixedLeftColumns: 1,
+              fetchData: (request) => fetchItems(
+                page: request.page,
+                sorts: request.sorts,
+                filter: request.filter,
               ),
+              columns: columns,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

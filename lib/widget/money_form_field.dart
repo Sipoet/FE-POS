@@ -32,11 +32,29 @@ class MoneyFormField extends StatefulWidget {
 }
 
 class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
-  final controller = TextEditingController();
-
+  TextEditingController? _controller;
   Money? _valueFromInput(String input) {
     input = input.replaceAll(',', '');
     return Money.tryParse(input);
+  }
+
+  @override
+  void initState() {
+    if (widget.controller != null) {
+      _controller = TextEditingController(
+          text: numberFormat(_valueFromInput(widget.controller!.text)?.value));
+    }
+    widget.controller?.addListener(() {
+      _controller!.text =
+          numberFormat(_valueFromInput(widget.controller!.text)?.value);
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
   }
 
   @override
@@ -46,7 +64,7 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
         : numberFormat(widget.initialValue?.value);
     return TextFormField(
       enableSuggestions: false,
-      controller: widget.controller,
+      controller: widget.controller == null ? null : _controller,
       readOnly: widget.readOnly,
       focusNode: widget.focusNode,
       enabled: widget.enabled,

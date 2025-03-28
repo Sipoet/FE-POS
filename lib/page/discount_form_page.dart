@@ -8,10 +8,10 @@ import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
+import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:fe_pos/widget/money_form_field.dart';
 import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/percentage_form_field.dart';
-import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/model/discount.dart';
@@ -53,11 +53,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final List<TableColumn> _columns = [];
   late FocusNode _focusNode;
   final _whitelistColumns = [
-    'item_code',
-    'item_name',
+    'item',
     'item_type_name',
     'brand_name',
     'supplier_code',
+    'stock_left',
+    'warehouse_stock',
+    'store_stock',
     'cogs',
     'margin',
     'limit_profit_discount',
@@ -85,12 +87,12 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     _columns.addAll([
       TableColumn(
         clientWidth: 180,
-        attributeKey: 'discount_amount',
-        type: 'money',
+        type: TableColumnType.money,
         name: 'discount_amount',
         humanizeName: 'Jumlah Diskon',
-        renderValue: (model) {
-          var sellPrice = model['sell_price'];
+        getValue: (Model model) {
+          model = model as ItemReport;
+          Money sellPrice = model.sellPrice;
           if (discount.calculationType == DiscountCalculationType.nominal) {
             return discount.discount1Nominal;
           } else if (discount.calculationType ==
@@ -98,18 +100,19 @@ class _DiscountFormPageState extends State<DiscountFormPage>
             return _calculateChanellingDiscount(sellPrice, discount);
           } else if (discount.calculationType ==
               DiscountCalculationType.specialPrice) {
-            return sellPrice - discount.discount1Nominal;
+            return (sellPrice - discount.discount1Nominal);
           }
+          return null;
         },
       ),
       TableColumn(
         clientWidth: 180,
-        attributeKey: 'sell_price_after_discount',
-        type: 'money',
+        type: TableColumnType.money,
         name: 'sell_price_after_discount',
         humanizeName: 'Harga Setelah Diskon',
-        renderValue: (model) {
-          Money sellPrice = model['sell_price'];
+        getValue: (Model model) {
+          model = model as ItemReport;
+          Money sellPrice = model.sellPrice;
           if (discount.calculationType == DiscountCalculationType.nominal) {
             return sellPrice - discount.discount1Nominal;
           } else if (discount.calculationType ==
@@ -120,16 +123,18 @@ class _DiscountFormPageState extends State<DiscountFormPage>
               DiscountCalculationType.specialPrice) {
             return discount.discount1Nominal;
           }
+          return null;
         },
       ),
       TableColumn(
         clientWidth: 180,
-        attributeKey: 'profit_after_discount',
         name: 'profit_after_discount',
-        type: 'money',
+        type: TableColumnType.money,
         humanizeName: 'Jumlah Profit Setelah Diskon',
-        renderValue: (model) {
-          Money sellPrice = model['sell_price'] ?? const Money(0);
+        getValue: (Model model) {
+          model = model as ItemReport;
+          Money sellPrice = model.sellPrice;
+          Money cogs = model.cogs;
           Money newPrice = sellPrice;
 
           if (discount.calculationType == DiscountCalculationType.nominal) {
@@ -142,17 +147,18 @@ class _DiscountFormPageState extends State<DiscountFormPage>
               DiscountCalculationType.specialPrice) {
             newPrice = discount.discount1Nominal;
           }
-          return newPrice - model['cogs'];
+          return newPrice - cogs;
         },
       ),
       TableColumn(
         clientWidth: 180,
-        attributeKey: 'profit_margin_after_discount',
         name: 'profit_margin_after_discount',
-        type: 'percentage',
+        type: TableColumnType.percentage,
         humanizeName: 'Profit Setelah Diskon(%)',
-        renderValue: (model) {
-          Money sellPrice = model['sell_price'] ?? const Money(0);
+        getValue: (Model model) {
+          model = model as ItemReport;
+          Money sellPrice = model.sellPrice;
+          Money cogs = model.cogs;
           Money newPrice = sellPrice;
           if (discount.calculationType == DiscountCalculationType.nominal) {
             newPrice = sellPrice - discount.discount1Nominal;
@@ -164,8 +170,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
               DiscountCalculationType.specialPrice) {
             newPrice = discount.discount1Nominal;
           }
-          final margin = marginOf(newPrice, model['cogs']);
-          return margin;
+          if (cogs == Money(0)) {
+            return Percentage(0);
+          }
+          return marginOf(newPrice, cogs);
         },
       ),
     ]);
@@ -191,7 +199,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     });
   }
 
-  void refreshTable() {
+  Future<DataTableResponse<ItemReport>> fetchItem(DataTableRequest request) {
     _source.setShowLoading(true);
     setState(() {
       discount1 = discount.discount1;
@@ -199,50 +207,61 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       discount3 = discount.discount3;
       discount4 = discount.discount4;
     });
-
+    var sortParams = request.sorts
+        .map<String>((sort) => sort.isAscending ? sort.key : "-${sort.key}")
+        .toList()
+        .join(',');
     Map<String, dynamic> param = {
-      'page[page]': '1',
-      'page[limit]': '1000',
+      'page[page]': request.page.toString(),
+      'page[limit]': '50',
       'report_type': 'json',
-      'sort': 'item_code',
+      'sort': sortParams,
     };
     if (discount.items.isNotEmpty) {
-      param['filter[item_code][eq]'] =
+      param['filter[item][eq]'] =
           discount.items.map((line) => line.code).toList().join(',');
     }
     if (discount.suppliers.isNotEmpty) {
-      param['filter[supplier_code][eq]'] =
+      param['filter[supplier][eq]'] =
           discount.suppliers.map((line) => line.code).toList().join(',');
     }
     if (discount.itemTypes.isNotEmpty) {
-      param['filter[item_type_name][eq]'] =
+      param['filter[item_type][eq]'] =
           discount.itemTypes.map((line) => line.name).toList().join(',');
     }
     if (discount.brands.isNotEmpty) {
-      param['filter[brand_name][eq]'] =
+      param['filter[brand][eq]'] =
           discount.brands.map((line) => line.name).toList().join(',');
     }
     if (discount.blacklistItems.isNotEmpty) {
-      param['filter[item_code][not]'] =
+      param['filter[item][not]'] =
           discount.blacklistItems.map((line) => line.code).toList().join(',');
     }
     if (discount.blacklistSuppliers.isNotEmpty) {
-      param['filter[supplier_code][not]'] = discount.blacklistSuppliers
+      param['filter[supplier][not]'] = discount.blacklistSuppliers
           .map((line) => line.code)
           .toList()
           .join(',');
     }
     if (discount.blacklistItemTypes.isNotEmpty) {
-      param['filter[item_type_name][not]'] = discount.blacklistItemTypes
+      param['filter[item_type][not]'] = discount.blacklistItemTypes
           .map((line) => line.name)
           .toList()
           .join(',');
     }
     if (discount.blacklistBrands.isNotEmpty) {
-      param['filter[brand_name][not]'] =
+      param['filter[brand][not]'] =
           discount.blacklistBrands.map((line) => line.name).toList().join(',');
     }
-    server.get('item_reports', queryParam: param).then((response) {
+    request.filter.forEach((key, value) {
+      if (param[key] == null) {
+        param[key] = value;
+      } else {
+        param[key] = "${param[key]},$value";
+      }
+    });
+
+    return server.get('item_reports', queryParam: param).then((response) {
       try {
         if (response.statusCode != 200) {
           flash.showBanner(
@@ -254,13 +273,21 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         final models = data['data'].map<ItemReport>((row) {
           return ItemReport.fromJson(row, included: data['included'] ?? []);
         }).toList();
-        _source.setModels(models, _columns);
+        return DataTableResponse<ItemReport>(
+            models: models, totalPage: data['meta']['total_pages']);
       } catch (error, stackTrace) {
         debugPrint(error.toString());
         debugPrint(stackTrace.toString());
+        return DataTableResponse<ItemReport>();
       }
-    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => _source.setShowLoading(false));
+    }, onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse<ItemReport>();
+    }).whenComplete(() => _source.setShowLoading(false));
+  }
+
+  void refreshTable() {
+    _source.refreshTable();
   }
 
   Percentage marginOf(Money sellPrice, Money buyPrice) {
@@ -371,7 +398,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
           setState(() {
             discount.id = int.tryParse(data['id']);
             discount.code = data['attributes']['code'];
-            var tabManager = context.read<TabManager>();
+            final tabManager = context.read<TabManager>();
             tabManager.changeTabHeader(
                 widget, 'Edit discount ${discount.code}');
           });
@@ -418,10 +445,16 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         () => hideLoadingPopup());
   }
 
+  static const labelStyle =
+      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    const labelStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+
+    final padding = MediaQuery.of(context).padding;
+    final size = MediaQuery.of(context).size;
+    double tableHeight = size.height - padding.top - padding.bottom - 250;
+    tableHeight = tableHeight < 400 ? 400 : tableHeight;
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Padding(
@@ -1187,9 +1220,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                   height: 10,
                                 ),
                                 SizedBox(
-                                  height: 550,
-                                  child: SyncDataTable<ItemReport>(
+                                  height: tableHeight,
+                                  child: CustomAsyncDataTable2<ItemReport>(
                                     columns: _columns,
+                                    fetchData: (request) => fetchItem(request),
                                     fixedLeftColumns: 2,
                                     onLoaded: (stateManager) =>
                                         _source = stateManager,

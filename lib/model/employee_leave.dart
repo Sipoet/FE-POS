@@ -83,6 +83,7 @@ class EmployeeLeave extends Model {
   Map<String, dynamic> toMap() => {
         'employee.name': employee.name,
         'employee_id': employee.id,
+        'employee': employee,
         'date': date,
         'description': description,
         'change_date': changeDate,
@@ -120,4 +121,8 @@ class EmployeeLeave extends Model {
     model.changeShift = attributes['change_shift'];
     return model;
   }
+
+  @override
+  String get modelValue =>
+      description ?? "${employee.modelValue} (${date.format()})";
 }

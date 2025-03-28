@@ -21,4 +21,7 @@ class PaymentType extends Model {
         'created_at': createdAt,
         'updated_at': updatedAt,
       };
+
+  @override
+  String get modelValue => name;
 }

@@ -2,6 +2,7 @@ import 'package:fe_pos/model/sales_transaction_report.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/widget/last_sales_transaction_widget.dart';
 import 'package:fe_pos/widget/period_sales_goal.dart';
 import 'package:fe_pos/widget/sales_transaction_report_widget.dart';
 import 'package:fe_pos/widget/item_sales_transaction_report_widget.dart';
@@ -22,7 +23,7 @@ class _HomePageState extends State<HomePage>
   final TransactionReportController controller = TransactionReportController(
       DateTimeRange(start: DateTime.now(), end: DateTime.now()));
   bool _isCustom = false;
-  late final List<Widget> _panels;
+  late List<Widget> _panels;
   late final Setting setting;
   final pickerController = PickerController(
       DateTimeRange(start: DateTime.now(), end: DateTime.now()));
@@ -42,28 +43,35 @@ class _HomePageState extends State<HomePage>
         SalesTransactionReportWidget(
           controller: controller,
         ),
-      if (setting.isAuthorize('saleItem', 'transactionReport'))
+      if (setting.isAuthorize('sale', 'index'))
+        LastSalesTransactionWidget(
+          controller: controller,
+          limit: 5,
+        ),
+    ];
+    if (setting.isAuthorize('saleItem', 'transactionReport')) {
+      _panels += [
         ItemSalesTransactionReportWidget(
             key: const ValueKey('brand'),
             controller: controller,
             groupKey: 'brand',
             limit: '5',
             label: 'Merek Terjual Terbanyak'),
-      if (setting.isAuthorize('saleItem', 'transactionReport'))
         ItemSalesTransactionReportWidget(
             key: const ValueKey('item_type'),
             controller: controller,
             groupKey: 'item_type',
             limit: '5',
             label: 'Departemen Terjual Terbanyak'),
-      if (setting.isAuthorize('saleItem', 'transactionReport'))
         ItemSalesTransactionReportWidget(
             key: const ValueKey('supplier'),
             groupKey: 'supplier',
             controller: controller,
             limit: '5',
             label: 'Supplier Terjual Terbanyak'),
-    ];
+      ];
+    }
+
     arrangeDate('day');
 
     super.initState();
@@ -140,7 +148,7 @@ class _HomePageState extends State<HomePage>
           .copyWith(hour: 6, minute: 59, second: 59, millisecond: 99)
           .toIso8601String()
     }).then((response) {
-      if (response.statusCode == 200) {
+      if (mounted && response.statusCode == 200) {
         var data = response.data['data'];
         final salesTransactionReport = SalesTransactionReport.fromJson(data);
         setState(() {

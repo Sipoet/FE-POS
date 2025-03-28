@@ -1,4 +1,6 @@
+import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/model.dart';
+import 'package:fe_pos/model/payslip.dart';
 
 class PayslipReport extends Model {
   String employeeName;
@@ -17,14 +19,20 @@ class PayslipReport extends Model {
   int unknownAbsence;
   double overtimeHour;
   double workDays;
+  Payslip? payslip;
+  Employee? employee;
   int late;
   String? description;
+  int? payslipId;
   PayslipReport(
       {required this.startDate,
       required this.endDate,
       required this.employeeId,
       required this.employeeName,
       this.employeeStartWorkingDate,
+      this.payslipId,
+      this.employee,
+      this.payslip,
       this.totalDay = 0,
       this.sickLeave = 0,
       this.knownAbsence = 0,
@@ -42,6 +50,8 @@ class PayslipReport extends Model {
     Map<String, dynamic> result = {
       'employee_name': employeeName,
       'employee_id': employeeId,
+      'employee': employee,
+      'payslip': payslip,
       'start_date': startDate,
       'end_date': endDate,
       'employee_start_working_date': employeeStartWorkingDate,
@@ -81,6 +91,8 @@ class PayslipReport extends Model {
 
     model.employeeId = attributes['employee_id'];
     model.employeeName = attributes['employee_name'];
+    model.employee = Employee(id: model.employeeId, name: model.employeeName);
+    model.payslip = Payslip(id: model.payslipId);
     model.bank = attributes['bank'];
     model.bankAccount = attributes['bank_account'];
     model.bankRegisterName = attributes['bank_register_name'];
@@ -107,4 +119,7 @@ class PayslipReport extends Model {
     }
     return model;
   }
+
+  @override
+  String get modelValue => payslip?.id.toString() ?? '';
 }

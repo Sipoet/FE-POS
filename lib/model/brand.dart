@@ -8,9 +8,12 @@ class Brand extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'ketmerek': description,
-        'merek': name,
+        'description': description,
+        'name': name,
       };
+
+  @override
+  String get modelValue => name;
 
   @override
   factory Brand.fromJson(Map<String, dynamic> json,
@@ -18,8 +21,9 @@ class Brand extends Model {
     var attributes = json['attributes'];
     model ??= Brand();
     model.id = json['id'];
-    model.description = attributes['ketmerek'] ?? '';
-    model.name = attributes['merek'];
+    Model.fromModel(model, attributes);
+    model.description = attributes['description'] ?? '';
+    model.name = attributes['name'];
     return model;
   }
 }

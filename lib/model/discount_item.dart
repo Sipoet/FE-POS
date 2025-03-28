@@ -29,4 +29,7 @@ class DiscountItem extends Model {
         'item_code': itemCode,
         'item.kodeitem': itemCode,
       };
+
+  @override
+  String get modelValue => item?.code ?? '';
 }

@@ -24,9 +24,9 @@ class ItemReport extends Model {
   bool isConsignment;
   DateTime? recentPurchaseDate;
   Item item;
-  Supplier? supplier;
-  Brand? brand;
-  ItemType? itemType;
+  Supplier supplier;
+  Brand brand;
+  ItemType itemType;
   Money cogs;
   Money lastBuyPrice;
   Percentage margin;
@@ -42,10 +42,10 @@ class ItemReport extends Model {
       this.supplierCode = '',
       this.supplierName = '',
       this.brandName,
-      this.itemType,
-      this.supplier,
+      ItemType? itemType,
+      Supplier? supplier,
       Item? item,
-      this.brand,
+      Brand? brand,
       this.storeStock = 0,
       this.warehouseStock = 0,
       this.percentageSales = const Percentage(0),
@@ -65,7 +65,10 @@ class ItemReport extends Model {
       this.grossProfit = const Money(0),
       this.isConsignment = false,
       this.recentPurchaseDate})
-      : item = item ?? Item();
+      : item = item ?? Item(id: itemCode),
+        supplier = supplier ?? Supplier(id: supplierCode),
+        itemType = itemType ?? ItemType(id: itemTypeName),
+        brand = brand ?? Brand(id: brandName);
   @override
   factory ItemReport.fromJson(Map<String, dynamic> json,
       {List included = const [], ItemReport? model}) {
@@ -108,19 +111,28 @@ class ItemReport extends Model {
             relation: json['relationships']?['item'],
             included: included,
             convert: Item.fromJson) ??
-        model.item;
+        Item(id: model.itemCode, code: model.itemCode, name: model.itemName);
     model.itemType = Model.findRelationData<ItemType>(
-        relation: json['relationships']?['item_type'],
-        included: included,
-        convert: ItemType.fromJson);
+            relation: json['relationships']?['item_type'],
+            included: included,
+            convert: ItemType.fromJson) ??
+        ItemType(
+            id: model.itemTypeName,
+            name: model.itemTypeName,
+            description: model.itemTypeDesc);
     model.brand = Model.findRelationData<Brand>(
-        relation: json['relationships']?['brand'],
-        included: included,
-        convert: Brand.fromJson);
+            relation: json['relationships']?['brand'],
+            included: included,
+            convert: Brand.fromJson) ??
+        Brand(id: model.brandName, name: model.brandName ?? '');
     model.supplier = Model.findRelationData<Supplier>(
-        relation: json['relationships']?['supplier'],
-        included: included,
-        convert: Supplier.fromJson);
+            relation: json['relationships']?['supplier'],
+            included: included,
+            convert: Supplier.fromJson) ??
+        Supplier(
+            id: model.supplierCode,
+            code: model.supplierCode,
+            name: model.supplierName);
     return model;
   }
 
@@ -128,6 +140,10 @@ class ItemReport extends Model {
   Map<String, dynamic> toMap() => {
         'item_code': itemCode,
         'item_name': itemName,
+        'item': item,
+        'supplier': supplier,
+        'item_type': itemType,
+        'brand': brand,
         'item_type_name': itemTypeName,
         'item_type_desc': itemTypeDesc,
         'supplier_code': supplierCode,
@@ -137,7 +153,6 @@ class ItemReport extends Model {
         'limit_profit_discount': limitProfitDiscount,
         'is_consignment': isConsignment,
         'warehouse_stock': warehouseStock,
-        'brand': brandName,
         'brand_name': brandName,
         'percentage_sales': percentageSales,
         'sell_price': sellPrice,
@@ -154,4 +169,7 @@ class ItemReport extends Model {
         'cogs': cogs,
         'qty_return': numberOfReturn
       };
+
+  @override
+  String get modelValue => itemCode;
 }
