@@ -1,6 +1,7 @@
 import 'package:fe_pos/model/item_with_discount.dart';
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
@@ -16,9 +17,10 @@ class CheckPricePage extends StatefulWidget {
 }
 
 class _CheckPricePageState extends State<CheckPricePage>
-    with DefaultResponse, PlatformChecker {
+    with DefaultResponse, PlatformChecker, LoadingPopup {
   String? finalSearch;
   late final Server _server;
+  bool _isLoading = false;
   final _controller = TextEditingController();
   PlutoGridStateManager? _source;
   List<ItemWithDiscount> models = [];
@@ -139,6 +141,7 @@ class _CheckPricePageState extends State<CheckPricePage>
             child: LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
               if (size.height > size.width || size.height <= 420) {
+                if (_isLoading) return loadingWidget();
                 return ListView(
                   children: models
                       .map<Widget>((model) => Card(
@@ -308,6 +311,9 @@ class _CheckPricePageState extends State<CheckPricePage>
     if (finalSearch == null || finalSearch!.trim().isEmpty) {
       return;
     }
+    setState(() {
+      _isLoading = true;
+    });
     _source?.setShowLoading(true);
     _server.get('items/with_discount', queryParam: {
       'search_text': finalSearch,
@@ -325,7 +331,11 @@ class _CheckPricePageState extends State<CheckPricePage>
 
         _source?.setModels(models, _columns);
       }
-    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => _source?.setShowLoading(false));
+    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(() {
+      _source?.setShowLoading(false);
+      setState(() {
+        _isLoading = false;
+      });
+    });
   }
 }
