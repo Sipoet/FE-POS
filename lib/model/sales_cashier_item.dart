@@ -100,4 +100,7 @@ class SalesCashierItem extends Model {
     // model.bankCode = attributes['bank_code'] ?? '';
     return model;
   }
+
+  @override
+  String get modelValue => id;
 }

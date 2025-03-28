@@ -56,4 +56,7 @@ class Customer extends Model {
     model.description = attributes['keterangan'];
     return model;
   }
+
+  @override
+  String get modelValue => "$code - $name";
 }
