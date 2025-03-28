@@ -46,4 +46,7 @@ class SalesPayment extends Model {
     model.id = json['id'];
     return model;
   }
+
+  @override
+  String get modelValue => id;
 }

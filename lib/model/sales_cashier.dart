@@ -20,8 +20,6 @@ enum SalesTaxType {
         return 'include';
       case exclude:
         return 'exclude';
-      default:
-        return '';
     }
   }
 }
@@ -155,4 +153,7 @@ class SalesCashier extends Model {
     // model.bankCode = attributes['bank_code'] ?? '';
     return model;
   }
+
+  @override
+  String get modelValue => id;
 }

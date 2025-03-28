@@ -76,7 +76,7 @@ class _ItemModalSelectState extends State<ItemModalSelect>
     return Column(
       children: [
         Flexible(
-          child: CustomASyncDataTable2<ItemReport>(
+          child: CustomAsyncDataTable2<ItemReport>(
             showSummary: false,
             onRowChecked: (event) {
               if (event.isRow && event.isChecked == true) {

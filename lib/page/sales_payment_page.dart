@@ -18,10 +18,12 @@ class _SalesPaymentPageState extends State<SalesPaymentPage> {
       TextStyle(fontWeight: FontWeight.bold, fontSize: 20);
   SalesCashier get salesCashier => widget.salesCashier;
   late final Setting setting;
+  late final Server _server;
   List<SalesPayment> get salesPayments => salesCashier.salesPayments;
   @override
   void initState() {
     setting = context.read<Setting>();
+    _server = context.read<Server>();
     super.initState();
   }
 
@@ -126,11 +128,15 @@ class _SalesPaymentPageState extends State<SalesPaymentPage> {
                                   paymentProvider.name,
                               selected: salesPayment.paymentProvider,
                               converter: PaymentProvider.fromJson,
-                              request: (server, page, searchText, cancelToken) {
-                                return server.get('payment_providers',
+                              request: (
+                                  {int page = 1,
+                                  int limit = 20,
+                                  String searchText = '',
+                                  required CancelToken cancelToken}) {
+                                return _server.get('payment_providers',
                                     queryParam: {
                                       'page[page]': page.toString(),
-                                      'page[limit]': '20',
+                                      'page[limit]': limit.toString(),
                                       'search_text': searchText,
                                       'filter[status][eq]':
                                           PaymentProviderStatus.active
