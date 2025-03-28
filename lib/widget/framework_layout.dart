@@ -293,6 +293,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 icon: Icons.monetization_on,
                 label: 'Cek Harga',
                 key: 'check_price',
+                isDisabled: !setting.isAuthorize('item', 'withDiscount'),
                 pageFunct: () => const CheckPricePage()),
           ]),
       Menu(
