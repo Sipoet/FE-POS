@@ -57,12 +57,12 @@ class BookPayslipLine extends Model {
             included: included,
             relation: json['relationships']['payroll_type'],
             convert: PayrollType.fromJson) ??
-        PayrollType();
+        model.payrollType;
     model.employee = Model.findRelationData<Employee>(
             included: included,
             relation: json['relationships']['employee'],
             convert: Employee.fromJson) ??
-        Employee();
+        model.employee;
     model.amount = Money.parse(attributes['amount']);
     model.status = attributes['status'];
     model.description = attributes['description'];
