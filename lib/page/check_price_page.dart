@@ -163,7 +163,7 @@ class _CheckPricePageState extends State<CheckPricePage>
                                   Table(
                                     columnWidths: {
                                       0: FlexColumnWidth(1),
-                                      1: FlexColumnWidth(2)
+                                      1: FlexColumnWidth(2),
                                     },
                                     border: TableBorder(
                                       horizontalInside: BorderSide(
@@ -194,7 +194,7 @@ class _CheckPricePageState extends State<CheckPricePage>
                                             child: Padding(
                                           padding: const EdgeInsets.all(5.0),
                                           child: Text(
-                                            'Harga Jual',
+                                            'Harga Normal',
                                             style: labelStyle,
                                           ),
                                         )),
