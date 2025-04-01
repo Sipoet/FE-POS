@@ -56,8 +56,8 @@ class _PayslipReportPageState extends State<PayslipReportPage>
             return TableColumn(
                 clientWidth:
                     double.parse(row['client_width']?.toString() ?? '200'),
-                type: row['type'],
-                inputOptions: {'attribute_key': row['attribute_key']},
+                type: TableColumnType.fromString(row['type']),
+                inputOptions: row['input_options'],
                 name: row['name'],
                 humanizeName: row['humanize_name']);
           }).toList();
@@ -199,6 +199,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                 child: SyncDataTable(
                   columns: tableColumns,
                   showSummary: true,
+                  showFilter: false,
                   onLoaded: (stateManager) => tableStateManager = stateManager,
                 ),
               )
