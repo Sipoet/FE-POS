@@ -32,6 +32,7 @@ class _RoleFormPageState extends State<RoleFormPage>
   final focusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
   late final Server server;
+  List<GroupWorkSchedule> groupWorkSchedules = [];
   Role get role => widget.role;
 
   @override
@@ -57,6 +58,26 @@ class _RoleFormPageState extends State<RoleFormPage>
         setState(() {
           Role.fromJson(response.data['data'],
               model: role, included: response.data['included']);
+          groupWorkSchedules = [];
+          groupBy<RoleWorkSchedule, GroupWorkSchedule>(
+            role.roleWorkSchedules,
+            (roleWorkSchedule) => GroupWorkSchedule(
+                groupName: roleWorkSchedule.groupName,
+                beginActiveAt: roleWorkSchedule.beginActiveAt,
+                endActiveAt: roleWorkSchedule.endActiveAt,
+                level: roleWorkSchedule.level),
+          ).forEach((groupWorkSchedule, value) {
+            groupWorkSchedule.details = value
+                .map<DetailSchedule>((roleWorkSchedule) => DetailSchedule(
+                    dayOfWeek: roleWorkSchedule.dayOfWeek,
+                    shift: roleWorkSchedule.shift,
+                    beginWork: roleWorkSchedule.beginWork,
+                    isFlexible: roleWorkSchedule.isFlexible,
+                    endWork: roleWorkSchedule.endWork))
+                .toList()
+              ..sort((a, b) => a.dayOfWeek.compareTo(b.dayOfWeek));
+            groupWorkSchedules.add(groupWorkSchedule);
+          });
         });
       }
     }, onError: (error) {
@@ -67,7 +88,29 @@ class _RoleFormPageState extends State<RoleFormPage>
     });
   }
 
+  List<RoleWorkSchedule> _decodeGroupSchedule() {
+    List<RoleWorkSchedule> result = [];
+    for (final groupWorkSchedule in groupWorkSchedules) {
+      for (final detailSchedule in groupWorkSchedule.details) {
+        result.add(RoleWorkSchedule(
+          id: detailSchedule.id,
+          beginActiveAt: groupWorkSchedule.beginActiveAt,
+          endActiveAt: groupWorkSchedule.endActiveAt,
+          shift: detailSchedule.shift,
+          beginWork: detailSchedule.beginWork,
+          endWork: detailSchedule.endWork,
+          level: groupWorkSchedule.level,
+          isFlexible: detailSchedule.isFlexible,
+          dayOfWeek: detailSchedule.dayOfWeek,
+          groupName: groupWorkSchedule.groupName,
+        ));
+      }
+    }
+    return result;
+  }
+
   void _submit() async {
+    role.roleWorkSchedules = _decodeGroupSchedule();
     final server = context.read<Server>();
     Map body = {
       'data': {
@@ -139,11 +182,9 @@ class _RoleFormPageState extends State<RoleFormPage>
         .toList();
   }
 
-  List<Widget> workScheduleForms(
-      Map<GroupWorkSchedule, List<RoleWorkSchedule>> group) {
+  List<Widget> workScheduleForms() {
     List<Widget> formWidgets = [];
-    for (GroupWorkSchedule groupWorkSchedule in group.keys) {
-      List<RoleWorkSchedule> roleWorkSchedules = group[groupWorkSchedule] ?? [];
+    for (final groupWorkSchedule in groupWorkSchedules) {
       formWidgets.addAll([
         const SizedBox(
           height: 10,
@@ -164,9 +205,6 @@ class _RoleFormPageState extends State<RoleFormPage>
             },
             onSaved: (value) {
               groupWorkSchedule.groupName = value ?? '';
-              for (RoleWorkSchedule roleWorkSchedule in roleWorkSchedules) {
-                roleWorkSchedule.groupName = groupWorkSchedule.groupName;
-              }
             },
           ),
         ),
@@ -193,9 +231,6 @@ class _RoleFormPageState extends State<RoleFormPage>
             keyboardType: TextInputType.number,
             onSaved: (value) {
               groupWorkSchedule.level = int.tryParse(value ?? '') ?? 0;
-              for (RoleWorkSchedule roleWorkSchedule in roleWorkSchedules) {
-                roleWorkSchedule.level = groupWorkSchedule.level;
-              }
             },
           ),
         ),
@@ -217,11 +252,6 @@ class _RoleFormPageState extends State<RoleFormPage>
               groupWorkSchedule.beginActiveAt =
                   Date.parsingDateTime(value.start);
               groupWorkSchedule.endActiveAt = Date.parsingDateTime(value.end);
-              for (RoleWorkSchedule roleWorkSchedule in roleWorkSchedules) {
-                roleWorkSchedule.beginActiveAt =
-                    groupWorkSchedule.beginActiveAt;
-                roleWorkSchedule.endActiveAt = groupWorkSchedule.endActiveAt;
-              }
             },
           ),
         ),
@@ -252,16 +282,30 @@ class _RoleFormPageState extends State<RoleFormPage>
                   'Akhir',
                   style: labelStyle,
                 )),
-                const DataColumn(
-                    label: Text(
-                  'Fleksibel?',
-                  style: labelStyle,
+                DataColumn(
+                    label: Row(
+                  children: [
+                    Checkbox(
+                        value: groupWorkSchedule.isFlexible,
+                        onChanged: (isFlexible) {
+                          setState(() {
+                            groupWorkSchedule.isFlexible = isFlexible ?? false;
+                            for (final detail in groupWorkSchedule.details) {
+                              detail.isFlexible = isFlexible ?? false;
+                            }
+                          });
+                        }),
+                    Text(
+                      'Fleksibel?',
+                      style: labelStyle,
+                    ),
+                  ],
                 )),
                 DataColumn(
                     label: ElevatedButton(
                   onPressed: () {
                     setState(() {
-                      role.roleWorkSchedules.clear();
+                      groupWorkSchedule.details.clear();
                     });
                   },
                   child: const Text(
@@ -270,12 +314,13 @@ class _RoleFormPageState extends State<RoleFormPage>
                   ),
                 )),
               ],
-              rows: roleWorkSchedules
-                  .map<DataRow>((roleWorkSchedule) => DataRow(cells: [
+              rows: groupWorkSchedule.details
+                  .map<DataRow>((detailSchedule) => DataRow(cells: [
                         DataCell(DropdownMenu<int>(
-                          initialSelection: roleWorkSchedule.dayOfWeek,
-                          onSelected: ((value) =>
-                              roleWorkSchedule.dayOfWeek = value ?? 0),
+                          initialSelection: detailSchedule.dayOfWeek,
+                          onSelected: ((value) => setState(() {
+                                detailSchedule.dayOfWeek = value ?? 0;
+                              })),
                           dropdownMenuEntries: const [
                             DropdownMenuEntry(value: 1, label: 'Senin'),
                             DropdownMenuEntry(value: 2, label: 'Selasa'),
@@ -289,13 +334,13 @@ class _RoleFormPageState extends State<RoleFormPage>
                         DataCell(TextFormField(
                           decoration: const InputDecoration(
                               border: OutlineInputBorder()),
-                          initialValue: roleWorkSchedule.shift.toString(),
+                          initialValue: detailSchedule.shift.toString(),
                           keyboardType: TextInputType.number,
                           inputFormatters: <TextInputFormatter>[
                             FilteringTextInputFormatter.digitsOnly
                           ],
                           onSaved: (value) =>
-                              roleWorkSchedule.shift = int.parse(value ?? '1'),
+                              detailSchedule.shift = int.parse(value ?? '1'),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'harus diisi';
@@ -309,13 +354,13 @@ class _RoleFormPageState extends State<RoleFormPage>
                             return null;
                           },
                           onChanged: (value) =>
-                              roleWorkSchedule.shift = int.tryParse(value) ?? 0,
+                              detailSchedule.shift = int.tryParse(value) ?? 0,
                         )),
                         DataCell(
                           TimeFormField(
-                            initialValue: roleWorkSchedule.beginWork,
-                            onSaved: (value) => roleWorkSchedule.beginWork =
-                                value ?? roleWorkSchedule.beginWork,
+                            initialValue: detailSchedule.beginWork,
+                            onSaved: (value) => detailSchedule.beginWork =
+                                value ?? detailSchedule.beginWork,
                             helpText: 'Mulai Kerja',
                             validator: (value) {
                               if (value == null) {
@@ -327,9 +372,9 @@ class _RoleFormPageState extends State<RoleFormPage>
                         ),
                         DataCell(
                           TimeFormField(
-                            initialValue: roleWorkSchedule.endWork,
-                            onSaved: (value) => roleWorkSchedule.endWork =
-                                value ?? roleWorkSchedule.endWork,
+                            initialValue: detailSchedule.endWork,
+                            onSaved: (value) => detailSchedule.endWork =
+                                value ?? detailSchedule.endWork,
                             helpText: 'Akhir Kerja',
                             validator: (value) {
                               if (value == null) {
@@ -340,18 +385,18 @@ class _RoleFormPageState extends State<RoleFormPage>
                           ),
                         ),
                         DataCell(Checkbox(
-                            value: roleWorkSchedule.isFlexible,
+                            value: detailSchedule.isFlexible,
                             onChanged: (value) => setState(() {
-                                  roleWorkSchedule.isFlexible = value ?? false;
+                                  detailSchedule.isFlexible = value ?? false;
                                 }))),
                         DataCell(Row(
                           children: [
                             Visibility(
-                              visible: roleWorkSchedule.id != null,
+                              visible: detailSchedule.id != null,
                               child: IconButton(
                                 onPressed: () {
                                   fetchHistoryByRecord(
-                                      'RoleWorkSchedule', roleWorkSchedule.id);
+                                      'RoleWorkSchedule', detailSchedule.id);
                                 },
                                 icon: const Icon(Icons.history),
                               ),
@@ -362,8 +407,8 @@ class _RoleFormPageState extends State<RoleFormPage>
                             ElevatedButton(
                               onPressed: () {
                                 setState(() {
-                                  role.roleWorkSchedules
-                                      .remove(roleWorkSchedule);
+                                  groupWorkSchedule.details
+                                      .remove(detailSchedule);
                                 });
                               },
                               child: const Text('Hapus'),
@@ -377,13 +422,9 @@ class _RoleFormPageState extends State<RoleFormPage>
           padding: const EdgeInsets.only(top: 10, bottom: 10),
           child: ElevatedButton(
               onPressed: () => setState(() {
-                    role.roleWorkSchedules.add(RoleWorkSchedule(
-                        groupName: groupWorkSchedule.groupName,
-                        level: groupWorkSchedule.level,
-                        beginActiveAt: groupWorkSchedule.beginActiveAt,
-                        endActiveAt: groupWorkSchedule.endActiveAt,
-                        beginWork: const TimeDay(hour: 8, minute: 0),
-                        endWork: const TimeDay(hour: 22, minute: 0)));
+                    groupWorkSchedule.details.add(DetailSchedule(
+                        beginWork: const TimeOfDay(hour: 8, minute: 0),
+                        endWork: const TimeOfDay(hour: 22, minute: 0)));
                   }),
               child: const Text('Tambah')),
         ),
@@ -392,338 +433,407 @@ class _RoleFormPageState extends State<RoleFormPage>
     return formWidgets;
   }
 
+  void _addNewGroupSchedule() {
+    final newLength = groupWorkSchedules.length + 1;
+
+    final groupName = "Jadwal Baru ${newLength.toString()}";
+    setState(() {
+      var groupWorkSchedule = GroupWorkSchedule(
+          groupName: groupName,
+          beginActiveAt: Date.today(),
+          endActiveAt: Date.today(),
+          details: [
+            DetailSchedule(
+                beginWork: const TimeOfDay(hour: 8, minute: 0),
+                endWork: const TimeOfDay(hour: 22, minute: 0),
+                shift: 1,
+                dayOfWeek: 1),
+            DetailSchedule(
+                beginWork: const TimeOfDay(hour: 8, minute: 0),
+                endWork: const TimeOfDay(hour: 22, minute: 0),
+                shift: 1,
+                dayOfWeek: 2),
+            DetailSchedule(
+                beginWork: const TimeOfDay(hour: 8, minute: 0),
+                endWork: const TimeOfDay(hour: 22, minute: 0),
+                shift: 1,
+                dayOfWeek: 3),
+            DetailSchedule(
+                beginWork: const TimeOfDay(hour: 8, minute: 0),
+                endWork: const TimeOfDay(hour: 22, minute: 0),
+                shift: 1,
+                dayOfWeek: 4),
+            DetailSchedule(
+                beginWork: const TimeOfDay(hour: 8, minute: 0),
+                endWork: const TimeOfDay(hour: 22, minute: 0),
+                shift: 1,
+                dayOfWeek: 5),
+            DetailSchedule(
+                beginWork: const TimeOfDay(hour: 8, minute: 0),
+                endWork: const TimeOfDay(hour: 22, minute: 0),
+                shift: 1,
+                dayOfWeek: 6),
+            DetailSchedule(
+                beginWork: const TimeOfDay(hour: 8, minute: 0),
+                endWork: const TimeOfDay(hour: 22, minute: 0),
+                shift: 1,
+                dayOfWeek: 7),
+          ],
+          level: 1);
+
+      groupWorkSchedules.add(groupWorkSchedule);
+      role.roleWorkSchedules.addAll([
+        RoleWorkSchedule(
+            beginActiveAt: Date.today(),
+            endActiveAt: Date.today(),
+            groupName: groupName,
+            beginWork: const TimeOfDay(hour: 8, minute: 0),
+            endWork: const TimeOfDay(hour: 22, minute: 0),
+            dayOfWeek: 1),
+        RoleWorkSchedule(
+            beginActiveAt: Date.today(),
+            endActiveAt: Date.today(),
+            groupName: groupName,
+            beginWork: const TimeOfDay(hour: 8, minute: 0),
+            endWork: const TimeOfDay(hour: 22, minute: 0),
+            dayOfWeek: 2),
+        RoleWorkSchedule(
+            beginActiveAt: Date.today(),
+            endActiveAt: Date.today(),
+            groupName: groupName,
+            beginWork: const TimeOfDay(hour: 8, minute: 0),
+            endWork: const TimeOfDay(hour: 22, minute: 0),
+            dayOfWeek: 3),
+        RoleWorkSchedule(
+            beginActiveAt: Date.today(),
+            endActiveAt: Date.today(),
+            groupName: groupName,
+            beginWork: const TimeOfDay(hour: 8, minute: 0),
+            endWork: const TimeOfDay(hour: 22, minute: 0),
+            dayOfWeek: 4),
+        RoleWorkSchedule(
+            beginActiveAt: Date.today(),
+            endActiveAt: Date.today(),
+            groupName: groupName,
+            beginWork: const TimeOfDay(hour: 8, minute: 0),
+            endWork: const TimeOfDay(hour: 22, minute: 0),
+            dayOfWeek: 5),
+        RoleWorkSchedule(
+            beginActiveAt: Date.today(),
+            endActiveAt: Date.today(),
+            groupName: groupName,
+            beginWork: const TimeOfDay(hour: 8, minute: 0),
+            endWork: const TimeOfDay(hour: 22, minute: 0),
+            dayOfWeek: 6),
+        RoleWorkSchedule(
+            beginActiveAt: Date.today(),
+            endActiveAt: Date.today(),
+            groupName: groupName,
+            beginWork: const TimeOfDay(hour: 8, minute: 0),
+            endWork: const TimeOfDay(hour: 22, minute: 0),
+            dayOfWeek: 7),
+      ]);
+    });
+  }
+
   static const labelStyle =
       TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
   @override
   Widget build(BuildContext context) {
     super.build(context);
     codeInputWidget.text = role.name;
-    Map<GroupWorkSchedule, List<RoleWorkSchedule>> groupWorkSchedule =
-        groupBy<RoleWorkSchedule, GroupWorkSchedule>(
-      role.roleWorkSchedules,
-      (roleWorkSchedule) => GroupWorkSchedule(
-          groupName: roleWorkSchedule.groupName,
-          beginActiveAt: roleWorkSchedule.beginActiveAt,
-          endActiveAt: roleWorkSchedule.endActiveAt,
-          level: roleWorkSchedule.level),
-    );
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-        child: Center(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                    SizedBox(
-                      width: 600,
-                      child: TextFormField(
-                        focusNode: focusNode,
-                        decoration: const InputDecoration(
-                            labelText: 'Nama',
-                            labelStyle: labelStyle,
-                            border: OutlineInputBorder()),
-                        validator: (newValue) {
-                          if (newValue == null || newValue.isEmpty) {
-                            return 'harus diisi';
-                          }
-                          return null;
-                        },
-                        onSaved: (newValue) {
-                          role.name = newValue.toString();
-                        },
-                        onChanged: (newValue) {
-                          role.name = newValue.toString();
-                        },
-                        controller: codeInputWidget,
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const Text(
-                      'Akses Menu',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                          dataRowMinHeight: 60,
-                          dataRowMaxHeight: 250,
-                          showBottomBorder: true,
-                          columns: [
-                            const DataColumn(
-                                label: Text(
-                              'Controller Name',
-                              style: labelStyle,
-                            )),
-                            const DataColumn(
-                                label: Text(
-                              'Action Name',
-                              style: labelStyle,
-                            )),
-                            DataColumn(
-                                label: ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  role.accessAuthorizes.clear();
-                                });
-                              },
-                              child: const Text(
-                                'hapus semua',
-                                style: labelStyle,
+    final padding = MediaQuery.of(context).padding;
+    final size = MediaQuery.of(context).size;
+    double height = size.height - padding.top - padding.bottom - 230;
+    height = height > 600 ? 600 : height;
+    return Padding(
+      padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: height,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Center(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                            SizedBox(
+                              width: 600,
+                              child: TextFormField(
+                                focusNode: focusNode,
+                                decoration: const InputDecoration(
+                                    labelText: 'Nama',
+                                    labelStyle: labelStyle,
+                                    border: OutlineInputBorder()),
+                                validator: (newValue) {
+                                  if (newValue == null || newValue.isEmpty) {
+                                    return 'harus diisi';
+                                  }
+                                  return null;
+                                },
+                                onSaved: (newValue) {
+                                  role.name = newValue.toString();
+                                },
+                                onChanged: (newValue) {
+                                  role.name = newValue.toString();
+                                },
+                                controller: codeInputWidget,
                               ),
-                            )),
-                          ],
-                          rows: role.accessAuthorizes
-                              .map<DataRow>((accessAuthorize) =>
-                                  DataRow(cells: [
-                                    DataCell(SizedBox(
-                                      width: 350,
-                                      child: AsyncDropdown<String>(
-                                          onChanged: (value) => setState(() {
-                                                accessAuthorize.controller =
-                                                    value ?? '';
-                                              }),
-                                          selected: accessAuthorize.controller,
-                                          textOnSearch: (value) => value,
-                                          converter: (json,
-                                                  {List included = const []}) =>
-                                              json['id'].toString(),
-                                          path: 'roles/controller_names'),
-                                    )),
-                                    DataCell(SizedBox(
-                                      width: 350,
-                                      child: AsyncDropdownMultiple<String>(
-                                        onChanged: (value) =>
-                                            accessAuthorize.action = value,
-                                        selecteds: accessAuthorize.action,
-                                        textOnSearch: (value) => value,
-                                        converter: (json,
-                                                {List included = const []}) =>
-                                            json['id'].toString(),
-                                        request: (
-                                            {int page = 1,
-                                            int limit = 20,
-                                            String searchText = '',
-                                            required CancelToken cancelToken}) {
-                                          return server.get(
-                                              'roles/action_names',
-                                              queryParam: {
-                                                'search_text': searchText,
-                                                'controller_name':
-                                                    accessAuthorize.controller,
-                                                'page[page]': page.toString(),
-                                              },
-                                              cancelToken: cancelToken);
-                                        },
-                                      ),
-                                    )),
-                                    DataCell(ElevatedButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          role.accessAuthorizes
-                                              .remove(accessAuthorize);
-                                        });
-                                      },
-                                      child: const Text('Hapus'),
-                                    ))
-                                  ]))
-                              .toList()),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10, bottom: 10),
-                      child: ElevatedButton(
-                          onPressed: () => setState(() {
-                                role.accessAuthorizes.add(AccessAuthorize(
-                                    controller: '', action: []));
-                              }),
-                          child: const Text('Tambah')),
-                    ),
-                    const Text(
-                      "Akses Kolom Tabel",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        dataRowMinHeight: 60,
-                        dataRowMaxHeight: 250,
-                        showBottomBorder: true,
-                        columns: [
-                          const DataColumn(
-                              label: Text(
-                            'Tabel',
-                            style: labelStyle,
-                          )),
-                          const DataColumn(
-                              label: Text('Kolom', style: labelStyle)),
-                          DataColumn(
-                              label: ElevatedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      role.columnAuthorizes.clear();
-                                    });
-                                  },
-                                  child: const Text('Hapus Semua',
-                                      style: labelStyle))),
-                        ],
-                        rows: role.columnAuthorizes
-                            .map<DataRow>((columnAuthorize) => DataRow(cells: [
-                                  DataCell(SizedBox(
-                                    width: 350,
-                                    child: AsyncDropdown<String>(
-                                        textOnSearch: (value) => value,
-                                        onChanged: (value) =>
-                                            columnAuthorize.table = value ?? '',
-                                        selected: columnAuthorize.table,
-                                        converter: (json,
-                                                {List included = const []}) =>
-                                            json['id'].toString(),
-                                        path: 'roles/table_names'),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            const Text(
+                              'Akses Menu',
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                            DataTable(
+                                dataRowMinHeight: 60,
+                                dataRowMaxHeight: 250,
+                                showBottomBorder: true,
+                                columns: [
+                                  const DataColumn(
+                                      label: Text(
+                                    'Controller Name',
+                                    style: labelStyle,
                                   )),
-                                  DataCell(SizedBox(
-                                    width: 350,
-                                    child: AsyncDropdownMultiple<String>(
-                                        onChanged: (value) => setState(() {
-                                              columnAuthorize.column = value;
-                                            }),
-                                        selecteds: columnAuthorize.column,
-                                        textOnSearch: (value) => value,
-                                        converter: (json,
-                                                {List included = const []}) =>
-                                            json['id'].toString(),
-                                        request: (
-                                            {int page = 1,
-                                            int limit = 20,
-                                            String searchText = '',
-                                            required CancelToken cancelToken}) {
-                                          return server.get(
-                                              'roles/column_names',
-                                              queryParam: {
-                                                'search_text': searchText,
-                                                'table_name':
-                                                    columnAuthorize.table,
-                                                'page[page]': page.toString(),
-                                                'page[limit]': '50',
-                                              },
-                                              cancelToken: cancelToken);
-                                        }),
+                                  const DataColumn(
+                                      label: Text(
+                                    'Action Name',
+                                    style: labelStyle,
                                   )),
-                                  DataCell(ElevatedButton(
+                                  DataColumn(
+                                      label: ElevatedButton(
                                     onPressed: () {
                                       setState(() {
-                                        role.columnAuthorizes
-                                            .remove(columnAuthorize);
+                                        role.accessAuthorizes.clear();
                                       });
                                     },
-                                    child: const Text('Hapus'),
+                                    child: const Text(
+                                      'hapus semua',
+                                      style: labelStyle,
+                                    ),
                                   )),
-                                ]))
-                            .toList(),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: ElevatedButton(
-                          onPressed: () => setState(() {
-                                role.columnAuthorizes.add(
-                                    ColumnAuthorize(table: '', column: []));
-                              }),
-                          child: const Text('Tambah')),
-                    ),
-                    const Text(
-                      "Jadwal Kerja",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    ElevatedButton(
-                        onPressed: () {
-                          final newLength = groupWorkSchedule.keys.length + 1;
-                          final groupName =
-                              "Jadwal Baru ${newLength.toString()}";
-                          setState(() {
-                            role.roleWorkSchedules.addAll([
-                              RoleWorkSchedule(
-                                  beginActiveAt: Date.today(),
-                                  endActiveAt: Date.today(),
-                                  groupName: groupName,
-                                  beginWork: const TimeDay(hour: 8, minute: 0),
-                                  endWork: const TimeDay(hour: 22, minute: 0),
-                                  dayOfWeek: 1),
-                              RoleWorkSchedule(
-                                  beginActiveAt: Date.today(),
-                                  endActiveAt: Date.today(),
-                                  groupName: groupName,
-                                  beginWork: const TimeDay(hour: 8, minute: 0),
-                                  endWork: const TimeDay(hour: 22, minute: 0),
-                                  dayOfWeek: 2),
-                              RoleWorkSchedule(
-                                  beginActiveAt: Date.today(),
-                                  endActiveAt: Date.today(),
-                                  groupName: groupName,
-                                  beginWork: const TimeDay(hour: 8, minute: 0),
-                                  endWork: const TimeDay(hour: 22, minute: 0),
-                                  dayOfWeek: 3),
-                              RoleWorkSchedule(
-                                  beginActiveAt: Date.today(),
-                                  endActiveAt: Date.today(),
-                                  groupName: groupName,
-                                  beginWork: const TimeDay(hour: 8, minute: 0),
-                                  endWork: const TimeDay(hour: 22, minute: 0),
-                                  dayOfWeek: 4),
-                              RoleWorkSchedule(
-                                  beginActiveAt: Date.today(),
-                                  endActiveAt: Date.today(),
-                                  groupName: groupName,
-                                  beginWork: const TimeDay(hour: 8, minute: 0),
-                                  endWork: const TimeDay(hour: 22, minute: 0),
-                                  dayOfWeek: 5),
-                              RoleWorkSchedule(
-                                  beginActiveAt: Date.today(),
-                                  endActiveAt: Date.today(),
-                                  groupName: groupName,
-                                  beginWork: const TimeDay(hour: 8, minute: 0),
-                                  endWork: const TimeDay(hour: 22, minute: 0),
-                                  dayOfWeek: 6),
-                              RoleWorkSchedule(
-                                  beginActiveAt: Date.today(),
-                                  endActiveAt: Date.today(),
-                                  groupName: groupName,
-                                  beginWork: const TimeDay(hour: 8, minute: 0),
-                                  endWork: const TimeDay(hour: 22, minute: 0),
-                                  dayOfWeek: 7),
-                            ]);
-                          });
-                        },
-                        child: const Text('Tambah Group Jadwal')),
-                  ] +
-                  workScheduleForms(groupWorkSchedule) +
-                  [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10, bottom: 10),
-                      child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              _formKey.currentState!.save();
-                              flash.show(const Text('Loading'),
-                                  ToastificationType.info);
-                              _submit();
-                            }
-                          },
-                          child: const Text('submit')),
-                    )
-                  ],
+                                ],
+                                rows: role.accessAuthorizes
+                                    .map<DataRow>((accessAuthorize) =>
+                                        DataRow(cells: [
+                                          DataCell(SizedBox(
+                                            width: 350,
+                                            child: AsyncDropdown<String>(
+                                                onChanged: (value) =>
+                                                    setState(() {
+                                                      accessAuthorize
+                                                              .controller =
+                                                          value ?? '';
+                                                    }),
+                                                selected:
+                                                    accessAuthorize.controller,
+                                                textOnSearch: (value) => value,
+                                                converter: (json,
+                                                        {List included =
+                                                            const []}) =>
+                                                    json['id'].toString(),
+                                                path: 'roles/controller_names'),
+                                          )),
+                                          DataCell(SizedBox(
+                                            width: 350,
+                                            child:
+                                                AsyncDropdownMultiple<String>(
+                                              onChanged: (value) =>
+                                                  accessAuthorize.action =
+                                                      value,
+                                              selecteds: accessAuthorize.action,
+                                              textOnSearch: (value) => value,
+                                              converter: (json,
+                                                      {List included =
+                                                          const []}) =>
+                                                  json['id'].toString(),
+                                              request: (
+                                                  {int page = 1,
+                                                  int limit = 20,
+                                                  String searchText = '',
+                                                  required CancelToken
+                                                      cancelToken}) {
+                                                return server.get(
+                                                    'roles/action_names',
+                                                    queryParam: {
+                                                      'search_text': searchText,
+                                                      'controller_name':
+                                                          accessAuthorize
+                                                              .controller,
+                                                      'page[page]':
+                                                          page.toString(),
+                                                    },
+                                                    cancelToken: cancelToken);
+                                              },
+                                            ),
+                                          )),
+                                          DataCell(ElevatedButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                role.accessAuthorizes
+                                                    .remove(accessAuthorize);
+                                              });
+                                            },
+                                            child: const Text('Hapus'),
+                                          ))
+                                        ]))
+                                    .toList()),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(top: 10, bottom: 10),
+                              child: ElevatedButton(
+                                  onPressed: () => setState(() {
+                                        role.accessAuthorizes.add(
+                                            AccessAuthorize(
+                                                controller: '', action: []));
+                                      }),
+                                  child: const Text('Tambah')),
+                            ),
+                            const Text(
+                              "Akses Kolom Tabel",
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: DataTable(
+                                dataRowMinHeight: 60,
+                                dataRowMaxHeight: 250,
+                                showBottomBorder: true,
+                                columns: [
+                                  const DataColumn(
+                                      label: Text(
+                                    'Tabel',
+                                    style: labelStyle,
+                                  )),
+                                  const DataColumn(
+                                      label: Text('Kolom', style: labelStyle)),
+                                  DataColumn(
+                                      label: ElevatedButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              role.columnAuthorizes.clear();
+                                            });
+                                          },
+                                          child: const Text('Hapus Semua',
+                                              style: labelStyle))),
+                                ],
+                                rows: role.columnAuthorizes
+                                    .map<DataRow>((columnAuthorize) =>
+                                        DataRow(cells: [
+                                          DataCell(SizedBox(
+                                            width: 350,
+                                            child: AsyncDropdown<String>(
+                                                textOnSearch: (value) => value,
+                                                onChanged: (value) =>
+                                                    columnAuthorize.table =
+                                                        value ?? '',
+                                                selected: columnAuthorize.table,
+                                                converter: (json,
+                                                        {List included =
+                                                            const []}) =>
+                                                    json['id'].toString(),
+                                                path: 'roles/table_names'),
+                                          )),
+                                          DataCell(SizedBox(
+                                            width: 350,
+                                            child: AsyncDropdownMultiple<
+                                                    String>(
+                                                onChanged: (value) =>
+                                                    setState(() {
+                                                      columnAuthorize.column =
+                                                          value;
+                                                    }),
+                                                selecteds:
+                                                    columnAuthorize.column,
+                                                textOnSearch: (value) => value,
+                                                converter: (json,
+                                                        {List included =
+                                                            const []}) =>
+                                                    json['id'].toString(),
+                                                request: (
+                                                    {int page = 1,
+                                                    int limit = 20,
+                                                    String searchText = '',
+                                                    required CancelToken
+                                                        cancelToken}) {
+                                                  return server.get(
+                                                      'roles/column_names',
+                                                      queryParam: {
+                                                        'search_text':
+                                                            searchText,
+                                                        'table_name':
+                                                            columnAuthorize
+                                                                .table,
+                                                        'page[page]':
+                                                            page.toString(),
+                                                        'page[limit]': '50',
+                                                      },
+                                                      cancelToken: cancelToken);
+                                                }),
+                                          )),
+                                          DataCell(ElevatedButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                role.columnAuthorizes
+                                                    .remove(columnAuthorize);
+                                              });
+                                            },
+                                            child: const Text('Hapus'),
+                                          )),
+                                        ]))
+                                    .toList(),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: ElevatedButton(
+                                  onPressed: () => setState(() {
+                                        role.columnAuthorizes.add(
+                                            ColumnAuthorize(
+                                                table: '', column: []));
+                                      }),
+                                  child: const Text('Tambah')),
+                            ),
+                            const Text(
+                              "Jadwal Kerja",
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                            ElevatedButton(
+                                onPressed: () => _addNewGroupSchedule(),
+                                child: const Text('Tambah Group Jadwal')),
+                          ] +
+                          workScheduleForms()),
+                ),
+              ),
             ),
           ),
-        ),
+          Divider(
+            thickness: 3,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 5),
+            child: ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+                    flash.show(const Text('Loading'), ToastificationType.info);
+                    _submit();
+                  }
+                },
+                child: const Text('submit')),
+          ),
+        ],
       ),
     );
   }
@@ -735,14 +845,17 @@ class GroupWorkSchedule {
   Date endActiveAt;
   int level;
   bool isFlexible;
+  List<DetailSchedule> details = [];
   GroupWorkSchedule(
       {this.level = 1,
       this.groupName = '',
+      List<DetailSchedule>? details,
       this.isFlexible = false,
       Date? beginActiveAt,
       Date? endActiveAt})
       : beginActiveAt = beginActiveAt ?? Date.today(),
-        endActiveAt = endActiveAt ?? Date.today();
+        endActiveAt = endActiveAt ?? Date.today(),
+        details = details ?? <DetailSchedule>[];
 
   @override
   bool operator ==(Object other) =>
@@ -753,4 +866,20 @@ class GroupWorkSchedule {
 
   @override
   int get hashCode => groupName.hashCode;
+}
+
+class DetailSchedule {
+  int? id;
+  int dayOfWeek;
+  int shift;
+  TimeOfDay beginWork;
+  TimeOfDay endWork;
+  bool isFlexible;
+  DetailSchedule(
+      {this.dayOfWeek = 1,
+      this.shift = 1,
+      this.id,
+      this.isFlexible = false,
+      this.beginWork = const TimeOfDay(hour: 8, minute: 0),
+      this.endWork = const TimeOfDay(hour: 22, minute: 0)});
 }

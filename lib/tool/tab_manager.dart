@@ -47,6 +47,8 @@ class TabManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  Widget? get activeTab => controller.getTabByIndex(selectedIndex).content;
+
   void removeRightContent() {
     PlutoLayoutActions.hideAllTabView();
     debugPrint('click close');

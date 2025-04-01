@@ -2,16 +2,16 @@ import 'package:fe_pos/tool/custom_type.dart';
 import 'package:flutter/material.dart';
 
 class TimeFormField extends StatefulWidget {
-  final TimeDay? initialValue;
+  final TimeOfDay? initialValue;
   final Widget? label;
-  final TimeDay? firstDate;
-  final TimeDay? lastDate;
+  final TimeOfDay? firstDate;
+  final TimeOfDay? lastDate;
   final bool canRemove;
   final FocusNode? focusNode;
   final String? helpText;
-  final void Function(TimeDay?)? onSaved;
-  final void Function(TimeDay? date)? onChanged;
-  final String? Function(TimeDay?)? validator;
+  final void Function(TimeOfDay?)? onSaved;
+  final void Function(TimeOfDay? date)? onChanged;
+  final String? Function(TimeOfDay?)? validator;
   const TimeFormField(
       {super.key,
       this.label,
@@ -34,7 +34,7 @@ class _TimeFormFieldState extends State<TimeFormField> {
   // In this example, the restoration ID for the mixin is passed in through
   // the [StatefulWidget]'s constructor.
 
-  TimeDay? _date;
+  TimeOfDay? _date;
 
   final _controller = TextEditingController();
 
@@ -43,12 +43,12 @@ class _TimeFormFieldState extends State<TimeFormField> {
     _date = widget.initialValue;
     _controller.text = widget.initialValue == null
         ? ''
-        : (widget.initialValue ?? TimeDay.now()).format24Hour();
+        : (widget.initialValue ?? TimeOfDay.now()).format24Hour();
 
     super.initState();
   }
 
-  void _selectDate(TimeDay? newSelectedDate) {
+  void _selectDate(TimeOfDay? newSelectedDate) {
     if (widget.onChanged != null) {
       widget.onChanged!(newSelectedDate);
     }
@@ -70,7 +70,7 @@ class _TimeFormFieldState extends State<TimeFormField> {
       cancelText: 'Batal',
       confirmText: 'OK',
     ).then((value) {
-      final time = TimeDay.fromTimeOfDay(value);
+      final time = value;
       _selectDate(time);
     });
   }

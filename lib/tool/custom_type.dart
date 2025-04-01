@@ -1,54 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class TimeDay extends TimeOfDay {
-  final int second;
-  const TimeDay({super.hour = 0, super.minute = 0, this.second = 0});
-  static TimeDay now() {
-    final datetime = DateTime.now();
-    return fromDateTime(datetime);
-  }
-
-  static TimeDay fromDateTime(datetime) {
-    return TimeDay(
-        hour: datetime.hour, minute: datetime.minute, second: datetime.second);
-  }
-
-  static TimeDay fromTimeOfDay(time) {
-    return TimeDay(hour: time.hour, minute: time.minute);
-  }
-
-  String toJson() {
-    return format24Hour();
-  }
-
-  String format24Hour({bool showSecond = false, String separator = ':'}) {
-    List<String> part = [
-      hour.toString().padLeft(2, '0'),
-      minute.toString().padLeft(2, '0')
-    ];
-    if (showSecond) {
-      part.add(second.toString().padLeft(2, '0'));
-    }
-    return part.join(separator);
-  }
-
-  static TimeDay parse(String value, {String separator = ':'}) {
-    final parts = value.split(separator);
-    return TimeDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
-  }
-
-  static TimeDay? tryParse(String? value, {String separator = ':'}) {
-    if (value == null || value.isEmpty) return null;
-    try {
-      return parse(value, separator: ':');
-    } catch (e) {
-      debugPrint(e.toString());
-      return null;
-    }
-  }
-}
-
 extension DateTimeExt on DateTime {
   DateTime beginningOfDay() {
     return copyWith(
@@ -387,6 +339,43 @@ class Percentage {
       return value >= other.value;
     } else {
       return value >= other;
+    }
+  }
+}
+
+extension TimeDay on TimeOfDay {
+  static TimeOfDay now() {
+    final datetime = DateTime.now();
+    return TimeOfDay.fromDateTime(datetime);
+  }
+
+  String toJson() {
+    return format24Hour();
+  }
+
+  String format24Hour({bool showSecond = false, String separator = ':'}) {
+    List<String> part = [
+      hour.toString().padLeft(2, '0'),
+      minute.toString().padLeft(2, '0')
+    ];
+    if (showSecond) {
+      part.add('00');
+    }
+    return part.join(separator);
+  }
+
+  static TimeOfDay parse(String value, {String separator = ':'}) {
+    final parts = value.split(separator);
+    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+  }
+
+  static TimeOfDay? tryParse(String? value, {String separator = ':'}) {
+    if (value == null || value.isEmpty) return null;
+    try {
+      return parse(value, separator: ':');
+    } catch (e) {
+      debugPrint(e.toString());
+      return null;
     }
   }
 }

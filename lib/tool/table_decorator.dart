@@ -165,7 +165,7 @@ mixin TableDecorator<T extends Model>
         return dateFormat(cell);
       case const (DateTime):
         return dateTimeLocalFormat(cell);
-      case const (TimeDay):
+      case const (TimeOfDay):
         return timeFormat(cell);
       case const (Money):
         return moneyFormat(cell);
