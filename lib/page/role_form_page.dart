@@ -6,10 +6,10 @@ import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
+import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/time_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/role.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import "package:collection/collection.dart";
 
@@ -260,6 +260,7 @@ class _RoleFormPageState extends State<RoleFormPage>
           child: DataTable(
               dataRowMinHeight: 60,
               dataRowMaxHeight: 100,
+              headingRowHeight: 100,
               showBottomBorder: true,
               columns: [
                 const DataColumn(
@@ -272,33 +273,72 @@ class _RoleFormPageState extends State<RoleFormPage>
                   'Shift',
                   style: labelStyle,
                 )),
-                const DataColumn(
-                    label: Text(
-                  'Mulai',
-                  style: labelStyle,
-                )),
-                const DataColumn(
-                    label: Text(
-                  'Akhir',
-                  style: labelStyle,
-                )),
                 DataColumn(
-                    label: Row(
+                    // columnWidth: FixedColumnWidth(200),
+                    label: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Checkbox(
-                        value: groupWorkSchedule.isFlexible,
-                        onChanged: (isFlexible) {
+                    Text(
+                      'Mulai',
+                      style: labelStyle,
+                    ),
+                    SizedBox(
+                      width: 90,
+                      child: TimeFormField(
+                        onChanged: (time) {
                           setState(() {
-                            groupWorkSchedule.isFlexible = isFlexible ?? false;
                             for (final detail in groupWorkSchedule.details) {
-                              detail.isFlexible = isFlexible ?? false;
+                              detail.beginWork = time ?? detail.beginWork;
                             }
                           });
-                        }),
+                        },
+                      ),
+                    ),
+                  ],
+                )),
+                DataColumn(
+                    // columnWidth: FixedColumnWidth(150),
+                    label: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Text(
+                      'Akhir',
+                      style: labelStyle,
+                    ),
+                    SizedBox(
+                      width: 90,
+                      child: TimeFormField(
+                        onChanged: (time) {
+                          setState(() {
+                            for (final detail in groupWorkSchedule.details) {
+                              detail.endWork = time ?? detail.endWork;
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                )),
+                DataColumn(
+                    label: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
                     Text(
                       'Fleksibel?',
                       style: labelStyle,
                     ),
+                    Checkbox(
+                        value: groupWorkSchedule.isFlexible,
+                        onChanged: (isFlexible) {
+                          setState(() {
+                            groupWorkSchedule.isFlexible =
+                                isFlexible ?? groupWorkSchedule.isFlexible;
+                            for (final detail in groupWorkSchedule.details) {
+                              detail.isFlexible =
+                                  isFlexible ?? detail.isFlexible;
+                            }
+                          });
+                        }),
                   ],
                 )),
                 DataColumn(
@@ -321,6 +361,7 @@ class _RoleFormPageState extends State<RoleFormPage>
                           onSelected: ((value) => setState(() {
                                 detailSchedule.dayOfWeek = value ?? 0;
                               })),
+                          menuHeight: 200,
                           dropdownMenuEntries: const [
                             DropdownMenuEntry(value: 1, label: 'Senin'),
                             DropdownMenuEntry(value: 2, label: 'Selasa'),
@@ -331,34 +372,25 @@ class _RoleFormPageState extends State<RoleFormPage>
                             DropdownMenuEntry(value: 7, label: 'Minggu'),
                           ],
                         )),
-                        DataCell(TextFormField(
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder()),
-                          initialValue: detailSchedule.shift.toString(),
-                          keyboardType: TextInputType.number,
-                          inputFormatters: <TextInputFormatter>[
-                            FilteringTextInputFormatter.digitsOnly
-                          ],
-                          onSaved: (value) =>
-                              detailSchedule.shift = int.parse(value ?? '1'),
+                        DataCell(NumberFormField<int>(
+                          initialValue: detailSchedule.shift,
+                          onSaved: (value) => detailSchedule.shift =
+                              value ?? detailSchedule.shift,
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'harus diisi';
-                            }
-                            if (int.tryParse(value) == null) {
+                            if (value == null) {
                               return 'tidak valid';
                             }
-                            if (int.parse(value) <= 0) {
+                            if (value <= 0) {
                               return 'harus lebih besar dari 0';
                             }
                             return null;
                           },
-                          onChanged: (value) =>
-                              detailSchedule.shift = int.tryParse(value) ?? 0,
+                          onChanged: (value) => detailSchedule.shift =
+                              value ?? detailSchedule.shift,
                         )),
                         DataCell(
                           TimeFormField(
-                            initialValue: detailSchedule.beginWork,
+                            controller: detailSchedule.beginWorkController,
                             onSaved: (value) => detailSchedule.beginWork =
                                 value ?? detailSchedule.beginWork,
                             helpText: 'Mulai Kerja',
@@ -372,7 +404,7 @@ class _RoleFormPageState extends State<RoleFormPage>
                         ),
                         DataCell(
                           TimeFormField(
-                            initialValue: detailSchedule.endWork,
+                            controller: detailSchedule.endWorkController,
                             onSaved: (value) => detailSchedule.endWork =
                                 value ?? detailSchedule.endWork,
                             helpText: 'Akhir Kerja',
@@ -482,57 +514,6 @@ class _RoleFormPageState extends State<RoleFormPage>
           level: 1);
 
       groupWorkSchedules.add(groupWorkSchedule);
-      role.roleWorkSchedules.addAll([
-        RoleWorkSchedule(
-            beginActiveAt: Date.today(),
-            endActiveAt: Date.today(),
-            groupName: groupName,
-            beginWork: const TimeOfDay(hour: 8, minute: 0),
-            endWork: const TimeOfDay(hour: 22, minute: 0),
-            dayOfWeek: 1),
-        RoleWorkSchedule(
-            beginActiveAt: Date.today(),
-            endActiveAt: Date.today(),
-            groupName: groupName,
-            beginWork: const TimeOfDay(hour: 8, minute: 0),
-            endWork: const TimeOfDay(hour: 22, minute: 0),
-            dayOfWeek: 2),
-        RoleWorkSchedule(
-            beginActiveAt: Date.today(),
-            endActiveAt: Date.today(),
-            groupName: groupName,
-            beginWork: const TimeOfDay(hour: 8, minute: 0),
-            endWork: const TimeOfDay(hour: 22, minute: 0),
-            dayOfWeek: 3),
-        RoleWorkSchedule(
-            beginActiveAt: Date.today(),
-            endActiveAt: Date.today(),
-            groupName: groupName,
-            beginWork: const TimeOfDay(hour: 8, minute: 0),
-            endWork: const TimeOfDay(hour: 22, minute: 0),
-            dayOfWeek: 4),
-        RoleWorkSchedule(
-            beginActiveAt: Date.today(),
-            endActiveAt: Date.today(),
-            groupName: groupName,
-            beginWork: const TimeOfDay(hour: 8, minute: 0),
-            endWork: const TimeOfDay(hour: 22, minute: 0),
-            dayOfWeek: 5),
-        RoleWorkSchedule(
-            beginActiveAt: Date.today(),
-            endActiveAt: Date.today(),
-            groupName: groupName,
-            beginWork: const TimeOfDay(hour: 8, minute: 0),
-            endWork: const TimeOfDay(hour: 22, minute: 0),
-            dayOfWeek: 6),
-        RoleWorkSchedule(
-            beginActiveAt: Date.today(),
-            endActiveAt: Date.today(),
-            groupName: groupName,
-            beginWork: const TimeOfDay(hour: 8, minute: 0),
-            endWork: const TimeOfDay(hour: 22, minute: 0),
-            dayOfWeek: 7),
-      ]);
     });
   }
 
@@ -545,19 +526,19 @@ class _RoleFormPageState extends State<RoleFormPage>
     final padding = MediaQuery.of(context).padding;
     final size = MediaQuery.of(context).size;
     double height = size.height - padding.top - padding.bottom - 230;
-    height = height > 600 ? 600 : height;
-    return Padding(
-      padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            height: height,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Center(
-                child: Form(
-                  key: _formKey,
+    height = height < 400 ? 400 : height;
+    return Form(
+      key: _formKey,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: height,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Center(
                   child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -817,23 +798,22 @@ class _RoleFormPageState extends State<RoleFormPage>
                 ),
               ),
             ),
-          ),
-          Divider(
-            thickness: 3,
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 5),
-            child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    flash.show(const Text('Loading'), ToastificationType.info);
-                    _submit();
-                  }
-                },
-                child: const Text('submit')),
-          ),
-        ],
+            Divider(
+              thickness: 3,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 5),
+              child: ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
+                      _submit();
+                    }
+                  },
+                  child: const Text('submit')),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -872,14 +852,35 @@ class DetailSchedule {
   int? id;
   int dayOfWeek;
   int shift;
-  TimeOfDay beginWork;
-  TimeOfDay endWork;
+  TimeOfDay _beginWork;
+  TimeOfDay _endWork;
+  late final TextEditingController beginWorkController;
+  late final TextEditingController endWorkController;
   bool isFlexible;
-  DetailSchedule(
-      {this.dayOfWeek = 1,
-      this.shift = 1,
-      this.id,
-      this.isFlexible = false,
-      this.beginWork = const TimeOfDay(hour: 8, minute: 0),
-      this.endWork = const TimeOfDay(hour: 22, minute: 0)});
+  DetailSchedule({
+    this.dayOfWeek = 1,
+    this.shift = 1,
+    this.id,
+    this.isFlexible = false,
+    TimeOfDay? beginWork,
+    TimeOfDay? endWork,
+  })  : _beginWork = beginWork ?? TimeOfDay(hour: 8, minute: 0),
+        _endWork = endWork ?? TimeOfDay(hour: 22, minute: 0),
+        beginWorkController =
+            TextEditingController(text: beginWork?.format24Hour() ?? '08:00'),
+        endWorkController =
+            TextEditingController(text: endWork?.format24Hour() ?? '22:00');
+
+  TimeOfDay get beginWork => _beginWork;
+  TimeOfDay get endWork => _endWork;
+
+  set beginWork(TimeOfDay value) {
+    _beginWork = value;
+    beginWorkController.text = value.format24Hour();
+  }
+
+  set endWork(TimeOfDay value) {
+    _endWork = value;
+    endWorkController.text = value.format24Hour();
+  }
 }

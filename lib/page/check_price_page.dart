@@ -40,7 +40,7 @@ class _CheckPricePageState extends State<CheckPricePage>
         clientWidth: 160,
         type: TableColumnType.money,
         name: 'sell_price',
-        humanizeName: 'Harga Jual'),
+        humanizeName: 'Harga Normal'),
     TableColumn(
         clientWidth: 200, name: 'discount_desc', humanizeName: 'Promo Diskon'),
     TableColumn(

@@ -9,12 +9,14 @@ class TimeFormField extends StatefulWidget {
   final bool canRemove;
   final FocusNode? focusNode;
   final String? helpText;
+  final TextEditingController? controller;
   final void Function(TimeOfDay?)? onSaved;
   final void Function(TimeOfDay? date)? onChanged;
   final String? Function(TimeOfDay?)? validator;
   const TimeFormField(
       {super.key,
       this.label,
+      this.controller,
       this.firstDate,
       this.lastDate,
       this.onSaved,
@@ -23,7 +25,7 @@ class TimeFormField extends StatefulWidget {
       this.onChanged,
       this.validator,
       this.canRemove = false,
-      required this.initialValue});
+      this.initialValue});
 
   @override
   State<TimeFormField> createState() => _TimeFormFieldState();
@@ -37,13 +39,25 @@ class _TimeFormFieldState extends State<TimeFormField> {
   TimeOfDay? _date;
 
   final _controller = TextEditingController();
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
-    _date = widget.initialValue;
-    _controller.text = widget.initialValue == null
-        ? ''
-        : (widget.initialValue ?? TimeOfDay.now()).format24Hour();
+    widget.controller?.addListener(() {
+      _controller.text = widget.controller!.text;
+      _date = TimeDay.parse(widget.controller!.text);
+    });
+    if (widget.initialValue != null) {
+      _date = widget.initialValue;
+    } else if (widget.controller != null) {
+      _date = TimeDay.parse(widget.controller!.text);
+    }
+    _controller.text =
+        _date == null ? '' : (_date ?? TimeOfDay.now()).format24Hour();
 
     super.initState();
   }
@@ -77,46 +91,43 @@ class _TimeFormFieldState extends State<TimeFormField> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Stack(children: [
-          TextFormField(
-            onTap: () {
-              _showDialog();
-            },
-            focusNode: widget.focusNode,
-            readOnly: true,
-            validator: (value) {
-              if (widget.validator == null) {
-                return null;
-              }
-              return widget.validator!(_date);
-            },
-            onSaved: (newValue) {
+    return TextFormField(
+      onTap: () {
+        _showDialog();
+      },
+      focusNode: widget.focusNode,
+      readOnly: true,
+      validator: (value) {
+        if (widget.validator == null) {
+          return null;
+        }
+        return widget.validator!(_date);
+      },
+      onSaved: widget.onSaved == null
+          ? null
+          : (newValue) {
               widget.onSaved!(_date);
             },
-            decoration: InputDecoration(
-                label: widget.label, border: const OutlineInputBorder()),
-            controller: _controller,
-          ),
-          Visibility(
-              visible: widget.canRemove && _date != null,
-              child: Positioned(
-                top: 1,
-                right: 5,
-                child: IconButton(
-                    iconSize: 30,
-                    onPressed: () {
-                      setState(() {
-                        _controller.text = '';
-                        _date = null;
-                      });
-                      if (widget.onChanged != null) {
-                        widget.onChanged!(_date);
-                      }
-                    },
-                    icon: const Icon(Icons.close)),
-              )),
-        ]));
+      decoration: InputDecoration(
+        label: widget.label,
+        contentPadding: const EdgeInsets.all(5),
+        border: const OutlineInputBorder(),
+        suffix: widget.canRemove && _date != null
+            ? IconButton(
+                iconSize: 30,
+                onPressed: () {
+                  setState(() {
+                    _controller.text = '';
+                    _date = null;
+                  });
+                  if (widget.onChanged != null) {
+                    widget.onChanged!(_date);
+                  }
+                },
+                icon: const Icon(Icons.close))
+            : null,
+      ),
+      controller: _controller,
+    );
   }
 }
