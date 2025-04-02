@@ -66,16 +66,32 @@ class _RoleFormPageState extends State<RoleFormPage>
                 beginActiveAt: roleWorkSchedule.beginActiveAt,
                 endActiveAt: roleWorkSchedule.endActiveAt,
                 level: roleWorkSchedule.level),
-          ).forEach((groupWorkSchedule, value) {
-            groupWorkSchedule.details = value
-                .map<DetailSchedule>((roleWorkSchedule) => DetailSchedule(
-                    dayOfWeek: roleWorkSchedule.dayOfWeek,
-                    shift: roleWorkSchedule.shift,
-                    beginWork: roleWorkSchedule.beginWork,
-                    isFlexible: roleWorkSchedule.isFlexible,
-                    endWork: roleWorkSchedule.endWork))
-                .toList()
-              ..sort((a, b) => a.dayOfWeek.compareTo(b.dayOfWeek));
+          ).forEach((groupWorkSchedule, values) {
+            groupBy<RoleWorkSchedule, DetailSchedule>(
+                values,
+                (value) => DetailSchedule(
+                      shift: value.shift,
+                      beginWork: value.beginWork,
+                      endWork: value.endWork,
+                      isFlexible: value.isFlexible,
+                    )).forEach((detailSchedule, val) {
+              final dayOfWeeks = val
+                  .map(
+                    (e) => e.dayOfWeek,
+                  )
+                  .toList();
+              detailSchedule.isMonday = dayOfWeeks.contains(1);
+              detailSchedule.isTuesday = dayOfWeeks.contains(2);
+              detailSchedule.isWednesday = dayOfWeeks.contains(3);
+              detailSchedule.isThursday = dayOfWeeks.contains(4);
+              detailSchedule.isFriday = dayOfWeeks.contains(5);
+              detailSchedule.isSaturday = dayOfWeeks.contains(6);
+              detailSchedule.isSunday = dayOfWeeks.contains(7);
+              groupWorkSchedule.details.add(detailSchedule);
+              groupWorkSchedule.details
+                  .sort((a, b) => a.shift.compareTo(b.shift));
+            });
+
             groupWorkSchedules.add(groupWorkSchedule);
           });
         });
@@ -92,18 +108,19 @@ class _RoleFormPageState extends State<RoleFormPage>
     List<RoleWorkSchedule> result = [];
     for (final groupWorkSchedule in groupWorkSchedules) {
       for (final detailSchedule in groupWorkSchedule.details) {
-        result.add(RoleWorkSchedule(
-          id: detailSchedule.id,
-          beginActiveAt: groupWorkSchedule.beginActiveAt,
-          endActiveAt: groupWorkSchedule.endActiveAt,
-          shift: detailSchedule.shift,
-          beginWork: detailSchedule.beginWork,
-          endWork: detailSchedule.endWork,
-          level: groupWorkSchedule.level,
-          isFlexible: detailSchedule.isFlexible,
-          dayOfWeek: detailSchedule.dayOfWeek,
-          groupName: groupWorkSchedule.groupName,
-        ));
+        for (final dayOfWeek in detailSchedule.dayOfWeeks) {
+          result.add(RoleWorkSchedule(
+            beginActiveAt: groupWorkSchedule.beginActiveAt,
+            endActiveAt: groupWorkSchedule.endActiveAt,
+            shift: detailSchedule.shift,
+            beginWork: detailSchedule.beginWork,
+            endWork: detailSchedule.endWork,
+            level: groupWorkSchedule.level,
+            isFlexible: detailSchedule.isFlexible,
+            dayOfWeek: dayOfWeek,
+            groupName: groupWorkSchedule.groupName,
+          ));
+        }
       }
     }
     return result;
@@ -259,22 +276,16 @@ class _RoleFormPageState extends State<RoleFormPage>
           scrollDirection: Axis.horizontal,
           child: DataTable(
               dataRowMinHeight: 60,
-              dataRowMaxHeight: 100,
+              dataRowMaxHeight: 80,
               headingRowHeight: 100,
               showBottomBorder: true,
               columns: [
-                const DataColumn(
-                    label: Text(
-                  'Hari',
-                  style: labelStyle,
-                )),
                 const DataColumn(
                     label: Text(
                   'Shift',
                   style: labelStyle,
                 )),
                 DataColumn(
-                    // columnWidth: FixedColumnWidth(200),
                     label: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -297,7 +308,6 @@ class _RoleFormPageState extends State<RoleFormPage>
                   ],
                 )),
                 DataColumn(
-                    // columnWidth: FixedColumnWidth(150),
                     label: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -320,8 +330,44 @@ class _RoleFormPageState extends State<RoleFormPage>
                   ],
                 )),
                 DataColumn(
+                    label: Text(
+                  'Senin',
+                  style: labelStyle,
+                )),
+                DataColumn(
+                    label: Text(
+                  'Selasa',
+                  style: labelStyle,
+                )),
+                DataColumn(
+                    label: Text(
+                  'Rabu',
+                  style: labelStyle,
+                )),
+                DataColumn(
+                    label: Text(
+                  'Kamis',
+                  style: labelStyle,
+                )),
+                DataColumn(
+                    label: Text(
+                  'Jumat',
+                  style: labelStyle,
+                )),
+                DataColumn(
+                    label: Text(
+                  'Sabtu',
+                  style: labelStyle,
+                )),
+                DataColumn(
+                    label: Text(
+                  'Minggu',
+                  style: labelStyle,
+                )),
+                DataColumn(
                     label: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Fleksibel?',
@@ -356,22 +402,6 @@ class _RoleFormPageState extends State<RoleFormPage>
               ],
               rows: groupWorkSchedule.details
                   .map<DataRow>((detailSchedule) => DataRow(cells: [
-                        DataCell(DropdownMenu<int>(
-                          initialSelection: detailSchedule.dayOfWeek,
-                          onSelected: ((value) => setState(() {
-                                detailSchedule.dayOfWeek = value ?? 0;
-                              })),
-                          menuHeight: 200,
-                          dropdownMenuEntries: const [
-                            DropdownMenuEntry(value: 1, label: 'Senin'),
-                            DropdownMenuEntry(value: 2, label: 'Selasa'),
-                            DropdownMenuEntry(value: 3, label: 'Rabu'),
-                            DropdownMenuEntry(value: 4, label: 'Kamis'),
-                            DropdownMenuEntry(value: 5, label: 'Jumat'),
-                            DropdownMenuEntry(value: 6, label: 'Sabtu'),
-                            DropdownMenuEntry(value: 7, label: 'Minggu'),
-                          ],
-                        )),
                         DataCell(NumberFormField<int>(
                           initialValue: detailSchedule.shift,
                           onSaved: (value) => detailSchedule.shift =
@@ -417,33 +447,66 @@ class _RoleFormPageState extends State<RoleFormPage>
                           ),
                         ),
                         DataCell(Checkbox(
+                            value: detailSchedule.isMonday,
+                            onChanged: (value) => setState(() {
+                                  detailSchedule.isMonday =
+                                      value ?? detailSchedule.isMonday;
+                                }))),
+                        DataCell(Checkbox(
+                            value: detailSchedule.isTuesday,
+                            onChanged: (value) => setState(() {
+                                  detailSchedule.isTuesday =
+                                      value ?? detailSchedule.isTuesday;
+                                }))),
+                        DataCell(Checkbox(
+                            value: detailSchedule.isWednesday,
+                            onChanged: (value) => setState(() {
+                                  detailSchedule.isWednesday =
+                                      value ?? detailSchedule.isWednesday;
+                                }))),
+                        DataCell(Checkbox(
+                            value: detailSchedule.isThursday,
+                            onChanged: (value) => setState(() {
+                                  detailSchedule.isThursday =
+                                      value ?? detailSchedule.isThursday;
+                                }))),
+                        DataCell(Checkbox(
+                            value: detailSchedule.isFriday,
+                            onChanged: (value) => setState(() {
+                                  detailSchedule.isFriday =
+                                      value ?? detailSchedule.isFriday;
+                                }))),
+                        DataCell(Checkbox(
+                            value: detailSchedule.isSaturday,
+                            onChanged: (value) => setState(() {
+                                  detailSchedule.isSaturday =
+                                      value ?? detailSchedule.isSaturday;
+                                }))),
+                        DataCell(Checkbox(
+                            value: detailSchedule.isSunday,
+                            onChanged: (value) => setState(() {
+                                  detailSchedule.isSunday =
+                                      value ?? detailSchedule.isSunday;
+                                }))),
+                        DataCell(Checkbox(
                             value: detailSchedule.isFlexible,
                             onChanged: (value) => setState(() {
-                                  detailSchedule.isFlexible = value ?? false;
+                                  detailSchedule.isFlexible =
+                                      value ?? detailSchedule.isFlexible;
                                 }))),
                         DataCell(Row(
                           children: [
-                            Visibility(
-                              visible: detailSchedule.id != null,
-                              child: IconButton(
-                                onPressed: () {
-                                  fetchHistoryByRecord(
-                                      'RoleWorkSchedule', detailSchedule.id);
-                                },
-                                icon: const Icon(Icons.history),
-                              ),
-                            ),
                             const SizedBox(
                               width: 10,
                             ),
-                            ElevatedButton(
+                            IconButton.filledTonal(
                               onPressed: () {
                                 setState(() {
                                   groupWorkSchedule.details
                                       .remove(detailSchedule);
                                 });
                               },
-                              child: const Text('Hapus'),
+                              icon: Icon(Icons.close),
                             ),
                           ],
                         )),
@@ -476,40 +539,10 @@ class _RoleFormPageState extends State<RoleFormPage>
           endActiveAt: Date.today(),
           details: [
             DetailSchedule(
-                beginWork: const TimeOfDay(hour: 8, minute: 0),
-                endWork: const TimeOfDay(hour: 22, minute: 0),
-                shift: 1,
-                dayOfWeek: 1),
-            DetailSchedule(
-                beginWork: const TimeOfDay(hour: 8, minute: 0),
-                endWork: const TimeOfDay(hour: 22, minute: 0),
-                shift: 1,
-                dayOfWeek: 2),
-            DetailSchedule(
-                beginWork: const TimeOfDay(hour: 8, minute: 0),
-                endWork: const TimeOfDay(hour: 22, minute: 0),
-                shift: 1,
-                dayOfWeek: 3),
-            DetailSchedule(
-                beginWork: const TimeOfDay(hour: 8, minute: 0),
-                endWork: const TimeOfDay(hour: 22, minute: 0),
-                shift: 1,
-                dayOfWeek: 4),
-            DetailSchedule(
-                beginWork: const TimeOfDay(hour: 8, minute: 0),
-                endWork: const TimeOfDay(hour: 22, minute: 0),
-                shift: 1,
-                dayOfWeek: 5),
-            DetailSchedule(
-                beginWork: const TimeOfDay(hour: 8, minute: 0),
-                endWork: const TimeOfDay(hour: 22, minute: 0),
-                shift: 1,
-                dayOfWeek: 6),
-            DetailSchedule(
-                beginWork: const TimeOfDay(hour: 8, minute: 0),
-                endWork: const TimeOfDay(hour: 22, minute: 0),
-                shift: 1,
-                dayOfWeek: 7),
+              beginWork: const TimeOfDay(hour: 8, minute: 0),
+              endWork: const TimeOfDay(hour: 22, minute: 0),
+              shift: 1,
+            ),
           ],
           level: 1);
 
@@ -532,7 +565,6 @@ class _RoleFormPageState extends State<RoleFormPage>
       child: Padding(
         padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
               height: height,
@@ -849,8 +881,13 @@ class GroupWorkSchedule {
 }
 
 class DetailSchedule {
-  int? id;
-  int dayOfWeek;
+  bool isMonday;
+  bool isTuesday;
+  bool isWednesday;
+  bool isThursday;
+  bool isFriday;
+  bool isSaturday;
+  bool isSunday;
   int shift;
   TimeOfDay _beginWork;
   TimeOfDay _endWork;
@@ -858,9 +895,14 @@ class DetailSchedule {
   late final TextEditingController endWorkController;
   bool isFlexible;
   DetailSchedule({
-    this.dayOfWeek = 1,
     this.shift = 1,
-    this.id,
+    this.isMonday = false,
+    this.isTuesday = false,
+    this.isWednesday = false,
+    this.isThursday = false,
+    this.isFriday = false,
+    this.isSaturday = false,
+    this.isSunday = false,
     this.isFlexible = false,
     TimeOfDay? beginWork,
     TimeOfDay? endWork,
@@ -873,6 +915,17 @@ class DetailSchedule {
 
   TimeOfDay get beginWork => _beginWork;
   TimeOfDay get endWork => _endWork;
+  List<int> get dayOfWeeks {
+    List<int> result = [];
+    if (isMonday) result.add(1);
+    if (isTuesday) result.add(2);
+    if (isWednesday) result.add(3);
+    if (isThursday) result.add(4);
+    if (isFriday) result.add(5);
+    if (isSaturday) result.add(6);
+    if (isSunday) result.add(7);
+    return result;
+  }
 
   set beginWork(TimeOfDay value) {
     _beginWork = value;
@@ -883,4 +936,15 @@ class DetailSchedule {
     _endWork = value;
     endWorkController.text = value.format24Hour();
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DetailSchedule &&
+          runtimeType == other.runtimeType &&
+          hashCode == other.hashCode;
+
+  @override
+  int get hashCode =>
+      "$shift-$beginWork-$endWork-${isFlexible.toString()}".hashCode;
 }
