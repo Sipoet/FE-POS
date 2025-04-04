@@ -1,6 +1,7 @@
 import 'package:fe_pos/model/payslip.dart';
 import 'package:fe_pos/page/payslip_form_page.dart';
 import 'package:fe_pos/page/generate_payslip_form_page.dart';
+import 'package:fe_pos/page/payslip_pay_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/file_saver.dart';
 import 'package:fe_pos/tool/flash.dart';
@@ -179,10 +180,48 @@ class _PayslipPageState extends State<PayslipPage>
     }
   }
 
-  void cancelPayslip(Payslip payslip) {}
+  void cancelPayslip(Payslip payslip) {
+    server.post('payslips/${payslip.id.toString()}/cancel').then((response) {
+      if (response.statusCode == 200) {
+        flash.show(
+            Text('Berhasil Cancel slip gaji'), ToastificationType.success);
+        _source.refreshDatasource();
+        return;
+      }
+      flash.show(Text('Gagal Cancel slip gaji'), ToastificationType.error);
+    }, onError: (error) {
+      defaultErrorResponse(error: error);
+    });
+  }
 
-  void confirmPayslip(Payslip payslip) {}
-  void payPayslip(Payslip payslip) {}
+  void confirmPayslip(Payslip payslip) {
+    server.post('payslips/${payslip.id.toString()}/confirm').then((response) {
+      if (response.statusCode == 200) {
+        flash.show(
+            Text('Berhasil Confirm slip gaji'), ToastificationType.success);
+        _source.refreshDatasource();
+        return;
+      }
+      flash.show(Text('Gagal Confirm slip gaji'), ToastificationType.error);
+    }, onError: (error) {
+      defaultErrorResponse(error: error);
+    });
+  }
+
+  void payPayslip() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Pembayaran Slip Gaji'),
+          contentPadding: EdgeInsets.all(10),
+          content: PayslipPayPage(
+              isModal: true,
+              payslipIds: _source.selected.map<int>((e) => e.id).toList()),
+        );
+      },
+    );
+  }
 
   void actionSelected(void Function(Payslip) action) {
     for (Payslip payslip in _source.selected) {
@@ -302,7 +341,12 @@ class _PayslipPageState extends State<PayslipPage>
                             child: const Text('pay Slip Gaji'),
                             onPressed: () {
                               menuController.close();
-                              actionSelected(payPayslip);
+                              if (_source.selected.isEmpty) {
+                                flash.show(Text('harus ada yang dipilih'),
+                                    ToastificationType.error);
+                                return;
+                              }
+                              payPayslip();
                             },
                           ),
                           MenuItemButton(
