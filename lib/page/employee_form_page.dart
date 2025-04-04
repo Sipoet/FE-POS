@@ -438,7 +438,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           }
                           return null;
                         },
-                        canRemove: true,
+                        allowClear: true,
                         onChanged: (newValue) {
                           employee.endWorkingDate = newValue == null
                               ? null

@@ -6,7 +6,7 @@ class TimeFormField extends StatefulWidget {
   final Widget? label;
   final TimeOfDay? firstDate;
   final TimeOfDay? lastDate;
-  final bool canRemove;
+  final bool allowClear;
   final FocusNode? focusNode;
   final String? helpText;
   final TextEditingController? controller;
@@ -24,7 +24,7 @@ class TimeFormField extends StatefulWidget {
       this.focusNode,
       this.onChanged,
       this.validator,
-      this.canRemove = false,
+      this.allowClear = false,
       this.initialValue});
 
   @override
@@ -112,7 +112,7 @@ class _TimeFormFieldState extends State<TimeFormField> {
         label: widget.label,
         contentPadding: const EdgeInsets.all(5),
         border: const OutlineInputBorder(),
-        suffix: widget.canRemove && _date != null
+        suffix: widget.allowClear && _date != null
             ? IconButton(
                 iconSize: 30,
                 onPressed: () {

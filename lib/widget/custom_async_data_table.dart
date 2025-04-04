@@ -237,9 +237,16 @@ class CustomAsyncDataTableSource<T extends Model> extends AsyncDataTableSource
         rows.add(DataRow(
           key: ValueKey<dynamic>(model.id),
           onSelectChanged: (value) {
-            if (value != null) {
-              setRowSelection(ValueKey<dynamic>(model.id), value);
+            if (value == null) {
+              return;
             }
+            if (value) {
+              selectedMap[model.id] = model;
+            } else {
+              selectedMap.remove(model);
+            }
+
+            setRowSelection(ValueKey<dynamic>(model.id), value);
           },
           cells: decorateModel(model,
               columns: columns, actionButtons: actionButtons),

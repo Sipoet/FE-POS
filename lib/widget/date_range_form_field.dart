@@ -15,7 +15,7 @@ class DateRangeFormField extends StatefulWidget {
     this.helpText,
     this.controller,
     this.focusNode,
-    this.canRemove = false,
+    this.allowClear = false,
   });
   final Widget? label;
   final Widget? icon;
@@ -23,7 +23,7 @@ class DateRangeFormField extends StatefulWidget {
   final TextStyle? textStyle;
   final DateTimeRange? initialDateRange;
   final bool enabled;
-  final bool canRemove;
+  final bool allowClear;
   final bool datePickerOnly;
   final FocusNode? focusNode;
   final Function(DateTimeRange? range)? onChanged;
@@ -173,7 +173,7 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
         },
       ),
       Visibility(
-          visible: widget.canRemove && _dateRange != null,
+          visible: widget.allowClear && _dateRange != null,
           child: Positioned(
             top: 1,
             right: 5,

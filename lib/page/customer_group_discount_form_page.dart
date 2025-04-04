@@ -228,7 +228,7 @@ class _CustomerGroupDiscountFormPageState
                           }
                           return null;
                         },
-                        canRemove: true,
+                        allowClear: true,
                         onChanged: (newValue) {
                           if (newValue == null) {
                             return;

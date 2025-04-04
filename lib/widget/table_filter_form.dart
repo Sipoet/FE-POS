@@ -217,7 +217,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
         label: Text(column.humanizeName, style: _labelStyle),
         helpText: column.name,
         key: ValueKey(column.name),
-        canRemove: true,
+        allowClear: true,
         onChanged: (value) {
           if (value == null) {
             controller.removeFilter(column.name);
