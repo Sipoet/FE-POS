@@ -27,6 +27,10 @@ extension DateTimeExt on DateTime {
     return DateTime(year, month, 1);
   }
 
+  bool isSameDay(DateTime end) {
+    return day == end.day && month == end.month && year == end.year;
+  }
+
   DateTime endOfMonth() {
     if (month == 12) {
       return DateTime(year, month, 31).endOfDay();
@@ -42,6 +46,12 @@ extension DateTimeExt on DateTime {
 
   DateTime endOfYear() {
     return DateTime(year, 12, 31).endOfWeek();
+  }
+}
+
+extension DateTimeRangeExt on DateTimeRange {
+  bool get isSameDay {
+    return start.isSameDay(end);
   }
 }
 

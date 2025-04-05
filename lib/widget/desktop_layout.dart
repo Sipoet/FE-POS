@@ -44,12 +44,20 @@ class _DesktopLayoutState extends State<DesktopLayout>
     super.initState();
   }
 
+  void _openAboutDialog() {
+    showAboutDialog(
+        context: context,
+        applicationVersion: version,
+        applicationName: 'Allegra Pos',
+        applicationLegalese: 'Allegra');
+  }
+
   @override
   Widget build(BuildContext context) {
     final tabManager = context.watch<TabManager>();
     final server = context.read<Server>();
     final message =
-        'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: $version | Allegra POS';
+        'SERVER: ${widget.host} | USER: ${widget.userName} | Allegra POS';
     return Scaffold(
         appBar: AppBar(
           title: Tooltip(
@@ -60,18 +68,37 @@ class _DesktopLayoutState extends State<DesktopLayout>
             ),
           ),
           actions: [
-            if (!isWeb())
-              IconButton(
-                  onPressed: () => checkUpdate(server, isManual: true),
-                  tooltip: 'Check Update App',
-                  icon: Icon(Icons.update)),
-            IconButton(
-              icon: const Icon(Icons.power_settings_new),
-              tooltip: 'Logout',
-              onPressed: () {
-                final server = context.read<Server>();
-                logout(server);
+            PopupMenuButton(
+              itemBuilder: (BuildContext context) {
+                List<PopupMenuEntry> result = [];
+                if (!isWeb()) {
+                  result.add(PopupMenuItem(
+                    onTap: _openAboutDialog,
+                    child: Text('About'),
+                  ));
+                  result.add(PopupMenuItem(
+                    onTap: () => checkUpdate(server, isManual: true),
+                    child: Text('Cek Update App'),
+                  ));
+                }
+                result.add(PopupMenuItem(
+                  onTap: () {
+                    final server = context.read<Server>();
+                    logout(server);
+                  },
+                  child: Row(
+                    children: [
+                      Text('Logout'),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Icon(Icons.logout)
+                    ],
+                  ),
+                ));
+                return result;
               },
+              icon: Icon(Icons.menu),
             ),
           ],
         ),

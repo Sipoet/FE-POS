@@ -563,7 +563,7 @@ class _RoleFormPageState extends State<RoleFormPage>
     return Form(
       key: _formKey,
       child: Padding(
-        padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
+        padding: const EdgeInsets.only(left: 10, right: 10),
         child: Column(
           children: [
             SizedBox(
@@ -576,6 +576,9 @@ class _RoleFormPageState extends State<RoleFormPage>
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                            const SizedBox(
+                              height: 10,
+                            ),
                             SizedBox(
                               width: 600,
                               child: TextFormField(

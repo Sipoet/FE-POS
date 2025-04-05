@@ -45,28 +45,28 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
   }
 
   final minDate = DateTime(1900);
-  final maxDate = DateTime(99999);
+  final maxDate = DateTime(9999);
 
   void _openDialog() {
     showBoardDateTimePicker(
-            context: context,
-            options: BoardDateTimeOptions(
-                pickerFormat: PickerFormat.dmy,
-                startDayOfWeek: DateTime.monday,
-                boardTitle: widget.helpText,
-                languages: const BoardPickerLanguages(
-                    today: 'Hari ini',
-                    tomorrow: 'Besok',
-                    now: 'Sekarang',
-                    locale: 'id')),
-            initialDate: widget.initialValue,
-            minimumDate: minDate,
-            maximumDate: maxDate,
-            pickerType: widget.datePickerOnly
-                ? DateTimePickerType.date
-                : DateTimePickerType.datetime,
-            breakpoint: 1000)
-        .then((date) {
+      context: context,
+      showDragHandle: false,
+      enableDrag: false,
+      options: BoardDateTimeOptions(
+          pickerFormat: PickerFormat.dmy,
+          startDayOfWeek: DateTime.monday,
+          boardTitle: widget.helpText,
+          useAmpm: false,
+          languages: const BoardPickerLanguages(
+              today: 'Hari ini',
+              tomorrow: 'Besok',
+              now: 'Sekarang',
+              locale: 'id')),
+      initialDate: widget.initialValue,
+      pickerType: widget.datePickerOnly
+          ? DateTimePickerType.date
+          : DateTimePickerType.datetime,
+    ).then((date) {
       setState(() {
         _datetime = date;
         writeToTextField();

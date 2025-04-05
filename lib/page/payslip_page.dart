@@ -213,7 +213,15 @@ class _PayslipPageState extends State<PayslipPage>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Pembayaran Slip Gaji'),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Pembayaran Slip Gaji'),
+              IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: Icon(Icons.close)),
+            ],
+          ),
           contentPadding: EdgeInsets.all(10),
           content: PayslipPayPage(
               isModal: true,

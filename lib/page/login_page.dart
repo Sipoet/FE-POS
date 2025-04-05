@@ -30,6 +30,7 @@ class _LoginPageState extends State<LoginPage>
   String _username = '';
   String _password = '';
   String version = '';
+  bool _toggleObscurePassword = true;
   late final Flash flash;
   @override
   void initState() {
@@ -103,11 +104,18 @@ class _LoginPageState extends State<LoginPage>
                   },
                 ),
                 TextFormField(
-                  decoration: const InputDecoration(
-                    icon: Icon(Icons.lock),
-                    labelText: 'Password',
-                  ),
-                  obscureText: true,
+                  decoration: InputDecoration(
+                      icon: Icon(Icons.lock),
+                      labelText: 'Password',
+                      suffix: IconButton(
+                          onPressed: () => setState(() {
+                                _toggleObscurePassword =
+                                    !_toggleObscurePassword;
+                              }),
+                          icon: Icon(_toggleObscurePassword
+                              ? Icons.remove_red_eye
+                              : Icons.remove_red_eye_outlined))),
+                  obscureText: _toggleObscurePassword,
                   enableSuggestions: false,
                   onSaved: (newValue) {
                     _password = newValue.toString().trim();
@@ -136,7 +144,7 @@ class _LoginPageState extends State<LoginPage>
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                         vertical: 15.0, horizontal: 0),
-                    child: ElevatedButton(
+                    child: ElevatedButton.icon(
                       onPressed: () {
                         // Validate returns true if the form is valid, or false otherwise.
                         if (_formKey.currentState!.validate()) {
@@ -144,7 +152,9 @@ class _LoginPageState extends State<LoginPage>
                           _submit();
                         }
                       },
-                      child: const Text('Submit'),
+                      label: const Text('Login'),
+                      iconAlignment: IconAlignment.end,
+                      icon: Icon(Icons.login),
                     ),
                   ),
                 )
