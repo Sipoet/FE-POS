@@ -44,14 +44,6 @@ class _DesktopLayoutState extends State<DesktopLayout>
     super.initState();
   }
 
-  void _openAboutDialog() {
-    showAboutDialog(
-        context: context,
-        applicationVersion: version,
-        applicationName: 'Allegra Pos',
-        applicationLegalese: 'Allegra');
-  }
-
   @override
   Widget build(BuildContext context) {
     final tabManager = context.watch<TabManager>();
@@ -60,12 +52,9 @@ class _DesktopLayoutState extends State<DesktopLayout>
         'SERVER: ${widget.host} | USER: ${widget.userName} | Allegra POS';
     return Scaffold(
         appBar: AppBar(
-          title: Tooltip(
-            message: message,
-            child: Text(
-              message,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+          title: Text(
+            message,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           actions: [
             PopupMenuButton(
@@ -73,7 +62,7 @@ class _DesktopLayoutState extends State<DesktopLayout>
                 List<PopupMenuEntry> result = [];
                 if (!isWeb()) {
                   result.add(PopupMenuItem(
-                    onTap: _openAboutDialog,
+                    onTap: () => openAboutDialog(version),
                     child: Text('About'),
                   ));
                   result.add(PopupMenuItem(

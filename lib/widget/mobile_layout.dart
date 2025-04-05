@@ -29,19 +29,11 @@ class _MobileLayoutState extends State<MobileLayout>
         PlatformChecker,
         DefaultResponse {
   final List<String> disableClosedTabs = ['Home'];
-  String version = '';
-  @override
-  void initState() {
-    appVersion().then((appVersion) => setState(() {
-          version = appVersion;
-        }));
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
     final message =
-        'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: $version | Allegra POS';
+        'SERVER: ${widget.host} | USER: ${widget.userName} | Allegra POS';
     return Scaffold(
       appBar: AppBar(
         toolbarHeight:
@@ -52,6 +44,8 @@ class _MobileLayoutState extends State<MobileLayout>
           message: message,
           child: Text(
             message,
+            softWrap: true,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
@@ -100,9 +94,14 @@ class _LeftMenubarState extends State<LeftMenubar>
     with SessionState, DefaultResponse, AppUpdater, PlatformChecker {
   Map<String, bool> iconStatus = {};
   late final TabManager tabManager;
+  String version = '';
+
   @override
   void initState() {
     tabManager = context.read<TabManager>();
+    appVersion().then((appVersion) => setState(() {
+          version = appVersion;
+        }));
     super.initState();
   }
 
@@ -117,6 +116,13 @@ class _LeftMenubarState extends State<LeftMenubar>
           checkUpdate(server, isManual: true);
         },
         title: const Text('Check Update App'),
+      ));
+      menuWidgets.add(ListTile(
+        leading: const Icon(Icons.document_scanner),
+        onTap: () {
+          openAboutDialog(version);
+        },
+        title: const Text('About'),
       ));
     }
     menuWidgets.add(ListTile(
