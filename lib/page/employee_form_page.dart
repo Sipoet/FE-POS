@@ -417,6 +417,9 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                         lastDate: DateTime.now().add(const Duration(days: 31)),
                         initialValue: employee.startWorkingDate),
                   ),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   Visibility(
                     visible: setting.canShow('employee', 'end_working_date'),
                     child: DateFormField(

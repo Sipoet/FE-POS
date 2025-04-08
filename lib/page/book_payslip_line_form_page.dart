@@ -202,6 +202,12 @@ class _BookPayslipLineFormPageState extends State<BookPayslipLineFormPage>
                         border: OutlineInputBorder()),
                     minLines: 3,
                     maxLines: 5,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'harus diisi';
+                      }
+                      return null;
+                    },
                     onChanged: (value) => bookPayslipLine.description = value,
                     initialValue: bookPayslipLine.description,
                   ),

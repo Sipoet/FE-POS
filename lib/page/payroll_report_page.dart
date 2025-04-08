@@ -49,13 +49,14 @@ class _PayrollReportPageState extends State<PayrollReportPage>
             return TableColumn(
                 clientWidth:
                     double.parse((row['client_width'] ?? '200').toString()),
-                type: row['type'],
-                inputOptions: {'attribute_key': row['attribute_key']},
+                type: TableColumnType.fromString(row['type']),
+                inputOptions: row['input_options'],
+                canFilter: true,
                 name: row['name'],
                 humanizeName: row['humanize_name']);
           }).toList();
           tableStateManager?.setTableColumns(tableColumns,
-              tabManager: tabManager);
+              tabManager: tabManager, showFilter: true);
           for (final row in json['data']) {
             final model = PayrollReport.fromJson(row, included: included ?? []);
             tableStateManager?.appendModel(model, tableColumns);
@@ -128,6 +129,9 @@ class _PayrollReportPageState extends State<PayrollReportPage>
                     onChanged: (date) => _date = date ?? _date,
                   ),
                 ),
+                const SizedBox(
+                  height: 10,
+                ),
                 SizedBox(
                   width: 350,
                   child: AsyncDropdownMultiple<PayrollType>(
@@ -157,6 +161,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
                   child: SyncDataTable(
                     columns: tableColumns,
                     showSummary: true,
+                    showFilter: true,
                     onLoaded: (stateManager) =>
                         tableStateManager = stateManager,
                   ),

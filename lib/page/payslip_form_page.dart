@@ -172,6 +172,9 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                         }
                       },
                       initialValue: payslip.startDate),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   DateFormField(
                       label: const Text('Tanggal Akhir'),
                       onChanged: (value) {
@@ -180,6 +183,9 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                         }
                       },
                       initialValue: payslip.endDate),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   TextFormField(
                     decoration: const InputDecoration(
                         labelText: 'Paid Time Off',
