@@ -256,7 +256,6 @@ class _BookPayslipLinePageState extends State<BookPayslipLinePage>
             ),
             SizedBox(
               height: 600,
-              width: 900,
               child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 2,
