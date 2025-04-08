@@ -16,3 +16,5 @@ export 'package:fe_pos/model/holiday.dart';
 export 'package:fe_pos/model/user.dart';
 export 'package:fe_pos/model/payment_provider.dart';
 export 'package:fe_pos/model/payment_type.dart';
+export 'package:fe_pos/model/book_employee_attendance.dart';
+export 'package:fe_pos/model/book_payslip_line.dart';
