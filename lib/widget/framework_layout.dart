@@ -113,6 +113,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 isDisabled: !setting.isAuthorize('bookPayslipLine', 'index'),
                 pageFunct: () => const BookPayslipLinePage(),
                 key: 'bookPayslipLine'),
+            Menu(
+                icon: Icons.calendar_month,
+                isClosed: true,
+                label: 'BOOK / SETTING EMPLOYEE ATTENDANCE',
+                isDisabled:
+                    !setting.isAuthorize('bookEmployeeAttendance', 'index'),
+                pageFunct: () => const BookEmployeeAttendancePage(),
+                key: 'bookEmployeeAttendance'),
           ]),
       Menu(
           icon: Icons.pages,

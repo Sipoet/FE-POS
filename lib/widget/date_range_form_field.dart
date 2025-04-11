@@ -12,6 +12,8 @@ class DateRangeFormField extends StatefulWidget {
     this.enabled = true,
     this.initialDateRange,
     this.datePickerOnly = false,
+    this.validator,
+    this.onSaved,
     this.onChanged,
     this.helpText,
     this.controller,
@@ -28,6 +30,8 @@ class DateRangeFormField extends StatefulWidget {
   final bool datePickerOnly;
   final FocusNode? focusNode;
   final Function(DateTimeRange? range)? onChanged;
+  final Function(DateTimeRange? range)? onSaved;
+  final String? Function(DateTimeRange? range)? validator;
   final PickerController? controller;
   @override
   State<DateRangeFormField> createState() => _DateRangeFormFieldState();
@@ -149,6 +153,12 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
       focusNode: widget.focusNode,
       readOnly: true,
       style: widget.textStyle,
+      onSaved: widget.onSaved == null
+          ? null
+          : (value) => widget.onSaved!(_dateRange),
+      validator: widget.validator == null
+          ? null
+          : (value) => widget.validator!(_dateRange),
       decoration: InputDecoration(
           contentPadding: const EdgeInsets.all(5),
           suffix: widget.allowClear

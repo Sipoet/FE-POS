@@ -118,36 +118,6 @@ class _PayslipPageState extends State<PayslipPage>
     });
   }
 
-  void showConfirmDialog(
-      {required Function onSubmit, String message = 'Apakah Anda Yakin?'}) {
-    AlertDialog alert = AlertDialog(
-      title: const Text("Konfirmasi"),
-      content: Text(message),
-      actions: [
-        ElevatedButton(
-          child: const Text("Kembali"),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        ElevatedButton(
-          child: const Text("Submit"),
-          onPressed: () {
-            onSubmit();
-            Navigator.of(context).pop();
-          },
-        ),
-      ],
-    );
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
-  }
-
   void destroyRecord(Payslip payslip) {
     showConfirmDialog(
         message: 'Apakah anda yakin hapus ${payslip.id}?',
@@ -224,8 +194,8 @@ class _PayslipPageState extends State<PayslipPage>
           ),
           contentPadding: EdgeInsets.all(10),
           content: PayslipPayPage(
-              isModal: true,
-              payslipIds: _source.selected.map<int>((e) => e.id).toList()),
+            isModal: true,
+          ),
         );
       },
     );
@@ -349,11 +319,6 @@ class _PayslipPageState extends State<PayslipPage>
                             child: const Text('pay Slip Gaji'),
                             onPressed: () {
                               menuController.close();
-                              if (_source.selected.isEmpty) {
-                                flash.show(Text('harus ada yang dipilih'),
-                                    ToastificationType.error);
-                                return;
-                              }
                               payPayslip();
                             },
                           ),
@@ -375,7 +340,6 @@ class _PayslipPageState extends State<PayslipPage>
               child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 2,
-                showCheckboxColumn: true,
               ),
             ),
           ],
