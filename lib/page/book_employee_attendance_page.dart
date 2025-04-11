@@ -233,7 +233,6 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
               child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 2,
-                showCheckboxColumn: true,
               ),
             ),
           ],

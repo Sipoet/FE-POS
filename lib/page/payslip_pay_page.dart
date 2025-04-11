@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/account.dart';
+import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/location.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -9,10 +10,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class PayslipPayPage extends StatefulWidget {
-  final List<int> payslipIds;
   final bool isModal;
-  const PayslipPayPage(
-      {super.key, this.isModal = false, required this.payslipIds});
+  const PayslipPayPage({
+    super.key,
+    this.isModal = false,
+  });
 
   @override
   State<PayslipPayPage> createState() => _PayslipPayPageState();
@@ -24,6 +26,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
   String? description;
   Location? location;
   final _formKey = GlobalKey<FormState>();
+  final List<Employee> employees = [];
   late final Server server;
   @override
   void initState() {
@@ -39,7 +42,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
     final navigator = Navigator.of(context);
     server.post('payslips/pay', body: {
       'paid_at': paidAt!.toIso8601String(),
-      'payslip_ids': widget.payslipIds.map((e) => e.toString()).toList(),
+      'employee_ids': employees.map((e) => e.id.toString()).toList(),
       'cash_account': account!.id,
       'description': description,
       'location': location!.id,
@@ -124,6 +127,23 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
                 textOnSearch: (model) => model.modelValue,
                 converter: Location.fromJson,
                 onChanged: (model) => location = model,
+                validator: (model) {
+                  if (model == null) {
+                    return "harus diisi";
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              AsyncDropdownMultiple<Employee>(
+                label: Text('Lokasi'),
+                path: 'employees',
+                allowClear: false,
+                textOnSearch: (model) => model.modelValue,
+                converter: Employee.fromJson,
+                onChanged: (model) => employees = model,
                 validator: (model) {
                   if (model == null) {
                     return "harus diisi";
