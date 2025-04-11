@@ -194,8 +194,8 @@ class _PayslipPageState extends State<PayslipPage>
           ),
           contentPadding: EdgeInsets.all(10),
           content: PayslipPayPage(
-              isModal: true,
-              payslipIds: _source.selected.map<int>((e) => e.id).toList()),
+            isModal: true,
+          ),
         );
       },
     );
@@ -319,11 +319,6 @@ class _PayslipPageState extends State<PayslipPage>
                             child: const Text('pay Slip Gaji'),
                             onPressed: () {
                               menuController.close();
-                              if (_source.selected.isEmpty) {
-                                flash.show(Text('harus ada yang dipilih'),
-                                    ToastificationType.error);
-                                return;
-                              }
                               payPayslip();
                             },
                           ),
@@ -345,7 +340,6 @@ class _PayslipPageState extends State<PayslipPage>
               child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 2,
-                showCheckboxColumn: true,
               ),
             ),
           ],

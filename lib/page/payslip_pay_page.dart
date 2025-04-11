@@ -5,6 +5,7 @@ import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_form_field.dart';
+import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,8 +27,9 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
   String? description;
   Location? location;
   final _formKey = GlobalKey<FormState>();
-  final List<Employee> employees = [];
+  List<Employee> employees = [];
   late final Server server;
+  DateTimeRange? _range;
   @override
   void initState() {
     server = context.read<Server>();
@@ -43,6 +45,8 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
     server.post('payslips/pay', body: {
       'paid_at': paidAt!.toIso8601String(),
       'employee_ids': employees.map((e) => e.id.toString()).toList(),
+      'start_date': _range?.start.toDate().toIso8601String(),
+      'end_date': _range?.end.toDate().toIso8601String(),
       'cash_account': account!.id,
       'description': description,
       'location': location!.id,
@@ -75,6 +79,36 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
           key: _formKey,
           child: Column(
             children: [
+              DateRangeFormField(
+                datePickerOnly: true,
+                label: Text('Periode Gaji'),
+                onChanged: (range) => _range = range,
+                validator: (range) {
+                  if (range == null) {
+                    return 'harus diisi';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              AsyncDropdownMultiple<Employee>(
+                label: Text('Karyawan'),
+                path: 'employees',
+                textOnSearch: (model) => model.modelValue,
+                converter: Employee.fromJson,
+                onChanged: (model) => employees = model,
+                validator: (model) {
+                  if (model == null) {
+                    return "harus diisi";
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(
+                height: 10,
+              ),
               DateFormField(
                 label: Text("Tanggal Bayar"),
                 allowClear: false,
@@ -137,28 +171,17 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
               const SizedBox(
                 height: 10,
               ),
-              AsyncDropdownMultiple<Employee>(
-                label: Text('Lokasi'),
-                path: 'employees',
-                allowClear: false,
-                textOnSearch: (model) => model.modelValue,
-                converter: Employee.fromJson,
-                onChanged: (model) => employees = model,
-                validator: (model) {
-                  if (model == null) {
-                    return "harus diisi";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(
-                height: 10,
-              ),
               TextFormField(
                 decoration: InputDecoration(
                     label: Text('Keterangan'), border: OutlineInputBorder()),
                 minLines: 3,
                 maxLines: 5,
+                validator: (model) {
+                  if (model == null || model.isEmpty) {
+                    return "harus diisi";
+                  }
+                  return null;
+                },
                 onChanged: (value) => description = value,
               ),
               const SizedBox(

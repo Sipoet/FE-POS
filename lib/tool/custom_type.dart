@@ -40,6 +40,10 @@ extension DateTimeExt on DateTime {
     }
   }
 
+  Date toDate() {
+    return Date.parsingDateTime(this);
+  }
+
   DateTime beginningOfYear() {
     return DateTime(year, 1, 1);
   }
