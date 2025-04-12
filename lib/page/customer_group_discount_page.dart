@@ -254,7 +254,7 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
               ),
             ),
             SizedBox(
-              height: 600,
+              height: bodyScreenHeight,
               width: 900,
               child: CustomAsyncDataTable(
                 controller: _source,

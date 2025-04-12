@@ -240,7 +240,7 @@ class _SaleItemPageState extends State<SaleItemPage>
               ),
             ),
             SizedBox(
-              height: 600,
+              height: bodyScreenHeight,
               child: CustomAsyncDataTable(
                 key: const ObjectKey('saleItemTable'),
                 controller: _source,

@@ -447,10 +447,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   Widget build(BuildContext context) {
     super.build(context);
 
-    final padding = MediaQuery.of(context).padding;
-    final size = MediaQuery.of(context).size;
-    double tableHeight = size.height - padding.top - padding.bottom - 250;
-    tableHeight = tableHeight < 400 ? 400 : tableHeight;
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Padding(
@@ -1220,7 +1216,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                   height: 10,
                                 ),
                                 SizedBox(
-                                  height: tableHeight,
+                                  height: bodyScreenHeight,
                                   child: CustomAsyncDataTable2<ItemReport>(
                                     columns: _columns,
                                     fetchData: (request) => fetchItem(request),

@@ -1,5 +1,3 @@
-import 'package:fe_pos/model/user.dart';
-import 'package:fe_pos/page/user_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
@@ -36,7 +34,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
   @override
   void initState() {
     final setting = context.read<Setting>();
-    final server = context.read<Server>();
     menuTree = <Menu>[
       Menu(
           icon: Icons.home,
@@ -397,15 +394,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 pageFunct: () => const RolePage(),
                 children: []),
           ]),
-      Menu(
-        icon: Icons.person_2,
-        label: 'Profilku',
-        key: 'user_profile',
-        pageFunct: () {
-          var user = User(username: server.userName);
-          return UserFormPage(user: user);
-        },
-      )
     ];
     flash = Flash();
     tabManager = TabManager(tabItemDetails: [

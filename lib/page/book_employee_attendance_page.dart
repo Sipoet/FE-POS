@@ -229,7 +229,7 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
               ),
             ),
             SizedBox(
-              height: 600,
+              height: bodyScreenHeight,
               child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 2,

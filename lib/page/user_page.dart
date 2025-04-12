@@ -239,7 +239,7 @@ class _UserPageState extends State<UserPage>
               ),
             ),
             SizedBox(
-              height: 600,
+              height: bodyScreenHeight,
               width: 825,
               child: CustomAsyncDataTable(
                 controller: _source,

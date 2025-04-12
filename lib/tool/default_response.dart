@@ -43,6 +43,13 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
     }
   }
 
+  double get bodyScreenHeight {
+    final padding = MediaQuery.of(context).padding;
+    final size = MediaQuery.of(context).size;
+    double tableHeight = size.height - padding.top - padding.bottom - 250;
+    return tableHeight < 400 ? 400.0 : tableHeight;
+  }
+
   void showConfirmDialog(
       {required Function onSubmit, String message = 'Apakah Anda Yakin?'}) {
     AlertDialog alert = AlertDialog(

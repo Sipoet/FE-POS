@@ -86,10 +86,7 @@ class _CheckPricePageState extends State<CheckPricePage>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final padding = MediaQuery.of(context).padding;
     final size = MediaQuery.of(context).size;
-    double tableHeight = size.height - padding.top - padding.bottom - 280;
-    tableHeight = tableHeight < 400 ? 400 : tableHeight;
     return VerticalBodyScroll(
       child: Column(
         children: [
@@ -137,7 +134,7 @@ class _CheckPricePageState extends State<CheckPricePage>
                 child: SelectableText("Kata Yang dicari: $finalSearch"),
               )),
           SizedBox(
-            height: tableHeight,
+            height: bodyScreenHeight,
             child: LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
               if (size.height > size.width || size.height <= 420) {

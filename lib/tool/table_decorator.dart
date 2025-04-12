@@ -140,19 +140,22 @@ mixin TableDecorator<T extends Model>
           alignment: Alignment.topLeft,
           child: Text(
             val,
+            textAlign: TextAlign.left,
             overflow: TextOverflow.ellipsis,
           ),
         );
       case TableColumnType.money:
       case TableColumnType.number:
-        return Align(
-            alignment: Alignment.topRight,
-            child: Text(
-              val,
-              overflow: TextOverflow.ellipsis,
-            ));
+        return Text(
+          val,
+          textAlign: TextAlign.right,
+          overflow: TextOverflow.ellipsis,
+        );
       default:
-        return Align(alignment: Alignment.topLeft, child: Text(val));
+        return Text(
+          val,
+          textAlign: TextAlign.left,
+        );
     }
   }
 
@@ -190,12 +193,10 @@ mixin TableDecorator<T extends Model>
     final cell = jsonData[column.name];
     if (column.type.isModel() && cell is Model) {
       return DataCell(
-          Align(
-            alignment: Alignment.topLeft,
-            child: Text(
-              cell.modelValue,
-              overflow: TextOverflow.ellipsis,
-            ),
+          Text(
+            cell.modelValue,
+            textAlign: TextAlign.left,
+            overflow: TextOverflow.ellipsis,
           ),
           onTap: () => _openModelDetailPage(tableColumn: column, value: cell));
     }
@@ -336,29 +337,34 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
                   tableColumn: tableColumn,
                   value: value,
                 ),
-                child: Align(
-                    alignment: Alignment.topLeft,
-                    child: Text(value.modelValue)),
+                child: Text(
+                  value.modelValue,
+                  textAlign: TextAlign.left,
+                ),
               );
             }
 
             if (value is Money || value is Percentage) {
-              return Align(
-                  alignment: Alignment.topRight,
-                  child: SelectableText(value.format()));
+              return SelectableText(
+                value.format(),
+                textAlign: TextAlign.right,
+              );
             } else if (value is double && tableColumn.type.isMoney()) {
-              return Align(
-                  alignment: Alignment.topRight,
-                  child: SelectableText(moneyFormat(value)));
+              return SelectableText(
+                moneyFormat(value),
+                textAlign: TextAlign.right,
+              );
             } else if (value is num) {
-              return Align(
-                  alignment: Alignment.topRight,
-                  child: SelectableText(numberFormat(value)));
+              return SelectableText(
+                numberFormat(value),
+                textAlign: TextAlign.right,
+              );
             }
 
-            return Align(
-                alignment: Alignment.topLeft,
-                child: SelectableText(value.toString()));
+            return SelectableText(
+              value.toString(),
+              textAlign: TextAlign.left,
+            );
           },
       footerRenderer: showFooter
           ? (rendererContext) {

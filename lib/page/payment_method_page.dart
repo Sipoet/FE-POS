@@ -225,7 +225,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
               ),
             ),
             SizedBox(
-              height: 600,
+              height: bodyScreenHeight,
               child: CustomAsyncDataTable(
                 controller: _source,
                 showCheckboxColumn: true,

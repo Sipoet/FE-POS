@@ -1,4 +1,6 @@
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/model/user.dart';
+import 'package:fe_pos/page/form_page.dart';
 import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
@@ -70,6 +72,22 @@ class _DesktopLayoutState extends State<DesktopLayout>
                     child: Text('Cek Update App'),
                   ));
                 }
+                result.add(PopupMenuItem(
+                  onTap: () {
+                    final server = context.read<Server>();
+                    var user = User(username: server.userName);
+                    tabManager.addTab('Profilku', UserFormPage(user: user));
+                  },
+                  child: Row(
+                    children: [
+                      Text('Profile'),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Icon(Icons.person_2),
+                    ],
+                  ),
+                ));
                 result.add(PopupMenuItem(
                   onTap: () {
                     final server = context.read<Server>();

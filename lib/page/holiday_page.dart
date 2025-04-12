@@ -221,7 +221,7 @@ class _HolidayPageState extends State<HolidayPage>
               ),
             ),
             SizedBox(
-              height: 600,
+              height: bodyScreenHeight,
               width: 900,
               child: CustomAsyncDataTable(
                 controller: _source,

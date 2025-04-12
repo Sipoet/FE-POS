@@ -143,7 +143,7 @@ class _ItemTypePageState extends State<ItemTypePage> with DefaultResponse {
               ),
             ),
             SizedBox(
-              height: 600,
+              height: bodyScreenHeight,
               child: CustomAsyncDataTable2<ItemType>(
                 onLoaded: (stateManager) => _source = stateManager,
                 columns: setting.tableColumn('ipos::ItemType'),

@@ -227,7 +227,7 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
               ),
             ),
             SizedBox(
-              height: 600,
+              height: bodyScreenHeight,
               width: 825,
               child: CustomAsyncDataTable(
                 controller: _source,

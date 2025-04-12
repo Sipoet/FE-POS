@@ -1,4 +1,6 @@
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/model/user.dart';
+import 'package:fe_pos/page/form_page.dart';
 import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
@@ -126,7 +128,16 @@ class _LeftMenubarState extends State<LeftMenubar>
       ));
     }
     menuWidgets.add(ListTile(
-      leading: const Icon(Icons.power_settings_new),
+      leading: const Icon(Icons.person_2),
+      onTap: () {
+        final server = context.read<Server>();
+        var user = User(username: server.userName);
+        tabManager.addTab('Profilku', UserFormPage(user: user));
+      },
+      title: const Text('Profilku'),
+    ));
+    menuWidgets.add(ListTile(
+      leading: const Icon(Icons.logout),
       onTap: () {
         logout(server);
       },

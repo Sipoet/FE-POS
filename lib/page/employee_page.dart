@@ -315,7 +315,7 @@ class _EmployeePageState extends State<EmployeePage>
               ),
             ),
             SizedBox(
-              height: 600,
+              height: bodyScreenHeight,
               child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 2,

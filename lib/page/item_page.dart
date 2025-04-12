@@ -128,10 +128,6 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
 
   @override
   Widget build(BuildContext context) {
-    final padding = MediaQuery.of(context).padding;
-    final size = MediaQuery.of(context).size;
-    double tableHeight = size.height - padding.top - padding.bottom - 250;
-    tableHeight = tableHeight < 400 ? 400 : tableHeight;
     return VerticalBodyScroll(
       child: Column(
         children: [
@@ -162,7 +158,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
             ),
           ),
           SizedBox(
-            height: tableHeight,
+            height: bodyScreenHeight,
             child: CustomAsyncDataTable2<Item>(
               onLoaded: (stateManager) => _source = stateManager,
               fixedLeftColumns: 1,

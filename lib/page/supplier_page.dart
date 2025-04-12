@@ -139,7 +139,7 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
               ),
             ),
             SizedBox(
-              height: 600,
+              height: bodyScreenHeight,
               child: CustomAsyncDataTable2<Supplier>(
                 onLoaded: (stateManager) => _source = stateManager,
                 fixedLeftColumns: 0,

@@ -133,10 +133,6 @@ class _ItemReportPageState extends State<ItemReportPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final padding = MediaQuery.of(context).padding;
-    final size = MediaQuery.of(context).size;
-    double tableHeight = size.height - padding.top - padding.bottom - 150;
-    tableHeight = tableHeight > 600 ? 600 : tableHeight;
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -157,7 +153,7 @@ class _ItemReportPageState extends State<ItemReportPage>
             const SizedBox(height: 10),
             Visibility(visible: _isDisplayTable, child: const Divider()),
             SizedBox(
-              height: tableHeight,
+              height: bodyScreenHeight,
               child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 1,

@@ -156,11 +156,6 @@ class _SalesGroupBySupplierReportPageState
   Widget build(BuildContext context) {
     super.build(context);
 
-    final padding = MediaQuery.of(context).padding;
-    double tableHeight =
-        MediaQuery.of(context).size.height - padding.top - padding.bottom - 150;
-    tableHeight = tableHeight < 400 ? 400 : tableHeight;
-
     return VerticalBodyScroll(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,7 +270,7 @@ class _SalesGroupBySupplierReportPageState
           ),
           const Divider(),
           SizedBox(
-            height: tableHeight,
+            height: bodyScreenHeight,
             child: SyncDataTable<SalesGroupBySupplier>(
               showSummary: true,
               showFilter: false,

@@ -171,7 +171,7 @@ class _SalePageState extends State<SalePage>
               ),
             ),
             SizedBox(
-              height: 600,
+              height: bodyScreenHeight,
               child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 1,

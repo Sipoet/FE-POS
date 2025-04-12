@@ -218,7 +218,7 @@ class _PayrollTypePageState extends State<PayrollTypePage>
               ),
             ),
             SizedBox(
-              height: 600,
+              height: bodyScreenHeight,
               width: 900,
               child: CustomAsyncDataTable(
                 controller: _source,
