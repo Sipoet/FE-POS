@@ -51,6 +51,10 @@ extension DateTimeExt on DateTime {
   DateTime endOfYear() {
     return DateTime(year, 12, 31).endOfWeek();
   }
+
+  String format({String pattern = 'dd/MM/y HH:mm'}) {
+    return DateFormat(pattern, 'id_ID').format(this);
+  }
 }
 
 extension DateTimeRangeExt on DateTimeRange {
@@ -134,7 +138,7 @@ class Date extends DateTime {
 
   @override
   String toIso8601String() {
-    return '$year-$month-$day';
+    return '$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
   }
 
   static Date parsingDateTime(DateTime value) {
@@ -365,6 +369,10 @@ extension TimeDay on TimeOfDay {
 
   String toJson() {
     return format24Hour();
+  }
+
+  int compareTo(TimeOfDay val2) {
+    return toString().compareTo(val2.toString());
   }
 
   String format24Hour({bool showSecond = false, String separator = ':'}) {

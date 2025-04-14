@@ -1,4 +1,5 @@
 import 'package:fe_pos/tool/custom_type.dart';
+import 'package:flutter/material.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
 abstract class Model {
@@ -42,6 +43,8 @@ abstract class Model {
         json[key] = object.toString();
       } else if (object is String) {
         json[key] = object.trim();
+      } else if (object is TimeOfDay) {
+        json[key] = object.toJson();
       }
     });
     return json;

@@ -1,5 +1,5 @@
 import 'package:fe_pos/model/item.dart';
-import 'package:fe_pos/page/form_page.dart';
+import 'package:fe_pos/page/item_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';

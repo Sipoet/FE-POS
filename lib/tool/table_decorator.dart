@@ -9,12 +9,6 @@ export 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 
-extension ComparingTimeOfDay on TimeOfDay {
-  int compareTo(TimeOfDay val2) {
-    return toString().compareTo(val2.toString());
-  }
-}
-
 enum TableColumnType {
   number,
   percentage,
@@ -240,7 +234,7 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
       case TableColumnType.date:
         return PlutoColumnType.date(format: 'dd/MM/yyyy');
       case TableColumnType.datetime:
-        return PlutoColumnType.date(format: 'dd/MM/yyyy HH::mm');
+        return PlutoColumnType.date(format: 'dd/MM/yyyy HH:mm');
       case TableColumnType.timeOnly:
         return PlutoColumnType.time();
       case TableColumnType.money:
@@ -272,7 +266,7 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
       {required Model model,
       required List<TableColumn> tableColumns,
       bool isChecked = false}) {
-    final rowMap = model.toMap();
+    final rowMap = model.asMap();
     Map<String, PlutoCell> cells = {};
     for (final tableColumn in tableColumns) {
       var value = rowMap[tableColumn.name];
@@ -359,8 +353,14 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
                 numberFormat(value),
                 textAlign: TextAlign.right,
               );
+            } else if (value is TimeOfDay) {
+              return SelectableText(value.format24Hour(),
+                  textAlign: TextAlign.left);
+            } else if (value is Date) {
+              return SelectableText(value.format(), textAlign: TextAlign.left);
+            } else if (value is DateTime) {
+              return SelectableText(value.format(), textAlign: TextAlign.left);
             }
-
             return SelectableText(
               value.toString(),
               textAlign: TextAlign.left,

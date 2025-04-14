@@ -55,3 +55,6 @@ export 'transfer_item_page.dart';
 // finance
 export 'payment_type_page.dart';
 export 'payment_provider_page.dart';
+
+// setting
+export 'system_setting_page.dart';
