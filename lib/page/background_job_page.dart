@@ -121,12 +121,12 @@ class _BackgroundJobPageState extends State<BackgroundJobPage>
     _server.delete('background_jobs/${record.id}').then((response) {
       if (response.statusCode == 200) {
         flash.showBanner(
-            title: 'Sukses Batalkan',
-            description: 'Sukses Batalkan ${record.modelValue} (${record.id})',
+            title: 'Sukses Hapus',
+            description: 'Sukses Hapus ${record.modelValue} (${record.id})',
             messageType: ToastificationType.success);
       } else {
         flash.showBanner(
-            title: 'Gagal Batalkan',
+            title: 'Gagal Hapus',
             description: response.data.toString(),
             messageType: ToastificationType.error);
       }
