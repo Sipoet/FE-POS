@@ -58,3 +58,4 @@ export 'payment_provider_page.dart';
 
 // setting
 export 'system_setting_page.dart';
+export 'background_job_page.dart';

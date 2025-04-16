@@ -368,7 +368,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               pageFunct: () => const DiscountPage(),
               children: []),
           Menu(
-            icon: Icons.discount,
+            icon: Icons.group,
             isClosed: true,
             label: 'Customer Group Discount',
             isDisabled: !setting.isAuthorize('customerGroupDiscount', 'index'),
@@ -384,7 +384,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               pageFunct: () => const UserPage(),
               children: []),
           Menu(
-              icon: Icons.person,
+              icon: Icons.group,
               isClosed: true,
               label: 'Role',
               isDisabled: !setting.isAuthorize('role', 'index'),
@@ -406,6 +406,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             key: 'setting',
             isDisabled: !setting.isAuthorize('systemSetting', 'index'),
             pageFunct: () => const SystemSettingPage(),
+          ),
+          Menu(
+            icon: Icons.padding,
+            isClosed: true,
+            label: 'Background Job Management',
+            key: 'background_log',
+            isDisabled: !setting.isAuthorize('backgroundJob', 'index'),
+            pageFunct: () => const BackgroundJobPage(),
           ),
         ],
       ),

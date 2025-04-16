@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fe_pos/model/system_setting.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
@@ -90,7 +92,17 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
               initialValue: systemSetting.value.toString(),
               minLines: 1,
               maxLines: 5,
-              onChanged: (value) => systemSetting.value = value,
+              onChanged: (value) {
+                if (systemSetting.valueType == SettingValueType.string) {
+                  systemSetting.value = value;
+                } else if (systemSetting.valueType == SettingValueType.json) {
+                  try {
+                    systemSetting.value = jsonDecode(value);
+                  } catch (e) {
+                    systemSetting.value = null;
+                  }
+                }
+              },
               decoration: InputDecoration(
                   label: Text(_setting.columnName('systemSetting', 'value')),
                   border: OutlineInputBorder()),
