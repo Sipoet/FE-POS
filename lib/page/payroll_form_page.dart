@@ -5,9 +5,9 @@ import 'package:fe_pos/tool/loading_popup.dart';
 
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
+import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/payroll.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class PayrollFormPage extends StatefulWidget {
@@ -324,88 +324,48 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                         "${payrollLine.id ?? payrollLine.row}-decription"),
                                   ),
                                 )),
-                                DataCell(TextFormField(
-                                  decoration: const InputDecoration(
-                                      border: OutlineInputBorder()),
-                                  initialValue:
-                                      (payrollLine.variable1 ?? '').toString(),
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: <TextInputFormatter>[
-                                    TextInputFormatter.withFunction(
-                                        numberPattern),
-                                  ],
-                                  onChanged: (value) => payrollLine.variable1 =
-                                      double.tryParse(value),
-                                  onSaved: (value) => payrollLine.variable1 =
-                                      double.tryParse(value ?? ''),
+                                DataCell(NumberFormField<double>(
+                                  initialValue: payrollLine.variable1,
+                                  onChanged: (value) =>
+                                      payrollLine.variable1 = value,
+                                  onSaved: (value) =>
+                                      payrollLine.variable1 = value,
                                   key: ValueKey(
                                       "${payrollLine.id ?? payrollLine.row}-variable1"),
                                 )),
-                                DataCell(TextFormField(
-                                  decoration: const InputDecoration(
-                                      border: OutlineInputBorder()),
-                                  initialValue:
-                                      (payrollLine.variable2 ?? '').toString(),
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: <TextInputFormatter>[
-                                    TextInputFormatter.withFunction(
-                                        numberPattern),
-                                  ],
-                                  onChanged: (value) => payrollLine.variable2 =
-                                      double.tryParse(value),
-                                  onSaved: (value) => payrollLine.variable2 =
-                                      double.tryParse(value ?? ''),
+                                DataCell(NumberFormField<double>(
+                                  initialValue: payrollLine.variable2,
+                                  onChanged: (value) =>
+                                      payrollLine.variable2 = value,
+                                  onSaved: (value) =>
+                                      payrollLine.variable2 = value,
                                   key: ValueKey(
                                       "${payrollLine.id ?? payrollLine.row}-variable2"),
                                 )),
-                                DataCell(TextFormField(
-                                  decoration: const InputDecoration(
-                                      border: OutlineInputBorder()),
-                                  initialValue:
-                                      (payrollLine.variable3 ?? '').toString(),
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: <TextInputFormatter>[
-                                    TextInputFormatter.withFunction(
-                                        numberPattern),
-                                  ],
-                                  onChanged: (value) => payrollLine.variable3 =
-                                      double.tryParse(value),
-                                  onSaved: (value) => payrollLine.variable3 =
-                                      double.tryParse(value ?? ''),
+                                DataCell(NumberFormField<double>(
+                                  initialValue: payrollLine.variable3,
+                                  onChanged: (value) =>
+                                      payrollLine.variable3 = value,
+                                  onSaved: (value) =>
+                                      payrollLine.variable3 = value,
                                   key: ValueKey(
                                       "${payrollLine.id ?? payrollLine.row}-variable3"),
                                 )),
-                                DataCell(TextFormField(
-                                  decoration: const InputDecoration(
-                                      border: OutlineInputBorder()),
-                                  initialValue:
-                                      (payrollLine.variable4 ?? '').toString(),
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: <TextInputFormatter>[
-                                    TextInputFormatter.withFunction(
-                                        numberPattern),
-                                  ],
-                                  onChanged: (value) => payrollLine.variable4 =
-                                      double.tryParse(value),
-                                  onSaved: (value) => payrollLine.variable4 =
-                                      double.tryParse(value ?? ''),
+                                DataCell(NumberFormField<double>(
+                                  initialValue: payrollLine.variable4,
+                                  onChanged: (value) =>
+                                      payrollLine.variable4 = value,
+                                  onSaved: (value) =>
+                                      payrollLine.variable4 = value,
                                   key: ValueKey(
                                       "${payrollLine.id ?? payrollLine.row}-variable4"),
                                 )),
-                                DataCell(TextFormField(
-                                  decoration: const InputDecoration(
-                                      border: OutlineInputBorder()),
-                                  initialValue:
-                                      (payrollLine.variable5 ?? '').toString(),
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: <TextInputFormatter>[
-                                    TextInputFormatter.withFunction(
-                                        numberPattern),
-                                  ],
-                                  onChanged: (value) => payrollLine.variable5 =
-                                      double.tryParse(value),
-                                  onSaved: (value) => payrollLine.variable5 =
-                                      double.tryParse(value ?? ''),
+                                DataCell(NumberFormField<double>(
+                                  initialValue: payrollLine.variable5,
+                                  onChanged: (value) =>
+                                      payrollLine.variable5 = value,
+                                  onSaved: (value) =>
+                                      payrollLine.variable5 = value,
                                   key: ValueKey(
                                       "${payrollLine.id ?? payrollLine.row}-variable5"),
                                 )),

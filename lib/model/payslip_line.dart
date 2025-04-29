@@ -7,7 +7,7 @@ class PayslipLine extends Model {
   PayrollGroup group;
   PayrollType? payrollType;
   PayrollFormula? formula;
-  double amount;
+  Money amount;
   double? variable1;
   double? variable2;
   double? variable3;
@@ -42,7 +42,7 @@ class PayslipLine extends Model {
   factory PayslipLine.fromJson(Map<String, dynamic> json,
       {PayslipLine? model, List included = const []}) {
     var attributes = json['attributes'];
-    model ??= PayslipLine(group: PayrollGroup.earning, amount: 0);
+    model ??= PayslipLine(group: PayrollGroup.earning, amount: Money(0));
     model.id = int.parse(json['id']);
     model.group = PayrollGroup.fromString(attributes['group']);
     model.payrollType = Model.findRelationData<PayrollType>(
@@ -54,7 +54,7 @@ class PayslipLine extends Model {
     } catch (error) {
       model.formula = PayrollFormula.basic;
     }
-    model.amount = double.parse(attributes['amount']);
+    model.amount = Money.parse(attributes['amount']);
     model.variable1 = double.tryParse(attributes['variable1'] ?? '');
     model.variable2 = double.tryParse(attributes['variable2'] ?? '');
     model.variable3 = double.tryParse(attributes['variable3'] ?? '');
