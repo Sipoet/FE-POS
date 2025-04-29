@@ -62,6 +62,8 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                 type: TableColumnType.fromString(row['type']),
                 inputOptions: row['input_options'],
                 name: row['name'],
+                canFilter: row['can_filter'] ?? false,
+                canSort: row['can_sort'] ?? false,
                 humanizeName: row['humanize_name']);
           }).toList();
           tableStateManager?.setTableColumns(tableColumns,
@@ -241,7 +243,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                 child: SyncDataTable(
                   columns: tableColumns,
                   showSummary: true,
-                  showFilter: false,
+                  showFilter: true,
                   onLoaded: (stateManager) => tableStateManager = stateManager,
                 ),
               )
