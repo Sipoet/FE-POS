@@ -229,6 +229,19 @@ class _PayslipPageState extends State<PayslipPage>
     }, onError: (error) => defaultErrorResponse(error: error));
   }
 
+  void sendEmail(Payslip payslip) {
+    server.get('payslips/${payslip.id.toString()}/send_email').then((response) {
+      if (response.statusCode == 200) {
+        flash.show(Text(response.data['message']), ToastificationType.info);
+      } else {
+        flash.showBanner(
+            title: 'gagal kirim email ${payslip.id.toString()}',
+            description: response.data['message'] ?? '',
+            messageType: ToastificationType.error);
+      }
+    }, onError: (error) => defaultErrorResponse(error: error));
+  }
+
   final menuController = MenuController();
 
   @override
@@ -247,6 +260,12 @@ class _PayslipPageState extends State<PayslipPage>
               },
               tooltip: 'Download Slip Gaji',
               icon: const Icon(Icons.download)),
+          IconButton(
+              onPressed: () {
+                sendEmail(payslip);
+              },
+              tooltip: 'Kirim email Slip Gaji',
+              icon: const Icon(Icons.send)),
           IconButton(
               onPressed: () {
                 destroyRecord(payslip);
