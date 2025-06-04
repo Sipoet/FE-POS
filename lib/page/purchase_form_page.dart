@@ -60,7 +60,8 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
 
     _server.get('purchases/show', queryParam: {
       'code': Uri.encodeComponent(purchase.id),
-      'include': 'purchase_items,purchase_items.item,supplier'
+      'include':
+          'purchase_items,purchase_items.item,supplier,purchase_items.item_report'
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
