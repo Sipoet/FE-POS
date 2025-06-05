@@ -270,6 +270,20 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               key: 'purchase_return',
               pageFunct: () => const PurchaseReturnPage(),
             ),
+            Menu(
+              icon: Icons.shopping_bag,
+              label: 'Pesanan Konsinyasi Masuk',
+              isDisabled: !setting.isAuthorize('consignmentInOrder', 'index'),
+              key: 'consignment_in_order',
+              pageFunct: () => const ConsignmentInOrderPage(),
+            ),
+            Menu(
+              icon: Icons.shopping_bag,
+              label: 'Konsinyasi Masuk',
+              isDisabled: !setting.isAuthorize('consignmentIn', 'index'),
+              key: 'consignment_in',
+              pageFunct: () => const ConsignmentInPage(),
+            ),
           ]),
       Menu(
           icon: Icons.shopping_cart,

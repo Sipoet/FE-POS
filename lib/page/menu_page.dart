@@ -47,6 +47,8 @@ export 'purchase_page.dart';
 export 'purchase_order_page.dart';
 export 'purchase_return_page.dart';
 export 'purchase_item_page.dart';
+export 'consignment_in_order_page.dart';
+export 'consignment_in_page.dart';
 
 // inventory
 export 'transfer_page.dart';

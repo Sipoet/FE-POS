@@ -1,4 +1,4 @@
-import 'package:fe_pos/model/purchase.dart';
+import 'package:fe_pos/model/consignment_in.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
@@ -12,15 +12,15 @@ import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 
-class PurchaseFormPage extends StatefulWidget {
-  final Purchase purchase;
-  const PurchaseFormPage({super.key, required this.purchase});
+class ConsignmentInFormPage extends StatefulWidget {
+  final ConsignmentIn consignmentIn;
+  const ConsignmentInFormPage({super.key, required this.consignmentIn});
 
   @override
-  State<PurchaseFormPage> createState() => _PurchaseFormPageState();
+  State<ConsignmentInFormPage> createState() => _ConsignmentInFormPageState();
 }
 
-class _PurchaseFormPageState extends State<PurchaseFormPage>
+class _ConsignmentInFormPageState extends State<ConsignmentInFormPage>
     with
         AutomaticKeepAliveClientMixin,
         LoadingPopup,
@@ -30,7 +30,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
   late Flash flash;
 
   final _formKey = GlobalKey<FormState>();
-  Purchase get purchase => widget.purchase;
+  ConsignmentIn get consignmentIn => widget.consignmentIn;
   late final Server _server;
   late final Setting setting;
   late final PlutoGridStateManager _source;
@@ -49,25 +49,25 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
     setting = context.read<Setting>();
     _server = context.read<Server>();
     _columns = setting.tableColumn('ipos::PurchaseItem');
-    if (purchase.id != null) {
-      Future.delayed(Duration.zero, () => fetchPurchase());
+    if (consignmentIn.id != null) {
+      Future.delayed(Duration.zero, () => fetchConsignmentIn());
     }
     super.initState();
   }
 
-  void fetchPurchase() {
+  void fetchConsignmentIn() {
     showLoadingPopup();
 
-    _server.get('purchases/show', queryParam: {
-      'code': Uri.encodeComponent(purchase.id),
+    _server.get('consignment_ins/show', queryParam: {
+      'code': Uri.encodeComponent(consignmentIn.id),
       'include':
           'purchase_items,purchase_items.item,supplier,purchase_items.item_report'
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
-          Purchase.fromJson(response.data['data'],
-              included: response.data['included'], model: purchase);
-          _source.setModels(purchase.purchaseItems, _columns);
+          ConsignmentIn.fromJson(response.data['data'],
+              included: response.data['included'], model: consignmentIn);
+          _source.setModels(consignmentIn.purchaseItems, _columns);
         });
       }
     }, onError: (error) {
@@ -176,21 +176,25 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                 ElevatedButton(
                   child: const Text("Submit"),
                   onPressed: () {
-                    updatePrice().then((result) => navigator.pop(result));
+                    updatePrice().then((result) {
+                      navigator.pop(result);
+                      flash.show(Text('sukses update harga jual'),
+                          ToastificationType.success);
+                    });
                   },
                 ),
               ],
             ),
           );
         }).then((result) {
-      if (result == true) fetchPurchase();
+      if (result == true) fetchConsignmentIn();
     });
   }
 
   Future<bool> updatePrice() async {
     showLoadingPopup();
     final dataParams = {
-      'code': purchase.code,
+      'code': consignmentIn.code,
       'margin': margin,
       'round_type': roundType,
       'mark_upper': markUpper,
@@ -198,8 +202,8 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
       'mark_separator': markSeparator,
     };
     try {
-      final response =
-          await _server.post('purchases/code/update_price', body: dataParams);
+      final response = await _server.post('consignment_ins/code/update_price',
+          body: dataParams);
       hideLoadingPopup();
       return response.statusCode == 200;
     } catch (e) {
@@ -232,339 +236,356 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Visibility(
-                      //   visible: purchase.id != null,
+                      //   visible: consignmentIn.id != null,
                       //   child: ElevatedButton.icon(
-                      //       onPressed: () => fetchHistoryByRecord('Purchase', purchase.id),
+                      //       onPressed: () => fetchHistoryByRecord('ConsignmentIn', consignmentIn.id),
                       //       label: const Text('Riwayat'),
                       //       icon: const Icon(Icons.history)),
                       // ),
                       // const Divider(),
                       Visibility(
-                        visible:
-                            setting.canShow('ipos::Purchase', 'notransaksi'),
+                        visible: setting.canShow(
+                            'ipos::ConsignmentIn', 'notransaksi'),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10.0),
                           child: TextFormField(
                             decoration: InputDecoration(
                                 labelText: setting.columnName(
-                                    'ipos::Purchase', 'notransaksi'),
+                                    'ipos::ConsignmentIn', 'notransaksi'),
                                 labelStyle: labelStyle,
                                 border: const OutlineInputBorder()),
                             readOnly: true,
-                            initialValue: purchase.code,
+                            initialValue: consignmentIn.code,
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: setting.canShow(
+                            'ipos::ConsignmentIn', 'notrsorder'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10.0),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: setting.columnName(
+                                    'ipos::ConsignmentIn', 'notrsorder'),
+                                labelStyle: labelStyle,
+                                border: const OutlineInputBorder()),
+                            readOnly: true,
+                            initialValue: consignmentIn.orderCode,
                           ),
                         ),
                       ),
                       Visibility(
                         visible:
-                            setting.canShow('ipos::Purchase', 'notrsorder'),
+                            setting.canShow('ipos::ConsignmentIn', 'kodesupel'),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10.0),
                           child: TextFormField(
                             decoration: InputDecoration(
                                 labelText: setting.columnName(
-                                    'ipos::Purchase', 'notrsorder'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
-                            readOnly: true,
-                            initialValue: purchase.orderCode,
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Purchase', 'kodesupel'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10.0),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'kodesupel'),
+                                    'ipos::ConsignmentIn', 'kodesupel'),
                                 labelStyle: labelStyle,
                                 border: const OutlineInputBorder()),
                             readOnly: true,
                             initialValue:
-                                "${purchase.supplierCode} - ${purchase.supplierName}",
+                                "${consignmentIn.supplierCode} - ${consignmentIn.supplierName}",
                           ),
                         ),
                       ),
                       Visibility(
-                        visible:
-                            setting.canShow('ipos::Purchase', 'kantortujuan'),
+                        visible: setting.canShow(
+                            'ipos::ConsignmentIn', 'kantortujuan'),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10.0),
                           child: TextFormField(
                             decoration: InputDecoration(
                                 labelText: setting.columnName(
-                                    'ipos::Purchase', 'kantortujuan'),
+                                    'ipos::ConsignmentIn', 'kantortujuan'),
                                 labelStyle: labelStyle,
                                 border: const OutlineInputBorder()),
                             readOnly: true,
-                            initialValue: purchase.destLocation,
+                            initialValue: consignmentIn.destLocation,
                           ),
                         ),
                       ),
                       Visibility(
-                        visible: setting.canShow('ipos::Purchase', 'user1'),
+                        visible:
+                            setting.canShow('ipos::ConsignmentIn', 'user1'),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
                                 labelText: setting.columnName(
-                                    'ipos::Purchase', 'user1'),
+                                    'ipos::ConsignmentIn', 'user1'),
                                 labelStyle: labelStyle,
                                 border: const OutlineInputBorder()),
                             readOnly: true,
-                            initialValue: purchase.userName,
+                            initialValue: consignmentIn.userName,
                           ),
                         ),
                       ),
                       Visibility(
-                        visible: setting.canShow('ipos::Purchase', 'note_date'),
+                        visible:
+                            setting.canShow('ipos::ConsignmentIn', 'note_date'),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
                                 labelText: setting.columnName(
-                                    'ipos::Purchase', 'note_date'),
+                                    'ipos::ConsignmentIn', 'note_date'),
                                 labelStyle: labelStyle,
                                 border: const OutlineInputBorder()),
                             readOnly: true,
-                            initialValue: purchase.noteDate == null
+                            initialValue: consignmentIn.noteDate == null
                                 ? null
-                                : dateTimeFormat(purchase.noteDate as DateTime),
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Purchase', 'tanggal'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'tanggal'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
-                            readOnly: true,
-                            initialValue: dateTimeFormat(purchase.datetime),
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Purchase', 'totalitem'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'totalitem'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
-                            readOnly: true,
-                            initialValue: purchase.totalItem.toString(),
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Purchase', 'subtotal'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'subtotal'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
-                            readOnly: true,
-                            initialValue: moneyFormat(purchase.subtotal),
+                                : dateTimeFormat(
+                                    consignmentIn.noteDate as DateTime),
                           ),
                         ),
                       ),
                       Visibility(
                         visible:
-                            setting.canShow('ipos::Purchase', 'potnomfaktur'),
+                            setting.canShow('ipos::ConsignmentIn', 'tanggal'),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
                                 labelText: setting.columnName(
-                                    'ipos::Purchase', 'potnomfaktur'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
-                            readOnly: true,
-                            initialValue: moneyFormat(purchase.discountAmount),
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Purchase', 'biayalain'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'biayalain'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
-                            readOnly: true,
-                            initialValue: moneyFormat(purchase.otherCost),
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Purchase', 'pajak'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'pajak'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
-                            readOnly: true,
-                            initialValue: moneyFormat(purchase.taxAmount),
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible:
-                            setting.canShow('ipos::Purchase', 'totalakhir'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'totalakhir'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
-                            readOnly: true,
-                            initialValue: moneyFormat(purchase.grandtotal),
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible:
-                            setting.canShow('ipos::Purchase', 'payment_type'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'payment_type'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
-                            readOnly: true,
-                            initialValue: purchase.paymentMethodType,
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Purchase', 'bank_code'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'bank_code'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
-                            readOnly: true,
-                            initialValue: purchase.bankCode,
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Purchase', 'jmltunai'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'jmltunai'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
-                            readOnly: true,
-                            initialValue: moneyFormat(purchase.cashAmount),
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Purchase', 'jmldebit'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'jmldebit'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
-                            readOnly: true,
-                            initialValue: moneyFormat(purchase.debitCardAmount),
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Purchase', 'jmlkredit'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'jmlkredit'),
+                                    'ipos::ConsignmentIn', 'tanggal'),
                                 labelStyle: labelStyle,
                                 border: const OutlineInputBorder()),
                             readOnly: true,
                             initialValue:
-                                moneyFormat(purchase.creditCardAmount),
+                                dateTimeFormat(consignmentIn.datetime),
                           ),
                         ),
                       ),
                       Visibility(
                         visible:
-                            setting.canShow('ipos::Purchase', 'jmldeposit'),
+                            setting.canShow('ipos::ConsignmentIn', 'totalitem'),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
                                 labelText: setting.columnName(
-                                    'ipos::Purchase', 'jmldeposit'),
+                                    'ipos::ConsignmentIn', 'totalitem'),
                                 labelStyle: labelStyle,
                                 border: const OutlineInputBorder()),
                             readOnly: true,
-                            initialValue: moneyFormat(purchase.emoneyAmount),
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Purchase', 'ppn'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                labelText:
-                                    setting.columnName('ipos::Purchase', 'ppn'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
-                            readOnly: true,
-                            initialValue: purchase.taxType,
+                            initialValue: consignmentIn.totalItem.toString(),
                           ),
                         ),
                       ),
                       Visibility(
                         visible:
-                            setting.canShow('ipos::Purchase', 'keterangan'),
+                            setting.canShow('ipos::ConsignmentIn', 'subtotal'),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
                                 labelText: setting.columnName(
-                                    'ipos::Purchase', 'keterangan'),
+                                    'ipos::ConsignmentIn', 'subtotal'),
+                                labelStyle: labelStyle,
+                                border: const OutlineInputBorder()),
+                            readOnly: true,
+                            initialValue: moneyFormat(consignmentIn.subtotal),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: setting.canShow(
+                            'ipos::ConsignmentIn', 'potnomfaktur'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: setting.columnName(
+                                    'ipos::ConsignmentIn', 'potnomfaktur'),
+                                labelStyle: labelStyle,
+                                border: const OutlineInputBorder()),
+                            readOnly: true,
+                            initialValue:
+                                moneyFormat(consignmentIn.discountAmount),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible:
+                            setting.canShow('ipos::ConsignmentIn', 'biayalain'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: setting.columnName(
+                                    'ipos::ConsignmentIn', 'biayalain'),
+                                labelStyle: labelStyle,
+                                border: const OutlineInputBorder()),
+                            readOnly: true,
+                            initialValue: moneyFormat(consignmentIn.otherCost),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible:
+                            setting.canShow('ipos::ConsignmentIn', 'pajak'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: setting.columnName(
+                                    'ipos::ConsignmentIn', 'pajak'),
+                                labelStyle: labelStyle,
+                                border: const OutlineInputBorder()),
+                            readOnly: true,
+                            initialValue: moneyFormat(consignmentIn.taxAmount),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: setting.canShow(
+                            'ipos::ConsignmentIn', 'totalakhir'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: setting.columnName(
+                                    'ipos::ConsignmentIn', 'totalakhir'),
+                                labelStyle: labelStyle,
+                                border: const OutlineInputBorder()),
+                            readOnly: true,
+                            initialValue: moneyFormat(consignmentIn.grandtotal),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: setting.canShow(
+                            'ipos::ConsignmentIn', 'payment_type'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: setting.columnName(
+                                    'ipos::ConsignmentIn', 'payment_type'),
+                                labelStyle: labelStyle,
+                                border: const OutlineInputBorder()),
+                            readOnly: true,
+                            initialValue: consignmentIn.paymentMethodType,
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible:
+                            setting.canShow('ipos::ConsignmentIn', 'bank_code'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: setting.columnName(
+                                    'ipos::ConsignmentIn', 'bank_code'),
+                                labelStyle: labelStyle,
+                                border: const OutlineInputBorder()),
+                            readOnly: true,
+                            initialValue: consignmentIn.bankCode,
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible:
+                            setting.canShow('ipos::ConsignmentIn', 'jmltunai'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: setting.columnName(
+                                    'ipos::ConsignmentIn', 'jmltunai'),
+                                labelStyle: labelStyle,
+                                border: const OutlineInputBorder()),
+                            readOnly: true,
+                            initialValue: moneyFormat(consignmentIn.cashAmount),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible:
+                            setting.canShow('ipos::ConsignmentIn', 'jmldebit'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: setting.columnName(
+                                    'ipos::ConsignmentIn', 'jmldebit'),
+                                labelStyle: labelStyle,
+                                border: const OutlineInputBorder()),
+                            readOnly: true,
+                            initialValue:
+                                moneyFormat(consignmentIn.debitCardAmount),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible:
+                            setting.canShow('ipos::ConsignmentIn', 'jmlkredit'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: setting.columnName(
+                                    'ipos::ConsignmentIn', 'jmlkredit'),
+                                labelStyle: labelStyle,
+                                border: const OutlineInputBorder()),
+                            readOnly: true,
+                            initialValue:
+                                moneyFormat(consignmentIn.creditCardAmount),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: setting.canShow(
+                            'ipos::ConsignmentIn', 'jmldeposit'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: setting.columnName(
+                                    'ipos::ConsignmentIn', 'jmldeposit'),
+                                labelStyle: labelStyle,
+                                border: const OutlineInputBorder()),
+                            readOnly: true,
+                            initialValue:
+                                moneyFormat(consignmentIn.emoneyAmount),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: setting.canShow('ipos::ConsignmentIn', 'ppn'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: setting.columnName(
+                                    'ipos::ConsignmentIn', 'ppn'),
+                                labelStyle: labelStyle,
+                                border: const OutlineInputBorder()),
+                            readOnly: true,
+                            initialValue: consignmentIn.taxType,
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: setting.canShow(
+                            'ipos::ConsignmentIn', 'keterangan'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: setting.columnName(
+                                    'ipos::ConsignmentIn', 'keterangan'),
                                 labelStyle: labelStyle,
                                 border: const OutlineInputBorder()),
                             readOnly: true,
                             minLines: 3,
                             maxLines: 5,
-                            initialValue: purchase.description,
+                            initialValue: consignmentIn.description,
                           ),
                         ),
                       ),
@@ -595,7 +616,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                             MenuItemButton(
                               child: const Text('refresh item'),
                               onPressed: () {
-                                fetchPurchase();
+                                fetchConsignmentIn();
                               },
                             ),
                           ],

@@ -3,7 +3,7 @@ export 'package:fe_pos/model/purchase_item.dart';
 import 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-class Purchase extends Model {
+class ConsignmentIn extends Model {
   String code;
   String? orderCode;
   String userName;
@@ -28,7 +28,7 @@ class Purchase extends Model {
   String destLocation;
   String supplierCode;
   Supplier supplier;
-  Purchase(
+  ConsignmentIn(
       {this.userName = '',
       this.description = '',
       this.totalItem = 0,
@@ -89,11 +89,11 @@ class Purchase extends Model {
   String get supplierName => supplier.name;
 
   @override
-  factory Purchase.fromJson(Map<String, dynamic> json,
-      {Purchase? model, List included = const []}) {
+  factory ConsignmentIn.fromJson(Map<String, dynamic> json,
+      {ConsignmentIn? model, List included = const []}) {
     var attributes = json['attributes'];
 
-    model ??= Purchase(userName: '');
+    model ??= ConsignmentIn(userName: '');
     if (included.isNotEmpty) {
       model.purchaseItems = Model.findRelationsData<PurchaseItem>(
           included: included,
