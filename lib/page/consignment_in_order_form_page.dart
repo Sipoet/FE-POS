@@ -639,6 +639,7 @@ class _ConsignmentInOrderFormPageState extends State<ConsignmentInOrderFormPage>
                   height: 500,
                   child: SyncDataTable<PurchaseOrderItem>(
                     columns: _columns,
+                    showSummary: true,
                     onLoaded: (stateManager) => _source = stateManager,
                   ),
                 ),

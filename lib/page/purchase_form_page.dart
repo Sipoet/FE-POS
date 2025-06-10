@@ -613,6 +613,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                   height: 500,
                   child: SyncDataTable<PurchaseItem>(
                     columns: _columns,
+                    showSummary: true,
                     onLoaded: (stateManager) => _source = stateManager,
                   ),
                 ),

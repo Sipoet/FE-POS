@@ -623,6 +623,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                   height: 500,
                   child: SyncDataTable<PurchaseOrderItem>(
                     columns: _columns,
+                    showSummary: true,
                     onLoaded: (stateManager) => _source = stateManager,
                   ),
                 ),
