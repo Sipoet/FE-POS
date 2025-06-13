@@ -108,8 +108,8 @@ class Purchase extends Model {
     Model.fromModel(model, attributes);
     model.id = json['id'];
     model.userName = attributes['user1'];
-    model.datetime = DateTime.parse(attributes['tanggal']);
-    model.noteDate = DateTime.tryParse(attributes['note_date']);
+    model.datetime = DateTime.parse(attributes['tanggal'] ?? '');
+    model.noteDate = DateTime.tryParse(attributes['note_date'] ?? '');
     model.description = attributes['keterangan'];
     model.totalItem = double.parse(attributes['totalitem']);
     model.subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
