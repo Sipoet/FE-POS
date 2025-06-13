@@ -6,8 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/flash.dart';
 
 mixin DefaultResponse<T extends StatefulWidget> on State<T> {
-  dynamic defaultErrorResponse({required var error, var valueWhenError}) {
-    if (error.runtimeType.toString() == '_TypeError') throw error;
+  dynamic defaultErrorResponse(
+      {required var error, List trace = const [], var valueWhenError}) {
+    if (error.runtimeType.toString() == '_TypeError') {
+      log(error.toString());
+      log(trace.toString());
+      final flash = Flash();
+      flash.showBanner(
+          title: error.toString(),
+          description: trace.toString(),
+          messageType: ToastificationType.error);
+      throw error;
+    }
     var response = error.response;
     switch (error.type) {
       case DioExceptionType.badResponse:

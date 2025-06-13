@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:fe_pos/model/purchase.dart';
 import 'package:fe_pos/page/purchase_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
@@ -71,10 +73,11 @@ class _PurchasePageState extends State<PurchasePage>
     _filter.forEach((key, value) {
       param[key] = value;
     });
-    try {
-      return server
-          .get('purchases', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
+
+    return server
+        .get('purchases', queryParam: param, cancelToken: cancelToken)
+        .then((response) {
+      try {
         if (response.statusCode != 200) {
           throw 'error: ${response.data.toString()}';
         }
@@ -89,16 +92,19 @@ class _PurchasePageState extends State<PurchasePage>
         final totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
         return ResponseResult<Purchase>(totalRows: totalRows, models: models);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      throw 'error';
-    }
+      } catch (e, trace) {
+        log(e.toString());
+        log(trace.toString());
+        flash.showBanner(
+            title: "Gagal Ambil Data",
+            description: "kontak Teknikal support anda",
+            messageType: ToastificationType.error);
+
+        rethrow;
+      }
+    },
+            onError: (error, stackTrace) => defaultErrorResponse(
+                error: error, trace: stackTrace, valueWhenError: []));
   }
 
   void searchChanged(value) {
