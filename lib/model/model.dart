@@ -13,9 +13,15 @@ abstract class Model {
 
   Map<String, dynamic> asMap() {
     Map<String, dynamic> value = toMap();
-    value['created_at'] = createdAt;
-    value['updated_at'] = updatedAt;
-    value['id'] = id;
+    if (createdAt != null) {
+      value['created_at'] = createdAt;
+    }
+    if (createdAt != null) {
+      value['updated_at'] = updatedAt;
+    }
+    if (id != null) {
+      value['id'] = id;
+    }
     value['_destroy'] = _flagDestroyed;
     return value;
   }
