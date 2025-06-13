@@ -664,7 +664,6 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
     showDialog<SalesCashier>(
       context: context,
       builder: (BuildContext context) {
-        final navigator = Navigator.of(context);
         return AlertDialog(
           title: const Row(
             children: [Text("Pembayaran"), Icon(Icons.attach_money_rounded)],
