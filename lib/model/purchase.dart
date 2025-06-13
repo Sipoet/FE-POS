@@ -9,6 +9,7 @@ class Purchase extends Model {
   String userName;
   List<PurchaseItem> purchaseItems;
   DateTime datetime;
+  DateTime? noteDate;
   String description;
   double totalItem;
   Money subtotal;
@@ -34,6 +35,7 @@ class Purchase extends Model {
       this.code = '',
       this.supplierCode = '',
       this.orderCode,
+      this.noteDate,
       this.subtotal = const Money(0),
       this.grandtotal = const Money(0),
       this.discountAmount = const Money(0),
@@ -62,6 +64,7 @@ class Purchase extends Model {
   Map<String, dynamic> toMap() => {
         'user1': userName,
         'tanggal': datetime,
+        'note_date': noteDate,
         'keterangan': description,
         'totalitem': totalItem,
         'subtotal': subtotal,
@@ -106,6 +109,7 @@ class Purchase extends Model {
     model.id = json['id'];
     model.userName = attributes['user1'];
     model.datetime = DateTime.parse(attributes['tanggal']);
+    model.noteDate = DateTime.tryParse(attributes['note_date']);
     model.description = attributes['keterangan'];
     model.totalItem = double.parse(attributes['totalitem']);
     model.subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);

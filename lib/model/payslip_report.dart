@@ -7,6 +7,8 @@ class PayslipReport extends Model {
   String? bank;
   String? bankAccount;
   String? bankRegisterName;
+  EmployeeStatus employeeStatus;
+  PayslipStatus payslipStatus;
   Date? employeeStartWorkingDate;
   int employeeId;
   Date startDate;
@@ -30,6 +32,8 @@ class PayslipReport extends Model {
       required this.employeeId,
       required this.employeeName,
       this.employeeStartWorkingDate,
+      this.payslipStatus = PayslipStatus.draft,
+      this.employeeStatus = EmployeeStatus.inactive,
       this.payslipId,
       this.employee,
       this.payslip,
@@ -60,6 +64,8 @@ class PayslipReport extends Model {
       'known_absence': knownAbsence,
       'unknown_absence': unknownAbsence,
       'overtime_hour': overtimeHour,
+      'employee_status': employeeStatus,
+      'payslip_status': payslipStatus,
       'work_days': workDays,
       'late': late,
       'bank': bank,
@@ -96,7 +102,10 @@ class PayslipReport extends Model {
     model.bank = attributes['bank'];
     model.bankAccount = attributes['bank_account'];
     model.bankRegisterName = attributes['bank_register_name'];
-
+    model.employeeStatus =
+        EmployeeStatus.convertFromString(attributes['employee_status']);
+    model.payslipStatus =
+        PayslipStatus.fromString(attributes['payslip_status']);
     model.sickLeave = attributes['sick_leave'];
     model.knownAbsence = attributes['known_absence'];
     model.unknownAbsence = attributes['unknown_absence'];

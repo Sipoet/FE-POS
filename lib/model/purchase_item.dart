@@ -25,6 +25,10 @@ class PurchaseItem extends Model {
   String? brandName;
   String? supplierCode;
   String? itemTypeName;
+  double? stockLeft;
+  double? warehouseStock;
+  double? storeStock;
+  double? numberOfSales;
   PurchaseItem(
       {Item? item,
       super.id,
@@ -34,6 +38,10 @@ class PurchaseItem extends Model {
       this.quantity = 0,
       this.price = const Money(0),
       this.uom = '',
+      this.stockLeft = 0.0,
+      this.storeStock = 0.0,
+      this.warehouseStock = 0.0,
+      this.numberOfSales = 0.0,
       super.createdAt,
       super.updatedAt,
       this.itemTypeName,
@@ -68,6 +76,10 @@ class PurchaseItem extends Model {
         'potongan4': discountPercentage4,
         'pajak': taxAmount,
         'total': total,
+        'stock_left': stockLeft,
+        'warehouse_stock': warehouseStock,
+        'store_stock': storeStock,
+        'number_of_sales': numberOfSales,
         'sell_price': sellPrice,
         'jmlpesan': orderQuantity,
         'tglexp': expiredDate,
@@ -99,6 +111,10 @@ class PurchaseItem extends Model {
     model.itemCode = attributes['kodeitem'];
     model.row = attributes['nobaris'];
     model.quantity = double.parse(attributes['jumlah']);
+    model.stockLeft = double.tryParse(attributes['stock_left'] ?? '');
+    model.warehouseStock = double.tryParse(attributes['warehouse_stock'] ?? '');
+    model.storeStock = double.tryParse(attributes['store_stock'] ?? '');
+    model.numberOfSales = double.tryParse(attributes['number_of_sales'] ?? '');
     model.price = Money.parse(attributes['harga']);
     model.uom = attributes['satuan'];
     model.subtotal = Money.parse(attributes['subtotal']);

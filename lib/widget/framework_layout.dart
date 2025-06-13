@@ -1,5 +1,3 @@
-import 'package:fe_pos/model/user.dart';
-import 'package:fe_pos/page/user_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
@@ -36,7 +34,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
   @override
   void initState() {
     final setting = context.read<Setting>();
-    final server = context.read<Server>();
     menuTree = <Menu>[
       Menu(
           icon: Icons.home,
@@ -113,6 +110,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 isDisabled: !setting.isAuthorize('bookPayslipLine', 'index'),
                 pageFunct: () => const BookPayslipLinePage(),
                 key: 'bookPayslipLine'),
+            Menu(
+                icon: Icons.calendar_month,
+                isClosed: true,
+                label: 'BOOK / SETTING EMPLOYEE ATTENDANCE',
+                isDisabled:
+                    !setting.isAuthorize('bookEmployeeAttendance', 'index'),
+                pageFunct: () => const BookEmployeeAttendancePage(),
+                key: 'bookEmployeeAttendance'),
           ]),
       Menu(
           icon: Icons.pages,
@@ -265,6 +270,20 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               key: 'purchase_return',
               pageFunct: () => const PurchaseReturnPage(),
             ),
+            Menu(
+              icon: Icons.shopping_bag,
+              label: 'Pesanan Konsinyasi Masuk',
+              isDisabled: !setting.isAuthorize('consignmentInOrder', 'index'),
+              key: 'consignment_in_order',
+              pageFunct: () => const ConsignmentInOrderPage(),
+            ),
+            Menu(
+              icon: Icons.shopping_bag,
+              label: 'Konsinyasi Masuk',
+              isDisabled: !setting.isAuthorize('consignmentIn', 'index'),
+              key: 'consignment_in',
+              pageFunct: () => const ConsignmentInPage(),
+            ),
           ]),
       Menu(
           icon: Icons.shopping_cart,
@@ -325,87 +344,101 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
         ],
       ),
       Menu(
-          icon: Icons.table_chart,
-          isClosed: true,
-          label: 'Master Data',
-          key: 'master',
-          pageFunct: () => const Placeholder(),
-          children: [
-            Menu(
-                icon: Icons.inventory,
-                isClosed: true,
-                label: 'Item',
-                isDisabled: !setting.isAuthorize('item', 'index'),
-                key: 'item',
-                pageFunct: () => const ItemPage(),
-                children: []),
-            Menu(
-                icon: Icons.local_shipping,
-                isClosed: true,
-                label: 'Supplier',
-                isDisabled: !setting.isAuthorize('supplier', 'index'),
-                key: 'supplier',
-                pageFunct: () => const SupplierPage(),
-                children: []),
-            Menu(
-                icon: Icons.branding_watermark,
-                isClosed: true,
-                label: 'Merek',
-                isDisabled: !setting.isAuthorize('brand', 'index'),
-                key: 'brand',
-                pageFunct: () => const BrandPage(),
-                children: []),
-            Menu(
-                icon: Icons.abc,
-                isClosed: true,
-                label: 'Jenis/Departemen',
-                isDisabled: !setting.isAuthorize('itemType', 'index'),
-                key: 'itemType',
-                pageFunct: () => const ItemTypePage(),
-                children: []),
-            Menu(
-                icon: Icons.discount,
-                isClosed: true,
-                label: 'Diskon',
-                isDisabled: !setting.isAuthorize('discount', 'index'),
-                key: 'discount',
-                pageFunct: () => const DiscountPage(),
-                children: []),
-            Menu(
+        icon: Icons.table_chart,
+        isClosed: true,
+        label: 'Master Data',
+        key: 'master',
+        children: [
+          Menu(
+              icon: Icons.inventory,
+              isClosed: true,
+              label: 'Item',
+              isDisabled: !setting.isAuthorize('item', 'index'),
+              key: 'item',
+              pageFunct: () => const ItemPage(),
+              children: []),
+          Menu(
+              icon: Icons.local_shipping,
+              isClosed: true,
+              label: 'Supplier',
+              isDisabled: !setting.isAuthorize('supplier', 'index'),
+              key: 'supplier',
+              pageFunct: () => const SupplierPage(),
+              children: []),
+          Menu(
+              icon: Icons.branding_watermark,
+              isClosed: true,
+              label: 'Merek',
+              isDisabled: !setting.isAuthorize('brand', 'index'),
+              key: 'brand',
+              pageFunct: () => const BrandPage(),
+              children: []),
+          Menu(
+              icon: Icons.abc,
+              isClosed: true,
+              label: 'Jenis/Departemen',
+              isDisabled: !setting.isAuthorize('itemType', 'index'),
+              key: 'itemType',
+              pageFunct: () => const ItemTypePage(),
+              children: []),
+          Menu(
               icon: Icons.discount,
               isClosed: true,
-              label: 'Customer Group Discount',
-              isDisabled:
-                  !setting.isAuthorize('customerGroupDiscount', 'index'),
-              key: 'customerGroupDiscount',
-              pageFunct: () => const CustomerGroupDiscountPage(),
-            ),
-            Menu(
-                icon: Icons.person,
-                isClosed: true,
-                label: 'User',
-                isDisabled: !setting.isAuthorize('user', 'index'),
-                key: 'user',
-                pageFunct: () => const UserPage(),
-                children: []),
-            Menu(
-                icon: Icons.person,
-                isClosed: true,
-                label: 'Role',
-                isDisabled: !setting.isAuthorize('role', 'index'),
-                key: 'role',
-                pageFunct: () => const RolePage(),
-                children: []),
-          ]),
+              label: 'Diskon',
+              isDisabled: !setting.isAuthorize('discount', 'index'),
+              key: 'discount',
+              pageFunct: () => const DiscountPage(),
+              children: []),
+          Menu(
+            icon: Icons.group,
+            isClosed: true,
+            label: 'Customer Group Discount',
+            isDisabled: !setting.isAuthorize('customerGroupDiscount', 'index'),
+            key: 'customerGroupDiscount',
+            pageFunct: () => const CustomerGroupDiscountPage(),
+          ),
+          Menu(
+              icon: Icons.person,
+              isClosed: true,
+              label: 'User',
+              isDisabled: !setting.isAuthorize('user', 'index'),
+              key: 'user',
+              pageFunct: () => const UserPage(),
+              children: []),
+          Menu(
+              icon: Icons.group,
+              isClosed: true,
+              label: 'Role',
+              isDisabled: !setting.isAuthorize('role', 'index'),
+              key: 'role',
+              pageFunct: () => const RolePage(),
+              children: []),
+        ],
+      ),
       Menu(
-        icon: Icons.person_2,
-        label: 'Profilku',
-        key: 'user_profile',
-        pageFunct: () {
-          var user = User(username: server.userName);
-          return UserFormPage(user: user);
-        },
-      )
+        icon: Icons.settings,
+        isClosed: true,
+        label: 'Setting',
+        key: 'group_setting',
+        children: [
+          Menu(
+            icon: Icons.settings,
+            isClosed: true,
+            label: 'System Setting',
+            key: 'setting',
+            isDisabled: !setting.isAuthorize('systemSetting', 'index'),
+            pageFunct: () => const SystemSettingPage(),
+          ),
+          Menu(
+            icon: Icons.padding,
+            isClosed: true,
+            label: 'Background Job Management',
+            key: 'background_log',
+            isDisabled: !setting.isAuthorize('backgroundJob', 'index'),
+            pageFunct: () => const BackgroundJobPage(),
+          ),
+        ],
+      ),
     ];
     flash = Flash();
     tabManager = TabManager(tabItemDetails: [

@@ -33,6 +33,7 @@ export 'employee_leave_page.dart';
 export 'employee_page.dart';
 export 'holiday_page.dart';
 export 'book_payslip_line_page.dart';
+export 'book_employee_attendance_page.dart';
 
 // sale
 export 'cashier_session_page.dart';
@@ -47,6 +48,8 @@ export 'purchase_page.dart';
 export 'purchase_order_page.dart';
 export 'purchase_return_page.dart';
 export 'purchase_item_page.dart';
+export 'consignment_in_order_page.dart';
+export 'consignment_in_page.dart';
 
 // inventory
 export 'transfer_page.dart';
@@ -55,3 +58,7 @@ export 'transfer_item_page.dart';
 // finance
 export 'payment_type_page.dart';
 export 'payment_provider_page.dart';
+
+// setting
+export 'system_setting_page.dart';
+export 'background_job_page.dart';

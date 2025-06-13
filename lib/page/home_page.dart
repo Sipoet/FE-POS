@@ -1,3 +1,4 @@
+import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:fe_pos/model/sales_transaction_report.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/app_updater.dart';
@@ -35,9 +36,9 @@ class _HomePageState extends State<HomePage>
     setting = context.read<Setting>();
     final server = context.read<Server>();
     checkUpdate(server);
-    if (setting.isAuthorize('sale', 'transactionReport')) {
-      getPeriodSalesTotal(period, server);
-    }
+    // if (setting.isAuthorize('sale', 'transactionReport')) {
+    //   getPeriodSalesTotal(period, server);
+    // }
     _panels = [
       if (setting.isAuthorize('sale', 'transactionReport'))
         SalesTransactionReportWidget(
@@ -166,6 +167,7 @@ class _HomePageState extends State<HomePage>
     }, onError: (error, stack) => defaultErrorResponse(error: error));
   }
 
+  final textController = BoardDateTimeTextController();
   @override
   Widget build(BuildContext context) {
     super.build(context);

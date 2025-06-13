@@ -1,4 +1,6 @@
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/model/user.dart';
+import 'package:fe_pos/page/form_page.dart';
 import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
@@ -49,29 +51,61 @@ class _DesktopLayoutState extends State<DesktopLayout>
     final tabManager = context.watch<TabManager>();
     final server = context.read<Server>();
     final message =
-        'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: $version | Allegra POS';
+        'SERVER: ${widget.host} | USER: ${widget.userName} | Allegra POS';
     return Scaffold(
         appBar: AppBar(
-          title: Tooltip(
-            message: message,
-            child: Text(
-              message,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+          title: Text(
+            message,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           actions: [
-            if (!isWeb())
-              IconButton(
-                  onPressed: () => checkUpdate(server, isManual: true),
-                  tooltip: 'Check Update App',
-                  icon: Icon(Icons.update)),
-            IconButton(
-              icon: const Icon(Icons.power_settings_new),
-              tooltip: 'Logout',
-              onPressed: () {
-                final server = context.read<Server>();
-                logout(server);
+            PopupMenuButton(
+              itemBuilder: (BuildContext context) {
+                List<PopupMenuEntry> result = [];
+                if (!isWeb()) {
+                  result.add(PopupMenuItem(
+                    onTap: () => openAboutDialog(version),
+                    child: Text('About'),
+                  ));
+                  result.add(PopupMenuItem(
+                    onTap: () => checkUpdate(server, isManual: true),
+                    child: Text('Cek Update App'),
+                  ));
+                }
+                result.add(PopupMenuItem(
+                  onTap: () {
+                    final server = context.read<Server>();
+                    var user = User(username: server.userName);
+                    tabManager.addTab('Profilku', UserFormPage(user: user));
+                  },
+                  child: Row(
+                    children: [
+                      Text('Profile'),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Icon(Icons.person_2),
+                    ],
+                  ),
+                ));
+                result.add(PopupMenuItem(
+                  onTap: () {
+                    final server = context.read<Server>();
+                    logout(server);
+                  },
+                  child: Row(
+                    children: [
+                      Text('Logout'),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Icon(Icons.logout)
+                    ],
+                  ),
+                ));
+                return result;
               },
+              icon: Icon(Icons.menu),
             ),
           ],
         ),

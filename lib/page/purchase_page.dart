@@ -66,7 +66,7 @@ class _PurchasePageState extends State<PurchasePage>
       'page[page]': page.toString(),
       'page[limit]': limit.toString(),
       'sort': '${isAscending ? '' : '-'}$orderKey',
-      'include': 'supplier',
+      'include': 'purchase_order,supplier',
     };
     _filter.forEach((key, value) {
       param[key] = value;
@@ -99,36 +99,6 @@ class _PurchasePageState extends State<PurchasePage>
           messageType: ToastificationType.error);
       throw 'error';
     }
-  }
-
-  void showConfirmDialog(
-      {required Function onSubmit, String message = 'Apakah Anda Yakin?'}) {
-    AlertDialog alert = AlertDialog(
-      title: const Text("Konfirmasi"),
-      content: Text(message),
-      actions: [
-        ElevatedButton(
-          child: const Text("Kembali"),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        ElevatedButton(
-          child: const Text("Submit"),
-          onPressed: () {
-            onSubmit();
-            Navigator.of(context).pop();
-          },
-        ),
-      ],
-    );
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
   }
 
   void searchChanged(value) {
@@ -203,7 +173,7 @@ class _PurchasePageState extends State<PurchasePage>
               ),
             ),
             SizedBox(
-              height: 600,
+              height: bodyScreenHeight,
               child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 1,

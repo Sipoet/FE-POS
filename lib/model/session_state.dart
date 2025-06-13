@@ -11,11 +11,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 mixin SessionState<T extends StatefulWidget> on State<T>
     implements DefaultResponse<T> {
   final _storage = const FlutterSecureStorage();
-
+  static const storageServerKey = 'server';
   Future fetchServerData(Server server) async {
     try {
       server.setCert();
-      String? sessionString = await _storage.read(key: 'server');
+      String? sessionString = await _storage.read(key: storageServerKey);
       if (sessionString != null) {
         final sessionData = jsonDecode(sessionString);
         server.host = sessionData['host'] ?? '';
@@ -113,7 +113,7 @@ mixin SessionState<T extends StatefulWidget> on State<T>
 
   void saveSession(Server server) async {
     _storage.write(
-        key: 'server',
+        key: storageServerKey,
         value: jsonEncode({
           'host': server.host,
           'jwt': server.jwt,

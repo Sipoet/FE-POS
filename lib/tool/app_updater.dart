@@ -200,4 +200,18 @@ mixin AppUpdater<T extends StatefulWidget> on State<T>
       navigator.pop();
     });
   }
+
+  void openAboutDialog(String version) {
+    showAboutDialog(
+      context: context,
+      applicationVersion: version,
+      applicationName: 'Allegra Pos',
+      applicationIcon: Image.asset(
+        'assets/logo-allegra.jpg',
+        width: 45,
+        height: 45,
+      ),
+      applicationLegalese: '© ${DateTime.now().year} Allegra',
+    );
+  }
 }

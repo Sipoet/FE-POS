@@ -119,6 +119,9 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
                           }
                         },
                         initialValue: employeeAttendance.startWork),
+                    const SizedBox(
+                      height: 10,
+                    ),
                     TimeFormField(
                         label: const Text(
                           'Jam Keluar',

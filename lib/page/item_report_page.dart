@@ -91,6 +91,7 @@ class _ItemReportPageState extends State<ItemReportPage>
       'page[page]': page.toString(),
       'page[limit]': limit.toString(),
       'report_type': _reportType ?? 'json',
+      'include': 'item,supplier,brand,item_type',
       'sort': '${isAscending ? '' : '-'}$orderKey',
     };
     _filter.forEach((key, value) {

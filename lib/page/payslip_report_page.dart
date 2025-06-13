@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/employee.dart';
+import 'package:fe_pos/model/payslip.dart';
 import 'package:fe_pos/model/payslip_report.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/file_saver.dart';
@@ -24,6 +25,8 @@ class _PayslipReportPageState extends State<PayslipReportPage>
   PlutoGridStateManager? tableStateManager;
   List<PayrollType> payrollTypes = [];
   List<TableColumn> tableColumns = [];
+  PayslipStatus? _payslipStatus;
+  EmployeeStatus? _employeeStatus;
   DateTimeRange _dateRange = DateTimeRange(
       start: DateTime.now().copyWith(
           month: DateTime.now().month - 1,
@@ -56,9 +59,11 @@ class _PayslipReportPageState extends State<PayslipReportPage>
             return TableColumn(
                 clientWidth:
                     double.parse(row['client_width']?.toString() ?? '200'),
-                type: row['type'],
-                inputOptions: {'attribute_key': row['attribute_key']},
+                type: TableColumnType.fromString(row['type']),
+                inputOptions: row['input_options'],
                 name: row['name'],
+                canFilter: row['can_filter'] ?? false,
+                canSort: row['can_sort'] ?? false,
                 humanizeName: row['humanize_name']);
           }).toList();
           tableStateManager?.setTableColumns(tableColumns,
@@ -86,6 +91,8 @@ class _PayslipReportPageState extends State<PayslipReportPage>
           'filter[start_date]': _dateRange.start.toIso8601String(),
           'filter[end_date]': _dateRange.end.toIso8601String(),
           'filter[employee_ids]': _employeeIds.join(','),
+          'filter[payslip_status]': _payslipStatus?.toString(),
+          'filter[employee_status]': _employeeStatus?.toString(),
         },
         cancelToken: cancelToken,
         responseType: responseType);
@@ -136,9 +143,28 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                             'Periode',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
+                          datePickerOnly: true,
                           initialDateRange: _dateRange,
                           onChanged: (range) =>
                               _dateRange = range ?? _dateRange,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      SizedBox(
+                        width: 300,
+                        child: DropdownMenu<PayslipStatus>(
+                          label: const Text(
+                            'Status Slip Gaji',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          onSelected: (value) => _payslipStatus = value,
+                          dropdownMenuEntries: PayslipStatus.values
+                              .map<DropdownMenuEntry<PayslipStatus>>((status) =>
+                                  DropdownMenuEntry<PayslipStatus>(
+                                      value: status, label: status.humanize()))
+                              .toList(),
                         ),
                       ),
                       const SizedBox(
@@ -159,6 +185,24 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                           attributeKey: 'name',
                           onChanged: (value) => _employeeIds = value
                               .map<String>((e) => e.id.toString())
+                              .toList(),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      SizedBox(
+                        width: 300,
+                        child: DropdownMenu<EmployeeStatus>(
+                          label: const Text(
+                            'Status Karyawan',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          onSelected: (value) => _employeeStatus = value,
+                          dropdownMenuEntries: EmployeeStatus.values
+                              .map<DropdownMenuEntry<EmployeeStatus>>(
+                                  (status) => DropdownMenuEntry<EmployeeStatus>(
+                                      value: status, label: status.humanize()))
                               .toList(),
                         ),
                       ),
@@ -199,6 +243,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                 child: SyncDataTable(
                   columns: tableColumns,
                   showSummary: true,
+                  showFilter: true,
                   onLoaded: (stateManager) => tableStateManager = stateManager,
                 ),
               )

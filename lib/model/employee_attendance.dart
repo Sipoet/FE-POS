@@ -1,7 +1,7 @@
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/employee.dart';
 export 'package:fe_pos/model/employee.dart';
-
+import 'package:flutter/material.dart' show TimeOfDay;
 export 'package:fe_pos/tool/custom_type.dart';
 
 class EmployeeAttendance extends Model {
@@ -44,8 +44,8 @@ class EmployeeAttendance extends Model {
         'allow_overtime': allowOvertime,
       };
 
-  TimeDay get startWork => TimeDay.fromDateTime(startTime.toLocal());
-  TimeDay get endWork => TimeDay.fromDateTime(endTime.toLocal());
+  TimeOfDay get startWork => TimeOfDay.fromDateTime(startTime.toLocal());
+  TimeOfDay get endWork => TimeOfDay.fromDateTime(endTime.toLocal());
 
   @override
   factory EmployeeAttendance.fromJson(Map<String, dynamic> json,

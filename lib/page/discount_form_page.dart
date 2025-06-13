@@ -451,10 +451,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   Widget build(BuildContext context) {
     super.build(context);
 
-    final padding = MediaQuery.of(context).padding;
-    final size = MediaQuery.of(context).size;
-    double tableHeight = size.height - padding.top - padding.bottom - 250;
-    tableHeight = tableHeight < 400 ? 400 : tableHeight;
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Padding(
@@ -981,13 +977,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                                       .discount1Percentage;
                                                 }
                                                 _discount2Controller.text =
-                                                    discount.discount2Nominal
+                                                    discount.discount2
                                                         .toString();
                                                 _discount3Controller.text =
-                                                    discount.discount3Nominal
+                                                    discount.discount3
                                                         .toString();
                                                 _discount4Controller.text =
-                                                    discount.discount4Nominal
+                                                    discount.discount4
                                                         .toString();
                                               });
                                             },
@@ -1018,13 +1014,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                                 discount.discount4 =
                                                     discount.discount2;
                                                 _discount2Controller.text =
-                                                    discount.discount2Nominal
+                                                    discount.discount2
                                                         .toString();
                                                 _discount3Controller.text =
-                                                    discount.discount3Nominal
+                                                    discount.discount3
                                                         .toString();
                                                 _discount4Controller.text =
-                                                    discount.discount4Nominal
+                                                    discount.discount4
                                                         .toString();
                                               });
                                             },
@@ -1051,13 +1047,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                                 discount.discount4 =
                                                     discount.discount2;
                                                 _discount2Controller.text =
-                                                    discount.discount2Nominal
+                                                    discount.discount2
                                                         .toString();
                                                 _discount3Controller.text =
-                                                    discount.discount3Nominal
+                                                    discount.discount3
                                                         .toString();
                                                 _discount4Controller.text =
-                                                    discount.discount4Nominal
+                                                    discount.discount4
                                                         .toString();
                                               });
                                             },
@@ -1220,7 +1216,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                   height: 10,
                                 ),
                                 SizedBox(
-                                  height: tableHeight,
+                                  height: bodyScreenHeight,
                                   child: CustomAsyncDataTable2<ItemReport>(
                                     columns: _columns,
                                     fetchData: (request) => fetchItem(request),

@@ -120,36 +120,6 @@ class _PaymentTypePageState extends State<PaymentTypePage>
     });
   }
 
-  void showConfirmDialog(
-      {required Function onSubmit, String message = 'Apakah Anda Yakin?'}) {
-    AlertDialog alert = AlertDialog(
-      title: const Text("Konfirmasi"),
-      content: Text(message),
-      actions: [
-        ElevatedButton(
-          child: const Text("Kembali"),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        ElevatedButton(
-          child: const Text("Submit"),
-          onPressed: () {
-            onSubmit();
-            Navigator.of(context).pop();
-          },
-        ),
-      ],
-    );
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
-  }
-
   void destroyRecord(PaymentType paymentType) {
     showConfirmDialog(
         message: 'Apakah anda yakin hapus ${paymentType.name}?',
@@ -248,7 +218,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
               ),
             ),
             SizedBox(
-              height: 600,
+              height: bodyScreenHeight,
               width: 825,
               child: CustomAsyncDataTable(
                 controller: _source,

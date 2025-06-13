@@ -1,6 +1,7 @@
 import 'package:fe_pos/model/payslip.dart';
 import 'package:fe_pos/page/payslip_form_page.dart';
 import 'package:fe_pos/page/generate_payslip_form_page.dart';
+import 'package:fe_pos/page/payslip_pay_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/file_saver.dart';
 import 'package:fe_pos/tool/flash.dart';
@@ -117,36 +118,6 @@ class _PayslipPageState extends State<PayslipPage>
     });
   }
 
-  void showConfirmDialog(
-      {required Function onSubmit, String message = 'Apakah Anda Yakin?'}) {
-    AlertDialog alert = AlertDialog(
-      title: const Text("Konfirmasi"),
-      content: Text(message),
-      actions: [
-        ElevatedButton(
-          child: const Text("Kembali"),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        ElevatedButton(
-          child: const Text("Submit"),
-          onPressed: () {
-            onSubmit();
-            Navigator.of(context).pop();
-          },
-        ),
-      ],
-    );
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
-  }
-
   void destroyRecord(Payslip payslip) {
     showConfirmDialog(
         message: 'Apakah anda yakin hapus ${payslip.id}?',
@@ -179,10 +150,56 @@ class _PayslipPageState extends State<PayslipPage>
     }
   }
 
-  void cancelPayslip(Payslip payslip) {}
+  void cancelPayslip(Payslip payslip) {
+    server.post('payslips/${payslip.id.toString()}/cancel').then((response) {
+      if (response.statusCode == 200) {
+        flash.show(
+            Text('Berhasil Cancel slip gaji'), ToastificationType.success);
+        _source.refreshDatasource();
+        return;
+      }
+      flash.show(Text('Gagal Cancel slip gaji'), ToastificationType.error);
+    }, onError: (error) {
+      defaultErrorResponse(error: error);
+    });
+  }
 
-  void confirmPayslip(Payslip payslip) {}
-  void payPayslip(Payslip payslip) {}
+  void confirmPayslip(Payslip payslip) {
+    server.post('payslips/${payslip.id.toString()}/confirm').then((response) {
+      if (response.statusCode == 200) {
+        flash.show(
+            Text('Berhasil Confirm slip gaji'), ToastificationType.success);
+        _source.refreshDatasource();
+        return;
+      }
+      flash.show(Text('Gagal Confirm slip gaji'), ToastificationType.error);
+    }, onError: (error) {
+      defaultErrorResponse(error: error);
+    });
+  }
+
+  void payPayslip() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Pembayaran Slip Gaji'),
+              IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: Icon(Icons.close)),
+            ],
+          ),
+          contentPadding: EdgeInsets.all(10),
+          content: PayslipPayPage(
+            isModal: true,
+          ),
+        );
+      },
+    );
+  }
 
   void actionSelected(void Function(Payslip) action) {
     for (Payslip payslip in _source.selected) {
@@ -212,6 +229,19 @@ class _PayslipPageState extends State<PayslipPage>
     }, onError: (error) => defaultErrorResponse(error: error));
   }
 
+  void sendEmail(Payslip payslip) {
+    server.get('payslips/${payslip.id.toString()}/send_email').then((response) {
+      if (response.statusCode == 200) {
+        flash.show(Text(response.data['message']), ToastificationType.info);
+      } else {
+        flash.showBanner(
+            title: 'gagal kirim email ${payslip.id.toString()}',
+            description: response.data['message'] ?? '',
+            messageType: ToastificationType.error);
+      }
+    }, onError: (error) => defaultErrorResponse(error: error));
+  }
+
   final menuController = MenuController();
 
   @override
@@ -230,6 +260,12 @@ class _PayslipPageState extends State<PayslipPage>
               },
               tooltip: 'Download Slip Gaji',
               icon: const Icon(Icons.download)),
+          IconButton(
+              onPressed: () {
+                sendEmail(payslip);
+              },
+              tooltip: 'Kirim email Slip Gaji',
+              icon: const Icon(Icons.send)),
           IconButton(
               onPressed: () {
                 destroyRecord(payslip);
@@ -302,7 +338,7 @@ class _PayslipPageState extends State<PayslipPage>
                             child: const Text('pay Slip Gaji'),
                             onPressed: () {
                               menuController.close();
-                              actionSelected(payPayslip);
+                              payPayslip();
                             },
                           ),
                           MenuItemButton(
@@ -319,11 +355,10 @@ class _PayslipPageState extends State<PayslipPage>
               ),
             ),
             SizedBox(
-              height: 600,
+              height: bodyScreenHeight,
               child: CustomAsyncDataTable(
                 controller: _source,
                 fixedLeftColumns: 2,
-                showCheckboxColumn: true,
               ),
             ),
           ],

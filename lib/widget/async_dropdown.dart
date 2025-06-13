@@ -3,6 +3,7 @@ library;
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sortable_wrap/flutter_sortable_wrap.dart';
 import 'package:provider/provider.dart';
@@ -52,11 +53,11 @@ class AsyncDropdownMultiple<T extends Object> extends StatefulWidget {
   final List<T> selecteds;
   final int selectedDisplayLimit;
   final FocusNode? focusNode;
-  final void Function(List<T>)? onChanged;
-  final void Function(List<T>?)? onSaved;
-  final String? Function(List<T>?)? validator;
-  final String Function(T) textOnSearch;
-  final String Function(T)? textOnSelected;
+  final void Function(List<T> models)? onChanged;
+  final void Function(List<T>? models)? onSaved;
+  final String? Function(List<T>? models)? validator;
+  final String Function(T model) textOnSearch;
+  final String Function(T model)? textOnSelected;
   final T Function(Map<String, dynamic>, {List included}) converter;
   final Widget? label;
   final bool Function(T, T)? compareValue;
@@ -68,7 +69,8 @@ class AsyncDropdownMultiple<T extends Object> extends StatefulWidget {
 }
 
 class _AsyncDropdownMultipleState<T extends Object>
-    extends State<AsyncDropdownMultiple<T>> with DefaultResponse {
+    extends State<AsyncDropdownMultiple<T>>
+    with DefaultResponse, PlatformChecker {
   final notFoundSign = const DropdownMenuEntry<String>(
       label: 'Data tidak Ditemukan', value: '', enabled: false);
   late final Server server;
@@ -195,20 +197,37 @@ class _AsyncDropdownMultipleState<T extends Object>
             })
               ..add(moreWidget));
       },
-      popupProps: PopupPropsMultiSelection.menu(
-        searchDelay: widget.delayedSearch,
-        searchFieldProps: TextFieldProps(
-          focusNode: _focusNode,
-        ),
-        onItemAdded: (selectedItems, addedItem) => _focusNode.requestFocus(),
-        showSearchBox: true,
-        showSelectedItems: true,
-        disableFilter: true,
-        infiniteScrollProps: InfiniteScrollProps(
-          loadingMoreBuilder: (p0, loadedItems) => Text('Loading data'),
-          loadProps: LoadProps(skip: 0, take: widget.recordLimit),
-        ),
-      ),
+      popupProps: isMobile()
+          ? PopupPropsMultiSelection.dialog(
+              searchDelay: widget.delayedSearch,
+              searchFieldProps: TextFieldProps(
+                focusNode: _focusNode,
+              ),
+              onItemAdded: (selectedItems, addedItem) =>
+                  _focusNode.requestFocus(),
+              showSearchBox: true,
+              showSelectedItems: true,
+              disableFilter: true,
+              infiniteScrollProps: InfiniteScrollProps(
+                loadingMoreBuilder: (p0, loadedItems) => Text('Loading data'),
+                loadProps: LoadProps(skip: 0, take: widget.recordLimit),
+              ),
+            )
+          : PopupPropsMultiSelection.menu(
+              searchDelay: widget.delayedSearch,
+              searchFieldProps: TextFieldProps(
+                focusNode: _focusNode,
+              ),
+              onItemAdded: (selectedItems, addedItem) =>
+                  _focusNode.requestFocus(),
+              showSearchBox: true,
+              showSelectedItems: true,
+              disableFilter: true,
+              infiniteScrollProps: InfiniteScrollProps(
+                loadingMoreBuilder: (p0, loadedItems) => Text('Loading data'),
+                loadProps: LoadProps(skip: 0, take: widget.recordLimit),
+              ),
+            ),
       decoratorProps: DropDownDecoratorProps(
           decoration: InputDecoration(
         label: widget.label,
@@ -276,11 +295,11 @@ class AsyncDropdown<T> extends StatefulWidget {
   final bool allowClear;
   final FocusNode? focusNode;
   final int selectedDisplayLimit;
-  final void Function(T?)? onChanged;
-  final void Function(T?)? onSaved;
-  final String? Function(T?)? validator;
-  final String Function(T) textOnSearch;
-  final String Function(T)? textOnSelected;
+  final void Function(T? model)? onChanged;
+  final void Function(T? model)? onSaved;
+  final String? Function(T? model)? validator;
+  final String Function(T model) textOnSearch;
+  final String Function(T model)? textOnSelected;
   final T Function(Map<String, dynamic>, {List included}) converter;
   final Widget? label;
   final bool Function(T, T)? compareValue;
@@ -291,7 +310,7 @@ class AsyncDropdown<T> extends StatefulWidget {
 }
 
 class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
-    with DefaultResponse {
+    with DefaultResponse, PlatformChecker {
   final notFoundSign = const DropdownMenuEntry<String>(
       label: 'Data tidak Ditemukan', value: '', enabled: false);
   late final Server server;
@@ -363,17 +382,29 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
         }
         return SelectableText(textFormat(selectedItem));
       },
-      popupProps: PopupProps.menu(
-        searchDelay: widget.delayedSearch,
-        searchFieldProps: TextFieldProps(focusNode: _focusNode),
-        onItemsLoaded: (selectedItems) => _focusNode.requestFocus(),
-        showSearchBox: true,
-        showSelectedItems: true,
-        disableFilter: true,
-        infiniteScrollProps: InfiniteScrollProps(
-          loadProps: LoadProps(skip: 0, take: widget.recordLimit),
-        ),
-      ),
+      popupProps: isMobile()
+          ? PopupProps.dialog(
+              searchDelay: widget.delayedSearch,
+              searchFieldProps: TextFieldProps(focusNode: _focusNode),
+              onItemsLoaded: (selectedItems) => _focusNode.requestFocus(),
+              showSearchBox: true,
+              showSelectedItems: true,
+              disableFilter: true,
+              infiniteScrollProps: InfiniteScrollProps(
+                loadProps: LoadProps(skip: 0, take: widget.recordLimit),
+              ),
+            )
+          : PopupProps.menu(
+              searchDelay: widget.delayedSearch,
+              searchFieldProps: TextFieldProps(focusNode: _focusNode),
+              onItemsLoaded: (selectedItems) => _focusNode.requestFocus(),
+              showSearchBox: true,
+              showSelectedItems: true,
+              disableFilter: true,
+              infiniteScrollProps: InfiniteScrollProps(
+                loadProps: LoadProps(skip: 0, take: widget.recordLimit),
+              ),
+            ),
       decoratorProps: DropDownDecoratorProps(
           decoration: InputDecoration(
         label: widget.label,

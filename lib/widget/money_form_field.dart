@@ -4,10 +4,13 @@ import 'package:fe_pos/tool/thousand_separator_formatter.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:flutter/material.dart';
 
+typedef FormCallback = void Function(Money? value);
+
 class MoneyFormField extends StatefulWidget {
   final Money? initialValue;
-  final void Function(Money? value)? onChanged;
-  final void Function(Money? value)? onFieldSubmitted;
+  final FormCallback? onChanged;
+  final FormCallback? onSaved;
+  final FormCallback? onFieldSubmitted;
   final String? Function(Money? value)? validator;
   final Widget? label;
   final TextEditingController? controller;
@@ -22,6 +25,7 @@ class MoneyFormField extends StatefulWidget {
     this.validator,
     this.focusNode,
     this.onFieldSubmitted,
+    this.onSaved,
     this.readOnly = false,
     this.enabled,
     this.controller,
@@ -73,6 +77,12 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
           ? (value) {
               final money = _valueFromInput(value);
               widget.onChanged!(money);
+            }
+          : null,
+      onSaved: widget.onSaved is Function
+          ? (value) {
+              final money = _valueFromInput(value ?? '');
+              widget.onSaved!(money);
             }
           : null,
       onFieldSubmitted: widget.onFieldSubmitted is Function

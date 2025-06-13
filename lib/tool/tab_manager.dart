@@ -47,6 +47,8 @@ class TabManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  Widget? get activeTab => controller.getTabByIndex(selectedIndex).content;
+
   void removeRightContent() {
     PlutoLayoutActions.hideAllTabView();
     debugPrint('click close');
@@ -58,13 +60,13 @@ class TabManager extends ChangeNotifier {
   TabManager({tabItemDetails = const []})
       : controller = TabbedViewController(tabItemDetails);
 
-  void addTab(String header, Widget tabView, {bool canRemove = true}) async {
+  void addTab(String header, Widget tabView, {bool allowClear = true}) async {
     int index = tabs.indexOf(header);
     if (index == -1) {
       controller.addTab(TabData(
           text: header,
           content: tabView,
-          closable: canRemove,
+          closable: allowClear,
           keepAlive: true));
 
       index = tabs.length - 1;

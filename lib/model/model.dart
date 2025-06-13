@@ -1,4 +1,5 @@
 import 'package:fe_pos/tool/custom_type.dart';
+import 'package:flutter/material.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
 abstract class Model {
@@ -12,9 +13,15 @@ abstract class Model {
 
   Map<String, dynamic> asMap() {
     Map<String, dynamic> value = toMap();
-    value['created_at'] = createdAt;
-    value['updated_at'] = updatedAt;
-    value['id'] = id;
+    if (createdAt != null) {
+      value['created_at'] = createdAt;
+    }
+    if (createdAt != null) {
+      value['updated_at'] = updatedAt;
+    }
+    if (id != null) {
+      value['id'] = id;
+    }
     value['_destroy'] = _flagDestroyed;
     return value;
   }
@@ -42,6 +49,8 @@ abstract class Model {
         json[key] = object.toString();
       } else if (object is String) {
         json[key] = object.trim();
+      } else if (object is TimeOfDay) {
+        json[key] = object.toJson();
       }
     });
     return json;

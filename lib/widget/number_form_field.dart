@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 class NumberFormField<T extends num> extends StatefulWidget {
   final T? initialValue;
   final void Function(T? value)? onChanged;
+  final void Function(T? value)? onSaved;
   final void Function(T? value)? onFieldSubmitted;
   final String? Function(T? value)? validator;
   final Widget? label;
@@ -19,6 +20,7 @@ class NumberFormField<T extends num> extends StatefulWidget {
       this.initialValue,
       this.onFieldSubmitted,
       this.onChanged,
+      this.onSaved,
       this.label,
       this.enabled,
       this.hintText,
@@ -80,6 +82,12 @@ class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
           ? (value) {
               final number = _valueFromInput(value);
               widget.onChanged!(number);
+            }
+          : null,
+      onSaved: widget.onSaved is Function
+          ? (value) {
+              final number = _valueFromInput(value ?? '');
+              widget.onSaved!(number);
             }
           : null,
       onFieldSubmitted: widget.onFieldSubmitted is Function

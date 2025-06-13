@@ -179,7 +179,7 @@ class _SalesTransactionReportWidgetState
                       child: Padding(
                         padding: const EdgeInsets.all(5),
                         child: Text(
-                          'Omzet Kotor',
+                          'Laba Kotor',
                           style: labelStyle,
                         ),
                       ),

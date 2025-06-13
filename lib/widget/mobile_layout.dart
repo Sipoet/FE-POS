@@ -1,4 +1,6 @@
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/model/user.dart';
+import 'package:fe_pos/page/form_page.dart';
 import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
@@ -29,19 +31,11 @@ class _MobileLayoutState extends State<MobileLayout>
         PlatformChecker,
         DefaultResponse {
   final List<String> disableClosedTabs = ['Home'];
-  String version = '';
-  @override
-  void initState() {
-    appVersion().then((appVersion) => setState(() {
-          version = appVersion;
-        }));
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
     final message =
-        'SERVER: ${widget.host} | USER: ${widget.userName} | VERSION: $version | Allegra POS';
+        'SERVER: ${widget.host} | USER: ${widget.userName} | Allegra POS';
     return Scaffold(
       appBar: AppBar(
         toolbarHeight:
@@ -52,6 +46,8 @@ class _MobileLayoutState extends State<MobileLayout>
           message: message,
           child: Text(
             message,
+            softWrap: true,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
@@ -100,9 +96,14 @@ class _LeftMenubarState extends State<LeftMenubar>
     with SessionState, DefaultResponse, AppUpdater, PlatformChecker {
   Map<String, bool> iconStatus = {};
   late final TabManager tabManager;
+  String version = '';
+
   @override
   void initState() {
     tabManager = context.read<TabManager>();
+    appVersion().then((appVersion) => setState(() {
+          version = appVersion;
+        }));
     super.initState();
   }
 
@@ -118,9 +119,25 @@ class _LeftMenubarState extends State<LeftMenubar>
         },
         title: const Text('Check Update App'),
       ));
+      menuWidgets.add(ListTile(
+        leading: const Icon(Icons.document_scanner),
+        onTap: () {
+          openAboutDialog(version);
+        },
+        title: const Text('About'),
+      ));
     }
     menuWidgets.add(ListTile(
-      leading: const Icon(Icons.power_settings_new),
+      leading: const Icon(Icons.person_2),
+      onTap: () {
+        final server = context.read<Server>();
+        var user = User(username: server.userName);
+        tabManager.addTab('Profilku', UserFormPage(user: user));
+      },
+      title: const Text('Profilku'),
+    ));
+    menuWidgets.add(ListTile(
+      leading: const Icon(Icons.logout),
       onTap: () {
         logout(server);
       },

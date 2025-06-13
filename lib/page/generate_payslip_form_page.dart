@@ -59,170 +59,173 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
           child: Center(
             child: Form(
               key: formKey,
-              child: Container(
-                constraints: BoxConstraints.loose(const Size.fromWidth(600)),
-                child: Column(
-                  children: [
-                    DateRangeFormField(
-                      focusNode: _focusNode,
-                      datePickerOnly: true,
-                      key: const ValueKey('generate_payslip-periode'),
-                      label: const Text(
-                        'Periode',
-                        style: labelStyle,
-                      ),
-                      onChanged: (range) {
-                        startDate = range!.start;
-                        endDate = range.end;
-                      },
-                      initialDateRange:
-                          DateTimeRange(start: startDate, end: endDate),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    AsyncDropdownMultiple<Employee>(
-                      key: const ValueKey('generate_payslip-karyawan'),
-                      attributeKey: 'name',
-                      label: const Text(
-                        'Nama Karyawan',
-                        style: labelStyle,
-                      ),
-                      onChanged: (values) {
-                        _employeeIds =
-                            values.map<String>((e) => e.id.toString()).toList();
-                      },
-                      textOnSearch: (employee) =>
-                          "${employee.code} - ${employee.name}",
-                      textOnSelected: (employee) => employee.code,
-                      converter: Employee.fromJson,
-                      request: (
-                          {int page = 1,
-                          int limit = 20,
-                          String searchText = '',
-                          required CancelToken cancelToken}) {
-                        return _server.get('employees',
-                            queryParam: {
-                              'field[employee]': 'code,name',
-                              'search_text': searchText,
-                              'page[limit]': '20',
-                            },
-                            cancelToken: cancelToken);
-                      },
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    ElevatedButton(
-                        onPressed: () {
-                          if (formKey.currentState!.validate()) {
-                            _generatePayslip();
-                          }
-                        },
-                        child: const Text('generate')),
-                    Visibility(
-                        visible: _source.rows.isNotEmpty,
-                        child: Column(
-                          children: [
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            const Text(
-                              'Hasil :',
+              child: Column(
+                children: [
+                  Container(
+                      constraints:
+                          BoxConstraints.loose(const Size.fromWidth(600)),
+                      child: Column(
+                        children: [
+                          DateRangeFormField(
+                            focusNode: _focusNode,
+                            datePickerOnly: true,
+                            key: const ValueKey('generate_payslip-periode'),
+                            label: const Text(
+                              'Periode',
                               style: labelStyle,
                             ),
-                            const SizedBox(
-                              height: 10,
+                            onChanged: (range) {
+                              startDate = range!.start;
+                              endDate = range.end;
+                            },
+                            initialDateRange:
+                                DateTimeRange(start: startDate, end: endDate),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          AsyncDropdownMultiple<Employee>(
+                            key: const ValueKey('generate_payslip-karyawan'),
+                            attributeKey: 'name',
+                            label: const Text(
+                              'Nama Karyawan',
+                              style: labelStyle,
                             ),
-                            PaginatedDataTable(
-                              showFirstLastButtons: true,
-                              rowsPerPage: 30,
-                              showCheckboxColumn: false,
-                              sortAscending: _source.isAscending,
-                              sortColumnIndex: _source.sortColumn,
-                              columns: [
-                                DataColumn(
-                                  label: const Text('Nama Karyawan',
-                                      style: labelStyle),
-                                  onSort: (columnIndex, isAscending) {
-                                    final num = isAscending ? 1 : -1;
-                                    _source.rows.sort((a, b) =>
-                                        a.employee.name
-                                            .compareTo(b.employee.name) *
-                                        num);
-                                    setState(() {
-                                      _source.sortColumn = columnIndex;
-                                      _source.isAscending = isAscending;
-                                      _source.setData(_source.rows);
-                                    });
+                            onChanged: (values) {
+                              _employeeIds = values
+                                  .map<String>((e) => e.id.toString())
+                                  .toList();
+                            },
+                            textOnSearch: (employee) =>
+                                "${employee.code} - ${employee.name}",
+                            textOnSelected: (employee) => employee.code,
+                            converter: Employee.fromJson,
+                            request: (
+                                {int page = 1,
+                                int limit = 20,
+                                String searchText = '',
+                                required CancelToken cancelToken}) {
+                              return _server.get('employees',
+                                  queryParam: {
+                                    'field[employee]': 'code,name',
+                                    'search_text': searchText,
+                                    'page[limit]': '20',
                                   },
-                                ),
-                                DataColumn(
-                                  label: const Text('Periode mulai',
-                                      style: labelStyle),
-                                  onSort: (columnIndex, isAscending) {
-                                    final num = isAscending ? 1 : -1;
-                                    _source.rows.sort((a, b) =>
-                                        a.startDate.compareTo(b.startDate) *
-                                        num);
-                                    setState(() {
-                                      _source.sortColumn = columnIndex;
-                                      _source.isAscending = isAscending;
-                                      _source.setData(_source.rows);
-                                    });
-                                  },
-                                ),
-                                DataColumn(
-                                  label: const Text('Periode Sampai',
-                                      style: labelStyle),
-                                  onSort: (columnIndex, isAscending) {
-                                    final num = isAscending ? 1 : -1;
-                                    _source.rows.sort((a, b) =>
-                                        a.endDate.compareTo(b.endDate) * num);
-                                    setState(() {
-                                      _source.sortColumn = columnIndex;
-                                      _source.isAscending = isAscending;
-                                      _source.setData(_source.rows);
-                                    });
-                                  },
-                                ),
-                                DataColumn(
-                                  label: const Text('Gaji Kotor',
-                                      style: labelStyle),
-                                  onSort: (columnIndex, isAscending) {
-                                    final num = isAscending ? 1 : -1;
-                                    _source.rows.sort((a, b) =>
-                                        a.grossSalary.compareTo(b.grossSalary) *
-                                        num);
-                                    setState(() {
-                                      _source.sortColumn = columnIndex;
-                                      _source.isAscending = isAscending;
-                                      _source.setData(_source.rows);
-                                    });
-                                  },
-                                ),
-                                DataColumn(
-                                  label: const Text('Gaji Bersih',
-                                      style: labelStyle),
-                                  onSort: (columnIndex, isAscending) {
-                                    final num = isAscending ? 1 : -1;
-                                    _source.rows.sort((a, b) =>
-                                        a.nettSalary.compareTo(b.nettSalary) *
-                                        num);
-                                    setState(() {
-                                      _source.sortColumn = columnIndex;
-                                      _source.isAscending = isAscending;
-                                      _source.setData(_source.rows);
-                                    });
-                                  },
-                                ),
-                              ],
-                              source: _source,
+                                  cancelToken: cancelToken);
+                            },
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          ElevatedButton(
+                              onPressed: () {
+                                if (formKey.currentState!.validate()) {
+                                  _generatePayslip();
+                                }
+                              },
+                              child: const Text('generate')),
+                        ],
+                      )),
+                  Visibility(
+                    visible: _source.rows.isNotEmpty,
+                    child: Column(
+                      children: [
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const Text(
+                          'Hasil :',
+                          style: labelStyle,
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        PaginatedDataTable(
+                          showFirstLastButtons: true,
+                          rowsPerPage: 30,
+                          showCheckboxColumn: false,
+                          sortAscending: _source.isAscending,
+                          sortColumnIndex: _source.sortColumn,
+                          columns: [
+                            DataColumn(
+                              label: const Text('Nama Karyawan',
+                                  style: labelStyle),
+                              onSort: (columnIndex, isAscending) {
+                                final num = isAscending ? 1 : -1;
+                                _source.rows.sort((a, b) =>
+                                    a.employee.name.compareTo(b.employee.name) *
+                                    num);
+                                setState(() {
+                                  _source.sortColumn = columnIndex;
+                                  _source.isAscending = isAscending;
+                                  _source.setData(_source.rows);
+                                });
+                              },
+                            ),
+                            DataColumn(
+                              label: const Text('Periode mulai',
+                                  style: labelStyle),
+                              onSort: (columnIndex, isAscending) {
+                                final num = isAscending ? 1 : -1;
+                                _source.rows.sort((a, b) =>
+                                    a.startDate.compareTo(b.startDate) * num);
+                                setState(() {
+                                  _source.sortColumn = columnIndex;
+                                  _source.isAscending = isAscending;
+                                  _source.setData(_source.rows);
+                                });
+                              },
+                            ),
+                            DataColumn(
+                              label: const Text('Periode Sampai',
+                                  style: labelStyle),
+                              onSort: (columnIndex, isAscending) {
+                                final num = isAscending ? 1 : -1;
+                                _source.rows.sort((a, b) =>
+                                    a.endDate.compareTo(b.endDate) * num);
+                                setState(() {
+                                  _source.sortColumn = columnIndex;
+                                  _source.isAscending = isAscending;
+                                  _source.setData(_source.rows);
+                                });
+                              },
+                            ),
+                            DataColumn(
+                              label:
+                                  const Text('Gaji Kotor', style: labelStyle),
+                              onSort: (columnIndex, isAscending) {
+                                final num = isAscending ? 1 : -1;
+                                _source.rows.sort((a, b) =>
+                                    a.grossSalary.compareTo(b.grossSalary) *
+                                    num);
+                                setState(() {
+                                  _source.sortColumn = columnIndex;
+                                  _source.isAscending = isAscending;
+                                  _source.setData(_source.rows);
+                                });
+                              },
+                            ),
+                            DataColumn(
+                              label:
+                                  const Text('Gaji Bersih', style: labelStyle),
+                              onSort: (columnIndex, isAscending) {
+                                final num = isAscending ? 1 : -1;
+                                _source.rows.sort((a, b) =>
+                                    a.nettSalary.compareTo(b.nettSalary) * num);
+                                setState(() {
+                                  _source.sortColumn = columnIndex;
+                                  _source.isAscending = isAscending;
+                                  _source.setData(_source.rows);
+                                });
+                              },
                             ),
                           ],
-                        )),
-                  ],
-                ),
+                          source: _source,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           )),

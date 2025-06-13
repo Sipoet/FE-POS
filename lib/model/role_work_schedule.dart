@@ -1,8 +1,9 @@
 import 'package:fe_pos/model/model.dart';
+import 'package:flutter/material.dart' show TimeOfDay;
 
 class RoleWorkSchedule extends Model {
-  TimeDay beginWork;
-  TimeDay endWork;
+  TimeOfDay beginWork;
+  TimeOfDay endWork;
   int shift;
   int dayOfWeek;
   int level;
@@ -11,8 +12,8 @@ class RoleWorkSchedule extends Model {
   String groupName;
   bool isFlexible;
   RoleWorkSchedule(
-      {TimeDay? beginWork,
-      TimeDay? endWork,
+      {TimeOfDay? beginWork,
+      TimeOfDay? endWork,
       Date? beginActiveAt,
       Date? endActiveAt,
       this.groupName = '',

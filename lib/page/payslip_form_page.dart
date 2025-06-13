@@ -8,10 +8,10 @@ import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_form_field.dart';
+import 'package:fe_pos/widget/money_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/payslip.dart';
-import 'package:fe_pos/tool/thousand_separator_formatter.dart';
-import 'package:flutter/services.dart';
+
 import 'package:provider/provider.dart';
 
 class PayslipFormPage extends StatefulWidget {
@@ -172,6 +172,9 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                         }
                       },
                       initialValue: payslip.startDate),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   DateFormField(
                       label: const Text('Tanggal Akhir'),
                       onChanged: (value) {
@@ -180,6 +183,9 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                         }
                       },
                       initialValue: payslip.endDate),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   TextFormField(
                     decoration: const InputDecoration(
                         labelText: 'Paid Time Off',
@@ -426,20 +432,12 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                                         "${payslipLine.id}-decription"),
                                   ),
                                 )),
-                                DataCell(TextFormField(
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                    ThousandSeparatorFormatter(),
-                                  ],
-                                  decoration: const InputDecoration(
-                                      border: OutlineInputBorder()),
-                                  initialValue: payslipLine.amount.toString(),
-                                  keyboardType: TextInputType.number,
+                                DataCell(MoneyFormField(
+                                  initialValue: payslipLine.amount,
                                   onChanged: (value) => payslipLine.amount =
-                                      double.parse(
-                                          value.replaceAll(RegExp(r','), '')),
+                                      value ?? payslipLine.amount,
                                   onSaved: (value) => payslipLine.amount =
-                                      double.parse(value ?? ''),
+                                      value ?? payslipLine.amount,
                                   key: ValueKey("${payslipLine.id}-amount"),
                                 )),
                                 DataCell(Row(
@@ -477,7 +475,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                         onPressed: () => setState(() {
                               payslip.lines.add(PayslipLine(
                                 group: PayrollGroup.earning,
-                                amount: 0,
+                                amount: Money(0),
                               ));
                             }),
                         child: const Text('Tambah')),

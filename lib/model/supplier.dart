@@ -39,11 +39,6 @@ class Supplier extends Model {
       };
 
   @override
-  String toString() {
-    return name;
-  }
-
-  @override
   factory Supplier.fromJson(Map<String, dynamic> json,
       {Supplier? model, List included = const []}) {
     var attributes = json['attributes'];

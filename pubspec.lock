@@ -29,10 +29,10 @@ packages:
     dependency: "direct main"
     description:
       name: board_datetime_picker
-      sha256: e1c03d1f3d115dda2f53bdd6f540d668cf1345125e6dd7363d5e383a1523eb41
+      sha256: "6808b7f6ba04b02063f4f4396ad73bebd99d48ff0f894b31b14977c9f42676b9"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.6"
+    version: "2.5.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -125,10 +125,10 @@ packages:
     dependency: "direct main"
     description:
       name: data_table_2
-      sha256: "3b4ffb66ab20f238bf5f89af37e3bedfc9bef456c1fe24a79487ec1864574c84"
+      sha256: b8dd157e4efe5f2beef092c9952a254b2192cf76a26ad1c6aa8b06c8b9d665da
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.16"
+    version: "2.6.0"
   device_info_plus:
     dependency: "direct main"
     description:
@@ -1060,4 +1060,4 @@ packages:
     version: "3.1.2"
 sdks:
   dart: ">=3.7.0 <4.0.0"
-  flutter: ">=3.24.0"
+  flutter: ">=3.27.0"

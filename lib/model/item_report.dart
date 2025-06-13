@@ -22,7 +22,7 @@ class ItemReport extends Model {
   Money grossProfit;
   int itemOut;
   bool isConsignment;
-  DateTime? recentPurchaseDate;
+  DateTime? lastPurchaseDate;
   Item item;
   Supplier supplier;
   Brand brand;
@@ -64,7 +64,7 @@ class ItemReport extends Model {
       this.stockLeft = 0,
       this.grossProfit = const Money(0),
       this.isConsignment = false,
-      this.recentPurchaseDate})
+      this.lastPurchaseDate})
       : item = item ?? Item(id: itemCode),
         supplier = supplier ?? Supplier(id: supplierCode),
         itemType = itemType ?? ItemType(id: itemTypeName),
@@ -105,8 +105,8 @@ class ItemReport extends Model {
         Money.tryParse(attributes['purchase_total']) ?? const Money(0);
     model.grossProfit =
         Money.tryParse(attributes['gross_profit']) ?? const Money(0);
-    model.recentPurchaseDate =
-        DateTime.tryParse(attributes['recent_purchase_date'] ?? '');
+    model.lastPurchaseDate =
+        DateTime.tryParse(attributes['last_purchase_date'] ?? '');
     model.item = Model.findRelationData<Item>(
             relation: json['relationships']?['item'],
             included: included,
@@ -162,7 +162,7 @@ class ItemReport extends Model {
         'sales_total': salesTotal,
         'number_of_purchase': numberOfPurchase,
         'purchase_total': purchaseTotal,
-        'recent_purchase_date': recentPurchaseDate,
+        'last_purchase_date': lastPurchaseDate,
         'item_out': itemOut,
         'gross_profit': grossProfit,
         'stock_left': stockLeft,

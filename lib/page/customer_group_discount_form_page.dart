@@ -204,6 +204,9 @@ class _CustomerGroupDiscountFormPageState
                         lastDate: DateTime.now().add(const Duration(days: 31)),
                         initialValue: customerGroupDiscount.startActiveDate),
                   ),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   Visibility(
                     visible: setting.canShow(
                         'customerGroupDiscount', 'end_active_date'),
@@ -228,7 +231,7 @@ class _CustomerGroupDiscountFormPageState
                           }
                           return null;
                         },
-                        canRemove: true,
+                        allowClear: true,
                         onChanged: (newValue) {
                           if (newValue == null) {
                             return;

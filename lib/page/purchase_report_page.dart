@@ -136,10 +136,7 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final padding = MediaQuery.of(context).padding;
-    final size = MediaQuery.of(context).size;
-    double tableHeight = size.height - padding.top - padding.bottom - 250;
-    tableHeight = tableHeight < 400 ? 400 : tableHeight;
+
     return VerticalBodyScroll(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,7 +158,7 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
           const SizedBox(height: 10),
           Visibility(visible: _isDisplayTable, child: const Divider()),
           SizedBox(
-            height: tableHeight,
+            height: bodyScreenHeight,
             child: CustomAsyncDataTable(
               controller: _source,
               fixedLeftColumns: 1,

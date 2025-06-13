@@ -42,4 +42,41 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
       return valueWhenError;
     }
   }
+
+  double get bodyScreenHeight {
+    final padding = MediaQuery.of(context).padding;
+    final size = MediaQuery.of(context).size;
+    double tableHeight = size.height - padding.top - padding.bottom - 250;
+    return tableHeight < 400 ? 400.0 : tableHeight;
+  }
+
+  void showConfirmDialog(
+      {required Function onSubmit, String message = 'Apakah Anda Yakin?'}) {
+    AlertDialog alert = AlertDialog(
+      title: const Text("Konfirmasi"),
+      content: Text(message),
+      actions: [
+        ElevatedButton(
+          child: const Text("Kembali"),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        ElevatedButton(
+          child: const Text("Submit"),
+          onPressed: () {
+            onSubmit();
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
+    );
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
 }

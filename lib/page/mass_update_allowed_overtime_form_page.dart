@@ -136,7 +136,7 @@ class _MassUpdateAllowedOvertimeFormPageState
                           child: const Text('submit')),
                     ),
                     SizedBox(
-                        height: 600,
+                        height: bodyScreenHeight,
                         child: SyncDataTable<EmployeeAttendance>(
                           columns: setting.tableColumn('employeeAttendance'),
                           onLoaded: (stateManager) => _source = stateManager,

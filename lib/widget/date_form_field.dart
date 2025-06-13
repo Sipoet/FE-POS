@@ -8,10 +8,9 @@ class DateFormField extends StatefulWidget {
   final String? helpText;
   final DateTime? firstDate;
   final DateTime? lastDate;
-  final bool canRemove;
+  final bool allowClear;
   final bool datePickerOnly;
   final FocusNode? focusNode;
-  final double removeButtonSize;
   final void Function(DateTime?)? onSaved;
   final void Function(DateTime? date)? onChanged;
   final String? Function(DateTime?)? validator;
@@ -26,9 +25,8 @@ class DateFormField extends StatefulWidget {
       this.focusNode,
       this.onChanged,
       this.validator,
-      this.removeButtonSize = 30,
-      this.canRemove = false,
-      required this.initialValue});
+      this.allowClear = false,
+      this.initialValue});
 
   @override
   State<DateFormField> createState() => _DateFormFieldState();
@@ -47,30 +45,30 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
   }
 
   final minDate = DateTime(1900);
-  final maxDate = DateTime(99999);
+  final maxDate = DateTime(9999);
 
   void _openDialog() {
     showBoardDateTimePicker(
-            context: context,
-            options: BoardDateTimeOptions(
-                pickerFormat: PickerFormat.dmy,
-                startDayOfWeek: DateTime.monday,
-                boardTitle: widget.helpText,
-                languages: const BoardPickerLanguages(
-                    today: 'Hari ini',
-                    tomorrow: 'Besok',
-                    now: 'Sekarang',
-                    locale: 'id')),
-            initialDate: widget.initialValue,
-            minimumDate: minDate,
-            maximumDate: maxDate,
-            pickerType: widget.datePickerOnly
-                ? DateTimePickerType.date
-                : DateTimePickerType.datetime,
-            breakpoint: 1000)
-        .then((date) {
+      context: context,
+      showDragHandle: false,
+      enableDrag: false,
+      options: BoardDateTimeOptions(
+          pickerFormat: PickerFormat.dmy,
+          startDayOfWeek: DateTime.monday,
+          boardTitle: widget.helpText,
+          useAmpm: false,
+          languages: const BoardPickerLanguages(
+              today: 'Hari ini',
+              tomorrow: 'Besok',
+              now: 'Sekarang',
+              locale: 'id')),
+      initialDate: widget.initialValue,
+      pickerType: widget.datePickerOnly
+          ? DateTimePickerType.date
+          : DateTimePickerType.datetime,
+    ).then((date) {
       setState(() {
-        if (date == null && !widget.canRemove) {
+        if (date == null && !widget.allowClear) {
           return;
         }
         _datetime = date;
@@ -110,23 +108,24 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
         widget.onSaved!(_datetime);
       },
       decoration: InputDecoration(
-          contentPadding: const EdgeInsets.all(5),
-          suffixIcon: widget.canRemove && _datetime != null
-              ? IconButton(
-                  iconSize: widget.removeButtonSize,
-                  onPressed: () {
-                    setState(() {
-                      _datetime = null;
-                      writeToTextField();
-                    });
-                    if (widget.onChanged != null) {
-                      widget.onChanged!(_datetime);
-                    }
-                  },
-                  icon: const Icon(Icons.close))
-              : null,
-          label: widget.label,
-          border: const OutlineInputBorder()),
+        label: widget.label,
+        contentPadding: EdgeInsets.all(5),
+        border: const OutlineInputBorder(),
+        suffix: widget.allowClear
+            ? IconButton(
+                iconSize: 20,
+                onPressed: () {
+                  setState(() {
+                    _datetime = null;
+                    writeToTextField();
+                  });
+                  if (widget.onChanged != null) {
+                    widget.onChanged!(_datetime);
+                  }
+                },
+                icon: const Icon(Icons.close))
+            : null,
+      ),
       controller: _controller,
     );
   }

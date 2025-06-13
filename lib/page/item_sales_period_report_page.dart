@@ -123,10 +123,6 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final padding = MediaQuery.of(context).padding;
-    double tableHeight =
-        MediaQuery.of(context).size.height - padding.top - padding.bottom - 250;
-    tableHeight = tableHeight < 400 ? 400 : tableHeight;
 
     return VerticalBodyScroll(
       child: Column(
@@ -238,7 +234,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
           ),
           const Divider(),
           SizedBox(
-            height: tableHeight,
+            height: bodyScreenHeight,
             child: SyncDataTable<ItemSalesPeriodReport>(
               onLoaded: (stateManager) => _source = stateManager,
               columns: _setting.tableColumn('itemSalesPeriodReport'),

@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:board_datetime_picker/board_datetime_picker.dart';
+import 'package:fe_pos/tool/custom_type.dart';
 
 class DateRangeFormField extends StatefulWidget {
   const DateRangeFormField({
@@ -11,11 +12,13 @@ class DateRangeFormField extends StatefulWidget {
     this.enabled = true,
     this.initialDateRange,
     this.datePickerOnly = false,
+    this.validator,
+    this.onSaved,
     this.onChanged,
     this.helpText,
     this.controller,
     this.focusNode,
-    this.canRemove = false,
+    this.allowClear = false,
   });
   final Widget? label;
   final Widget? icon;
@@ -23,10 +26,12 @@ class DateRangeFormField extends StatefulWidget {
   final TextStyle? textStyle;
   final DateTimeRange? initialDateRange;
   final bool enabled;
-  final bool canRemove;
+  final bool allowClear;
   final bool datePickerOnly;
   final FocusNode? focusNode;
   final Function(DateTimeRange? range)? onChanged;
+  final Function(DateTimeRange? range)? onSaved;
+  final String? Function(DateTimeRange? range)? validator;
   final PickerController? controller;
   @override
   State<DateRangeFormField> createState() => _DateRangeFormFieldState();
@@ -55,7 +60,7 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
     if (widget.datePickerOnly) {
       return "${formater.format(_dateRange!.start)} - ${formater.format(_dateRange!.end)}";
     }
-    if (_isSameDay(_dateRange!.start, _dateRange!.end)) {
+    if (_dateRange!.isSameDay) {
       var hourFormat = DateFormat('HH:mm');
       return "${formater.format(_dateRange!.start)} ${hourFormat.format(_dateRange!.start)} - ${hourFormat.format(_dateRange!.end)}";
     } else {
@@ -64,13 +69,7 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
     }
   }
 
-  bool _isSameDay(DateTime start, DateTime end) {
-    return start.day == end.day &&
-        start.month == end.month &&
-        start.year == end.year;
-  }
-
-  final maxDate = DateTime(99999, 12, 31, 23, 59, 59, 59);
+  final maxDate = DateTime(9999, 12, 31, 23, 59, 59, 59);
   final minDate = DateTime(1900);
   void _openDialog() {
     final colorScheme = Theme.of(context).colorScheme;
@@ -83,17 +82,17 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
 
   void showNativePicker(ColorScheme colorScheme) {
     showDateRangePicker(
-            context: context,
-            locale: const Locale('id', 'ID'),
-            fieldStartHintText: 'Mulai',
-            fieldEndHintText: 'Akhir',
-            initialDateRange: _dateRange,
-            currentDate: DateTime.now(),
-            firstDate: DateTime(1900),
-            useRootNavigator: false,
-            initialEntryMode: DatePickerEntryMode.calendarOnly,
-            lastDate: maxDate)
-        .then(
+      context: context,
+      locale: const Locale('id', 'ID'),
+      fieldStartHintText: 'Mulai',
+      fieldEndHintText: 'Akhir',
+      initialDateRange: _dateRange,
+      currentDate: DateTime.now(),
+      firstDate: minDate,
+      lastDate: maxDate,
+      useRootNavigator: false,
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
+    ).then(
       (pickedDateRange) {
         if (pickedDateRange == null) {
           return;
@@ -115,9 +114,11 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
     showBoardDateTimeMultiPicker(
       context: context,
       options: BoardDateTimeOptions(
+          withSecond: false,
           pickerFormat: PickerFormat.dmy,
           startDayOfWeek: DateTime.monday,
           boardTitle: widget.helpText,
+          useAmpm: false,
           languages: const BoardPickerLanguages(
               today: 'Hari ini',
               tomorrow: 'Besok',
@@ -125,12 +126,11 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
               locale: 'id')),
       startDate: _dateRange?.start,
       endDate: _dateRange?.end,
-      minimumDate: minDate,
-      maximumDate: maxDate,
+      showDragHandle: false,
+      enableDrag: false,
       pickerType: widget.datePickerOnly
           ? DateTimePickerType.date
           : DateTimePickerType.datetime,
-      breakpoint: 1000,
     ).then((dateTimeRange) {
       setState(() {
         if (dateTimeRange != null) {
@@ -149,48 +149,49 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Stack(children: [
-      TextFormField(
-        focusNode: widget.focusNode,
-        readOnly: true,
-        style: widget.textStyle,
-        decoration: InputDecoration(
-            contentPadding: const EdgeInsets.all(12),
-            focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(
-                    width: 2,
-                    color: widget.enabled ? colorScheme.outline : Colors.grey)),
-            border: OutlineInputBorder(
-                borderSide: BorderSide(
-                    width: 2,
-                    color: widget.enabled ? colorScheme.outline : Colors.grey)),
-            label: widget.label,
-            icon: widget.icon),
-        controller: _controller,
-        onTap: () {
-          if (!widget.enabled) return;
-          _openDialog();
-        },
-      ),
-      Visibility(
-          visible: widget.canRemove && _dateRange != null,
-          child: Positioned(
-            top: 1,
-            right: 5,
-            child: IconButton(
-                iconSize: 30,
-                onPressed: () {
-                  setState(() {
-                    _controller.text = '';
-                    _dateRange = null;
-                  });
-                  if (widget.onChanged != null) {
-                    widget.onChanged!(_dateRange);
-                  }
-                },
-                icon: const Icon(Icons.close)),
-          )),
-    ]);
+    return TextFormField(
+      focusNode: widget.focusNode,
+      readOnly: true,
+      style: widget.textStyle,
+      onSaved: widget.onSaved == null
+          ? null
+          : (value) => widget.onSaved!(_dateRange),
+      validator: widget.validator == null
+          ? null
+          : (value) => widget.validator!(_dateRange),
+      decoration: InputDecoration(
+          contentPadding: const EdgeInsets.all(5),
+          suffix: widget.allowClear
+              ? IconButton(
+                  iconSize: 24,
+                  onPressed: () {
+                    setState(() {
+                      _controller.text = '';
+                      _dateRange = null;
+                    });
+                    if (widget.onChanged != null) {
+                      widget.onChanged!(_dateRange);
+                    }
+                  },
+                  icon: const Icon(Icons.close),
+                )
+              : null,
+          focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                  width: 1,
+                  color: widget.enabled ? colorScheme.outline : Colors.grey)),
+          border: OutlineInputBorder(
+              borderSide: BorderSide(
+                  width: 1,
+                  color: widget.enabled ? colorScheme.outline : Colors.grey)),
+          label: widget.label,
+          icon: widget.icon),
+      controller: _controller,
+      onTap: () {
+        if (!widget.enabled) return;
+        _openDialog();
+      },
+    );
   }
 }
 

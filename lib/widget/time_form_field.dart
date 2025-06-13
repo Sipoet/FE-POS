@@ -2,19 +2,21 @@ import 'package:fe_pos/tool/custom_type.dart';
 import 'package:flutter/material.dart';
 
 class TimeFormField extends StatefulWidget {
-  final TimeDay? initialValue;
+  final TimeOfDay? initialValue;
   final Widget? label;
-  final TimeDay? firstDate;
-  final TimeDay? lastDate;
-  final bool canRemove;
+  final TimeOfDay? firstDate;
+  final TimeOfDay? lastDate;
+  final bool allowClear;
   final FocusNode? focusNode;
   final String? helpText;
-  final void Function(TimeDay?)? onSaved;
-  final void Function(TimeDay? date)? onChanged;
-  final String? Function(TimeDay?)? validator;
+  final TextEditingController? controller;
+  final void Function(TimeOfDay?)? onSaved;
+  final void Function(TimeOfDay? date)? onChanged;
+  final String? Function(TimeOfDay?)? validator;
   const TimeFormField(
       {super.key,
       this.label,
+      this.controller,
       this.firstDate,
       this.lastDate,
       this.onSaved,
@@ -22,8 +24,8 @@ class TimeFormField extends StatefulWidget {
       this.focusNode,
       this.onChanged,
       this.validator,
-      this.canRemove = false,
-      required this.initialValue});
+      this.allowClear = false,
+      this.initialValue});
 
   @override
   State<TimeFormField> createState() => _TimeFormFieldState();
@@ -34,21 +36,33 @@ class _TimeFormFieldState extends State<TimeFormField> {
   // In this example, the restoration ID for the mixin is passed in through
   // the [StatefulWidget]'s constructor.
 
-  TimeDay? _date;
+  TimeOfDay? _date;
 
   final _controller = TextEditingController();
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
-    _date = widget.initialValue;
-    _controller.text = widget.initialValue == null
-        ? ''
-        : (widget.initialValue ?? TimeDay.now()).format24Hour();
+    widget.controller?.addListener(() {
+      _controller.text = widget.controller!.text;
+      _date = TimeDay.parse(widget.controller!.text);
+    });
+    if (widget.initialValue != null) {
+      _date = widget.initialValue;
+    } else if (widget.controller != null) {
+      _date = TimeDay.parse(widget.controller!.text);
+    }
+    _controller.text =
+        _date == null ? '' : (_date ?? TimeOfDay.now()).format24Hour();
 
     super.initState();
   }
 
-  void _selectDate(TimeDay? newSelectedDate) {
+  void _selectDate(TimeOfDay? newSelectedDate) {
     if (widget.onChanged != null) {
       widget.onChanged!(newSelectedDate);
     }
@@ -70,53 +84,50 @@ class _TimeFormFieldState extends State<TimeFormField> {
       cancelText: 'Batal',
       confirmText: 'OK',
     ).then((value) {
-      final time = TimeDay.fromTimeOfDay(value);
+      final time = value;
       _selectDate(time);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Stack(children: [
-          TextFormField(
-            onTap: () {
-              _showDialog();
-            },
-            focusNode: widget.focusNode,
-            readOnly: true,
-            validator: (value) {
-              if (widget.validator == null) {
-                return null;
-              }
-              return widget.validator!(_date);
-            },
-            onSaved: (newValue) {
+    return TextFormField(
+      onTap: () {
+        _showDialog();
+      },
+      focusNode: widget.focusNode,
+      readOnly: true,
+      validator: (value) {
+        if (widget.validator == null) {
+          return null;
+        }
+        return widget.validator!(_date);
+      },
+      onSaved: widget.onSaved == null
+          ? null
+          : (newValue) {
               widget.onSaved!(_date);
             },
-            decoration: InputDecoration(
-                label: widget.label, border: const OutlineInputBorder()),
-            controller: _controller,
-          ),
-          Visibility(
-              visible: widget.canRemove && _date != null,
-              child: Positioned(
-                top: 1,
-                right: 5,
-                child: IconButton(
-                    iconSize: 30,
-                    onPressed: () {
-                      setState(() {
-                        _controller.text = '';
-                        _date = null;
-                      });
-                      if (widget.onChanged != null) {
-                        widget.onChanged!(_date);
-                      }
-                    },
-                    icon: const Icon(Icons.close)),
-              )),
-        ]));
+      decoration: InputDecoration(
+        label: widget.label,
+        contentPadding: const EdgeInsets.all(5),
+        border: const OutlineInputBorder(),
+        suffix: widget.allowClear && _date != null
+            ? IconButton(
+                iconSize: 30,
+                onPressed: () {
+                  setState(() {
+                    _controller.text = '';
+                    _date = null;
+                  });
+                  if (widget.onChanged != null) {
+                    widget.onChanged!(_date);
+                  }
+                },
+                icon: const Icon(Icons.close))
+            : null,
+      ),
+      controller: _controller,
+    );
   }
 }

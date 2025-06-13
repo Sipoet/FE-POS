@@ -1,8 +1,9 @@
+import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:intl/intl.dart';
 import 'package:fe_pos/tool/custom_type.dart';
 
 mixin TextFormatter {
-  String timeFormat(TimeDay data) {
+  String timeFormat(TimeOfDay data) {
     return data.format24Hour();
   }
 

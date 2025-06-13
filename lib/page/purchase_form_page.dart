@@ -60,7 +60,8 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
 
     _server.get('purchases/show', queryParam: {
       'code': Uri.encodeComponent(purchase.id),
-      'include': 'purchase_items,purchase_items.item,supplier'
+      'include':
+          'purchase_items,purchase_items.item,supplier,purchase_items.item_report'
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
@@ -318,6 +319,23 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                         ),
                       ),
                       Visibility(
+                        visible: setting.canShow('ipos::Purchase', 'note_date'),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                labelText: setting.columnName(
+                                    'ipos::Purchase', 'note_date'),
+                                labelStyle: labelStyle,
+                                border: const OutlineInputBorder()),
+                            readOnly: true,
+                            initialValue: purchase.noteDate == null
+                                ? null
+                                : dateTimeFormat(purchase.noteDate as DateTime),
+                          ),
+                        ),
+                      ),
+                      Visibility(
                         visible: setting.canShow('ipos::Purchase', 'tanggal'),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
@@ -332,7 +350,6 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                           ),
                         ),
                       ),
-
                       Visibility(
                         visible: setting.canShow('ipos::Purchase', 'totalitem'),
                         child: Padding(
@@ -570,7 +587,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                       child: SubmenuButton(
                           menuChildren: [
                             MenuItemButton(
-                              child: const Text('Ganti Harga'),
+                              child: const Text('Ganti Harga Jual'),
                               onPressed: () {
                                 openUpdatePriceForm();
                               },
@@ -596,6 +613,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                   height: 500,
                   child: SyncDataTable<PurchaseItem>(
                     columns: _columns,
+                    showSummary: true,
                     onLoaded: (stateManager) => _source = stateManager,
                   ),
                 ),

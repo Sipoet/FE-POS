@@ -9,12 +9,6 @@ export 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 
-extension ComparingTimeOfDay on TimeOfDay {
-  int compareTo(TimeOfDay val2) {
-    return toString().compareTo(val2.toString());
-  }
-}
-
 enum TableColumnType {
   number,
   percentage,
@@ -140,19 +134,22 @@ mixin TableDecorator<T extends Model>
           alignment: Alignment.topLeft,
           child: Text(
             val,
+            textAlign: TextAlign.left,
             overflow: TextOverflow.ellipsis,
           ),
         );
       case TableColumnType.money:
       case TableColumnType.number:
-        return Align(
-            alignment: Alignment.topRight,
-            child: Text(
-              val,
-              overflow: TextOverflow.ellipsis,
-            ));
+        return Text(
+          val,
+          textAlign: TextAlign.right,
+          overflow: TextOverflow.ellipsis,
+        );
       default:
-        return Align(alignment: Alignment.topLeft, child: Text(val));
+        return Text(
+          val,
+          textAlign: TextAlign.left,
+        );
     }
   }
 
@@ -165,7 +162,7 @@ mixin TableDecorator<T extends Model>
         return dateFormat(cell);
       case const (DateTime):
         return dateTimeLocalFormat(cell);
-      case const (TimeDay):
+      case const (TimeOfDay):
         return timeFormat(cell);
       case const (Money):
         return moneyFormat(cell);
@@ -190,12 +187,10 @@ mixin TableDecorator<T extends Model>
     final cell = jsonData[column.name];
     if (column.type.isModel() && cell is Model) {
       return DataCell(
-          Align(
-            alignment: Alignment.topLeft,
-            child: Text(
-              cell.modelValue,
-              overflow: TextOverflow.ellipsis,
-            ),
+          Text(
+            cell.modelValue,
+            textAlign: TextAlign.left,
+            overflow: TextOverflow.ellipsis,
           ),
           onTap: () => _openModelDetailPage(tableColumn: column, value: cell));
     }
@@ -239,7 +234,7 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
       case TableColumnType.date:
         return PlutoColumnType.date(format: 'dd/MM/yyyy');
       case TableColumnType.datetime:
-        return PlutoColumnType.date(format: 'dd/MM/yyyy HH::mm');
+        return PlutoColumnType.date(format: 'dd/MM/yyyy HH:mm');
       case TableColumnType.timeOnly:
         return PlutoColumnType.time();
       case TableColumnType.money:
@@ -271,7 +266,7 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
       {required Model model,
       required List<TableColumn> tableColumns,
       bool isChecked = false}) {
-    final rowMap = model.toMap();
+    final rowMap = model.asMap();
     Map<String, PlutoCell> cells = {};
     for (final tableColumn in tableColumns) {
       var value = rowMap[tableColumn.name];
@@ -336,29 +331,40 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
                   tableColumn: tableColumn,
                   value: value,
                 ),
-                child: Align(
-                    alignment: Alignment.topLeft,
-                    child: Text(value.modelValue)),
+                child: Text(
+                  value.modelValue,
+                  textAlign: TextAlign.left,
+                ),
               );
             }
 
             if (value is Money || value is Percentage) {
-              return Align(
-                  alignment: Alignment.topRight,
-                  child: SelectableText(value.format()));
+              return SelectableText(
+                value.format(),
+                textAlign: TextAlign.right,
+              );
             } else if (value is double && tableColumn.type.isMoney()) {
-              return Align(
-                  alignment: Alignment.topRight,
-                  child: SelectableText(moneyFormat(value)));
+              return SelectableText(
+                moneyFormat(value),
+                textAlign: TextAlign.right,
+              );
             } else if (value is num) {
-              return Align(
-                  alignment: Alignment.topRight,
-                  child: SelectableText(numberFormat(value)));
+              return SelectableText(
+                numberFormat(value),
+                textAlign: TextAlign.right,
+              );
+            } else if (value is TimeOfDay) {
+              return SelectableText(value.format24Hour(),
+                  textAlign: TextAlign.left);
+            } else if (value is Date) {
+              return SelectableText(value.format(), textAlign: TextAlign.left);
+            } else if (value is DateTime) {
+              return SelectableText(value.format(), textAlign: TextAlign.left);
             }
-
-            return Align(
-                alignment: Alignment.topLeft,
-                child: SelectableText(value.toString()));
+            return SelectableText(
+              value.toString(),
+              textAlign: TextAlign.left,
+            );
           },
       footerRenderer: showFooter
           ? (rendererContext) {
