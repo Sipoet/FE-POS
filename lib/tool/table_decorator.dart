@@ -5,6 +5,7 @@ import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 export 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:pluto_grid/pluto_grid.dart';
@@ -341,16 +342,71 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
             if (value is Money || value is Percentage) {
               return SelectableText(
                 value.format(),
+                contextMenuBuilder:
+                    (BuildContext context, EditableTextState state) {
+                  final List<ContextMenuButtonItem> buttonItems =
+                      state.contextMenuButtonItems;
+                  buttonItems.add(
+                    ContextMenuButtonItem(
+                      label: 'Salin Nilai Saja',
+                      onPressed: () {
+                        final data =
+                            ClipboardData(text: value.value.toString());
+                        Clipboard.setData(data);
+                        state.connectionClosed();
+                      },
+                    ),
+                  );
+                  return AdaptiveTextSelectionToolbar.buttonItems(
+                      anchors: state.contextMenuAnchors,
+                      buttonItems: buttonItems);
+                },
                 textAlign: TextAlign.right,
               );
             } else if (value is double && tableColumn.type.isMoney()) {
               return SelectableText(
                 moneyFormat(value),
+                contextMenuBuilder:
+                    (BuildContext context, EditableTextState state) {
+                  final List<ContextMenuButtonItem> buttonItems =
+                      state.contextMenuButtonItems;
+                  buttonItems.add(
+                    ContextMenuButtonItem(
+                      label: 'Salin Nilai Saja',
+                      onPressed: () {
+                        final data = ClipboardData(text: value.toString());
+                        Clipboard.setData(data);
+                        state.connectionClosed();
+                      },
+                    ),
+                  );
+                  return AdaptiveTextSelectionToolbar.buttonItems(
+                      anchors: state.contextMenuAnchors,
+                      buttonItems: buttonItems);
+                },
                 textAlign: TextAlign.right,
               );
             } else if (value is num) {
               return SelectableText(
                 numberFormat(value),
+                contextMenuBuilder:
+                    (BuildContext context, EditableTextState state) {
+                  final List<ContextMenuButtonItem> buttonItems =
+                      state.contextMenuButtonItems;
+                  buttonItems.add(
+                    ContextMenuButtonItem(
+                      label: 'Salin Nilai Saja',
+                      onPressed: () {
+                        final data = ClipboardData(text: value.toString());
+                        Clipboard.setData(data);
+                        state.connectionClosed();
+                      },
+                    ),
+                  );
+                  return AdaptiveTextSelectionToolbar.buttonItems(
+                      anchors: state.contextMenuAnchors,
+                      buttonItems: buttonItems);
+                },
                 textAlign: TextAlign.right,
               );
             } else if (value is TimeOfDay) {
@@ -363,6 +419,14 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
             }
             return SelectableText(
               value.toString(),
+              contextMenuBuilder:
+                  (BuildContext context, EditableTextState state) {
+                final List<ContextMenuButtonItem> buttonItems =
+                    state.contextMenuButtonItems;
+                return AdaptiveTextSelectionToolbar.buttonItems(
+                    anchors: state.contextMenuAnchors,
+                    buttonItems: buttonItems);
+              },
               textAlign: TextAlign.left,
             );
           },
