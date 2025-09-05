@@ -238,6 +238,29 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
         )
       ]),
       Menu(
+          icon: Icons.show_chart,
+          label: 'Marketing',
+          key: 'marketing',
+          children: [
+            Menu(
+                icon: Icons.discount,
+                isClosed: true,
+                label: 'Diskon',
+                isDisabled: !setting.isAuthorize('discount', 'index'),
+                key: 'discount',
+                pageFunct: () => const DiscountPage(),
+                children: []),
+            Menu(
+              icon: Icons.group,
+              isClosed: true,
+              label: 'Customer Group Discount',
+              isDisabled:
+                  !setting.isAuthorize('customerGroupDiscount', 'index'),
+              key: 'customerGroupDiscount',
+              pageFunct: () => const CustomerGroupDiscountPage(),
+            ),
+          ]),
+      Menu(
           icon: Icons.shopping_bag,
           label: 'Pembelian',
           key: 'purchase',
@@ -283,6 +306,13 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               isDisabled: !setting.isAuthorize('consignmentIn', 'index'),
               key: 'consignment_in',
               pageFunct: () => const ConsignmentInPage(),
+            ),
+            Menu(
+              icon: Icons.shopping_bag,
+              label: '(NEW) Pembelian',
+              // isDisabled: !setting.isAuthorize('consignmentIn', 'index'),
+              key: 'purchase',
+              pageFunct: () => const NewPurchasePage(),
             ),
           ]),
       Menu(
@@ -358,6 +388,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               pageFunct: () => const ItemPage(),
               children: []),
           Menu(
+              icon: Icons.inventory,
+              isClosed: true,
+              label: 'Produk',
+              // isDisabled: !setting.isAuthorize('item', 'index'),
+              key: 'product',
+              pageFunct: () => const ProductPage(),
+              children: []),
+          Menu(
               icon: Icons.local_shipping,
               isClosed: true,
               label: 'Supplier',
@@ -381,22 +419,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
               key: 'itemType',
               pageFunct: () => const ItemTypePage(),
               children: []),
-          Menu(
-              icon: Icons.discount,
-              isClosed: true,
-              label: 'Diskon',
-              isDisabled: !setting.isAuthorize('discount', 'index'),
-              key: 'discount',
-              pageFunct: () => const DiscountPage(),
-              children: []),
-          Menu(
-            icon: Icons.group,
-            isClosed: true,
-            label: 'Customer Group Discount',
-            isDisabled: !setting.isAuthorize('customerGroupDiscount', 'index'),
-            key: 'customerGroupDiscount',
-            pageFunct: () => const CustomerGroupDiscountPage(),
-          ),
           Menu(
               icon: Icons.person,
               isClosed: true,

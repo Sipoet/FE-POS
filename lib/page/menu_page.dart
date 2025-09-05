@@ -23,6 +23,7 @@ export 'discount_page.dart';
 export 'customer_group_discount_page.dart';
 export 'user_page.dart';
 export 'role_page.dart';
+export 'product_page.dart';
 
 // human resource
 export 'payroll_page.dart';
@@ -50,6 +51,7 @@ export 'purchase_return_page.dart';
 export 'purchase_item_page.dart';
 export 'consignment_in_order_page.dart';
 export 'consignment_in_page.dart';
+export 'new_purchase_page.dart';
 
 // inventory
 export 'transfer_page.dart';
