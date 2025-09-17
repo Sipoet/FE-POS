@@ -7,7 +7,7 @@ class SalesPerformanceChart extends StatefulWidget {
   final List<Widget> filterForm;
 
   final SalesChartController controller;
-  final String Function(double valueX, List identifierList) xFormat;
+  final String Function(double valueX, SalesChartController control) xFormat;
   final String Function(double valueY) yFormat;
   final String Function(double valueY) spotYFormat;
   final String title;
@@ -45,7 +45,7 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
             child: Text(widget.title,
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
         SizedBox(
-          height: 15,
+          height: 25,
         ),
         Wrap(
           spacing: 10,
@@ -67,7 +67,9 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
                 ]))),
         Center(
           child: Text(
-              "Tanggal: ${controller.startDate?.format(pattern: 'dd/MM/y')} - ${controller.endDate?.format(pattern: 'dd/MM/y')}"),
+            "Tanggal: ${controller.startDate?.format(pattern: 'dd/MM/y')} - ${controller.endDate?.format(pattern: 'dd/MM/y')}",
+            style: TextStyle(fontSize: 18),
+          ),
         ),
         const SizedBox(height: 10),
         Padding(
@@ -76,19 +78,22 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 10,
             runSpacing: 10,
-            children:
-                controller.lineTitles.mapIndexed((int index, String title) {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 20,
-                    height: 10,
-                    color: getLineColor(index),
-                  ),
-                  const SizedBox(width: 5),
-                  Text(title),
-                ],
+            children: controller.lineTitles
+                .mapIndexed((int index, LineTitle lineTitle) {
+              return Tooltip(
+                message: lineTitle.description,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 10,
+                      color: getLineColor(index),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(lineTitle.name),
+                  ],
+                ),
               );
             }).toList(),
           ),
@@ -115,7 +120,7 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
                           (int index, LineBarSpot spot) {
                     if (index == 0) {
                       return LineTooltipItem(
-                          "- ${widget.xFormat(spot.x, controller.identifierList).toString()} -",
+                          "- ${xFormatDetail(spot.x).toString()} -",
                           TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -215,31 +220,34 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
     );
   }
 
+  String xFormatDetail(double valueX) {
+    return widget.xFormat(valueX, controller);
+  }
+
   String bottomText(double valueX, TitleMeta meta) {
     if (valueX == meta.min) {
-      _lastBottomText = widget.xFormat(valueX, controller.identifierList);
+      _lastBottomText = xFormatDetail(valueX);
       return _lastBottomText;
     }
     if ((meta.max - valueX).abs() <= 0.01) {
-      _lastBottomText = widget.xFormat(meta.max, controller.identifierList);
+      _lastBottomText = xFormatDetail(meta.max);
       return _lastBottomText;
     }
 
-    if (widget.xFormat(valueX, controller.identifierList) ==
-        widget.xFormat(meta.max, controller.identifierList)) {
+    if (xFormatDetail(valueX) == xFormatDetail(meta.max)) {
       return '';
     }
     double lengthSep = (((meta.max - meta.min) / widget.xTitleDividerTotal) *
             (controller.visibleBottomTitles.length + 1))
         .ceilToDouble();
     if (controller.visibleBottomTitles.contains(valueX)) {
-      return widget.xFormat(valueX, controller.identifierList);
+      return xFormatDetail(valueX);
     }
     if (controller.visibleBottomTitles.length <= widget.xTitleDividerTotal &&
-        _lastBottomText != widget.xFormat(valueX, controller.identifierList) &&
+        _lastBottomText != xFormatDetail(valueX) &&
         (valueX - meta.min) >= (lengthSep - 0.01)) {
       controller.visibleBottomTitles.add(valueX);
-      _lastBottomText = widget.xFormat(valueX, controller.identifierList);
+      _lastBottomText = xFormatDetail(valueX);
 
       return _lastBottomText;
     }
@@ -256,10 +264,16 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
   }
 }
 
+class LineTitle {
+  final String name;
+  final String description;
+  const LineTitle({required this.name, this.description = ''});
+}
+
 class SalesChartController with ChangeNotifier {
   bool _isLoading = false;
   List<List<FlSpot>> _lines = [];
-  List<String> _lineTitles = [];
+  List<LineTitle> _lineTitles = [];
   List<String> _identifierList = [];
   List<String> _filteredDetails = [];
   List visibleBottomTitles = [];
@@ -269,7 +283,7 @@ class SalesChartController with ChangeNotifier {
 
   get isLoading => _isLoading;
   List<List<FlSpot>> get lines => _lines;
-  List<String> get lineTitles => _lineTitles;
+  List<LineTitle> get lineTitles => _lineTitles;
   List<String> get identifierList => _identifierList;
   List<String> get filteredDetails => _filteredDetails;
 
@@ -282,7 +296,7 @@ class SalesChartController with ChangeNotifier {
   }
 
   void setChartData({
-    required Map<String, List<FlSpot>> lines,
+    required Map<LineTitle, List<FlSpot>> lines,
     required List<String> identifierList,
     required DateTime startDate,
     required DateTime endDate,
