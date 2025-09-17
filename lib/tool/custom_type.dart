@@ -52,8 +52,8 @@ extension DateTimeExt on DateTime {
     return DateTime(year, 12, 31).endOfWeek();
   }
 
-  String format({String pattern = 'dd/MM/y HH:mm'}) {
-    return DateFormat(pattern, 'id_ID').format(this);
+  String format({String pattern = 'dd/MM/y HH:mm', String locale = 'id_ID'}) {
+    return DateFormat(pattern, locale).format(this);
   }
 }
 
@@ -88,8 +88,8 @@ class Date extends DateTime {
     return DateTime(year, month, day, 0, 0, 0);
   }
 
-  String format({String pattern = 'dd/MM/y'}) {
-    return DateFormat(pattern, 'id_ID').format(this);
+  String format({String pattern = 'dd/MM/y', String locale = 'id_ID'}) {
+    return DateFormat(pattern, locale).format(this);
   }
 
   String toJson() {

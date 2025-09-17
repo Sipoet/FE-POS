@@ -164,6 +164,24 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     key: 'salesTransactionReport',
                   ),
                   Menu(
+                    icon: Icons.pages,
+                    isClosed: true,
+                    label: 'Laporan Performa Penjualan',
+                    isDisabled: !setting.isAuthorize(
+                        'itemSalesPerformanceReport', 'index'),
+                    pageFunct: () => const ItemSalesPerformanceReportPage(),
+                    key: 'itemSalesPerformanceReport',
+                  ),
+                  Menu(
+                    icon: Icons.line_axis,
+                    isClosed: true,
+                    label: 'Laporan Performa Penjualan Supplier',
+                    isDisabled: !setting.isAuthorize(
+                        'itemSalesPerformanceReport', 'supplier'),
+                    pageFunct: () => const SupplierSalesPerformanceReportPage(),
+                    key: 'supplierSalesPerformanceReport',
+                  ),
+                  Menu(
                     icon: Icons.line_axis,
                     isClosed: true,
                     label: 'Grafik Transaksi Penjualan Periode',

@@ -5,6 +5,7 @@ import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/widget/last_sales_transaction_widget.dart';
 import 'package:fe_pos/widget/period_sales_goal.dart';
+import 'package:fe_pos/widget/sales_traffic_report_widget.dart';
 import 'package:fe_pos/widget/sales_transaction_report_widget.dart';
 import 'package:fe_pos/widget/item_sales_transaction_report_widget.dart';
 import 'package:flutter/material.dart';
@@ -49,6 +50,10 @@ class _HomePageState extends State<HomePage>
           controller: controller,
           limit: 5,
         ),
+      if (setting.isAuthorize('saleTrafficReport', 'index'))
+        SalesTrafficReportWidget(
+          controller: controller,
+        ),
     ];
     if (setting.isAuthorize('saleItem', 'transactionReport')) {
       _panels += [
@@ -72,17 +77,6 @@ class _HomePageState extends State<HomePage>
             label: 'Supplier Terjual Terbanyak'),
       ];
     }
-
-    arrangeDate('day');
-
-    super.initState();
-  }
-
-  @override
-  bool get wantKeepAlive => true;
-
-  int separateHourWithinDay = 7;
-  void arrangeDate(String rangeType) {
     final now = DateTime.now();
 
     var startTime = DateTime.now()
@@ -93,31 +87,73 @@ class _HomePageState extends State<HomePage>
     var endTime = startTime
         .add(const Duration(days: 1))
         .subtract(const Duration(seconds: 1));
-    switch (rangeType) {
-      case 'yesterday':
-        startTime = startTime.subtract(const Duration(days: 1));
-        endTime = endTime.subtract(const Duration(days: 1));
-        break;
-      case 'week':
-        startTime = startTime.subtract(const Duration(days: 7));
-        break;
-      case 'month':
-        startTime = startTime.copyWith(day: 1);
-        endTime = endTime
+    _rangeDateList = {
+      'day': DateTimeRange(
+        start: startTime,
+        end: endTime,
+      ),
+      'yesterday': DateTimeRange(
+          start: startTime.subtract(const Duration(days: 1)),
+          end: endTime.subtract(const Duration(days: 1))),
+      '2 day Ago': DateTimeRange(
+          start: startTime.subtract(const Duration(days: 2)),
+          end: endTime.subtract(const Duration(days: 2))),
+      'week': DateTimeRange(
+        start: startTime.subtract(const Duration(days: 7)),
+        end: endTime,
+      ),
+      'weekAgo': DateTimeRange(
+        start: startTime.subtract(const Duration(days: 14)),
+        end: endTime.subtract(const Duration(days: 7)),
+      ),
+      'month': DateTimeRange(
+        start: startTime.copyWith(day: 1),
+        end: endTime
             .copyWith(day: 4)
             .add(const Duration(days: 28))
             .copyWith(day: 1)
-            .subtract(const Duration(days: 1));
-        break;
-      case 'year':
-        startTime = startTime.copyWith(month: 1, day: 1);
-        endTime = endTime.copyWith(month: 12, day: 31);
-        break;
-    }
-    var range = DateTimeRange(start: startTime, end: endTime);
-    controller.changeDate(range);
-    pickerController.changeDate(range);
+            .subtract(const Duration(days: 1)),
+      ),
+      'monthAgo': DateTimeRange(
+        start: startTime
+            .copyWith(day: 1)
+            .subtract(const Duration(days: 1))
+            .copyWith(day: 1),
+        end: endTime.copyWith(day: 1).subtract(const Duration(days: 1)),
+      ),
+      'year': DateTimeRange(
+        start: startTime.copyWith(month: 1, day: 1),
+        end: endTime.copyWith(month: 12, day: 31),
+      ),
+      'yearAgo': DateTimeRange(
+        start: startTime.copyWith(year: startTime.year - 1, month: 1, day: 1),
+        end: endTime.copyWith(year: startTime.year - 1, month: 12, day: 31),
+      ),
+      'custom': DateTimeRange(
+        start: startTime,
+        end: endTime,
+      ),
+    };
+
+    arrangeDate('day');
+
+    super.initState();
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+
+  int separateHourWithinDay = 7;
+
+  late final Map<String, DateTimeRange> _rangeDateList;
+  void arrangeDate(String rangeType) {
     _isCustom = rangeType == 'custom';
+    if (!_isCustom) {
+      DateTimeRange range = _rangeDateList[rangeType] ??
+          DateTimeRange(start: DateTime.now(), end: DateTime.now());
+      controller.changeDate(range);
+      pickerController.changeDate(range);
+    }
   }
 
   void getPeriodSalesTotal(Period period, Server server) {
@@ -209,16 +245,32 @@ class _HomePageState extends State<HomePage>
                       label: 'Kemarin',
                     ),
                     DropdownMenuEntry(
+                      value: '2 day Ago',
+                      label: '2 Hari yang lalu',
+                    ),
+                    DropdownMenuEntry(
                       value: 'week',
                       label: 'Minggu ini',
+                    ),
+                    DropdownMenuEntry(
+                      value: 'weekAgo',
+                      label: 'Minggu yang lalu',
                     ),
                     DropdownMenuEntry(
                       value: 'month',
                       label: 'Bulan ini',
                     ),
                     DropdownMenuEntry(
+                      value: 'monthAgo',
+                      label: 'Bulan yang lalu',
+                    ),
+                    DropdownMenuEntry(
                       value: 'year',
                       label: 'Tahun ini',
+                    ),
+                    DropdownMenuEntry(
+                      value: 'yearAgo',
+                      label: 'Tahun yang lalu',
                     ),
                     DropdownMenuEntry(
                       value: 'custom',
@@ -229,22 +281,6 @@ class _HomePageState extends State<HomePage>
                         arrangeDate(value ?? '');
                       })),
                 ),
-                // Visibility(
-                //     visible: true,
-                //     child: DropdownMenu<Period>(
-                //         dropdownMenuEntries: Period.values
-                //             .map<DropdownMenuEntry<Period>>((period) =>
-                //                 DropdownMenuEntry<Period>(
-                //                     value: period, label: period.humanize()))
-                //             .toList())),
-                // Visibility(
-                //     visible: true,
-                //     child: DropdownMenu<Period>(
-                //         dropdownMenuEntries: Period.values
-                //             .map<DropdownMenuEntry<Period>>((period) =>
-                //                 DropdownMenuEntry<Period>(
-                //                     value: period, label: period.humanize()))
-                //             .toList())),
                 Container(
                   constraints: const BoxConstraints(maxWidth: 350),
                   child: DateRangeFormField(

@@ -33,4 +33,8 @@ mixin TextFormatter {
   String numberFormat(number) {
     return NumberFormat(",##0.##", "en_US").format(number);
   }
+
+  String compactNumberFormat(number) {
+    return NumberFormat.compact().format(number);
+  }
 }
