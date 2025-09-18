@@ -13,6 +13,8 @@ export 'payroll_report_page.dart';
 export 'purchase_report_page.dart';
 export 'item_sales_performance_report_page.dart';
 export 'supplier_sales_performance_report_page.dart';
+export 'brand_sales_performance_report_page.dart';
+export 'item_type_sales_performance_report_page.dart';
 // session
 export 'login_page.dart';
 

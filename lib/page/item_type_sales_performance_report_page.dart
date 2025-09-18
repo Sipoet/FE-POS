@@ -8,22 +8,22 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class SupplierSalesPerformanceReportPage extends StatefulWidget {
-  const SupplierSalesPerformanceReportPage({super.key});
+class ItemTypeSalesPerformanceReportPage extends StatefulWidget {
+  const ItemTypeSalesPerformanceReportPage({super.key});
 
   @override
-  State<SupplierSalesPerformanceReportPage> createState() =>
-      _SupplierSalesPerformanceReportPageState();
+  State<ItemTypeSalesPerformanceReportPage> createState() =>
+      _ItemTypeSalesPerformanceReportPageState();
 }
 
-class _SupplierSalesPerformanceReportPageState
-    extends State<SupplierSalesPerformanceReportPage>
+class _ItemTypeSalesPerformanceReportPageState
+    extends State<ItemTypeSalesPerformanceReportPage>
     with TextFormatter, PlatformChecker {
   static const TextStyle _filterLabelStyle =
       TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
   List<Brand> _brands = [];
-  Supplier? _supplier;
-  List<ItemType> _itemTypes = [];
+  ItemType? _itemType;
+  List<Supplier> _suppliers = [];
   late final Server server;
   bool _separatePurchaseYear = false;
   String _groupPeriod = 'daily';
@@ -67,13 +67,13 @@ class _SupplierSalesPerformanceReportPageState
     ),
   ];
 
-  Map supplierChartFilter = {
+  Map itemTypeChartFilter = {
     'rangePeriod': 'month',
     'valueType': 'sales_total',
     'selectedPeriod': <bool>[false, false, true, false, false, false],
-    'suppliers': <Supplier>[],
+    'item_types': <ItemType>[],
   };
-  Map itemTypeChartFilter = {
+  Map supplierChartFilter = {
     'rangePeriod': 'month',
     'valueType': 'sales_total',
     'selectedPeriod': <bool>[false, false, true, false, false, false],
@@ -113,20 +113,20 @@ class _SupplierSalesPerformanceReportPageState
                 children: [
                   SizedBox(
                     width: 350,
-                    child: AsyncDropdown<Supplier>(
-                        label: const Text('Pilih Supplier'),
+                    child: AsyncDropdown<ItemType>(
+                        label: const Text('Pilih Jenis/Departemen'),
                         allowClear: false,
-                        textOnSearch: (supplier) =>
-                            "${supplier.code} - ${supplier.name}",
-                        path: '/suppliers',
-                        onChanged: (value) => _supplier = value,
+                        textOnSearch: (itemType) =>
+                            "${itemType.name} - ${itemType.description}",
+                        path: '/item_types',
+                        onChanged: (value) => _itemType = value,
                         validator: (model) {
                           if (model == null) {
                             return 'harus diisi';
                           }
                           return null;
                         },
-                        converter: Supplier.fromJson),
+                        converter: ItemType.fromJson),
                   ),
                   const SizedBox(height: 10),
                   Text('Filter',
@@ -152,17 +152,17 @@ class _SupplierSalesPerformanceReportPageState
                           )),
                       SizedBox(
                           width: 300,
-                          child: AsyncDropdownMultiple<ItemType>(
-                            label: const Text('Jenis/Departemen :',
+                          child: AsyncDropdownMultiple<Supplier>(
+                            label: const Text('Supplier :',
                                 style: _filterLabelStyle),
-                            key: const ValueKey('itemTypeSelect'),
-                            textOnSearch: (itemType) =>
-                                "${itemType.name} - ${itemType.description}",
-                            textOnSelected: (itemType) => itemType.name,
-                            converter: ItemType.fromJson,
-                            attributeKey: 'jenis',
-                            path: '/item_types',
-                            onChanged: (value) => _itemTypes = value,
+                            key: const ValueKey('supplierSelect'),
+                            textOnSearch: (supplier) =>
+                                "${supplier.code} - ${supplier.name}",
+                            textOnSelected: (supplier) => supplier.code,
+                            converter: Supplier.fromJson,
+                            attributeKey: 'kode',
+                            path: '/suppliers',
+                            onChanged: (value) => _suppliers = value,
                           )),
                       SizedBox(
                           width: 300,
@@ -237,7 +237,7 @@ class _SupplierSalesPerformanceReportPageState
                           _hasGenerateOnce = true;
                         });
                         generateCompareReport();
-                        generateGroupByItemTypeReport();
+                        generateGroupBySupplierReport();
                         generateGroupByBrandReport();
                       }
                     },
@@ -252,9 +252,9 @@ class _SupplierSalesPerformanceReportPageState
               visible: _hasGenerateOnce,
               child: Column(
                 children: [
-                  Card(child: groupByItemTypeChart()),
+                  Card(child: groupBySupplierChart()),
                   Card(child: groupByBrandChart()),
-                  Card(child: compareSupplierChart()),
+                  Card(child: compareItemTypeChart()),
                 ],
               ),
             ),
@@ -266,21 +266,21 @@ class _SupplierSalesPerformanceReportPageState
     );
   }
 
-  Widget compareSupplierChart() {
+  Widget compareItemTypeChart() {
     return SalesPerformanceChart(
-        title: 'Grafik Perbandingan Supplier',
-        controller: supplierChartController,
+        title: 'Grafik Perbandingan Jenis/Departemen',
+        controller: itemTypeChartController,
         xTitle: _generatedGroupedPeriod == 'weekly' ? 'MINGGU' : 'PERIODE',
         filterForm: [
           SizedBox(
             width: 350,
-            child: AsyncDropdownMultiple<Supplier>(
-                label: const Text('Perbandingan Supplier'),
-                textOnSearch: (supplier) =>
-                    "${supplier.code} - ${supplier.name}",
-                path: '/suppliers',
+            child: AsyncDropdownMultiple<ItemType>(
+                label: const Text('Perbandingan Jenis/Departemen'),
+                textOnSearch: (itemType) =>
+                    "${itemType.name} - ${itemType.description}",
+                path: '/item_types',
                 onChanged: (value) {
-                  supplierChartFilter['suppliers'] = value;
+                  itemTypeChartFilter['item_types'] = value;
                   generateCompareReport();
                 },
                 validator: (models) {
@@ -292,20 +292,20 @@ class _SupplierSalesPerformanceReportPageState
                   }
                   return null;
                 },
-                selecteds: supplierChartFilter['suppliers'],
-                converter: Supplier.fromJson),
+                selecteds: itemTypeChartFilter['item_types'],
+                converter: ItemType.fromJson),
           ),
           DropdownMenu(
             dropdownMenuEntries: valueTypeEntries,
             label: const Text('Nilai Berdasarkan', style: _filterLabelStyle),
             onSelected: (value) {
               setState(() {
-                supplierChartFilter['valueType'] =
-                    value ?? supplierChartFilter['valueType'];
+                itemTypeChartFilter['valueType'] =
+                    value ?? itemTypeChartFilter['valueType'];
               });
               generateCompareReport();
             },
-            initialSelection: supplierChartFilter['valueType'],
+            initialSelection: itemTypeChartFilter['valueType'],
             width: 300,
             inputDecorationTheme: InputDecorationTheme(
                 isDense: true, border: OutlineInputBorder()),
@@ -324,12 +324,12 @@ class _SupplierSalesPerformanceReportPageState
                   child: ToggleButtons(
                     onPressed: (int index) {
                       final rangePeriodBefore =
-                          supplierChartFilter['rangePeriod'];
+                          itemTypeChartFilter['rangePeriod'];
                       if (rangePeriodBefore != periodList[index]) {
                         setState(() {
-                          supplierChartFilter['selectedPeriod'] = List.generate(
+                          itemTypeChartFilter['selectedPeriod'] = List.generate(
                               periodList.length, (idx) => index == idx);
-                          supplierChartFilter['rangePeriod'] =
+                          itemTypeChartFilter['rangePeriod'] =
                               periodList[index];
                         });
                         generateCompareReport();
@@ -340,7 +340,7 @@ class _SupplierSalesPerformanceReportPageState
                     fillColor: Colors.blue.shade200,
                     borderRadius: BorderRadius.circular(5),
                     hoverColor: Colors.green.shade300,
-                    isSelected: supplierChartFilter['selectedPeriod'],
+                    isSelected: itemTypeChartFilter['selectedPeriod'],
                     children: rangePeriodEntries,
                   ),
                 ),
@@ -352,7 +352,7 @@ class _SupplierSalesPerformanceReportPageState
             xFormatBasedPeriod(valueX, control.identifierList,
                 control.startDate ?? DateTime.now()),
         spotYFormat: (value) =>
-            _tooltipFormat(value, supplierChartFilter['valueType']),
+            _tooltipFormat(value, itemTypeChartFilter['valueType']),
         yFormat: compactNumberFormat);
   }
 
@@ -421,10 +421,10 @@ class _SupplierSalesPerformanceReportPageState
         yFormat: compactNumberFormat);
   }
 
-  Widget groupByItemTypeChart() {
+  Widget groupBySupplierChart() {
     return SalesPerformanceChart(
-        title: 'Grafik Berdasarkan Jenis/Departemen',
-        controller: itemTypeChartController,
+        title: 'Grafik Berdasarkan Supplier',
+        controller: supplierChartController,
         xTitle: _generatedGroupedPeriod == 'weekly' ? 'MINGGU' : 'PERIODE',
         filterForm: [
           DropdownMenu(
@@ -432,12 +432,12 @@ class _SupplierSalesPerformanceReportPageState
             label: const Text('Nilai Berdasarkan', style: _filterLabelStyle),
             onSelected: (value) {
               setState(() {
-                itemTypeChartFilter['valueType'] =
-                    value ?? itemTypeChartFilter['valueType'];
+                supplierChartFilter['valueType'] =
+                    value ?? supplierChartFilter['valueType'];
               });
-              generateGroupByItemTypeReport();
+              generateGroupBySupplierReport();
             },
-            initialSelection: itemTypeChartFilter['valueType'],
+            initialSelection: supplierChartFilter['valueType'],
             width: 300,
             inputDecorationTheme: InputDecorationTheme(
                 isDense: true, border: OutlineInputBorder()),
@@ -456,15 +456,15 @@ class _SupplierSalesPerformanceReportPageState
                   child: ToggleButtons(
                     onPressed: (int index) {
                       final rangePeriodBefore =
-                          itemTypeChartFilter['rangePeriod'];
+                          supplierChartFilter['rangePeriod'];
                       if (rangePeriodBefore != periodList[index]) {
                         setState(() {
-                          itemTypeChartFilter['selectedPeriod'] = List.generate(
+                          supplierChartFilter['selectedPeriod'] = List.generate(
                               periodList.length, (idx) => index == idx);
-                          itemTypeChartFilter['rangePeriod'] =
+                          supplierChartFilter['rangePeriod'] =
                               periodList[index];
                         });
-                        generateGroupByItemTypeReport();
+                        generateGroupBySupplierReport();
                       }
                     },
                     color: Colors.grey,
@@ -472,7 +472,7 @@ class _SupplierSalesPerformanceReportPageState
                     fillColor: Colors.blue.shade200,
                     borderRadius: BorderRadius.circular(5),
                     hoverColor: Colors.green.shade300,
-                    isSelected: itemTypeChartFilter['selectedPeriod'],
+                    isSelected: supplierChartFilter['selectedPeriod'],
                     children: rangePeriodEntries,
                   ),
                 ),
@@ -484,7 +484,7 @@ class _SupplierSalesPerformanceReportPageState
             xFormatBasedPeriod(valueX, control.identifierList,
                 control.startDate ?? DateTime.now()),
         spotYFormat: (value) =>
-            _tooltipFormat(value, itemTypeChartFilter['valueType']),
+            _tooltipFormat(value, supplierChartFilter['valueType']),
         yFormat: compactNumberFormat);
   }
 
@@ -529,7 +529,51 @@ class _SupplierSalesPerformanceReportPageState
     for (var detail in data['data']) {
       String name, description;
       if (detail['last_purchase_year'] == null) {
-        name = detail['supplier_code'] ?? '';
+        name = detail['item_type_name'];
+        description = detail['item_type_description'];
+      } else {
+        name = "${detail['item_type_name']} (${detail['last_purchase_year']})";
+        description =
+            "${detail['item_type_description']} (${detail['last_purchase_year']})";
+      }
+      LineTitle lineTitle = LineTitle(name: name, description: description);
+      lines[lineTitle] = convertDataToSpots(detail['spots'], identifierList);
+    }
+    setState(() {
+      itemTypeChartController.setChartData(
+          lines: lines,
+          filteredDetails: filteredDetails,
+          identifierList: identifierList,
+          startDate: startDate,
+          endDate: endDate);
+      itemTypeChartController.isLoading = false;
+    });
+  }
+
+  void generateGroupBySupplierReport() async {
+    _generatedGroupedPeriod = _groupPeriod;
+    setState(() {
+      supplierChartController.isLoading = true;
+    });
+    final response = await fetchGroupBySupplierData();
+    if (response.statusCode != 200) {
+      setState(() {
+        supplierChartController.isLoading = false;
+      });
+      return;
+    }
+    final data = response.data;
+    final metadata = data['metadata'];
+    final startDate = DateTime.parse(metadata['start_date']);
+    final endDate = DateTime.parse(metadata['end_date']);
+    final identifierList =
+        metadata['identifier_list'].map<String>((e) => e.toString()).toList();
+    final filteredDetails = getFilteredTitle(data);
+    Map<LineTitle, List<FlSpot>> lines = {};
+    for (var detail in data['data']) {
+      String name, description;
+      if (detail['last_purchase_year'] == null) {
+        name = detail['supplier_code'];
         description = detail['supplier_name'] ?? '';
       } else {
         name = "${detail['supplier_code']} (${detail['last_purchase_year']})";
@@ -547,50 +591,6 @@ class _SupplierSalesPerformanceReportPageState
           startDate: startDate,
           endDate: endDate);
       supplierChartController.isLoading = false;
-    });
-  }
-
-  void generateGroupByItemTypeReport() async {
-    _generatedGroupedPeriod = _groupPeriod;
-    setState(() {
-      itemTypeChartController.isLoading = true;
-    });
-    final response = await fetchGroupByItemTypeData();
-    if (response.statusCode != 200) {
-      setState(() {
-        itemTypeChartController.isLoading = false;
-      });
-      return;
-    }
-    final data = response.data;
-    final metadata = data['metadata'];
-    final startDate = DateTime.parse(metadata['start_date']);
-    final endDate = DateTime.parse(metadata['end_date']);
-    final identifierList =
-        metadata['identifier_list'].map<String>((e) => e.toString()).toList();
-    final filteredDetails = getFilteredTitle(data);
-    Map<LineTitle, List<FlSpot>> lines = {};
-    for (var detail in data['data']) {
-      String name, description;
-      if (detail['last_purchase_year'] == null) {
-        name = detail['item_type_name'] ?? '';
-        description = detail['item_type_description'] ?? '';
-      } else {
-        name = "${detail['item_type_name']} (${detail['last_purchase_year']})";
-        description =
-            "${detail['item_type_description']} (${detail['last_purchase_year']})";
-      }
-      LineTitle lineTitle = LineTitle(name: name, description: description);
-      lines[lineTitle] = convertDataToSpots(detail['spots'], identifierList);
-    }
-    setState(() {
-      itemTypeChartController.setChartData(
-          lines: lines,
-          filteredDetails: filteredDetails,
-          identifierList: identifierList,
-          startDate: startDate,
-          endDate: endDate);
-      itemTypeChartController.isLoading = false;
     });
   }
 
@@ -617,7 +617,7 @@ class _SupplierSalesPerformanceReportPageState
     for (var detail in data['data']) {
       String name, description;
       if (detail['last_purchase_year'] == null) {
-        name = detail['brand_name'] ?? '';
+        name = detail['brand_name'];
         description = detail['brand_description'] ?? '';
       } else {
         name = "${detail['brand_name']} (${detail['last_purchase_year']})";
@@ -673,24 +673,6 @@ class _SupplierSalesPerformanceReportPageState
     }
   }
 
-  Map<String, List<FlSpot>> getLines(List data, List identifierList) {
-    Map<String, List<FlSpot>> lines = {};
-    for (var detail in data) {
-      String name;
-      if (detail['last_purchase_year'] == null) {
-        name = detail['item_type_name'];
-      } else {
-        name = "${detail['item_type_name']} (${detail['last_purchase_year']})";
-      }
-      lines[name] = convertDataToSpots(detail['spots'], identifierList);
-    }
-    return lines;
-  }
-
-  Color getLineColor(int index) {
-    return Colors.primaries[index % Colors.primaries.length];
-  }
-
   List<FlSpot> convertDataToSpots(List data, List identifierList) {
     return data.map<FlSpot>((e) {
       final x = convertDateToCoordData(e[0].toString(), identifierList);
@@ -722,35 +704,35 @@ class _SupplierSalesPerformanceReportPageState
   }
 
   Future fetchCompareData() async {
-    var supplierCodes = (supplierChartFilter['suppliers'] as List<Supplier>)
-        .map<String>((e) => e.code)
+    var itemTypeNames = (itemTypeChartFilter['item_types'] as List<ItemType>)
+        .map<String>((e) => e.name)
         .toList();
-    if (_supplier != null && !supplierCodes.contains(_supplier!.code)) {
-      supplierCodes.add(_supplier!.code);
+    if (_itemType != null && !itemTypeNames.contains(_itemType!.name)) {
+      itemTypeNames.add(_itemType!.name);
     }
     return server
-        .get('supplier_sales_performance_reports/compare', queryParam: {
+        .get('item_type_sales_performance_reports/compare', queryParam: {
       'brands[]': _brands.map<String>((e) => e.name).toList(),
-      'suppliers[]': supplierCodes,
-      'item_types[]': _itemTypes.map<String>((e) => e.name).toList(),
-      'range_period': supplierChartFilter['rangePeriod'],
+      'suppliers[]': _suppliers.map<String>((e) => e.code).toList(),
+      'item_types[]': itemTypeNames,
+      'range_period': itemTypeChartFilter['rangePeriod'],
       'group_period': _groupPeriod,
-      'value_type': supplierChartFilter['valueType'],
+      'value_type': itemTypeChartFilter['valueType'],
       'last_purchase_years[]':
           _lastPurchaseYears.map<String>((e) => e.toString()).toList(),
       'separate_purchase_year': _separatePurchaseYear ? '1' : '0',
     });
   }
 
-  Future fetchGroupByItemTypeData() async {
-    return server.get('supplier_sales_performance_reports/group_by_item_type',
+  Future fetchGroupBySupplierData() async {
+    return server.get('item_type_sales_performance_reports/group_by_supplier',
         queryParam: {
           'brands[]': _brands.map<String>((e) => e.name).toList(),
-          'supplier_code': _supplier?.code,
-          'item_types[]': _itemTypes.map<String>((e) => e.name).toList(),
-          'range_period': itemTypeChartFilter['rangePeriod'],
+          'item_type_name': _itemType?.name,
+          'suppliers[]': _suppliers.map<String>((e) => e.code).toList(),
+          'range_period': supplierChartFilter['rangePeriod'],
           'group_period': _groupPeriod,
-          'value_type': itemTypeChartFilter['valueType'],
+          'value_type': supplierChartFilter['valueType'],
           'last_purchase_years[]':
               _lastPurchaseYears.map<String>((e) => e.toString()).toList(),
           'separate_purchase_year': _separatePurchaseYear ? '1' : '0',
@@ -759,10 +741,10 @@ class _SupplierSalesPerformanceReportPageState
 
   Future fetchGroupByBrandData() async {
     return server
-        .get('supplier_sales_performance_reports/group_by_brand', queryParam: {
+        .get('item_type_sales_performance_reports/group_by_brand', queryParam: {
       'brands[]': _brands.map<String>((e) => e.name).toList(),
-      'supplier_code': _supplier?.code,
-      'item_types[]': _itemTypes.map<String>((e) => e.name).toList(),
+      'item_type_name': _itemType?.name,
+      'suppliers[]': _suppliers.map<String>((e) => e.code).toList(),
       'range_period': brandChartFilter['rangePeriod'],
       'group_period': _groupPeriod,
       'value_type': brandChartFilter['valueType'],
