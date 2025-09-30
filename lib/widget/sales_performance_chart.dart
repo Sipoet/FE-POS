@@ -117,6 +117,7 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
                     lineTouchData: LineTouchData(
                         touchTooltipData: LineTouchTooltipData(
                       fitInsideHorizontally: true,
+                      fitInsideVertically: true,
                       maxContentWidth: 220,
                       getTooltipColor: (touchedSpot) => Colors.grey.shade900,
                       getTooltipItems: (touchedSpots) => touchedSpots
@@ -141,7 +142,6 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
                                         color: getLineColor(spot.barIndex))),
                               ]);
                         }
-
                         return LineTooltipItem(
                           "${controller._lineTitles[spot.barIndex].name}: $formattedYValue",
                           TextStyle(
