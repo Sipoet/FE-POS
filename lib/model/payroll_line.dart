@@ -47,7 +47,8 @@ enum PayrollFormula {
   hourlyDaily,
   fulltimeHourPerDay,
   periodProportional,
-  proportionalCommission;
+  proportionalCommission,
+  cashierCommission;
 
   @override
   String toString() {
@@ -75,6 +76,9 @@ enum PayrollFormula {
     if (this == proportionalCommission) {
       return 'proportional_commission';
     }
+    if (this == cashierCommission) {
+      return 'cashier_commission';
+    }
 
     return super.toString().split('.').last;
   }
@@ -99,6 +103,8 @@ enum PayrollFormula {
         return 'fulltime_hour_per_day';
       case proportionalCommission:
         return 'Komisi Proporsional';
+      case cashierCommission:
+        return 'Komisi Kasir';
     }
   }
 
@@ -122,6 +128,8 @@ enum PayrollFormula {
         return fulltimeHourPerDay;
       case 'proportional_commission':
         return proportionalCommission;
+      case 'cashier_commission':
+        return cashierCommission;
       default:
         throw 'invalid Payroll formula $value';
     }

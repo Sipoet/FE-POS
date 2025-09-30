@@ -265,6 +265,28 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                     height: 10,
                   ),
                   Visibility(
+                      visible: setting.canShow('employee', 'user_code'),
+                      child: AsyncDropdown<String>(
+                        label: const Text(
+                          'User',
+                          style: labelStyle,
+                        ),
+                        path: 'ipos/users',
+                        textOnSearch: (userCode) => userCode,
+                        attributeKey: 'name',
+                        onChanged: (userCode) {
+                          employee.userCode = userCode;
+                        },
+                        converter: (Map<String, dynamic> data,
+                            {List<dynamic> included = const []}) {
+                          return data['attributes']['userid'] as String;
+                        },
+                        selected: employee.userCode,
+                      )),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Visibility(
                     visible: setting.isAuthorize('role', 'index') &&
                         setting.canShow('employee', 'role'),
                     child: Flexible(
