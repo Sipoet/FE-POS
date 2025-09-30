@@ -191,10 +191,12 @@ class Employee extends Model {
   List<WorkSchedule> schedules;
   List<EmployeeDayOff> employeeDayOffs;
   EmployeeMaritalStatus maritalStatus;
+  String? userCode;
   Employee(
       {super.id,
       this.code = '',
       this.name = '',
+      this.userCode,
       Role? role,
       this.payroll,
       this.email,
@@ -256,6 +258,7 @@ class Employee extends Model {
         attributes['marital_status'] ??
             EmployeeMaritalStatus.single.toString());
     model.taxNumber = attributes['tax_number'];
+    model.userCode = attributes['user_code'];
     model.status =
         EmployeeStatus.convertFromString(attributes['status'].toString());
     model.startWorkingDate = Date.parse(attributes['start_working_date']);
@@ -300,6 +303,7 @@ class Employee extends Model {
         'payroll.name': payroll?.name,
         'marital_status': maritalStatus,
         'tax_number': taxNumber,
+        'user_code': userCode,
         'religion': religion,
         'created_at': createdAt,
         'updated_at': updatedAt,
