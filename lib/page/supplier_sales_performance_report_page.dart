@@ -494,9 +494,6 @@ class _SupplierSalesPerformanceReportPageState
   }
 
   String _tooltipFormat(double value, String valueType) {
-    if (value == 0) {
-      return '';
-    }
     switch (valueType) {
       case 'sales_quantity':
         return numberFormat(value);

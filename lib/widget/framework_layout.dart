@@ -191,7 +191,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     key: 'brandSalesPerformanceReport',
                   ),
                   Menu(
-                    icon: Icons.line_axis,
+                    icon: Icons.bar_chart,
                     isClosed: true,
                     label: 'Penjualan Periode',
                     isDisabled:

@@ -1,4 +1,5 @@
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:fe_pos/model/hash_model.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
@@ -47,11 +48,31 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   List<Supplier> _suppliers = [];
   List<Brand> _brands = [];
   List<Item> _items = [];
+  bool _separatePurchaseYear = false;
   String _groupType = 'period';
   List<String> _lastPurchaseYears = [];
-
+  List<HashModel> _groupModels = [];
   @override
   bool get wantKeepAlive => true;
+  static const Map<String, String> groupKeyLocales = {
+    'period': 'waktu',
+    'item': 'Item',
+    'supplier': 'Supplier',
+    'item_type': 'Jenis/Departemen',
+    'brand': 'Merek',
+  };
+  static const Map<String, String> fieldKeyLocales = {
+    'sales_total': 'Total Penjualan(Rp)',
+    'sales_quantity': 'Jumlah Penjualan',
+    'sales_discount_amount': 'Total Diskon(Rp)',
+    'gross_profit': 'Gross Profit',
+    'sales_through_rate': 'Kecepatan Penjualan(%)',
+    'cash_total': 'Total Bayar Tunai',
+    'debit_total': 'Total Bayar Kartu Debit',
+    'credit_total': 'Total Bayar Kartu Kredit',
+    'qris_total': 'Total Bayar dengan Qris',
+    'online_total': 'Total bayar dengan Online Transfer',
+  };
 
   @override
   void initState() {
@@ -59,7 +80,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
     server = context.read<Server>();
     setting = context.read<Setting>();
     super.initState();
-    // Future.delayed(Duration.zero, () => _refreshGraph());
+    Future.delayed(Duration.zero, () => _refreshGraph());
   }
 
   @override
@@ -86,6 +107,8 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
       'group_type': _groupType,
       'group_period': _groupPeriod,
       'value_type': fieldKey,
+      'separate_purchase_year': _separatePurchaseYear ? '1' : '0',
+      'last_purchase_years[]': _lastPurchaseYears,
     });
     if (response.statusCode != 200) {
       setState(() {
@@ -122,6 +145,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
       lines[lineTitle] = convertDataToSpots(detail['spots'], identifierList);
     }
     setState(() {
+      _groupModels = convertResponseToHashModels(data);
       salesReportController.setChartData(
           lines: lines,
           filteredDetails: filteredDetails,
@@ -130,6 +154,39 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
           endDate: endDate);
       salesReportController.isLoading = false;
     });
+  }
+
+  List<HashModel> convertResponseToHashModels(Map data) {
+    List<HashModel> models = [];
+    List identifierList = data['metadata']['identifier_list'];
+    DateTime startDate = DateTime.parse(data['metadata']['start_date']);
+    if (_groupType == 'period') {
+      for (var detail in data['data']) {
+        for (var spot in detail['spots']) {
+          models.add(HashModel(data: {
+            'group_key': datePkFormat(spot[0], identifierList, startDate),
+            'total': spot[1],
+            'description': detail['description'] ?? '',
+            'last_purchase_year': detail['last_purchase_year'].toString(),
+          }));
+        }
+      }
+      models.sort((a, b) => b.data['total'].compareTo(a.data['total']));
+      return models;
+    } else {
+      for (var detail in data['data']) {
+        models.add(HashModel(data: {
+          'group_key': detail['name'],
+          'total': (detail['spots'] as List)
+              .map<double>((e) => e[1].toDouble())
+              .reduce((value, element) => value + element),
+          'description': detail['description'],
+          'last_purchase_year': detail['last_purchase_year'].toString(),
+        }));
+      }
+      models.sort((a, b) => b.data['total'].compareTo(a.data['total']));
+      return models;
+    }
   }
 
   List<String> getFilteredTitle(data) {
@@ -171,6 +228,10 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   String xFormatBasedPeriod(
       double valueX, List identifierList, DateTime startDate) {
     final datePk = identifierList[valueX.round()];
+    return datePkFormat(datePk, identifierList, startDate);
+  }
+
+  String datePkFormat(String datePk, List identifierList, DateTime startDate) {
     DateTime date = DateTime.tryParse(datePk) ?? DateTime.now();
     switch (_generatedGroupPeriod) {
       case 'hourly':
@@ -204,9 +265,6 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   }
 
   String _tooltipFormat(double value) {
-    if (value == 0) {
-      return '';
-    }
     switch (fieldKey) {
       case 'sales_quantity':
         return numberFormat(value);
@@ -228,17 +286,13 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
 
   @override
   Widget build(BuildContext context) {
-    final padding = MediaQuery.paddingOf(context);
-    double height =
-        MediaQuery.sizeOf(context).height - padding.top - padding.bottom - 350;
-    height = height < 285 ? 285 : height;
     super.build(context);
     return VerticalBodyScroll(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Grafik Penjualan',
+            'Laporan Periode Penjualan',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const Divider(),
@@ -278,14 +332,12 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
                   isDense: true, border: OutlineInputBorder()),
             ),
             DropdownMenu(
-              dropdownMenuEntries: [
-                DropdownMenuEntry(value: 'period', label: 'waktu'),
-                DropdownMenuEntry(value: 'item', label: 'Item'),
-                DropdownMenuEntry(value: 'supplier', label: 'Supplier'),
-                DropdownMenuEntry(
-                    value: 'item_type', label: 'Jenis/Departemen'),
-                DropdownMenuEntry(value: 'brand', label: 'Merek'),
-              ],
+              dropdownMenuEntries: groupKeyLocales.entries
+                  .map<DropdownMenuEntry>(
+                    (entry) =>
+                        DropdownMenuEntry(value: entry.key, label: entry.value),
+                  )
+                  .toList(),
               label:
                   const Text('Dipisah Berdasarkan', style: _filterLabelStyle),
               onSelected: (value) {
@@ -378,39 +430,31 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
                         .toList();
                   },
                 )),
+            SizedBox(
+              width: 250,
+              child: CheckboxListTile.adaptive(
+                  title: Text('Pisah tahun beli'),
+                  value: _separatePurchaseYear,
+                  onChanged: (value) => setState(() {
+                        _separatePurchaseYear = value ?? false;
+                      })),
+            ),
           ]),
           const SizedBox(
             height: 10,
           ),
-          DropdownMenu(
+          DropdownMenu<String>(
               label: Text('Berdasarkan'),
               initialSelection: fieldKey,
               onSelected: (value) => setState(() {
                     fieldKey = value ?? 'sales_total';
                   }),
-              dropdownMenuEntries: [
-                DropdownMenuEntry(
-                    value: 'sales_total', label: 'Total Penjualan(Rp)'),
-                DropdownMenuEntry(
-                    value: 'sales_quantity', label: 'Jumlah Penjualan'),
-                DropdownMenuEntry(
-                    value: 'sales_discount_amount', label: 'Total Diskon(Rp)'),
-                DropdownMenuEntry(value: 'gross_profit', label: 'Gross Profit'),
-                DropdownMenuEntry(
-                    value: 'sales_through_rate',
-                    label: 'Kecepatan Penjualan(%)'),
-                DropdownMenuEntry(
-                    value: 'cash_total', label: 'Total Bayar Tunai'),
-                DropdownMenuEntry(
-                    value: 'debit_total', label: 'Total Bayar Kartu Debit'),
-                DropdownMenuEntry(
-                    value: 'credit_total', label: 'Total Bayar Kartu Kredit'),
-                DropdownMenuEntry(
-                    value: 'qris_total', label: 'Total Bayar dengan Qris'),
-                DropdownMenuEntry(
-                    value: 'online_total',
-                    label: 'Total bayar dengan Online Transfer'),
-              ]),
+              dropdownMenuEntries: fieldKeyLocales.entries
+                  .map<DropdownMenuEntry<String>>(
+                    (entry) => DropdownMenuEntry<String>(
+                        value: entry.key, label: entry.value),
+                  )
+                  .toList()),
           const SizedBox(
             height: 10,
           ),
@@ -418,7 +462,44 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
           const SizedBox(
             height: 10,
           ),
-          SizedBox(height: height, child: SyncDataTable()),
+          Text('Grouped Result',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Visibility(
+            visible: !salesReportController.isLoading,
+            child: SizedBox(
+                height: bodyScreenHeight,
+                child: SyncDataTable<HashModel>(
+                  columns: [
+                    TableColumn(
+                        clientWidth: 180,
+                        name: 'group_key',
+                        canFilter: true,
+                        renderBody: (model) => Tooltip(
+                              message: model.row.cells['description']?.value
+                                      .toString() ??
+                                  '',
+                              child: Text(model.cell.value.toString()),
+                            ),
+                        humanizeName: groupKeyLocales[_groupType] ?? ''),
+                    if (_separatePurchaseYear)
+                      TableColumn<HashModel>(
+                          clientWidth: 180,
+                          name: 'last_purchase_year',
+                          type: TableColumnType.text,
+                          humanizeName: 'Tahun Beli Terakhir'),
+                    TableColumn(
+                        clientWidth: 180,
+                        name: 'total',
+                        canSort: true,
+                        type: fieldKey == 'sales_quantity'
+                            ? TableColumnType.number
+                            : TableColumnType.money,
+                        humanizeName: fieldKeyLocales[fieldKey] ?? ''),
+                  ],
+                  showSummary: true,
+                  rows: _groupModels,
+                )),
+          ),
           const SizedBox(
             height: 10,
           ),
