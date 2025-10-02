@@ -359,7 +359,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
                   textOnSearch: (ItemType itemType) => itemType.name,
                   converter: ItemType.fromJson,
                   attributeKey: 'jenis',
-                  path: '/item_Types',
+                  path: '/item_types',
                   onChanged: (value) => _itemTypes = value,
                 )),
             SizedBox(
