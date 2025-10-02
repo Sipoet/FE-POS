@@ -168,7 +168,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     isClosed: true,
                     label: 'Performa Jenis/Departemen',
                     isDisabled: !setting.isAuthorize(
-                        'itemTypeSalesPerformanceReport', 'compare'),
+                        'itemSalesPerformanceReport', 'groupBy'),
                     pageFunct: () => const ItemTypeSalesPerformanceReportPage(),
                     key: 'itemTypeSalesPerformanceReport',
                   ),
@@ -177,7 +177,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     isClosed: true,
                     label: 'Performa Penjualan Supplier',
                     isDisabled: !setting.isAuthorize(
-                        'supplierSalesPerformanceReport', 'compare'),
+                        'itemSalesPerformanceReport', 'groupBy'),
                     pageFunct: () => const SupplierSalesPerformanceReportPage(),
                     key: 'supplierSalesPerformanceReport',
                   ),
@@ -186,7 +186,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     isClosed: true,
                     label: 'Performa Penjualan Merek',
                     isDisabled: !setting.isAuthorize(
-                        'brandSalesPerformanceReport', 'compare'),
+                        'itemSalesPerformanceReport', 'groupBy'),
                     pageFunct: () => const BrandSalesPerformanceReportPage(),
                     key: 'brandSalesPerformanceReport',
                   ),
@@ -194,8 +194,8 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     icon: Icons.bar_chart,
                     isClosed: true,
                     label: 'Penjualan Periode',
-                    isDisabled:
-                        !setting.isAuthorize('sale', 'transactionReport'),
+                    isDisabled: !setting.isAuthorize(
+                        'itemSalesPerformanceReport', 'groupBy'),
                     pageFunct: () => const SalesTransactionGraphPage(),
                     key: 'salesTransactionGraph',
                   ),
