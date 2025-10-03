@@ -26,12 +26,21 @@ class _BrandSalesPerformanceReportPageState
   List<Supplier> _suppliers = [];
   late final Server server;
   bool _separatePurchaseYear = false;
-  String _groupPeriod = 'daily';
+  String _groupPeriod = 'monthly';
   final supplierChartController = SalesChartController();
   final brandChartController = SalesChartController();
   final itemTypeChartController = SalesChartController();
 
-  final periodList = ['day', 'week', 'month', 'year', '5_year', 'all'];
+  final periodList = [
+    'day',
+    'week',
+    'month',
+    '3_month',
+    '6_month',
+    'year',
+    '5_year',
+    'all'
+  ];
   final List<DropdownMenuEntry> valueTypeEntries = [
     DropdownMenuEntry(value: 'sales_quantity', label: 'Jumlah Penjualan'),
     DropdownMenuEntry(value: 'sales_total', label: 'Total Penjualan (Rp)'),
@@ -43,19 +52,27 @@ class _BrandSalesPerformanceReportPageState
   final List<Widget> rangePeriodEntries = [
     Padding(
       padding: const EdgeInsets.all(5.0),
-      child: Text('1 Hari'),
+      child: Text('Hari Ini'),
     ),
     Padding(
       padding: const EdgeInsets.all(5.0),
-      child: Text('1 Minggu'),
+      child: Text('Minggu'),
     ),
     Padding(
       padding: const EdgeInsets.all(5.0),
-      child: Text('1 Bulan'),
+      child: Text('Bulan'),
     ),
     Padding(
       padding: const EdgeInsets.all(5.0),
-      child: Text('1 Tahun'),
+      child: Text('3 Bulan'),
+    ),
+    Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Text('6 Bulan'),
+    ),
+    Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Text('Tahun ini'),
     ),
     Padding(
       padding: const EdgeInsets.all(5.0),
@@ -68,20 +85,17 @@ class _BrandSalesPerformanceReportPageState
   ];
 
   Map brandChartFilter = {
-    'rangePeriod': 'month',
+    'rangePeriod': 5,
     'valueType': 'sales_total',
-    'selectedPeriod': <bool>[false, false, true, false, false, false],
     'brands': <Brand>[],
   };
   Map supplierChartFilter = {
-    'rangePeriod': 'month',
+    'rangePeriod': 5,
     'valueType': 'sales_total',
-    'selectedPeriod': <bool>[false, false, true, false, false, false],
   };
   Map itemTypeChartFilter = {
-    'rangePeriod': 'month',
+    'rangePeriod': 5,
     'valueType': 'sales_total',
-    'selectedPeriod': <bool>[false, false, true, false, false, false],
   };
 
   final _formKey = GlobalKey<FormState>();
@@ -116,8 +130,7 @@ class _BrandSalesPerformanceReportPageState
                     child: AsyncDropdown<Brand>(
                         label: const Text('Pilih Merek'),
                         allowClear: false,
-                        textOnSearch: (itemType) =>
-                            "${itemType.name} - ${itemType.description}",
+                        textOnSearch: (brand) => brand.name,
                         path: '/brands',
                         onChanged: (value) => _brand = value,
                         validator: (model) {
@@ -310,7 +323,7 @@ class _BrandSalesPerformanceReportPageState
                 isDense: true, border: OutlineInputBorder()),
           ),
           SizedBox(
-            width: 400,
+            width: 500,
             height: 90,
             child: Stack(
               children: [
@@ -322,12 +335,9 @@ class _BrandSalesPerformanceReportPageState
                   top: 20,
                   child: ToggleButtons(
                     onPressed: (int index) {
-                      final rangePeriodBefore = brandChartFilter['rangePeriod'];
-                      if (rangePeriodBefore != periodList[index]) {
+                      if (brandChartFilter['rangePeriod'] != index) {
                         setState(() {
-                          brandChartFilter['selectedPeriod'] = List.generate(
-                              periodList.length, (idx) => index == idx);
-                          brandChartFilter['rangePeriod'] = periodList[index];
+                          brandChartFilter['rangePeriod'] = index;
                         });
                         generateCompareReport();
                       }
@@ -337,7 +347,8 @@ class _BrandSalesPerformanceReportPageState
                     fillColor: Colors.blue.shade200,
                     borderRadius: BorderRadius.circular(5),
                     hoverColor: Colors.green.shade300,
-                    isSelected: brandChartFilter['selectedPeriod'],
+                    isSelected: List.generate(rangePeriodEntries.length,
+                        (idx) => brandChartFilter['rangePeriod'] == idx),
                     children: rangePeriodEntries,
                   ),
                 ),
@@ -375,7 +386,7 @@ class _BrandSalesPerformanceReportPageState
                 isDense: true, border: OutlineInputBorder()),
           ),
           SizedBox(
-            width: 400,
+            width: 500,
             height: 90,
             child: Stack(
               children: [
@@ -387,14 +398,9 @@ class _BrandSalesPerformanceReportPageState
                   top: 20,
                   child: ToggleButtons(
                     onPressed: (int index) {
-                      final rangePeriodBefore =
-                          itemTypeChartFilter['rangePeriod'];
-                      if (rangePeriodBefore != periodList[index]) {
+                      if (itemTypeChartFilter['rangePeriod'] != index) {
                         setState(() {
-                          itemTypeChartFilter['selectedPeriod'] = List.generate(
-                              periodList.length, (idx) => index == idx);
-                          itemTypeChartFilter['rangePeriod'] =
-                              periodList[index];
+                          itemTypeChartFilter['rangePeriod'] = index;
                         });
                         generateGroupByItemTypeReport();
                       }
@@ -404,7 +410,8 @@ class _BrandSalesPerformanceReportPageState
                     fillColor: Colors.blue.shade200,
                     borderRadius: BorderRadius.circular(5),
                     hoverColor: Colors.green.shade300,
-                    isSelected: itemTypeChartFilter['selectedPeriod'],
+                    isSelected: List.generate(rangePeriodEntries.length,
+                        (idx) => itemTypeChartFilter['rangePeriod'] == idx),
                     children: rangePeriodEntries,
                   ),
                 ),
@@ -442,7 +449,7 @@ class _BrandSalesPerformanceReportPageState
                 isDense: true, border: OutlineInputBorder()),
           ),
           SizedBox(
-            width: 400,
+            width: 500,
             height: 90,
             child: Stack(
               children: [
@@ -454,14 +461,9 @@ class _BrandSalesPerformanceReportPageState
                   top: 20,
                   child: ToggleButtons(
                     onPressed: (int index) {
-                      final rangePeriodBefore =
-                          supplierChartFilter['rangePeriod'];
-                      if (rangePeriodBefore != periodList[index]) {
+                      if (supplierChartFilter['rangePeriod'] != index) {
                         setState(() {
-                          supplierChartFilter['selectedPeriod'] = List.generate(
-                              periodList.length, (idx) => index == idx);
-                          supplierChartFilter['rangePeriod'] =
-                              periodList[index];
+                          supplierChartFilter['rangePeriod'] = index;
                         });
                         generateGroupBySupplierReport();
                       }
@@ -471,7 +473,8 @@ class _BrandSalesPerformanceReportPageState
                     fillColor: Colors.blue.shade200,
                     borderRadius: BorderRadius.circular(5),
                     hoverColor: Colors.green.shade300,
-                    isSelected: supplierChartFilter['selectedPeriod'],
+                    isSelected: List.generate(rangePeriodEntries.length,
+                        (idx) => supplierChartFilter['rangePeriod'] == idx),
                     children: rangePeriodEntries,
                   ),
                 ),
@@ -488,9 +491,6 @@ class _BrandSalesPerformanceReportPageState
   }
 
   String _tooltipFormat(double value, String valueType) {
-    if (value == 0) {
-      return '';
-    }
     switch (valueType) {
       case 'sales_quantity':
         return numberFormat(value);
@@ -528,12 +528,12 @@ class _BrandSalesPerformanceReportPageState
     for (var detail in data['data']) {
       String name, description;
       if (detail['last_purchase_year'] == null) {
-        name = detail['brand_name'] ?? '';
-        description = detail['brand_description'] ?? '';
+        name = detail['name'] ?? '';
+        description = detail['description'] ?? '';
       } else {
-        name = "${detail['brand_name']} (${detail['last_purchase_year']})";
+        name = "${detail['name']} (${detail['last_purchase_year']})";
         description =
-            "${detail['brand_description']} (${detail['last_purchase_year']})";
+            "${detail['description']} (${detail['last_purchase_year']})";
       }
       LineTitle lineTitle = LineTitle(name: name, description: description);
       lines[lineTitle] = convertDataToSpots(detail['spots'], identifierList);
@@ -572,12 +572,12 @@ class _BrandSalesPerformanceReportPageState
     for (var detail in data['data']) {
       String name, description;
       if (detail['last_purchase_year'] == null) {
-        name = detail['supplier_code'] ?? '';
-        description = detail['supplier_name'] ?? '';
+        name = detail['name'] ?? '';
+        description = detail['description'] ?? '';
       } else {
-        name = "${detail['supplier_code']} (${detail['last_purchase_year']})";
+        name = "${detail['name']} (${detail['last_purchase_year']})";
         description =
-            "${detail['supplier_name']} (${detail['last_purchase_year']})";
+            "${detail['description']} (${detail['last_purchase_year']})";
       }
       LineTitle lineTitle = LineTitle(name: name, description: description);
       lines[lineTitle] = convertDataToSpots(detail['spots'], identifierList);
@@ -616,12 +616,12 @@ class _BrandSalesPerformanceReportPageState
     for (var detail in data['data']) {
       String name, description;
       if (detail['last_purchase_year'] == null) {
-        name = detail['item_type_name'] ?? '';
-        description = detail['item_type_description'] ?? '';
+        name = detail['name'] ?? '';
+        description = detail['description'] ?? '';
       } else {
-        name = "${detail['item_type_name']} (${detail['last_purchase_year']})";
+        name = "${detail['name']} (${detail['last_purchase_year']})";
         description =
-            "${detail['item_type_description']} (${detail['last_purchase_year']})";
+            "${detail['description']} (${detail['last_purchase_year']})";
       }
       LineTitle lineTitle = LineTitle(name: name, description: description);
       lines[lineTitle] = convertDataToSpots(detail['spots'], identifierList);
@@ -702,6 +702,45 @@ class _BrandSalesPerformanceReportPageState
     return filteredDetails;
   }
 
+  DateTimeRange convertToTimeRange(int rangePeriod) {
+    DateTime end = DateTime.now().subtract(const Duration(days: 1)).endOfDay();
+    switch (rangePeriod) {
+      case 0:
+        return DateTimeRange(
+            start: DateTime.now().beginningOfDay(),
+            end: DateTime.now().endOfDay());
+      case 1:
+        return DateTimeRange(
+            start: end.subtract(const Duration(days: 6)).beginningOfDay(),
+            end: end);
+      case 2:
+        return DateTimeRange(
+            start: end.subtract(const Duration(days: 30)).beginningOfDay(),
+            end: end);
+      case 3:
+        return DateTimeRange(
+            start: end.subtract(const Duration(days: 91)).beginningOfDay(),
+            end: end);
+      case 4:
+        return DateTimeRange(
+            start: end.subtract(const Duration(days: 182)).beginningOfDay(),
+            end: end);
+      case 5:
+        return DateTimeRange(
+            start: end.subtract(const Duration(days: 365)).beginningOfDay(),
+            end: end);
+      case 6:
+        return DateTimeRange(
+            start: end.subtract(const Duration(days: 1826)).beginningOfDay(),
+            end: end);
+      case 7:
+        return DateTimeRange(
+            start: DateTime(1000), end: DateTime.now().endOfDay());
+      default:
+        throw "Invalid range period $rangePeriod";
+    }
+  }
+
   Future fetchCompareData() async {
     var brands = (brandChartFilter['brands'] as List<Brand>)
         .map<String>((e) => e.name)
@@ -709,12 +748,15 @@ class _BrandSalesPerformanceReportPageState
     if (_brand != null && !brands.contains(_brand!.name)) {
       brands.add(_brand!.name);
     }
-    return server.get('brand_sales_performance_reports/compare', queryParam: {
-      'item_types[]': _itemTypes.map<String>((e) => e.name).toList(),
-      'suppliers[]': _suppliers.map<String>((e) => e.code).toList(),
-      'brands[]': brands,
-      'range_period': brandChartFilter['rangePeriod'],
+    DateTimeRange range = convertToTimeRange(brandChartFilter['rangePeriod']);
+    return server.get('item_sales_performance_reports/group_by', queryParam: {
+      'item_type_names[]': _itemTypes.map<String>((e) => e.name).toList(),
+      'supplier_codes[]': _suppliers.map<String>((e) => e.code).toList(),
+      'brand_names[]': brands,
+      'start_date': range.start.toIso8601String(),
+      'end_date': range.end.toIso8601String(),
       'group_period': _groupPeriod,
+      'group_type': 'brand',
       'value_type': brandChartFilter['valueType'],
       'last_purchase_years[]':
           _lastPurchaseYears.map<String>((e) => e.toString()).toList(),
@@ -723,13 +765,16 @@ class _BrandSalesPerformanceReportPageState
   }
 
   Future fetchGroupBySupplierData() async {
-    return server
-        .get('brand_sales_performance_reports/group_by_supplier', queryParam: {
-      'brands[]': _itemTypes.map<String>((e) => e.name).toList(),
-      'brand_name': _brand?.name,
-      'suppliers[]': _suppliers.map<String>((e) => e.code).toList(),
-      'range_period': supplierChartFilter['rangePeriod'],
+    DateTimeRange range =
+        convertToTimeRange(supplierChartFilter['rangePeriod']);
+    return server.get('item_sales_performance_reports/group_by', queryParam: {
+      'item_type_names[]': _itemTypes.map<String>((e) => e.name).toList(),
+      'supplier_codes[]': _suppliers.map<String>((e) => e.code).toList(),
+      'brand_names[]': [_brand?.name],
+      'start_date': range.start.toIso8601String(),
+      'end_date': range.end.toIso8601String(),
       'group_period': _groupPeriod,
+      'group_type': 'supplier',
       'value_type': supplierChartFilter['valueType'],
       'last_purchase_years[]':
           _lastPurchaseYears.map<String>((e) => e.toString()).toList(),
@@ -738,13 +783,16 @@ class _BrandSalesPerformanceReportPageState
   }
 
   Future fetchGroupByItemTypeData() async {
-    return server
-        .get('brand_sales_performance_reports/group_by_item_type', queryParam: {
-      'item_types[]': _itemTypes.map<String>((e) => e.name).toList(),
-      'brand_name': _brand?.name,
-      'suppliers[]': _suppliers.map<String>((e) => e.code).toList(),
-      'range_period': itemTypeChartFilter['rangePeriod'],
+    DateTimeRange range =
+        convertToTimeRange(itemTypeChartFilter['rangePeriod']);
+    return server.get('item_sales_performance_reports/group_by', queryParam: {
+      'item_type_names[]': _itemTypes.map<String>((e) => e.name).toList(),
+      'supplier_codes[]': _suppliers.map<String>((e) => e.code).toList(),
+      'brand_names[]': [_brand?.name],
+      'start_date': range.start.toIso8601String(),
+      'end_date': range.end.toIso8601String(),
       'group_period': _groupPeriod,
+      'group_type': 'item_type',
       'value_type': itemTypeChartFilter['valueType'],
       'last_purchase_years[]':
           _lastPurchaseYears.map<String>((e) => e.toString()).toList(),

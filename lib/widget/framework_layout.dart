@@ -166,36 +166,36 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                   Menu(
                     icon: Icons.line_axis,
                     isClosed: true,
-                    label: 'Laporan Performa Jenis/Departemen',
+                    label: 'Performa Jenis/Departemen',
                     isDisabled: !setting.isAuthorize(
-                        'itemTypeSalesPerformanceReport', 'compare'),
+                        'itemSalesPerformanceReport', 'groupBy'),
                     pageFunct: () => const ItemTypeSalesPerformanceReportPage(),
                     key: 'itemTypeSalesPerformanceReport',
                   ),
                   Menu(
                     icon: Icons.line_axis,
                     isClosed: true,
-                    label: 'Laporan Performa Penjualan Supplier',
+                    label: 'Performa Penjualan Supplier',
                     isDisabled: !setting.isAuthorize(
-                        'supplierSalesPerformanceReport', 'compare'),
+                        'itemSalesPerformanceReport', 'groupBy'),
                     pageFunct: () => const SupplierSalesPerformanceReportPage(),
                     key: 'supplierSalesPerformanceReport',
                   ),
                   Menu(
                     icon: Icons.line_axis,
                     isClosed: true,
-                    label: 'Laporan Performa Penjualan Merek',
+                    label: 'Performa Penjualan Merek',
                     isDisabled: !setting.isAuthorize(
-                        'brandSalesPerformanceReport', 'compare'),
+                        'itemSalesPerformanceReport', 'groupBy'),
                     pageFunct: () => const BrandSalesPerformanceReportPage(),
                     key: 'brandSalesPerformanceReport',
                   ),
                   Menu(
-                    icon: Icons.line_axis,
+                    icon: Icons.bar_chart,
                     isClosed: true,
-                    label: 'Grafik Transaksi Penjualan Periode',
-                    isDisabled:
-                        !setting.isAuthorize('sale', 'transactionReport'),
+                    label: 'Penjualan Periode',
+                    isDisabled: !setting.isAuthorize(
+                        'itemSalesPerformanceReport', 'groupBy'),
                     pageFunct: () => const SalesTransactionGraphPage(),
                     key: 'salesTransactionGraph',
                   ),

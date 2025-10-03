@@ -51,28 +51,27 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
 
 class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
     with PlutoTableDecorator, PlatformChecker, TextFormatter {
-  late List<PlutoColumn> columns;
-  late List<PlutoRow> rows;
+  List<PlutoRow> get rows => widget.rows
+      .map<PlutoRow>(
+          (row) => decorateRow(model: row, tableColumns: widget.columns))
+      .toList();
+
+  List<PlutoColumn> get columns =>
+      widget.columns.asMap().entries.map<PlutoColumn>((entry) {
+        int index = entry.key;
+        TableColumn tableColumn = entry.value;
+        return decorateColumn(
+          tableColumn,
+          tabManager: tabManager,
+          listEnumValues: widget.enums[tableColumn.name],
+          showFilter: widget.showFilter,
+          isFrozen: index < widget.fixedLeftColumns,
+        );
+      }).toList();
 
   @override
   void initState() {
     tabManager = context.read<TabManager>();
-    columns = widget.columns.asMap().entries.map<PlutoColumn>((entry) {
-      int index = entry.key;
-      TableColumn tableColumn = entry.value;
-      return decorateColumn(
-        tableColumn,
-        tabManager: tabManager,
-        listEnumValues: widget.enums[tableColumn.name],
-        showFilter: widget.showFilter,
-        isFrozen: index < widget.fixedLeftColumns,
-      );
-    }).toList();
-    rows = widget.rows
-        .map<PlutoRow>(
-            (row) => decorateRow(model: row, tableColumns: widget.columns))
-        .toList();
-
     super.initState();
   }
 

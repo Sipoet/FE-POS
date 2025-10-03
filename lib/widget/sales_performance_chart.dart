@@ -67,11 +67,11 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
                 ]))),
         const SizedBox(height: 10),
         Visibility(
-          visible: !controller.isLoading && controller.lines.isEmpty,
+          visible: !controller.isLoading && controller.lineDetails.isEmpty,
           child: Center(child: Text('Data Tidak Ditemukan')),
         ),
         Visibility(
-          visible: !controller.isLoading && controller.lines.isNotEmpty,
+          visible: !controller.isLoading && controller.lineDetails.isNotEmpty,
           child: Column(
             children: [
               Center(
@@ -87,21 +87,35 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   spacing: 10,
                   runSpacing: 10,
-                  children: controller.lineTitles
-                      .mapIndexed((int index, LineTitle lineTitle) {
+                  children: controller.lineDetails
+                      .mapIndexed<Widget>((int index, LineDetail lineDetail) {
+                    final lineTitle = lineDetail.lineTitle;
                     return Tooltip(
                       message: lineTitle.description,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 20,
-                            height: 10,
-                            color: getLineColor(index),
-                          ),
-                          const SizedBox(width: 5),
-                          Text(lineTitle.name),
-                        ],
+                      triggerMode: TooltipTriggerMode.longPress,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            lineDetail.isDisplayed = !lineDetail.isDisplayed;
+                          });
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 20,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: lineDetail.isDisplayed
+                                      ? lineDetail.color
+                                      : Colors.grey.shade500,
+                                  border: Border.all(color: lineDetail.color)),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(lineTitle.name),
+                          ],
+                        ),
                       ),
                     );
                   }).toList(),
@@ -115,53 +129,85 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
                   child: LineChart(LineChartData(
                     minY: 0,
                     lineTouchData: LineTouchData(
-                        touchTooltipData: LineTouchTooltipData(
-                      fitInsideHorizontally: true,
-                      maxContentWidth: 220,
-                      getTooltipColor: (touchedSpot) => Colors.grey.shade900,
-                      getTooltipItems: (touchedSpots) => touchedSpots
-                          .mapIndexed<LineTooltipItem>(
-                              (int index, LineBarSpot spot) {
-                        final formattedYValue = widget.spotYFormat(spot.y);
-                        if (index == 0) {
+                      getTouchedSpotIndicator: (
+                        _,
+                        indicators,
+                      ) {
+                        return indicators
+                            .map((int index) => const TouchedSpotIndicatorData(
+                                  FlLine(color: Colors.transparent),
+                                  FlDotData(show: false),
+                                ))
+                            .toList();
+                      },
+                      distanceCalculator:
+                          (Offset touchPoint, Offset spotPixelCoordinates) =>
+                              (touchPoint - spotPixelCoordinates).distance,
+                      touchTooltipData: LineTouchTooltipData(
+                        fitInsideHorizontally: true,
+                        // fitInsideVertically: true,
+                        maxContentWidth: 220,
+                        getTooltipColor: (touchedSpot) => Colors.grey.shade900,
+                        getTooltipItems: (touchedSpots) => touchedSpots
+                            .mapIndexed<LineTooltipItem>(
+                                (int index, LineBarSpot spot) {
+                          final formattedYValue = widget.spotYFormat(spot.y);
+                          LineDetail linedetail =
+                              controller.lineDetails[spot.barIndex];
+
+                          LineTitle lineTitle = linedetail.lineTitle;
+                          if (index == 0) {
+                            return LineTooltipItem(
+                                "- ${xFormatDetail(spot.x).toString()} -",
+                                TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                    color: Colors.white),
+                                textAlign: TextAlign.right,
+                                children: [
+                                  TextSpan(
+                                      text: "\n ${lineTitle.name}",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: linedetail.color)),
+                                  TextSpan(
+                                      text: ' : $formattedYValue',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.normal,
+                                          fontSize: 14,
+                                          color: Colors.white)),
+                                ]);
+                          }
                           return LineTooltipItem(
-                              "- ${xFormatDetail(spot.x).toString()} -",
+                              lineTitle.name,
                               TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Colors.white),
+                                  fontSize: 14,
+                                  color: linedetail.color),
                               textAlign: TextAlign.right,
                               children: [
                                 TextSpan(
-                                    text:
-                                        "\n ${controller._lineTitles[spot.barIndex].name}: $formattedYValue",
+                                    text: ' : $formattedYValue',
                                     style: TextStyle(
                                         fontWeight: FontWeight.normal,
-                                        fontSize: 16,
-                                        color: getLineColor(spot.barIndex))),
+                                        fontSize: 14,
+                                        color: Colors.white)),
                               ]);
-                        }
-
-                        return LineTooltipItem(
-                          "${controller._lineTitles[spot.barIndex].name}: $formattedYValue",
-                          TextStyle(
-                              height: formattedYValue.isEmpty ? 0 : null,
-                              fontWeight: FontWeight.normal,
-                              fontSize: formattedYValue.isEmpty ? 0 : 16,
-                              color: getLineColor(spot.barIndex)),
-                          textAlign: TextAlign.right,
-                        );
-                      }).toList(),
-                    )),
-                    lineBarsData: controller.lines
+                        }).toList(),
+                      ),
+                    ),
+                    lineBarsData: controller.lineDetails
                         .mapIndexed(
-                          (int index, List<FlSpot> spots) => LineChartBarData(
-                            color: getLineColor(index),
+                          (int index, LineDetail lineDetail) =>
+                              LineChartBarData(
+                            show: lineDetail.isDisplayed,
+                            color: lineDetail.color,
                             barWidth: 2,
+                            isStrokeCapRound: true,
                             dotData: FlDotData(show: true),
-                            belowBarData: BarAreaData(show: false),
                             isCurved: false,
-                            spots: spots,
+                            spots: lineDetail.spots,
                           ),
                         )
                         .toList(),
@@ -188,12 +234,13 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
                         sideTitles: SideTitles(
                             getTitlesWidget: getLeftTitles,
                             showTitles: true,
-                            // maxIncluded: true,
                             minIncluded: false,
                             reservedSize: 50),
                       ),
                     ),
-                    gridData: FlGridData(show: true),
+                    gridData: FlGridData(
+                      show: true,
+                    ),
                     borderData: FlBorderData(
                         show: true,
                         border: Border(
@@ -213,10 +260,6 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
         ),
       ],
     );
-  }
-
-  Color getLineColor(int index) {
-    return Colors.primaries[index % Colors.primaries.length];
   }
 
   SideTitleWidget getBottomTitles(double valueX, TitleMeta meta) {
@@ -277,13 +320,25 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
 class LineTitle {
   final String name;
   final String description;
+
   const LineTitle({required this.name, this.description = ''});
+}
+
+class LineDetail {
+  final LineTitle lineTitle;
+  List<FlSpot> spots;
+  bool isDisplayed;
+  Color color;
+  LineDetail(
+      {required this.lineTitle,
+      required this.color,
+      this.isDisplayed = true,
+      this.spots = const []});
 }
 
 class SalesChartController with ChangeNotifier {
   bool _isLoading = false;
-  List<List<FlSpot>> _lines = [];
-  List<LineTitle> _lineTitles = [];
+  List<LineDetail> _lines = [];
   List<String> _identifierList = [];
   List<String> _filteredDetails = [];
   List visibleBottomTitles = [];
@@ -292,8 +347,10 @@ class SalesChartController with ChangeNotifier {
   DateTime? _endDate;
 
   get isLoading => _isLoading;
-  List<List<FlSpot>> get lines => _lines;
-  List<LineTitle> get lineTitles => _lineTitles;
+  List<LineDetail> get filteredlines =>
+      _lines.where((line) => line.isDisplayed).toList();
+  List<LineDetail> get lineDetails => _lines;
+  List<LineTitle> get lineTitles => _lines.map((e) => e.lineTitle).toList();
   List<String> get identifierList => _identifierList;
   List<String> get filteredDetails => _filteredDetails;
 
@@ -313,12 +370,21 @@ class SalesChartController with ChangeNotifier {
     List<String> filteredDetails = const [],
   }) {
     visibleBottomTitles.clear();
-    _lines = lines.values.toList();
-    _lineTitles = lines.keys.toList();
+    _lines = lines.keys
+        .mapIndexed<LineDetail>((int index, LineTitle lineTitle) => LineDetail(
+            lineTitle: lineTitle,
+            color: _getLineColor(index),
+            spots: lines[lineTitle] ?? []))
+        .toList();
+
     _identifierList = identifierList;
     _startDate = startDate;
     _endDate = endDate;
     _filteredDetails = filteredDetails;
     notifyListeners();
+  }
+
+  Color _getLineColor(int index) {
+    return Colors.primaries[index % Colors.primaries.length];
   }
 }
