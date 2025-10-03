@@ -166,9 +166,36 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                   Menu(
                     icon: Icons.line_axis,
                     isClosed: true,
-                    label: 'Grafik Transaksi Penjualan Periode',
-                    isDisabled:
-                        !setting.isAuthorize('sale', 'transactionReport'),
+                    label: 'Performa Jenis/Departemen',
+                    isDisabled: !setting.isAuthorize(
+                        'itemSalesPerformanceReport', 'groupBy'),
+                    pageFunct: () => const ItemTypeSalesPerformanceReportPage(),
+                    key: 'itemTypeSalesPerformanceReport',
+                  ),
+                  Menu(
+                    icon: Icons.line_axis,
+                    isClosed: true,
+                    label: 'Performa Penjualan Supplier',
+                    isDisabled: !setting.isAuthorize(
+                        'itemSalesPerformanceReport', 'groupBy'),
+                    pageFunct: () => const SupplierSalesPerformanceReportPage(),
+                    key: 'supplierSalesPerformanceReport',
+                  ),
+                  Menu(
+                    icon: Icons.line_axis,
+                    isClosed: true,
+                    label: 'Performa Penjualan Merek',
+                    isDisabled: !setting.isAuthorize(
+                        'itemSalesPerformanceReport', 'groupBy'),
+                    pageFunct: () => const BrandSalesPerformanceReportPage(),
+                    key: 'brandSalesPerformanceReport',
+                  ),
+                  Menu(
+                    icon: Icons.bar_chart,
+                    isClosed: true,
+                    label: 'Penjualan Periode',
+                    isDisabled: !setting.isAuthorize(
+                        'itemSalesPerformanceReport', 'groupBy'),
                     pageFunct: () => const SalesTransactionGraphPage(),
                     key: 'salesTransactionGraph',
                   ),

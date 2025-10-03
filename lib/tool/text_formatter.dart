@@ -11,14 +11,16 @@ mixin TextFormatter {
     return DateFormat('dd/MM/y', 'id_ID').format(date);
   }
 
-  String moneyFormat(dynamic value) {
+  String moneyFormat(dynamic value, {int decimalDigits = 1}) {
     if (value is Money) {
       return NumberFormat.currency(
-              locale: "id_ID", symbol: value.symbol, decimalDigits: 1)
+              locale: "id_ID",
+              symbol: value.symbol,
+              decimalDigits: decimalDigits)
           .format(value.value);
     }
     return NumberFormat.currency(
-            locale: "id_ID", symbol: "Rp", decimalDigits: 1)
+            locale: "id_ID", symbol: "Rp", decimalDigits: decimalDigits)
         .format(value);
   }
 
@@ -32,5 +34,9 @@ mixin TextFormatter {
 
   String numberFormat(number) {
     return NumberFormat(",##0.##", "en_US").format(number);
+  }
+
+  String compactNumberFormat(number) {
+    return NumberFormat.compact().format(number);
   }
 }

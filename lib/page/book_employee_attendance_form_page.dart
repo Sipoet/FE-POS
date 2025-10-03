@@ -34,7 +34,7 @@ class _BookEmployeeAttendanceFormPageState
   late final Server _server;
   late final Setting setting;
   List<Employee> _employees = [];
-  List<BookEmployeeAttendance> _bookEmployeeAttendances = [];
+  final List<BookEmployeeAttendance> _bookEmployeeAttendances = [];
   final _focusNode = FocusNode();
   @override
   bool get wantKeepAlive => true;

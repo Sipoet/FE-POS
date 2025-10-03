@@ -73,14 +73,14 @@ enum TableColumnType {
   }
 }
 
-class TableColumn {
+class TableColumn<T extends Model> {
   double initX;
   double clientWidth;
   double? excelWidth;
   String name;
   TableColumnType type;
   Widget Function(PlutoColumnRendererContext rendererContext)? renderBody;
-  dynamic Function(Model model)? getValue;
+  dynamic Function(T model)? getValue;
   String humanizeName;
   bool canSort;
   bool canFilter;
@@ -453,7 +453,7 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
                             child: Tooltip(
                               message: 'Total Penjumlahan',
                               child: Text(
-                                'SUM',
+                                'TOTAL',
                                 style: _labelStyle,
                               ),
                             ),
@@ -504,7 +504,7 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
                           child: Tooltip(
                             message: 'Rata-rata',
                             child: Text(
-                              'AVG',
+                              'RATA2',
                               style: _labelStyle,
                             ),
                           ),
