@@ -14,7 +14,8 @@ class TabManager extends ChangeNotifier {
   Widget? _safeAreaContent;
   Widget? get safeAreaContent => _safeAreaContent;
 
-  void setSafeAreaContent(String title, Widget content) {
+  void setSafeAreaContent(String title, Widget content,
+      {void Function()? whenClose}) {
     _safeAreaContent = SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.all(5),
@@ -35,7 +36,12 @@ class TabManager extends ChangeNotifier {
                   ),
                 ),
                 IconButton(
-                    onPressed: () => removeRightContent(),
+                    onPressed: () {
+                      removeRightContent();
+                      if (whenClose is Function && whenClose != null) {
+                        whenClose();
+                      }
+                    },
                     icon: Icon(Icons.close))
               ],
             ),
