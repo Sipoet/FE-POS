@@ -10,6 +10,7 @@ import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/transaction_report_controller.dart';
 export 'package:fe_pos/tool/transaction_report_controller.dart';
+import 'package:fe_pos/tool/platform_checker.dart';
 
 class LastSalesTransactionWidget extends StatefulWidget {
   final int limit;
@@ -27,6 +28,7 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
         TickerProviderStateMixin,
         AutomaticKeepAliveClientMixin,
         DefaultResponse,
+        PlatformChecker,
         TextFormatter {
   List<Sale> sales = [];
   late int limit;
@@ -284,7 +286,12 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
 
   void _openSaleDetail(Sale sale) {
     final tabManager = context.read<TabManager>();
-    tabManager.setSafeAreaContent(
-        'Penjualan ${sale.code}', SaleFormPage(sale: sale));
+    if (isDesktop()) {
+      tabManager.setSafeAreaContent('Penjualan ${sale.code}',
+          SaleFormPage(sale: sale, key: ObjectKey(sale)));
+    } else {
+      tabManager.addTab('Penjualan ${sale.code}',
+          SaleFormPage(sale: sale, key: ObjectKey(sale)));
+    }
   }
 }

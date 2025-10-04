@@ -157,10 +157,13 @@ class _BrandSalesPerformanceReportPageState
                             label: const Text('Jenis/Departemen :',
                                 style: _filterLabelStyle),
                             key: const ValueKey('itemTypeSelect'),
-                            textOnSearch: (ItemType itemType) => itemType.name,
+                            textOnSearch: (ItemType itemType) =>
+                                "${itemType.name} -  ${itemType.description}",
+                            textOnSelected: (ItemType itemType) =>
+                                itemType.name,
                             converter: ItemType.fromJson,
                             attributeKey: 'jenis',
-                            path: '/item_Types',
+                            path: '/item_types',
                             onChanged: (value) => _itemTypes = value,
                           )),
                       SizedBox(
