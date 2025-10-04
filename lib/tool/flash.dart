@@ -19,7 +19,6 @@ class Flash extends ChangeNotifier {
       required ToastificationType messageType,
       Duration? duration}) {
     hide();
-    toastification.dismissAll();
     toastification.show(
       title: Text(
         title,
