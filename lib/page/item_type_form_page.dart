@@ -21,6 +21,7 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
   ItemType get itemType => widget.itemType;
   late final Setting _setting;
   late final Server _server;
+  final _formState = GlobalKey<FormState>();
   // late final Flash _flash;
   @override
   void initState() {
@@ -46,6 +47,9 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
   }
 
   void save() {
+    if (_formState.currentState?.validate() == false) {
+      return;
+    }
     showLoadingPopup();
     final params = {
       'data': {
@@ -58,7 +62,7 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
     if (itemType.isNewRecord) {
       response = _server.post('item_types', body: params);
     } else {
-      response = _server.put('item_types/${itemType.name}', body: params);
+      response = _server.put('item_types/${itemType.id}', body: params);
     }
     response.then((response) {
       if (mounted && [200, 201].contains(response.statusCode)) {
@@ -97,59 +101,70 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
   @override
   Widget build(BuildContext context) {
     return VerticalBodyScroll(
-      child: Column(
-        children: [
-          TextFormField(
-            initialValue: itemType.name,
-            onChanged: (value) {
-              setState(() {
-                itemType.name = value;
-              });
-            },
-            decoration: InputDecoration(
-                label: Text(
-                  _setting.columnName('itemType', 'name'),
-                  style: _filterLabelStyle,
-                ),
-                border: OutlineInputBorder()),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          TextFormField(
-            initialValue: itemType.description,
-            onChanged: (value) {
-              setState(() {
-                itemType.description = value;
-              });
-            },
-            minLines: 3,
-            maxLines: 5,
-            decoration: InputDecoration(
-                label: Text(
-                  _setting.columnName('itemType', 'description'),
-                  style: _filterLabelStyle,
-                ),
-                border: OutlineInputBorder()),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          AsyncDropdown<ItemType>(
-            label: const Text('Parent :', style: _filterLabelStyle),
-            key: const ValueKey('itemTypeSelect'),
-            textOnSearch: (ItemType itemType) => itemType.name,
-            selected: itemType.parent,
-            converter: ItemType.fromJson,
-            attributeKey: 'jenis',
-            path: '/item_types',
-            onChanged: (value) => itemType.parent = value,
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          ElevatedButton(onPressed: save, child: Text('Simpan'))
-        ],
+      child: Form(
+        key: _formState,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextFormField(
+              initialValue: itemType.name,
+              onChanged: (value) {
+                setState(() {
+                  itemType.name = value;
+                });
+              },
+              validator: (value) {
+                debugPrint(value.toString());
+                if (value == null || value.isEmpty) {
+                  return 'harus diisi';
+                }
+                return null;
+              },
+              decoration: InputDecoration(
+                  label: Text(
+                    _setting.columnName('itemType', 'name'),
+                    style: _filterLabelStyle,
+                  ),
+                  border: OutlineInputBorder()),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            TextFormField(
+              initialValue: itemType.description,
+              onChanged: (value) {
+                setState(() {
+                  itemType.description = value;
+                });
+              },
+              minLines: 3,
+              maxLines: 5,
+              decoration: InputDecoration(
+                  label: Text(
+                    _setting.columnName('itemType', 'description'),
+                    style: _filterLabelStyle,
+                  ),
+                  border: OutlineInputBorder()),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            AsyncDropdown<ItemType>(
+              label: const Text('Parent :', style: _filterLabelStyle),
+              key: const ValueKey('itemTypeSelect'),
+              textOnSearch: (ItemType itemType) => itemType.name,
+              selected: itemType.parent,
+              converter: ItemType.fromJson,
+              attributeKey: 'jenis',
+              path: '/item_types',
+              onChanged: (value) => itemType.parent = value,
+            ),
+            const SizedBox(
+              height: 15,
+            ),
+            ElevatedButton(onPressed: save, child: Text('Simpan'))
+          ],
+        ),
       ),
     );
   }

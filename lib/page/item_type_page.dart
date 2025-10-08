@@ -6,9 +6,8 @@ import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
-
+import 'package:flutter_simple_treeview/flutter_simple_treeview.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
 
@@ -21,11 +20,11 @@ class ItemTypePage extends StatefulWidget {
 
 class _ItemTypePageState extends State<ItemTypePage>
     with DefaultResponse, PlatformChecker {
-  late final PlutoGridStateManager _source;
+  // late final PlutoGridStateManager _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();
-  List<TreeSliverNode<ItemType>> tree = [];
+  List<TreeNode> tree = [];
   late Flash flash;
   late final Setting setting;
   late final TabManager tabManager;
@@ -36,7 +35,7 @@ class _ItemTypePageState extends State<ItemTypePage>
     flash = Flash();
     setting = context.read<Setting>();
     tabManager = context.read<TabManager>();
-    Future.delayed(Duration.zero, refreshTable);
+    Future.delayed(Duration.zero, fetchItemTypes);
     super.initState();
   }
 
@@ -47,7 +46,8 @@ class _ItemTypePageState extends State<ItemTypePage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshTable();
+    fetchItemTypes();
+    // _source.refreshTable();
   }
 
   Future<DataTableResponse<ItemType>> fetchItemTypes(
@@ -104,12 +104,30 @@ class _ItemTypePageState extends State<ItemTypePage>
     }
   }
 
-  List<TreeSliverNode<ItemType>> convertToTree(List<ItemType> models,
-      {dynamic parentId}) {
+  List<TreeNode> convertToTree(List<ItemType> models, {dynamic parentId}) {
     return models
         .where((itemType) => itemType.parentId == parentId)
-        .map((ItemType itemType) => TreeSliverNode<ItemType>(
-              itemType,
+        .map((ItemType itemType) => TreeNode(
+              content: Row(
+                children: [
+                  Tooltip(
+                      message: itemType.description,
+                      child: Text(itemType.name)),
+                  const SizedBox(
+                    width: 15,
+                  ),
+                  IconButton(
+                      onPressed: () => _openForm(itemType),
+                      icon: Icon(Icons.edit)),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  IconButton(
+                      onPressed: () =>
+                          _openForm(ItemType(parentId: itemType.id)),
+                      icon: Icon(Icons.add)),
+                ],
+              ),
               children: convertToTree(models, parentId: itemType.id),
             ))
         .toList();
@@ -127,83 +145,6 @@ class _ItemTypePageState extends State<ItemTypePage>
     if (container != _searchText) {
       refreshTable();
     }
-  }
-
-  Widget treeNodes() {
-    return DecoratedSliver(
-      decoration: BoxDecoration(border: Border.all()),
-      sliver: TreeSliver<ItemType>(
-        tree: tree,
-        onNodeToggle: (TreeSliverNode<Object?> node) {
-          // setState(() {
-          //   _selectedNode = node as TreeSliverNode<String>;
-          // });
-        },
-        treeNodeBuilder: _treeNodeBuilder,
-        treeRowExtentBuilder: (TreeSliverNode<Object?> node,
-            SliverLayoutDimensions layoutDimensions) {
-          // This gives more space to parent nodes.
-          return node.children.isNotEmpty ? 60.0 : 50.0;
-        },
-        // No internal indentation, the custom treeNodeBuilder applies its
-        // own indentation to decorate in the indented space.
-        indentation: TreeSliverIndentationType.none,
-      ),
-    );
-  }
-
-  Widget _treeNodeBuilder(
-    BuildContext context,
-    TreeSliverNode<Object?> node,
-    AnimationStyle toggleAnimationStyle,
-  ) {
-    final bool isParentNode = node.children.isNotEmpty;
-    final BorderSide border = BorderSide(width: 2, color: Colors.purple[300]!);
-    ItemType itemType = node.content as ItemType;
-
-    return TreeSliver.wrapChildToToggleNode(
-      node: node,
-      child: Row(
-        children: <Widget>[
-          // Custom indentation
-          SizedBox(width: 10.0 * node.depth! + 8.0),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              border: node.parent != null
-                  ? Border(left: border, bottom: border)
-                  : null,
-            ),
-            child: const SizedBox(height: 50.0, width: 20.0),
-          ),
-          // Leading icon for parent nodes
-          if (isParentNode)
-            DecoratedBox(
-              decoration: BoxDecoration(border: Border.all()),
-              child: SizedBox.square(
-                dimension: 20.0,
-                child:
-                    Icon(node.isExpanded ? Icons.remove : Icons.add, size: 14),
-              ),
-            ),
-          // Spacer
-          const SizedBox(width: 8.0),
-          // Content
-          Text(itemType.name),
-          const SizedBox(width: 8.0),
-          IconButton(
-            icon: Icon(Icons.edit),
-            onPressed: () => _openForm(itemType),
-          ),
-          const SizedBox(width: 8.0),
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () => _openForm(ItemType(
-              parentId: itemType.id,
-            )),
-          ),
-        ],
-      ),
-    );
   }
 
   void _openForm(ItemType itemType) {
@@ -229,62 +170,64 @@ class _ItemTypePageState extends State<ItemTypePage>
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 10, bottom: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _searchText = '';
-                    });
-                    refreshTable();
-                  },
-                  tooltip: 'Reset Table',
-                  icon: const Icon(Icons.refresh),
-                ),
-                SizedBox(
-                  width: 150,
-                  child: TextField(
-                    decoration: const InputDecoration(hintText: 'Search Text'),
-                    onChanged: searchChanged,
-                    onSubmitted: searchChanged,
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 10, bottom: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _searchText = '';
+                      });
+                      refreshTable();
+                    },
+                    tooltip: 'Reset Table',
+                    icon: const Icon(Icons.refresh),
                   ),
-                ),
-              ],
+                  SizedBox(
+                    width: 150,
+                    child: TextField(
+                      decoration:
+                          const InputDecoration(hintText: 'Search Text'),
+                      onChanged: searchChanged,
+                      onSubmitted: searchChanged,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: IconButton.filled(
-                onPressed: () => _openForm(ItemType(
-                      parentId: null,
-                    )),
-                icon: Icon(Icons.add)),
-          ),
-          Expanded(
-            child: CustomScrollView(
-              slivers: [treeNodes()],
+            Align(
+              alignment: Alignment.centerLeft,
+              child: IconButton.filled(
+                  onPressed: () => _openForm(ItemType(
+                        parentId: null,
+                      )),
+                  icon: Icon(Icons.add)),
             ),
-          ),
-          SizedBox(
-            height: 100,
-            child: CustomAsyncDataTable2<ItemType>(
-              onLoaded: (stateManager) => _source = stateManager,
-              columns: setting.tableColumn('ipos::ItemType'),
-              fetchData: (request) => fetchItemTypes(
-                  page: request.page,
-                  filter: request.filter,
-                  sorts: request.sorts),
-              fixedLeftColumns: 0,
+            SizedBox(
+              height: 10,
             ),
-          ),
-        ],
+            TreeView(nodes: tree),
+            // SizedBox(
+            //   height: 100,
+            //   child: CustomAsyncDataTable2<ItemType>(
+            //     onLoaded: (stateManager) => _source = stateManager,
+            //     columns: setting.tableColumn('ipos::ItemType'),
+            //     fetchData: (request) => fetchItemTypes(
+            //         page: request.page,
+            //         filter: request.filter,
+            //         sorts: request.sorts),
+            //     fixedLeftColumns: 0,
+            //   ),
+            // ),
+          ],
+        ),
       ),
     );
   }
