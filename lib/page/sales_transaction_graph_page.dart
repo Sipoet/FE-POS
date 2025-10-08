@@ -65,13 +65,13 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
     'sales_total': 'Total Penjualan(Rp)',
     'sales_quantity': 'Jumlah Penjualan',
     'sales_discount_amount': 'Total Diskon(Rp)',
-    'gross_profit': 'Gross Profit',
+    'gross_profit': 'Gross Profit(Rp)',
     'sales_through_rate': 'Kecepatan Penjualan(%)',
-    'cash_total': 'Total Bayar Tunai',
-    'debit_total': 'Total Bayar Kartu Debit',
-    'credit_total': 'Total Bayar Kartu Kredit',
-    'qris_total': 'Total Bayar dengan Qris',
-    'online_total': 'Total bayar dengan Online Transfer',
+    'cash_total': 'Total Tunai(Rp)',
+    'debit_total': 'Total Kartu Debit(Rp)',
+    'credit_total': 'Total Kartu Kredit(Rp)',
+    'qris_total': 'Total Qris(Rp)',
+    'online_total': 'Total Online Transfer(Rp)',
   };
 
   @override
@@ -117,8 +117,8 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
       if (response.statusCode == 409) {
         flash.showBanner(
             messageType: ToastificationType.error,
-            title: 'Gagal Ambil data',
-            description: response.data['message']);
+            title: response.data['message'],
+            description: response.data['errors'].join(','));
       }
       return;
     }
@@ -175,11 +175,18 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
       return models;
     } else {
       for (var detail in data['data']) {
+        List spots = detail['spots'];
+        var total = spots
+            .map<double>((e) => (e[1] ?? 0).toDouble())
+            .reduce((value, element) => value + element);
+        if (fieldKey == 'sales_through_rate' && spots.isNotEmpty) {
+          total = total / spots.length;
+        }
         models.add(HashModel(data: {
           'group_key': detail['name'],
-          'total': (detail['spots'] as List)
-              .map<double>((e) => e[1].toDouble())
-              .reduce((value, element) => value + element),
+          'total': total,
+          'sales_quantity': detail['sales_quantity'],
+          'total_stock': detail['total_stock'],
           'description': detail['description'],
           'last_purchase_year': detail['last_purchase_year'].toString(),
         }));
@@ -215,8 +222,8 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
 
   List<FlSpot> convertDataToSpots(List data, List identifierList) {
     return data.map<FlSpot>((e) {
-      final x = convertDateToCoordData(e[0].toString(), identifierList);
-      final y = e[1];
+      final double x = convertDateToCoordData(e[0].toString(), identifierList);
+      final double y = e[1] ?? 0.0;
       return FlSpot(x, y);
     }).toList();
   }
@@ -269,18 +276,20 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
       case 'sales_quantity':
         return numberFormat(value);
       case 'sales_through_rate':
-        return "${numberFormat(value)}%";
-      case 'sales_total':
-      case 'cash_total':
-      case 'debit_total':
-      case 'credit_total':
-      case 'qris_total':
-      case 'online_total':
-      case 'gross_profit':
-      case 'sales_discount_amount':
-        return moneyFormat(value, decimalDigits: 0);
+        return percentageFormat(value);
       default:
-        return numberFormat(value);
+        return moneyFormat(value);
+    }
+  }
+
+  TableColumnType basedValueType() {
+    switch (fieldKey) {
+      case 'sales_quantity':
+        return TableColumnType.number;
+      case 'sales_through_rate':
+        return TableColumnType.percentage;
+      default:
+        return TableColumnType.money;
     }
   }
 
@@ -474,12 +483,16 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
                         clientWidth: 180,
                         name: 'group_key',
                         canFilter: true,
-                        renderBody: (model) => Tooltip(
-                              message: model.row.cells['description']?.value
-                                      .toString() ??
-                                  '',
-                              child: Text(model.cell.value.toString()),
-                            ),
+                        renderBody: (model) =>
+                            Text(model.cell.value.toString()),
+                        humanizeName: groupKeyLocales[_groupType] ?? ''),
+                    TableColumn(
+                        clientWidth: 180,
+                        name: 'description',
+                        canFilter: true,
+                        renderBody: (model) => Text(
+                            model.row.cells['description']?.value.toString() ??
+                                ''),
                         humanizeName: groupKeyLocales[_groupType] ?? ''),
                     if (_separatePurchaseYear)
                       TableColumn<HashModel>(
@@ -487,13 +500,24 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
                           name: 'last_purchase_year',
                           type: TableColumnType.text,
                           humanizeName: 'Tahun Beli Terakhir'),
+                    if (fieldKey == 'sales_through_rate')
+                      TableColumn<HashModel>(
+                          clientWidth: 180,
+                          name: 'sales_quantity',
+                          type: TableColumnType.text,
+                          humanizeName: 'Jumlah Penjualan'),
+                    if (fieldKey == 'sales_through_rate')
+                      TableColumn<HashModel>(
+                          clientWidth: 180,
+                          name: 'total_stock',
+                          type: TableColumnType.text,
+                          humanizeName: 'Total Stok'),
                     TableColumn(
                         clientWidth: 180,
                         name: 'total',
                         canSort: true,
-                        type: fieldKey == 'sales_quantity'
-                            ? TableColumnType.number
-                            : TableColumnType.money,
+                        renderBody: (model) =>
+                            Text(_tooltipFormat(model.cell.value.toDouble())),
                         humanizeName: fieldKeyLocales[fieldKey] ?? ''),
                   ],
                   showSummary: true,
@@ -509,7 +533,9 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
                 xFormat: (double valueX, SalesChartController control) =>
                     xFormatBasedPeriod(valueX, control.identifierList,
                         control.startDate ?? DateTime.now()),
-                yFormat: compactNumberFormat,
+                yFormat: fieldKey == 'sales_through_rate'
+                    ? percentageFormat
+                    : compactNumberFormat,
                 spotYFormat: _tooltipFormat),
           ),
         ],

@@ -375,13 +375,25 @@ class SalesChartController with ChangeNotifier {
             lineTitle: lineTitle,
             color: _getLineColor(index),
             spots: lines[lineTitle] ?? []))
-        .toList();
-
+        .toList()
+        .sorted(sortFromHighestTotal);
+    _lines.forEachIndexed((int index, LineDetail lineDetail) =>
+        lineDetail.isDisplayed = index < 8);
     _identifierList = identifierList;
     _startDate = startDate;
     _endDate = endDate;
     _filteredDetails = filteredDetails;
     notifyListeners();
+  }
+
+  int sortFromHighestTotal(LineDetail a, LineDetail b) {
+    final double valueA = a.spots
+        .map<double>((e) => e.y)
+        .reduce((result, value) => result + value);
+    final double valueB = b.spots
+        .map<double>((e) => e.y)
+        .reduce((result, value) => result + value);
+    return valueB.compareTo(valueA);
   }
 
   Color _getLineColor(int index) {

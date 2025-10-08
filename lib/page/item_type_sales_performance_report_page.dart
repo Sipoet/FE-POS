@@ -41,14 +41,18 @@ class _ItemTypeSalesPerformanceReportPageState
     '5_year',
     'all'
   ];
-  final List<DropdownMenuEntry> valueTypeEntries = [
-    DropdownMenuEntry(value: 'sales_quantity', label: 'Jumlah Penjualan'),
-    DropdownMenuEntry(value: 'sales_total', label: 'Total Penjualan (Rp)'),
-    DropdownMenuEntry(
-        value: 'sales_discount_amount', label: 'Total Diskon (Rp)'),
-    DropdownMenuEntry(
-        value: 'sales_through_rate', label: 'Kecepatan Penjualan(%)'),
-  ];
+  static const Map<String, String> valueTypeLocales = {
+    'sales_total': 'Total Penjualan(Rp)',
+    'sales_quantity': 'Jumlah Penjualan',
+    'sales_discount_amount': 'Total Diskon(Rp)',
+    'gross_profit': 'Gross Profit(Rp)',
+    'sales_through_rate': 'Kecepatan Penjualan(%)',
+    'cash_total': 'Total Tunai(Rp)',
+    'debit_total': 'Total Kartu Debit(Rp)',
+    'credit_total': 'Total Kartu Kredit(Rp)',
+    'qris_total': 'Total Qris(Rp)',
+    'online_total': 'Total Online Transfer(Rp)',
+  };
   final List<Widget> rangePeriodEntries = [
     Padding(
       padding: const EdgeInsets.all(5.0),
@@ -310,7 +314,10 @@ class _ItemTypeSalesPerformanceReportPageState
                 converter: ItemType.fromJson),
           ),
           DropdownMenu(
-            dropdownMenuEntries: valueTypeEntries,
+            dropdownMenuEntries: valueTypeLocales.entries
+                .map<DropdownMenuEntry>(
+                    (e) => DropdownMenuEntry(value: e.key, label: e.value))
+                .toList(),
             label: const Text('Nilai Berdasarkan', style: _filterLabelStyle),
             onSelected: (value) {
               setState(() {
@@ -363,7 +370,7 @@ class _ItemTypeSalesPerformanceReportPageState
                 control.startDate ?? DateTime.now()),
         spotYFormat: (value) =>
             _tooltipFormat(value, itemTypeChartFilter['valueType']),
-        yFormat: compactNumberFormat);
+        yFormat: yFormat(itemTypeChartFilter['valueType']));
   }
 
   Widget groupByBrandChart() {
@@ -373,7 +380,10 @@ class _ItemTypeSalesPerformanceReportPageState
         xTitle: _generatedGroupedPeriod == 'weekly' ? 'MINGGU' : 'PERIODE',
         filterForm: [
           DropdownMenu(
-            dropdownMenuEntries: valueTypeEntries,
+            dropdownMenuEntries: valueTypeLocales.entries
+                .map<DropdownMenuEntry>(
+                    (e) => DropdownMenuEntry(value: e.key, label: e.value))
+                .toList(),
             label: const Text('Nilai Berdasarkan', style: _filterLabelStyle),
             onSelected: (value) {
               setState(() {
@@ -426,7 +436,7 @@ class _ItemTypeSalesPerformanceReportPageState
                 control.startDate ?? DateTime.now()),
         spotYFormat: (value) =>
             _tooltipFormat(value, brandChartFilter['valueType']),
-        yFormat: compactNumberFormat);
+        yFormat: yFormat(brandChartFilter['valueType']));
   }
 
   Widget groupBySupplierChart() {
@@ -436,7 +446,10 @@ class _ItemTypeSalesPerformanceReportPageState
         xTitle: _generatedGroupedPeriod == 'weekly' ? 'MINGGU' : 'PERIODE',
         filterForm: [
           DropdownMenu(
-            dropdownMenuEntries: valueTypeEntries,
+            dropdownMenuEntries: valueTypeLocales.entries
+                .map<DropdownMenuEntry>(
+                    (e) => DropdownMenuEntry(value: e.key, label: e.value))
+                .toList(),
             label: const Text('Nilai Berdasarkan', style: _filterLabelStyle),
             onSelected: (value) {
               setState(() {
@@ -489,7 +502,15 @@ class _ItemTypeSalesPerformanceReportPageState
                 control.startDate ?? DateTime.now()),
         spotYFormat: (value) =>
             _tooltipFormat(value, supplierChartFilter['valueType']),
-        yFormat: compactNumberFormat);
+        yFormat: yFormat(supplierChartFilter['valueType']));
+  }
+
+  String Function(double) yFormat(valueType) {
+    if (valueType == 'sales_through_rate') {
+      return percentageFormat;
+    } else {
+      return compactNumberFormat;
+    }
   }
 
   String _tooltipFormat(double value, String valueType) {
@@ -497,13 +518,23 @@ class _ItemTypeSalesPerformanceReportPageState
       case 'sales_quantity':
         return numberFormat(value);
       case 'sales_through_rate':
-        return "${numberFormat(value)}%";
-      case 'sales_total':
-      case 'sales_discount_amount':
-        return moneyFormat(value, decimalDigits: 0);
+        return percentageFormat(value);
       default:
-        return numberFormat(value);
+        return moneyFormat(value);
     }
+  }
+
+  LineTitle createLineTitle(Map detail) {
+    String name, description;
+    if (detail['last_purchase_year'] == null) {
+      name = detail['name'] ?? '';
+      description = detail['description'] ?? '';
+    } else {
+      name = "${detail['name']} (${detail['last_purchase_year']})";
+      description =
+          "${detail['description']} (${detail['last_purchase_year']})";
+    }
+    return LineTitle(name: name, description: description);
   }
 
   void generateCompareReport() async {
@@ -528,16 +559,7 @@ class _ItemTypeSalesPerformanceReportPageState
 
     Map<LineTitle, List<FlSpot>> lines = {};
     for (var detail in data['data']) {
-      String name, description;
-      if (detail['last_purchase_year'] == null) {
-        name = detail['name'];
-        description = detail['description'];
-      } else {
-        name = "${detail['name']} (${detail['last_purchase_year']})";
-        description =
-            "${detail['description']} (${detail['last_purchase_year']})";
-      }
-      LineTitle lineTitle = LineTitle(name: name, description: description);
+      LineTitle lineTitle = createLineTitle(detail);
       lines[lineTitle] = convertDataToSpots(detail['spots'], identifierList);
     }
     setState(() {
@@ -572,16 +594,7 @@ class _ItemTypeSalesPerformanceReportPageState
     final filteredDetails = getFilteredTitle(data);
     Map<LineTitle, List<FlSpot>> lines = {};
     for (var detail in data['data']) {
-      String name, description;
-      if (detail['last_purchase_year'] == null) {
-        name = detail['name'];
-        description = detail['description'] ?? '';
-      } else {
-        name = "${detail['name']} (${detail['last_purchase_year']})";
-        description =
-            "${detail['description']} (${detail['last_purchase_year']})";
-      }
-      LineTitle lineTitle = LineTitle(name: name, description: description);
+      LineTitle lineTitle = createLineTitle(detail);
       lines[lineTitle] = convertDataToSpots(detail['spots'], identifierList);
     }
     setState(() {
@@ -616,16 +629,7 @@ class _ItemTypeSalesPerformanceReportPageState
     final filteredDetails = getFilteredTitle(data);
     Map<LineTitle, List<FlSpot>> lines = {};
     for (var detail in data['data']) {
-      String name, description;
-      if (detail['last_purchase_year'] == null) {
-        name = detail['name'];
-        description = detail['description'] ?? '';
-      } else {
-        name = "${detail['name']} (${detail['last_purchase_year']})";
-        description =
-            "${detail['description']} (${detail['last_purchase_year']})";
-      }
-      LineTitle lineTitle = LineTitle(name: name, description: description);
+      LineTitle lineTitle = createLineTitle(detail);
       lines[lineTitle] = convertDataToSpots(detail['spots'], identifierList);
     }
     setState(() {
