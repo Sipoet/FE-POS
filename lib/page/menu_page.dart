@@ -1,6 +1,7 @@
 library;
 
-export 'testing_page.dart';
+// export 'testing_page.dart';
+export 'package:fe_pos/page/home_page.dart';
 
 // report group
 export 'item_report_page.dart';
@@ -64,4 +65,5 @@ export 'payment_provider_page.dart';
 
 // setting
 export 'system_setting_page.dart';
+export 'refresh_table_page.dart';
 export 'background_job_page.dart';

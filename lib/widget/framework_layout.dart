@@ -6,7 +6,6 @@ import 'package:fe_pos/widget/desktop_layout.dart';
 import 'package:fe_pos/widget/mobile_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/page/menu_page.dart';
-import 'package:fe_pos/page/home_page.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/model/menu.dart';
 import 'package:provider/provider.dart';
@@ -447,6 +446,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             key: 'setting',
             isDisabled: !setting.isAuthorize('systemSetting', 'index'),
             pageFunct: () => const SystemSettingPage(),
+          ),
+          Menu(
+            icon: Icons.settings,
+            isClosed: true,
+            label: 'Refresh Table Data',
+            key: 'setting',
+            isDisabled: !setting.isAuthorize('systemSetting', 'refreshTable'),
+            pageFunct: () => const RefreshTablePage(),
           ),
           Menu(
             icon: Icons.padding,
