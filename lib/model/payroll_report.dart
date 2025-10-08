@@ -4,18 +4,22 @@ class PayrollReport extends Model {
   Money salaryTotal;
   int employeeId;
   String employeeName;
+  Date startWorkingDate;
   Map<String, Money> amountBasedPayrollType;
   PayrollReport(
       {this.salaryTotal = const Money(0),
       this.employeeId = 0,
+      Date? startWorkingDate,
       this.employeeName = '',
-      this.amountBasedPayrollType = const {}});
+      this.amountBasedPayrollType = const {}})
+      : startWorkingDate = startWorkingDate ?? Date.today();
   @override
   Map<String, dynamic> toMap() {
     var result = {
       'employee_id': employeeId,
       'employee_name': employeeName,
       'salary_total': salaryTotal,
+      'start_working_date': startWorkingDate,
     };
     for (MapEntry<String, Money> val in amountBasedPayrollType.entries) {
       result[val.key] = val.value;
@@ -31,6 +35,7 @@ class PayrollReport extends Model {
     model.employeeId = attributes['employee_id'];
     model.employeeName = attributes['employee_name'];
     model.salaryTotal = Money.parse(attributes['salary_total']);
+    model.startWorkingDate = Date.parse(attributes['start_working_date']);
     model.amountBasedPayrollType = {};
     for (MapEntry<String, dynamic> val
         in attributes['payroll_type_amount'].entries) {
