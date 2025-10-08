@@ -186,7 +186,8 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
           'group_key': detail['name'],
           'total': total,
           'sales_quantity': detail['sales_quantity'],
-          'total_stock': detail['total_stock'],
+          'start_stock': detail['start_stock'],
+          'increase_period_stock': detail['increase_period_stock'],
           'description': detail['description'],
           'last_purchase_year': detail['last_purchase_year'].toString(),
         }));
@@ -503,15 +504,21 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
                     if (fieldKey == 'sales_through_rate')
                       TableColumn<HashModel>(
                           clientWidth: 180,
-                          name: 'sales_quantity',
-                          type: TableColumnType.text,
-                          humanizeName: 'Jumlah Penjualan'),
+                          name: 'start_stock',
+                          type: TableColumnType.number,
+                          humanizeName: 'Stok Awal'),
+                    if (fieldKey == 'sales_through_rate')
+                      TableColumn<HashModel>(
+                          clientWidth: 200,
+                          name: 'increase_period_stock',
+                          type: TableColumnType.number,
+                          humanizeName: 'Tambahan Stok(Periode)'),
                     if (fieldKey == 'sales_through_rate')
                       TableColumn<HashModel>(
                           clientWidth: 180,
-                          name: 'total_stock',
-                          type: TableColumnType.text,
-                          humanizeName: 'Total Stok'),
+                          name: 'sales_quantity',
+                          type: TableColumnType.number,
+                          humanizeName: 'Jumlah Penjualan'),
                     TableColumn(
                         clientWidth: 180,
                         name: 'total',
