@@ -441,6 +441,7 @@ class _CustomAsyncDataTable2State<T extends Model>
     return "${item.id.toString()} - ${item[key].toString()}";
   }
 
+  CancelToken? cancelToken;
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -456,8 +457,13 @@ class _CustomAsyncDataTable2State<T extends Model>
                 isAscending: event.column.sort.isAscending)
           ];
         }
-        var request =
-            DataTableRequest(page: 1, filter: remoteFilters(), sorts: sorts);
+        cancelToken?.cancel();
+        cancelToken = CancelToken();
+        var request = DataTableRequest(
+            page: 1,
+            filter: remoteFilters(),
+            sorts: sorts,
+            cancelToken: cancelToken);
 
         widget.fetchData(request);
       },
@@ -532,7 +538,10 @@ class _CustomAsyncDataTable2State<T extends Model>
       createFooter: (stateManager) {
         return PlutoLazyPagination(
           fetch: (event) async {
-            var request = DataTableRequest(page: event.page);
+            cancelToken?.cancel();
+            cancelToken = CancelToken();
+            var request =
+                DataTableRequest(page: event.page, cancelToken: cancelToken);
             final sortColumn = event.sortColumn;
 
             if (sortColumn != null) {
@@ -599,8 +608,10 @@ class DataTableRequest {
   int page;
   Map<String, dynamic> filter;
   List<SortData> sorts;
+  CancelToken? cancelToken;
   DataTableRequest({
     this.page = 1,
+    this.cancelToken,
     this.sorts = const [],
     this.filter = const {},
   });
