@@ -9,7 +9,7 @@ import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/model/server.dart';
 
 class ItemPage extends StatefulWidget {
   const ItemPage({super.key});
