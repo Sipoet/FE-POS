@@ -194,18 +194,18 @@ class _LoginPageState extends State<LoginPage>
             } else if (response?.data is String) {
               body = response.data;
             }
-            flash.show(
-                Text(
-                  body,
-                ),
-                ToastificationType.error);
+            flash.showBanner(
+              title: 'Gagal Login',
+              description: body,
+              messageType: ToastificationType.error,
+            );
           }).whenComplete(() => hideLoadingPopup());
     } catch (error) {
-      flash.show(
-          Text(
-            error.toString(),
-          ),
-          ToastificationType.error);
+      flash.showBanner(
+        title: 'Gagal Login',
+        description: error.toString(),
+        messageType: ToastificationType.error,
+      );
       hideLoadingPopup();
     }
   }

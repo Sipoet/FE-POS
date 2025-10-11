@@ -3,6 +3,7 @@ import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
@@ -22,11 +23,13 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
   late final Setting _setting;
   late final Server _server;
   final _formState = GlobalKey<FormState>();
+  late final TabManager _tabManager;
   // late final Flash _flash;
   @override
   void initState() {
     _setting = context.read<Setting>();
     _server = context.read<Server>();
+    _tabManager = context.read<TabManager>();
     // _flash = context.read<Flash>();
     super.initState();
     if (!itemType.isNewRecord) {
@@ -70,6 +73,7 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
           ItemType.fromJson(response.data['data'],
               included: response.data['included'] ?? [], model: itemType);
         });
+        _tabManager.changeTabHeader(widget, 'Edit Jenis ${itemType.name}');
         toastification.show(
           title: Text(
             'Sukses simpan Jenis',

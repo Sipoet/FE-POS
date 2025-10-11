@@ -13,9 +13,11 @@ class TabManager extends ChangeNotifier {
       .toList();
   Widget? _safeAreaContent;
   Widget? get safeAreaContent => _safeAreaContent;
+  Widget? _safeContent;
 
   void setSafeAreaContent(String title, Widget content,
       {void Function()? whenClose}) {
+    _safeContent = content;
     _safeAreaContent = SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.all(5),
@@ -98,6 +100,9 @@ class TabManager extends ChangeNotifier {
     if (index >= 0) {
       final tabItemDetail = controller.getTabByIndex(index);
       tabItemDetail.text = title;
+      notifyListeners();
+    } else if (_safeContent == tabView) {
+      setSafeAreaContent(title, tabView);
       notifyListeners();
     }
   }
