@@ -9,20 +9,19 @@ class DiscountBrand extends Model {
   DiscountBrand({super.id, this.brand, this.isExclude = false});
 
   @override
-  factory DiscountBrand.fromJson(Map<String, dynamic> json,
-      {List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    return DiscountBrand(
-      id: int.parse(json['id']),
-      isExclude: attributes['is_exclude'],
-      brand: Model.findRelationData<Brand>(
-          included: included,
-          relation: json['relationships']['brand'],
-          convert: Brand.fromJson),
+    isExclude = attributes['is_exclude'];
+    brand = BrandClass().findRelationData(
+      included: included,
+      relation: json['relationships']['brand'],
     );
   }
 
   String? get brandName => brand?.name;
+  @override
+  String get modelName => 'discount_brand';
 
   @override
   Map<String, dynamic> toMap() => {
@@ -33,4 +32,9 @@ class DiscountBrand extends Model {
 
   @override
   String get modelValue => brand?.modelValue ?? '';
+}
+
+class DiscountBrandClass extends ModelClass<DiscountBrand> {
+  @override
+  DiscountBrand initModel() => DiscountBrand();
 }

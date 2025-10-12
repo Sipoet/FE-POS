@@ -99,59 +99,51 @@ class PurchaseReport extends Model {
         orderDate = orderDate ?? DateTime.now(),
         shippingDate = shippingDate ?? DateTime.now();
   @override
-  factory PurchaseReport.fromJson(Map<String, dynamic> json,
-      {PurchaseReport? model, List included = const []}) {
+  String get modelName => 'purchase_report';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    model ??= PurchaseReport();
     if (included.isNotEmpty) {
-      model.supplier = Model.findRelationData<Supplier>(
-              included: included,
-              relation: json['relationships']['supplier'],
-              convert: Supplier.fromJson) ??
-          model.supplier;
+      supplier = SupplierClass().findRelationData(
+            included: included,
+            relation: json['relationships']['supplier'],
+          ) ??
+          supplier;
     }
-    model.id = json['id'];
-    model.status = PurchaseReportStatus.fromString(attributes['status']);
-    model.code = attributes['code'];
-    model.supplierCode = attributes['supplier_code'];
-    model.purchaseItemTotal =
-        double.tryParse(attributes['purchase_item_total']) ??
-            model.purchaseItemTotal;
-    model.returnItemTotal = double.tryParse(attributes['return_item_total']) ??
-        model.returnItemTotal;
-    model.orderItemTotal =
-        double.tryParse(attributes['order_item_total']) ?? model.orderItemTotal;
-    model.purchaseSubtotal = Money.tryParse(attributes['purchase_subtotal']) ??
-        model.purchaseSubtotal;
-    model.headerDiscountAmount =
+    status = PurchaseReportStatus.fromString(attributes['status']);
+    code = attributes['code'];
+    supplierCode = attributes['supplier_code'];
+    purchaseItemTotal =
+        double.tryParse(attributes['purchase_item_total']) ?? purchaseItemTotal;
+    returnItemTotal =
+        double.tryParse(attributes['return_item_total']) ?? returnItemTotal;
+    orderItemTotal =
+        double.tryParse(attributes['order_item_total']) ?? orderItemTotal;
+    purchaseSubtotal =
+        Money.tryParse(attributes['purchase_subtotal']) ?? purchaseSubtotal;
+    headerDiscountAmount =
         Money.tryParse(attributes['header_discount_amount']) ??
-            model.headerDiscountAmount;
-    model.purchaseOtherCost =
-        Money.tryParse(attributes['purchase_other_cost']) ??
-            model.purchaseOtherCost;
-    model.purchaseGrandTotal =
-        Money.tryParse(attributes['purchase_grand_total']) ??
-            model.purchaseGrandTotal;
-    model.orderGrandTotal = Money.tryParse(attributes['order_grand_total']) ??
-        model.orderGrandTotal;
-    model.returnAmountTotal =
-        Money.tryParse(attributes['return_amount_total']) ??
-            model.returnAmountTotal;
-    model.grandtotal =
-        Money.tryParse(attributes['grandtotal']) ?? model.grandtotal;
-    model.paidAmount =
-        Money.tryParse(attributes['paid_amount']) ?? model.paidAmount;
-    model.debtAmount =
-        Money.tryParse(attributes['debt_amount']) ?? model.debtAmount;
-    model.purchaseDate = DateTime.tryParse(attributes['purchase_date'] ?? '') ??
-        model.purchaseDate;
-    model.dueDate = Date.tryParse(attributes['due_date']) ?? model.dueDate;
-    model.shippingDate = DateTime.tryParse(attributes['shipping_date'] ?? '') ??
-        model.shippingDate;
-    model.orderDate =
-        DateTime.tryParse(attributes['order_date'] ?? '') ?? model.orderDate;
-    model.lastPaidDate = DateTime.tryParse(attributes['last_paid_date'] ?? '');
-    return model;
+            headerDiscountAmount;
+    purchaseOtherCost =
+        Money.tryParse(attributes['purchase_other_cost']) ?? purchaseOtherCost;
+    purchaseGrandTotal = Money.tryParse(attributes['purchase_grand_total']) ??
+        purchaseGrandTotal;
+    orderGrandTotal =
+        Money.tryParse(attributes['order_grand_total']) ?? orderGrandTotal;
+    returnAmountTotal =
+        Money.tryParse(attributes['return_amount_total']) ?? returnAmountTotal;
+    grandtotal = Money.tryParse(attributes['grandtotal']) ?? grandtotal;
+    paidAmount = Money.tryParse(attributes['paid_amount']) ?? paidAmount;
+    debtAmount = Money.tryParse(attributes['debt_amount']) ?? debtAmount;
+    purchaseDate =
+        DateTime.tryParse(attributes['purchase_date'] ?? '') ?? purchaseDate;
+    dueDate = Date.tryParse(attributes['due_date']) ?? dueDate;
+    shippingDate =
+        DateTime.tryParse(attributes['shipping_date'] ?? '') ?? shippingDate;
+    orderDate = DateTime.tryParse(attributes['order_date'] ?? '') ?? orderDate;
+    lastPaidDate = DateTime.tryParse(attributes['last_paid_date'] ?? '');
   }
 
   String get supplierName => supplier.name;
@@ -183,4 +175,9 @@ class PurchaseReport extends Model {
       };
   @override
   String get modelValue => code;
+}
+
+class PurchaseReportClass extends ModelClass<PurchaseReport> {
+  @override
+  PurchaseReport initModel() => PurchaseReport();
 }

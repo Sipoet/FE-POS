@@ -52,8 +52,9 @@ class _ItemReportPageState extends State<ItemReportPage>
             setState(() {
               _isDisplayTable = true;
             });
+            final initClass = ItemReportClass();
             final models = data['data'].map<ItemReport>((row) {
-              return ItemReport.fromJson(row);
+              return initClass.fromJson(row);
             }).toList();
             return ResponseResult<ItemReport>(
                 models: models, totalRows: data['meta']['total_rows']);

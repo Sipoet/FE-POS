@@ -38,8 +38,8 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
     showLoadingPopup();
     _server.get('item_types/${itemType.id}').then((response) {
       if (mounted && response.statusCode == 200) {
-        ItemType.fromJson(response.data['data'],
-            included: response.data['included'] ?? [], model: itemType);
+        itemType.setFromJson(response.data['data'],
+            included: response.data['included'] ?? []);
         _nameController.text = itemType.name;
         _descriptionController.text = itemType.description;
       }

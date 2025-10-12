@@ -39,32 +39,38 @@ class PayslipLine extends Model {
       };
 
   @override
-  factory PayslipLine.fromJson(Map<String, dynamic> json,
-      {PayslipLine? model, List included = const []}) {
-    var attributes = json['attributes'];
-    model ??= PayslipLine(group: PayrollGroup.earning, amount: Money(0));
-    model.id = int.parse(json['id']);
-    model.group = PayrollGroup.fromString(attributes['group']);
-    model.payrollType = Model.findRelationData<PayrollType>(
-        included: included,
-        relation: json['relationships']['payroll_type'],
-        convert: PayrollType.fromJson);
-    try {
-      model.formula = PayrollFormula.fromString(attributes['formula']);
-    } catch (error) {
-      model.formula = PayrollFormula.basic;
-    }
-    model.amount = Money.parse(attributes['amount']);
-    model.variable1 = double.tryParse(attributes['variable1'] ?? '');
-    model.variable2 = double.tryParse(attributes['variable2'] ?? '');
-    model.variable3 = double.tryParse(attributes['variable3'] ?? '');
-    model.variable4 = double.tryParse(attributes['variable4'] ?? '');
-    model.variable5 = double.tryParse(attributes['variable5'] ?? '');
+  String get modelName => 'payslip_line';
 
-    model.description = attributes['description'];
-    return model;
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
+    var attributes = json['attributes'];
+
+    group = PayrollGroup.fromString(attributes['group']);
+    payrollType = PayrollTypeClass().findRelationData(
+      included: included,
+      relation: json['relationships']['payroll_type'],
+    );
+    try {
+      formula = PayrollFormula.fromString(attributes['formula']);
+    } catch (error) {
+      formula = PayrollFormula.basic;
+    }
+    amount = Money.parse(attributes['amount']);
+    variable1 = double.tryParse(attributes['variable1'] ?? '');
+    variable2 = double.tryParse(attributes['variable2'] ?? '');
+    variable3 = double.tryParse(attributes['variable3'] ?? '');
+    variable4 = double.tryParse(attributes['variable4'] ?? '');
+    variable5 = double.tryParse(attributes['variable5'] ?? '');
+    description = attributes['description'];
   }
 
   @override
   String get modelValue => id.toString();
+}
+
+class PayslipLineClass extends ModelClass<PayslipLine> {
+  @override
+  PayslipLine initModel() =>
+      PayslipLine(group: PayrollGroup.earning, amount: Money(0));
 }

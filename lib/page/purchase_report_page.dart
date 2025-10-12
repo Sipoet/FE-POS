@@ -54,8 +54,8 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
               _isDisplayTable = true;
             });
             final models = data['data'].map<PurchaseReport>((row) {
-              return PurchaseReport.fromJson(row,
-                  included: data['included'] ?? []);
+              return PurchaseReportClass()
+                  .fromJson(row, included: data['included'] ?? []);
             }).toList();
             return ResponseResult<PurchaseReport>(
                 models: models, totalRows: data['meta']['total_rows']);

@@ -47,8 +47,10 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
     showLoadingPopup();
     _server.get('systemSettings/${systemSetting.id}').then((response) {
       if (mounted && response.statusCode == 200) {
-        SystemSetting.fromJson(response.data['data'],
-            included: response.data['included'] ?? [], model: systemSetting);
+        systemSetting.setFromJson(
+          response.data['data'],
+          included: response.data['included'] ?? [],
+        );
       }
     }).whenComplete(() => hideLoadingPopup());
   }
@@ -169,7 +171,7 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
             selected: systemSetting.user,
             onChanged: (model) => systemSetting.user = model,
             textOnSearch: (record) => record.username,
-            converter: User.fromJson,
+            modelClass: UserClass(),
           ),
           const SizedBox(
             height: 10,
@@ -195,10 +197,11 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
         (response) {
       if (mounted && response.statusCode == 200) {
         setState(() {
-          SystemSetting.fromJson(response.data['data'],
-              included: response.data['included'] ?? [], model: systemSetting);
+          systemSetting.setFromJson(
+            response.data['data'],
+            included: response.data['included'] ?? [],
+          );
         });
-
         _flash.show(Text('Sukses simpan'), ToastificationType.success);
       } else {
         _flash.show(Text('Gagal simpan'), ToastificationType.error);

@@ -63,6 +63,7 @@ dependencies:
   fl_chart: ^0.70.2
   flutter_colorpicker: ^1.1.0
   flutter_barcode_scanner_plus: ^3.0.7
+  pluralize: ^0.0.8
 dev_dependencies:
   flutter_test:
     sdk: flutter

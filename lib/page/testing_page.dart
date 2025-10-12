@@ -44,7 +44,7 @@ class _TestingPageState extends State<TestingPage> {
                     label: const Text('Merek :'),
                     key: const ValueKey('brandSelect'),
                     textOnSearch: (Brand brand) => brand.name,
-                    converter: Brand.fromJson,
+                    modelClass: BrandClass(),
                     attributeKey: 'merek',
                     path: '/brands',
                     onChanged: (value) {

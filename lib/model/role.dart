@@ -31,31 +31,35 @@ class Role extends Model {
       };
 
   @override
-  factory Role.fromJson(Map<String, dynamic> json,
-      {Role? model, List included = const []}) {
+  String get modelName => 'role';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
 
-    model ??= Role(name: '');
     if (included.isNotEmpty) {
-      model.accessAuthorizes = Model.findRelationsData<AccessAuthorize>(
-          included: included,
-          relation: json['relationships']['access_authorizes'],
-          convert: AccessAuthorize.fromJson);
-      model.columnAuthorizes = Model.findRelationsData<ColumnAuthorize>(
-          included: included,
-          relation: json['relationships']['column_authorizes'],
-          convert: ColumnAuthorize.fromJson);
-      model.roleWorkSchedules = Model.findRelationsData<RoleWorkSchedule>(
-          included: included,
-          relation: json['relationships']['role_work_schedules'],
-          convert: RoleWorkSchedule.fromJson);
+      accessAuthorizes = AccessAuthorizeClass().findRelationsData(
+        included: included,
+        relation: json['relationships']['access_authorizes'],
+      );
+      columnAuthorizes = ColumnAuthorizeClass().findRelationsData(
+        included: included,
+        relation: json['relationships']['column_authorizes'],
+      );
+      roleWorkSchedules = RoleWorkScheduleClass().findRelationsData(
+        included: included,
+        relation: json['relationships']['role_work_schedules'],
+      );
     }
-    Model.fromModel(model, attributes);
-    model.id = int.parse(json['id']);
-    model.name = attributes['name'];
-    return model;
+    super.setFromJson(json, included: included);
+    name = attributes['name'];
   }
 
   @override
   String get modelValue => name;
+}
+
+class RoleClass extends ModelClass<Role> {
+  @override
+  Role initModel() => Role();
 }

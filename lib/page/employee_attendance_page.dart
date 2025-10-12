@@ -86,8 +86,8 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<EmployeeAttendance>((json) => EmployeeAttendance.fromJson(json,
-                included: responseBody['included']))
+            .map<EmployeeAttendance>((json) => EmployeeAttendanceClass()
+                .fromJson(json, included: responseBody['included']))
             .toList();
         employeeAttendances.addAll(models);
 

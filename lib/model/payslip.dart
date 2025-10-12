@@ -121,55 +121,52 @@ class Payslip extends Model {
       };
 
   @override
-  factory Payslip.fromJson(Map<String, dynamic> json,
-      {Payslip? model, List included = const []}) {
+  String get modelName => 'payslip';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model ??= Payslip(
-        employee: Employee(
-            code: '',
-            name: '',
-            role: Role(name: ''),
-            startWorkingDate: Date.today()),
-        payroll: Payroll(name: ''),
-        startDate: Date.today(),
-        endDate: Date.today());
-    model.id = int.parse(json['id']);
-    Model.fromModel(model, attributes);
-    model.startDate = Date.parse(attributes['start_date']);
-    model.endDate = Date.parse(attributes['end_date']);
-    model.status = PayslipStatus.fromString(attributes['status']);
-    model.paymentTime = DateTime.tryParse(attributes['payment_time'] ?? '');
-    model.grossSalary = double.parse(attributes['gross_salary']);
-    model.nettSalary = double.parse(attributes['nett_salary']);
-    model.notes = attributes['notes'];
-    model.taxAmount = double.parse(attributes['tax_amount']);
-    model.sickLeave = attributes['sick_leave'];
-    model.knownAbsence = attributes['known_absence'];
-    model.unknownAbsence = attributes['unknown_absence'];
-    model.paidTimeOff = attributes['paid_time_off'];
-    model.overtimeHour = double.parse(attributes['overtime_hour']);
-    model.late = attributes['late'];
-    model.workDays = double.parse(attributes['work_days']);
-    model.totalWorkDays = attributes['total_day'];
+
+    super.setFromJson(json, included: included);
+    startDate = Date.parse(attributes['start_date']);
+    endDate = Date.parse(attributes['end_date']);
+    status = PayslipStatus.fromString(attributes['status']);
+    paymentTime = DateTime.tryParse(attributes['payment_time'] ?? '');
+    grossSalary = double.parse(attributes['gross_salary']);
+    nettSalary = double.parse(attributes['nett_salary']);
+    notes = attributes['notes'];
+    taxAmount = double.parse(attributes['tax_amount']);
+    sickLeave = attributes['sick_leave'];
+    knownAbsence = attributes['known_absence'];
+    unknownAbsence = attributes['unknown_absence'];
+    paidTimeOff = attributes['paid_time_off'];
+    overtimeHour = double.parse(attributes['overtime_hour']);
+    late = attributes['late'];
+    workDays = double.parse(attributes['work_days']);
+    totalWorkDays = attributes['total_day'];
     if (included.isNotEmpty) {
-      model.payroll = Model.findRelationData<Payroll>(
-              included: included,
-              relation: json['relationships']['payroll'],
-              convert: Payroll.fromJson) ??
-          model.payroll;
-      model.employee = Model.findRelationData<Employee>(
-              included: included,
-              relation: json['relationships']['employee'],
-              convert: Employee.fromJson) ??
-          model.employee;
-      model.lines = Model.findRelationsData<PayslipLine>(
-          relation: json['relationships']['payslip_lines'],
-          included: included,
-          convert: PayslipLine.fromJson);
+      payroll = PayrollClass().findRelationData(
+            included: included,
+            relation: json['relationships']['payroll'],
+          ) ??
+          payroll;
+      employee = EmployeeClass().findRelationData(
+            included: included,
+            relation: json['relationships']['employee'],
+          ) ??
+          employee;
+      lines = PayslipLineClass().findRelationsData(
+        relation: json['relationships']['payslip_lines'],
+        included: included,
+      );
     }
-    return model;
   }
 
   @override
   String get modelValue => id.toString();
+}
+
+class PayslipClass extends ModelClass<Payslip> {
+  @override
+  Payslip initModel() => Payslip();
 }

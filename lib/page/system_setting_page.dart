@@ -101,8 +101,8 @@ class _SystemSettingPageState extends State<SystemSettingPage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         records = responseBody['data']
-            .map<SystemSetting>((json) => SystemSetting.fromJson(json,
-                included: responseBody['included'] ?? []))
+            .map<SystemSetting>((json) => SystemSettingClass()
+                .fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         final totalPage = responseBody['meta']?['total_pages'] ?? 1;
         return DataTableResponse<SystemSetting>(

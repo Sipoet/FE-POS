@@ -83,8 +83,8 @@ class _PayslipPageState extends State<PayslipPage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<Payslip>((json) =>
-                Payslip.fromJson(json, included: responseBody['included']))
+            .map<Payslip>((json) => PayslipClass()
+                .fromJson(json, included: responseBody['included']))
             .toList();
 
         int totalRows =

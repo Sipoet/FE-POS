@@ -9,16 +9,13 @@ class DiscountSupplier extends Model {
   DiscountSupplier({super.id, this.supplier, this.isExclude = false});
 
   @override
-  factory DiscountSupplier.fromJson(Map<String, dynamic> json,
-      {List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    return DiscountSupplier(
-      id: int.parse(json['id']),
-      isExclude: attributes['is_exclude'],
-      supplier: Model.findRelationData<Supplier>(
-          included: included,
-          relation: json['relationships']['supplier'],
-          convert: Supplier.fromJson),
+    isExclude = attributes['is_exclude'];
+    supplier = SupplierClass().findRelationData(
+      included: included,
+      relation: json['relationships']['supplier'],
     );
   }
 
@@ -33,4 +30,9 @@ class DiscountSupplier extends Model {
 
   @override
   String get modelValue => supplier?.modelValue ?? '';
+}
+
+class DiscountSupplierClass extends ModelClass<DiscountSupplier> {
+  @override
+  DiscountSupplier initModel() => DiscountSupplier();
 }

@@ -82,8 +82,8 @@ class _TransferPageState extends State<TransferPage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<Transfer>((json) => Transfer.fromJson(json,
-                included: responseBody['included'] ?? []))
+            .map<Transfer>((json) => TransferClass()
+                .fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         final totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;

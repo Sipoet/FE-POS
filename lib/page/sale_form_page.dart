@@ -60,8 +60,8 @@ class _SaleFormPageState extends State<SaleFormPage>
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
-          Sale.fromJson(response.data['data'],
-              included: response.data['included'], model: sale);
+          sale.setFromJson(response.data['data'],
+              included: response.data['included'] ?? []);
           _source.setModels(sale.saleItems, _columns);
         });
       }

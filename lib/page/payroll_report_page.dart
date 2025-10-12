@@ -58,7 +58,8 @@ class _PayrollReportPageState extends State<PayrollReportPage>
           tableStateManager?.setTableColumns(tableColumns,
               tabManager: tabManager, showFilter: true);
           for (final row in json['data']) {
-            final model = PayrollReport.fromJson(row, included: included ?? []);
+            final model =
+                PayrollReportClass().fromJson(row, included: included ?? []);
             tableStateManager?.appendModel(model, tableColumns);
           }
         });
@@ -138,7 +139,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
                       textOnSearch: (payrollType) => payrollType.name,
                       path: 'payroll_types',
                       onChanged: (payrollTypes) => payrollTypes = payrollTypes,
-                      converter: PayrollType.fromJson),
+                      modelClass: PayrollTypeClass()),
                 ),
                 Row(children: [
                   Padding(

@@ -80,7 +80,7 @@ class _UserPageState extends State<UserPage>
         }
         final models = responseBody['data']
             .map<User>((json) =>
-                User.fromJson(json, included: responseBody['included']))
+                UserClass().fromJson(json, included: responseBody['included']))
             .toList();
 
         int totalRows =

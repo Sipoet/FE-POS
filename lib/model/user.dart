@@ -68,24 +68,29 @@ class User extends Model {
   }
 
   @override
-  factory User.fromJson(Map<String, dynamic> json,
-      {User? model, List included = const []}) {
-    var attributes = json['attributes'];
-    Role? role = Model.findRelationData<Role>(
-        included: included,
-        relation: json['relationships']['role'],
-        convert: Role.fromJson);
+  String get modelName => 'user';
 
-    model ??= User();
-    model.id = json['id'];
-    model.username = attributes['username'] ?? '';
-    model.email = attributes['email'];
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
+    var attributes = json['attributes'];
+    Role? role = RoleClass().findRelationData(
+      included: included,
+      relation: json['relationships']['role'],
+    );
+
+    username = attributes['username'] ?? '';
+    email = attributes['email'];
     // model.status =
     //     UserStatus.convertFromString(attributes['status']?.toString());
-    model.role = role ?? model.role;
-    return model;
+    role = role ?? role;
   }
 
   @override
   String get modelValue => username;
+}
+
+class UserClass extends ModelClass<User> {
+  @override
+  User initModel() => User();
 }

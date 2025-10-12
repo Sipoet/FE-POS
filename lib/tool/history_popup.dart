@@ -47,8 +47,8 @@ mixin HistoryPopup<T extends StatefulWidget> on State<T>
         final json = response.data;
         setState(() {
           _source.setData(json['data']
-              .map<ActivityLog>((lineJson) => ActivityLog.fromJson(lineJson,
-                  included: json['included'] ?? []))
+              .map<ActivityLog>((lineJson) => ActivityLogClass()
+                  .fromJson(lineJson, included: json['included'] ?? []) as T)
               .toList());
         });
         _hideLoadingPopup();
@@ -73,8 +73,8 @@ mixin HistoryPopup<T extends StatefulWidget> on State<T>
         final json = response.data;
         setState(() {
           _source.setData(json['data']
-              .map<ActivityLog>((lineJson) => ActivityLog.fromJson(lineJson,
-                  included: json['included'] ?? []))
+              .map<ActivityLog>((lineJson) => ActivityLogClass()
+                  .fromJson(lineJson, included: json['included'] ?? []) as T)
               .toList());
         });
         _hideLoadingPopup();

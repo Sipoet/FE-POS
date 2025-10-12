@@ -73,16 +73,22 @@ class EmployeeDayOff extends Model {
       };
 
   @override
-  factory EmployeeDayOff.fromJson(Map<String, dynamic> json,
-      {EmployeeDayOff? model, List included = const []}) {
+  String get modelName => 'employee_day_of';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    model ??= EmployeeDayOff();
-    model.id = int.parse(json['id']);
-    model.activeWeek = ActiveWeekDayOff.fromString(attributes['active_week']);
-    model.dayOfWeek = attributes['day_of_week'];
-    return model;
+
+    activeWeek = ActiveWeekDayOff.fromString(attributes['active_week']);
+    dayOfWeek = attributes['day_of_week'];
   }
 
   @override
   String get modelValue => "${dayOfWeek.toString()} - ${activeWeek.toString()}";
+}
+
+class EmployeeDayOffClass extends ModelClass<EmployeeDayOff> {
+  @override
+  EmployeeDayOff initModel() => EmployeeDayOff();
 }

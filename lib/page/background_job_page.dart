@@ -141,8 +141,8 @@ class _BackgroundJobPageState extends State<BackgroundJobPage>
         final data = response.data;
 
         records = data['data']
-            .map<BackgroundJob>((json) =>
-                BackgroundJob.fromJson(json, included: data['included'] ?? []))
+            .map<BackgroundJob>((json) => BackgroundJobClass()
+                .fromJson(json, included: data['included'] ?? []))
             .toList();
 
         stateManager?.setModels(records, _columns);

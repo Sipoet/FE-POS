@@ -81,8 +81,8 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<EmployeeLeave>((json) => EmployeeLeave.fromJson(json,
-                included: responseBody['included']))
+            .map<EmployeeLeave>((json) => EmployeeLeaveClass()
+                .fromJson(json, included: responseBody['included']))
             .toList();
 
         flash.hide();

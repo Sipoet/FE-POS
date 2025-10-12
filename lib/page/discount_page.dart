@@ -85,7 +85,7 @@ class _DiscountPageState extends State<DiscountPage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<Discount>((json) => Discount.fromJson(json))
+            .map<Discount>((json) => DiscountClass().fromJson(json))
             .toList();
         int totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;

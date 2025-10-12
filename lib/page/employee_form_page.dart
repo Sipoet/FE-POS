@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/employee_attendance.dart';
+import 'package:fe_pos/model/hash_model.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
@@ -64,8 +65,10 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
-          Employee.fromJson(response.data['data'],
-              included: response.data['included'], model: employee);
+          employee.setFromJson(
+            response.data['data'],
+            included: response.data['included'],
+          );
         });
       }
     }, onError: (error) {
@@ -266,22 +269,19 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   ),
                   Visibility(
                       visible: setting.canShow('employee', 'user_code'),
-                      child: AsyncDropdown<String>(
+                      child: AsyncDropdown<HashModel>(
                         label: const Text(
                           'User',
                           style: labelStyle,
                         ),
                         path: 'ipos/users',
-                        textOnSearch: (userCode) => userCode,
+                        textOnSearch: (value) => value.id,
                         attributeKey: 'name',
                         onChanged: (userCode) {
-                          employee.userCode = userCode;
+                          employee.userCode = userCode?.id;
                         },
-                        converter: (Map<String, dynamic> data,
-                            {List<dynamic> included = const []}) {
-                          return data['attributes']['userid'] as String;
-                        },
-                        selected: employee.userCode,
+                        modelClass: HashModelClass(),
+                        selected: HashModel(id: employee.userCode),
                       )),
                   const SizedBox(
                     height: 10,
@@ -302,7 +302,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                         },
                         allowClear: false,
                         textOnSearch: (role) => role.name,
-                        converter: Role.fromJson,
+                        modelClass: RoleClass(),
                         selected: employee.role,
                         validator: (role) {
                           if (role == null) {
@@ -363,7 +363,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                         onChanged: (payroll) {
                           employee.payroll = payroll;
                         },
-                        converter: Payroll.fromJson,
+                        modelClass: PayrollClass(),
                         selected: employee.payroll,
                       )),
                   const SizedBox(

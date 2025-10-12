@@ -56,8 +56,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
       if (response.statusCode == 200) {
         final json = response.data;
         setState(() {
-          Payslip.fromJson(json['data'],
-              model: payslip, included: json['included'] ?? []);
+          payslip.setFromJson(json['data'], included: json['included'] ?? []);
         });
       }
     }, onError: (error) {
@@ -155,7 +154,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                     onChanged: (value) {
                       payslip.employee = value ?? Employee();
                     },
-                    converter: Employee.fromJson,
+                    modelClass: EmployeeClass(),
                     selected: payslip.employee,
                     textOnSearch: (employee) =>
                         "${employee.code} - ${employee.name}",
@@ -400,7 +399,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                                       .toList(),
                                 )),
                                 DataCell(AsyncDropdown<PayrollType>(
-                                  converter: PayrollType.fromJson,
+                                  modelClass: PayrollTypeClass(),
                                   allowClear: false,
                                   path: 'payroll_types',
                                   selected: payslipLine.payrollType,

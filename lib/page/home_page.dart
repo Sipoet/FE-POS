@@ -187,7 +187,8 @@ class _HomePageState extends State<HomePage>
     }).then((response) {
       if (mounted && response.statusCode == 200) {
         var data = response.data['data'];
-        final salesTransactionReport = SalesTransactionReport.fromJson(data);
+        final salesTransactionReport =
+            SalesTransactionReportClass().fromJson(data);
         setState(() {
           totalSales = salesTransactionReport.totalSales;
           _panels.insert(

@@ -24,21 +24,26 @@ class Payroll extends Model {
       };
 
   @override
-  factory Payroll.fromJson(Map<String, dynamic> json,
-      {Payroll? model, List included = const []}) {
+  String get modelName => 'payroll';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    model ??= Payroll(name: '');
-    model.id = int.parse(json['id']);
-    model.name = attributes['name'];
-    model.paidTimeOff = attributes['paid_time_off'];
-    model.description = attributes['description'];
-    model.lines = Model.findRelationsData<PayrollLine>(
-        included: included,
-        relation: json['relationships']?['payroll_lines'],
-        convert: PayrollLine.fromJson);
-    return model;
+    name = attributes['name'];
+    paidTimeOff = attributes['paid_time_off'];
+    description = attributes['description'];
+    lines = PayrollLineClass().findRelationsData(
+      included: included,
+      relation: json['relationships']?['payroll_lines'],
+    );
   }
 
   @override
   String get modelValue => name;
+}
+
+class PayrollClass extends ModelClass<Payroll> {
+  @override
+  Payroll initModel() => Payroll(name: '');
 }

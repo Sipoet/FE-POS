@@ -65,19 +65,24 @@ class BackgroundJob extends Model {
       };
 
   @override
-  factory BackgroundJob.fromJson(Map<String, dynamic> json,
-      {BackgroundJob? model, List included = const []}) {
+  String get modelName => 'background_job';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model ??= BackgroundJob();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.jobClass = attributes['job_class'] ?? '';
-    model.args = attributes['args'].toString();
-    model.description = attributes['description'].toString();
-    model.status = BackgroundJobStatus.fromString(attributes['status']);
-    return model;
+
+    super.setFromJson(json, included: included);
+    jobClass = attributes['job_class'] ?? '';
+    args = attributes['args'].toString();
+    description = attributes['description'].toString();
+    status = BackgroundJobStatus.fromString(attributes['status']);
   }
 
   @override
   String get modelValue => '$jobClass - $args';
+}
+
+class BackgroundJobClass extends ModelClass<BackgroundJob> {
+  @override
+  BackgroundJob initModel() => BackgroundJob();
 }

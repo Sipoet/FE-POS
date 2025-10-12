@@ -69,28 +69,30 @@ class PaymentProvider extends Model {
         'created_at': createdAt,
         'updated_at': updatedAt,
       };
-
   @override
-  factory PaymentProvider.fromJson(Map<String, dynamic> json,
-      {PaymentProvider? model, List included = const []}) {
+  String get modelName => 'payment_provider';
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    model ??= PaymentProvider();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.bankOrProvider = attributes['bank_or_provider'] ?? '';
-    model.name = attributes['name'] ?? '';
-    model.currency = attributes['currency'] ?? 'IDR';
-    model.accountNumber = attributes['account_number'] ?? '';
-    model.accountRegisterName = attributes['account_register_name'] ?? '';
-    model.swiftCode = attributes['swift_code'];
-    model.status = PaymentProviderStatus.fromString(attributes['status']);
-    model.paymentProviderEdcs = Model.findRelationsData(
+
+    bankOrProvider = attributes['bank_or_provider'] ?? '';
+    name = attributes['name'] ?? '';
+    currency = attributes['currency'] ?? 'IDR';
+    accountNumber = attributes['account_number'] ?? '';
+    accountRegisterName = attributes['account_register_name'] ?? '';
+    swiftCode = attributes['swift_code'];
+    status = PaymentProviderStatus.fromString(attributes['status']);
+    paymentProviderEdcs = PaymentProviderEdcClass().findRelationsData(
         included: included,
-        convert: PaymentProviderEdc.fromJson,
         relation: json['relationships']?['payment_provider_edcs']);
-    return model;
   }
 
   @override
   String get modelValue => bankOrProvider;
+}
+
+class PaymentProviderClass extends ModelClass<PaymentProvider> {
+  @override
+  PaymentProvider initModel() => PaymentProvider();
 }

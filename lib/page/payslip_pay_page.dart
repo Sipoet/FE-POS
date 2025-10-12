@@ -97,7 +97,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
                 label: Text('Karyawan'),
                 path: 'employees',
                 textOnSearch: (model) => model.modelValue,
-                converter: Employee.fromJson,
+                modelClass: EmployeeClass(),
                 onChanged: (model) => employees = model,
                 validator: (model) {
                   if (model == null) {
@@ -142,7 +142,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
                 },
                 allowClear: false,
                 textOnSearch: (model) => model.modelValue,
-                converter: Account.fromJson,
+                modelClass: AccountClass(),
                 onChanged: (model) => account = model,
                 validator: (model) {
                   if (model == null) {
@@ -159,7 +159,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
                 path: 'locations',
                 allowClear: false,
                 textOnSearch: (model) => model.modelValue,
-                converter: Location.fromJson,
+                modelClass: LocationClass(),
                 onChanged: (model) => location = model,
                 validator: (model) {
                   if (model == null) {

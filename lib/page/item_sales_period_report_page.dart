@@ -111,7 +111,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
     var data = response.data;
     setState(() {
       var rawData = data['data'].map<ItemSalesPeriodReport>((row) {
-        return ItemSalesPeriodReport.fromJson(row);
+        return ItemSalesPeriodReportClass().fromJson(row);
       }).toList();
       _source.setModels(rawData, _setting.tableColumn('itemSalesPeriodReport'));
     });
@@ -151,7 +151,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                     label: const Text('Merek :', style: _filterLabelStyle),
                     key: const ValueKey('brandSelect'),
                     textOnSearch: (Brand brand) => brand.name,
-                    converter: Brand.fromJson,
+                    modelClass: BrandClass(),
                     attributeKey: 'merek',
                     path: '/brands',
                     onChanged: (value) =>
@@ -166,7 +166,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                     textOnSearch: (itemType) =>
                         "${itemType.name} - ${itemType.description}",
                     textOnSelected: (itemType) => itemType.name,
-                    converter: ItemType.fromJson,
+                    modelClass: ItemTypeClass(),
                     attributeKey: 'jenis',
                     path: '/item_types',
                     onChanged: (value) =>
@@ -182,21 +182,21 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                   textOnSearch: (supplier) =>
                       "${supplier.code} - ${supplier.name}",
                   textOnSelected: (supplier) => supplier.code,
-                  converter: Supplier.fromJson,
+                  modelClass: SupplierClass(),
                   onChanged: (value) =>
                       _suppliers = value.map<String>((e) => e.code).toList(),
                 ),
               ),
               Container(
                 constraints: const BoxConstraints(maxWidth: 350),
-                child: AsyncDropdownMultiple(
+                child: AsyncDropdownMultiple<Item>(
                   label: const Text('Item :', style: _filterLabelStyle),
                   key: const ValueKey('itemSelect'),
                   attributeKey: 'namaitem',
                   path: '/items',
                   textOnSearch: (item) => "${item.code} - ${item.name}",
                   textOnSelected: (item) => item.code,
-                  converter: Item.fromJson,
+                  modelClass: ItemClass(),
                   onChanged: (value) =>
                       _items = value.map<String>((e) => e.code).toList(),
                 ),

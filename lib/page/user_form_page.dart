@@ -60,8 +60,7 @@ class _UserFormPageState extends State<UserFormPage>
       final data = response.data;
       if (response.statusCode == 200) {
         setState(() {
-          User.fromJson(data['data'],
-              model: user, included: data['included'] ?? []);
+          user.setFromJson(data['data'], included: data['included'] ?? []);
           _refreshForm();
         });
       } else {
@@ -94,8 +93,7 @@ class _UserFormPageState extends State<UserFormPage>
       if ([200, 201].contains(response.statusCode)) {
         var data = response.data;
         setState(() {
-          User.fromJson(data['data'],
-              model: user, included: data['included'] ?? []);
+          user.setFromJson(data['data'], included: data['included'] ?? []);
           _refreshForm();
           var tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(widget, 'Edit user ${user.username}');
@@ -195,7 +193,7 @@ class _UserFormPageState extends State<UserFormPage>
                     visible: setting.canShow('user', 'role'),
                     child: AsyncDropdown<Role>(
                       allowClear: false,
-                      converter: Role.fromJson,
+                      modelClass: RoleClass(),
                       key: const ValueKey('roleSelect'),
                       path: '/roles',
                       attributeKey: 'name',

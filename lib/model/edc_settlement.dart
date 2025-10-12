@@ -76,38 +76,39 @@ class EdcSettlement extends Model {
         'cashier_session_id': cashierSessionId,
         'status': status,
       };
-
+  @override
+  String get modelName => 'edc_settlement';
   dynamic get paymentProviderId => paymentProvider.id;
   dynamic get cashierSessionId => cashierSession?.id;
   dynamic get paymentTypeId => paymentType.id;
   @override
-  factory EdcSettlement.fromJson(Map<String, dynamic> json,
-      {EdcSettlement? model, List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    model ??= EdcSettlement();
-    model.id = json['id'];
-    model.merchantId = attributes['merchant_id'] ?? '';
-    model.terminalId = attributes['terminal_id'];
-    model.amount = Money.parse(attributes['amount']);
-    model.status = EdcSettlementStatus.convertFromString(attributes['status']);
-    model.diffAmount = Money.parse(attributes['diff_amount']);
-    model.paymentType = Model.findRelationData<PaymentType>(
+
+    merchantId = attributes['merchant_id'] ?? '';
+    terminalId = attributes['terminal_id'];
+    amount = Money.parse(attributes['amount']);
+    status = EdcSettlementStatus.convertFromString(attributes['status']);
+    diffAmount = Money.parse(attributes['diff_amount']);
+    paymentType = PaymentTypeClass().findRelationData(
             included: included,
-            convert: PaymentType.fromJson,
             relation: json['relationships']?['payment_type']) ??
-        model.paymentType;
-    model.paymentProvider = Model.findRelationData<PaymentProvider>(
+        paymentType;
+    paymentProvider = PaymentProviderClass().findRelationData(
             included: included,
-            convert: PaymentProvider.fromJson,
             relation: json['relationships']?['payment_provider']) ??
-        model.paymentProvider;
-    model.cashierSession = Model.findRelationData<CashierSession>(
+        paymentProvider;
+    cashierSession = CashierSessionClass().findRelationData(
         included: included,
-        convert: CashierSession.fromJson,
         relation: json['relationships']?['cashier_session']);
-    return model;
   }
 
   @override
   String get modelValue => id.toString();
+}
+
+class EdcSettlementClass extends ModelClass<EdcSettlement> {
+  @override
+  EdcSettlement initModel() => EdcSettlement();
 }

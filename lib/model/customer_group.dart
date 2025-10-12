@@ -23,21 +23,24 @@ class CustomerGroup extends Model {
         'levelharga': level,
         'kelipatanpoin': powerPoint,
       };
+  @override
+  String get modelName => 'customer_group';
 
   @override
-  factory CustomerGroup.fromJson(Map<String, dynamic> json,
-      {CustomerGroup? model, List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model ??= CustomerGroup();
-    model.id = json['id'];
-    model.code = attributes['kgrup'] ?? '';
-    model.name = attributes['grup'];
-    model.level = attributes['levelharga'];
-    model.powerPoint = double.tryParse(attributes['kelipatanpoin']) ?? 0;
-    model.discount = Percentage.parse(attributes['potongan']);
-    return model;
+    code = attributes['kgrup'] ?? '';
+    name = attributes['grup'];
+    level = attributes['levelharga'];
+    powerPoint = double.tryParse(attributes['kelipatanpoin']) ?? 0;
+    discount = Percentage.parse(attributes['potongan']);
   }
 
   @override
   String get modelValue => "$code - $name";
+}
+
+class CustomerGroupClass extends ModelClass<CustomerGroup> {
+  @override
+  CustomerGroup initModel() => CustomerGroup();
 }

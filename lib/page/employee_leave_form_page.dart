@@ -106,7 +106,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                       attributeKey: 'name',
                       textOnSearch: (employee) =>
                           "${employee.code} - ${employee.name}",
-                      converter: Employee.fromJson,
+                      modelClass: EmployeeClass(),
                       label: const Text(
                         'Nama Karyawan :',
                         style: labelStyle,

@@ -83,8 +83,8 @@ class _PurchaseReturnPageState extends State<PurchaseReturnPage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<PurchaseReturn>((json) => PurchaseReturn.fromJson(json,
-                included: responseBody['included'] ?? []))
+            .map<PurchaseReturn>((json) => PurchaseReturnClass()
+                .fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         final totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;

@@ -62,8 +62,8 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
         final jsonData = response.data['data'];
         setState(() {
           edcSettlements = jsonData
-              .map<EdcSettlement>((json) => EdcSettlement.fromJson(json,
-                  included: response.data['included'] ?? []))
+              .map<EdcSettlement>((json) => EdcSettlementClass()
+                  .fromJson(json, included: response.data['included'] ?? []))
               .toList();
         });
       }
@@ -136,7 +136,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
           allowClear: false,
           textOnSearch: (paymentProvider) => paymentProvider.name,
           selected: edcSettlement.paymentProvider,
-          converter: PaymentProvider.fromJson,
+          modelClass: PaymentProviderClass(),
           request: (
               {int page = 1,
               int limit = 20,
@@ -172,7 +172,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
             allowClear: false,
             textOnSearch: (paymentType) => paymentType.name,
             selected: edcSettlement.paymentType,
-            converter: PaymentType.fromJson,
+            modelClass: PaymentTypeClass(),
             onChanged: (paymentType) {
               edcSettlement.paymentType = paymentType ?? PaymentType();
             },
@@ -203,7 +203,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
           selected: PaymentProviderEdc(
               terminalId: edcSettlement.terminalId,
               merchantId: edcSettlement.merchantId),
-          converter: PaymentProviderEdc.fromJson,
+          modelClass: PaymentProviderEdcClass(),
           onChanged: (data) {
             setState(() {
               edcSettlement.terminalId = data?.terminalId ?? '';

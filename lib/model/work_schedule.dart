@@ -81,20 +81,25 @@ class WorkSchedule extends Model {
       };
 
   @override
-  factory WorkSchedule.fromJson(Map<String, dynamic> json,
-      {WorkSchedule? model, List included = const []}) {
+  String get modelName => 'work_schedule';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    model ??= WorkSchedule(beginWork: '', endWork: '');
-    model.id = int.parse(json['id']);
-    model.beginWork = attributes['begin_work'];
-    model.endWork = attributes['end_work'];
-    model.shift = attributes['shift'];
-    model.dayOfWeek = attributes['day_of_week'];
-    model.activeWeek =
-        ActiveWeekWorkSchedule.fromString(attributes['active_week']);
-    return model;
+
+    beginWork = attributes['begin_work'];
+    endWork = attributes['end_work'];
+    shift = attributes['shift'];
+    dayOfWeek = attributes['day_of_week'];
+    activeWeek = ActiveWeekWorkSchedule.fromString(attributes['active_week']);
   }
 
   @override
   String get modelValue => id.toString();
+}
+
+class WorkScheduleClass extends ModelClass<WorkSchedule> {
+  @override
+  WorkSchedule initModel() => WorkSchedule();
 }

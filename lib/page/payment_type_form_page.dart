@@ -49,8 +49,8 @@ class _PaymentTypeFormPageState extends State<PaymentTypeFormPage>
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
-          PaymentType.fromJson(response.data['data'],
-              model: paymentType, included: response.data['included']);
+          paymentType.setFromJson(response.data['data'],
+              included: response.data['included']);
         });
       }
     }, onError: (error) {
@@ -77,8 +77,8 @@ class _PaymentTypeFormPageState extends State<PaymentTypeFormPage>
       if ([200, 201].contains(response.statusCode)) {
         var data = response.data['data'];
         setState(() {
-          PaymentType.fromJson(data,
-              included: response.data['included'] ?? [], model: paymentType);
+          paymentType.setFromJson(data,
+              included: response.data['included'] ?? []);
           var tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(
               widget, 'Edit paymentType ${paymentType.name}');

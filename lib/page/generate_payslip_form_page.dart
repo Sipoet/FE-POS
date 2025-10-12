@@ -99,7 +99,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                             textOnSearch: (employee) =>
                                 "${employee.code} - ${employee.name}",
                             textOnSelected: (employee) => employee.code,
-                            converter: Employee.fromJson,
+                            modelClass: EmployeeClass(),
                             request: (
                                 {int page = 1,
                                 int limit = 20,
@@ -243,8 +243,8 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
         final responseBody = response.data['data'] as List;
         setState(() {
           final payslip = responseBody
-              .map<Payslip>((json) =>
-                  Payslip.fromJson(json, included: response.data['included']))
+              .map<Payslip>((json) => PayslipClass()
+                  .fromJson(json, included: response.data['included']))
               .toList();
           _source.setData(payslip);
         });

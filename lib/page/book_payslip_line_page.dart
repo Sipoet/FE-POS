@@ -81,8 +81,8 @@ class _BookPayslipLinePageState extends State<BookPayslipLinePage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<BookPayslipLine>((json) => BookPayslipLine.fromJson(json,
-                included: responseBody['included'] ?? []))
+            .map<BookPayslipLine>((json) => BookPayslipLineClass()
+                .fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         int totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;

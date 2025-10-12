@@ -98,8 +98,8 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
         throw 'error: invalid data type ${response.data.toString()}';
       }
       items = responseBody['data']
-          .map<Item>((json) =>
-              Item.fromJson(json, included: responseBody['included'] ?? []))
+          .map<Item>((json) => ItemClass()
+              .fromJson(json, included: responseBody['included'] ?? []))
           .toList();
       final totalPage = responseBody['meta']?['total_pages'] ?? 1;
       return DataTableResponse<Item>(totalPage: totalPage, models: items);

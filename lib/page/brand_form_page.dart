@@ -38,8 +38,10 @@ class _BrandFormPageState extends State<BrandFormPage>
     showLoadingPopup();
     _server.get('brands/${brand.id}').then((response) {
       if (mounted && response.statusCode == 200) {
-        Brand.fromJson(response.data['data'],
-            included: response.data['included'] ?? [], model: brand);
+        brand.setFromJson(
+          response.data['data'],
+          included: response.data['included'] ?? [],
+        );
         _nameController.text = brand.name;
         _descriptionController.text = brand.description;
       }

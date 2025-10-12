@@ -100,37 +100,40 @@ class SystemSetting extends Model {
         'created_at': createdAt,
         'updated_at': updatedAt,
       };
+  @override
+  String get modelName => 'system_setting';
 
   @override
-  factory SystemSetting.fromJson(Map<String, dynamic> json,
-      {SystemSetting? model, List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model ??= SystemSetting();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.key = attributes['key_name'];
-    model.value = attributes['value'];
+    super.setFromJson(json, included: included);
+    key = attributes['key_name'];
+    value = attributes['value'];
     if (attributes['value_type'] != null) {
-      model.valueType = SettingValueType.fromString(attributes['value_type']);
+      valueType = SettingValueType.fromString(attributes['value_type']);
     }
-    if (model.value is String) {
-      if (model.valueType == SettingValueType.date) {
-        model.value = Date.tryParse(model.value);
-      } else if (model.valueType == SettingValueType.datetime) {
-        model.value = DateTime.tryParse(model.value);
-      } else if (model.valueType == SettingValueType.time) {
-        model.value = TimeDay.tryParse(model.value);
+    if (value is String) {
+      if (valueType == SettingValueType.date) {
+        value = Date.tryParse(value);
+      } else if (valueType == SettingValueType.datetime) {
+        value = DateTime.tryParse(value);
+      } else if (valueType == SettingValueType.time) {
+        value = TimeDay.tryParse(value);
       }
     }
-    model.userId = attributes['user_id'];
-    model.user = Model.findRelationData<User>(
-            relation: json['relationships']?['user'],
-            included: included,
-            convert: User.fromJson) ??
-        model.user;
-    return model;
+    userId = attributes['user_id'];
+    user = UserClass().findRelationData(
+          relation: json['relationships']?['user'],
+          included: included,
+        ) ??
+        user;
   }
 
   @override
   String get modelValue => "$key : ${value.toString()}";
+}
+
+class SystemSettingClass extends ModelClass<SystemSetting> {
+  @override
+  SystemSetting initModel() => SystemSetting();
 }

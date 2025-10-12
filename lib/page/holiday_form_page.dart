@@ -67,8 +67,7 @@ class _HolidayFormPageState extends State<HolidayFormPage>
       if ([200, 201].contains(response.statusCode)) {
         var data = response.data['data'];
         setState(() {
-          Holiday.fromJson(data,
-              model: holiday, included: response.data['included'] ?? []);
+          holiday.setFromJson(data, included: response.data['included'] ?? []);
           var tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(
               widget, 'Edit Libur Karyawan ${holiday.id}');
