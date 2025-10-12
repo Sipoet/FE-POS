@@ -275,13 +275,15 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           style: labelStyle,
                         ),
                         path: 'ipos/users',
-                        textOnSearch: (value) => value.id,
+                        textOnSearch: (value) => value.id.toString(),
                         attributeKey: 'name',
                         onChanged: (userCode) {
                           employee.userCode = userCode?.id;
                         },
                         modelClass: HashModelClass(),
-                        selected: HashModel(id: employee.userCode),
+                        selected: employee.userCode == null
+                            ? null
+                            : HashModel(id: employee.userCode),
                       )),
                   const SizedBox(
                     height: 10,

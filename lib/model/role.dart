@@ -40,15 +40,15 @@ class Role extends Model {
     if (included.isNotEmpty) {
       accessAuthorizes = AccessAuthorizeClass().findRelationsData(
         included: included,
-        relation: json['relationships']['access_authorizes'],
+        relation: json['relationships']?['access_authorizes'],
       );
       columnAuthorizes = ColumnAuthorizeClass().findRelationsData(
         included: included,
-        relation: json['relationships']['column_authorizes'],
+        relation: json['relationships']?['column_authorizes'],
       );
       roleWorkSchedules = RoleWorkScheduleClass().findRelationsData(
         included: included,
-        relation: json['relationships']['role_work_schedules'],
+        relation: json['relationships']?['role_work_schedules'],
       );
     }
     super.setFromJson(json, included: included);

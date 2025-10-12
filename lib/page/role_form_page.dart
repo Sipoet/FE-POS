@@ -57,7 +57,8 @@ class _RoleFormPageState extends State<RoleFormPage>
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
-          role.setFromJson(response.data, included: response.data['included']);
+          role.setFromJson(response.data['data'],
+              included: response.data['included']);
           groupWorkSchedules = [];
           groupBy<RoleWorkSchedule, GroupWorkSchedule>(
             role.roleWorkSchedules,
@@ -652,9 +653,12 @@ class _RoleFormPageState extends State<RoleFormPage>
                                                               .toString() ??
                                                           '';
                                                     }),
-                                                selected: HashModel(
-                                                    id: accessAuthorize
-                                                        .controller),
+                                                selected: accessAuthorize
+                                                        .controller.isEmpty
+                                                    ? null
+                                                    : HashModel(
+                                                        id: accessAuthorize
+                                                            .controller),
                                                 textOnSearch: (value) =>
                                                     value.id,
                                                 modelClass: HashModelClass(),
@@ -757,8 +761,12 @@ class _RoleFormPageState extends State<RoleFormPage>
                                                 onChanged: (value) =>
                                                     columnAuthorize.table =
                                                         value?.id ?? '',
-                                                selected: HashModel(
-                                                    id: columnAuthorize.table),
+                                                selected: columnAuthorize
+                                                        .table.isEmpty
+                                                    ? null
+                                                    : HashModel(
+                                                        id: columnAuthorize
+                                                            .table),
                                                 modelClass: HashModelClass(),
                                                 path: 'roles/table_names'),
                                           )),

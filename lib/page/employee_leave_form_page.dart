@@ -112,9 +112,12 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                         style: labelStyle,
                       ),
                       onChanged: (employee) {
-                        employeeLeave.employee = employee ?? Employee();
+                        employeeLeave.employee =
+                            employee ?? employeeLeave.employee;
                       },
-                      selected: employeeLeave.employee,
+                      selected: employeeLeave.employee.isNewRecord
+                          ? null
+                          : employeeLeave.employee,
                       validator: (value) {
                         if (employeeLeave.employee.id == null) {
                           return 'harus diisi';

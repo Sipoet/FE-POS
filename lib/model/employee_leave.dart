@@ -100,19 +100,12 @@ class EmployeeLeave extends Model {
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    Employee employee = Employee(
-        code: '',
-        name: '',
-        role: Role(name: ''),
-        startWorkingDate: Date.today());
-    final employeeRelated = json['relationships']['employee'];
-    if (included.isNotEmpty && employeeRelated != null) {
-      employee = EmployeeClass().findRelationData(
-            included: included,
-            relation: employeeRelated,
-          ) ??
-          employee;
-    }
+
+    employee = EmployeeClass().findRelationData(
+          included: included,
+          relation: json['relationships']['employee'],
+        ) ??
+        employee;
 
     id = int.parse(json['id']);
     date = Date.parse(attributes['date']);
