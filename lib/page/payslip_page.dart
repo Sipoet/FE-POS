@@ -38,8 +38,11 @@ class _PayslipPageState extends State<PayslipPage>
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
+    final columns = setting.tableColumn('payslip');
     _source = CustomAsyncDataTableSource<Payslip>(
-        columns: setting.tableColumn('payslip'), fetchData: fetchPayslips);
+        columns: columns, fetchData: fetchPayslips);
+    _source.sortColumn = columns[3];
+    _source.isAscending = false;
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
@@ -60,7 +63,7 @@ class _PayslipPageState extends State<PayslipPage>
       int limit = 100,
       TableColumn? sortColumn,
       bool isAscending = true}) {
-    String orderKey = sortColumn?.name ?? 'id';
+    String orderKey = sortColumn?.name ?? 'start_date';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
@@ -358,7 +361,7 @@ class _PayslipPageState extends State<PayslipPage>
               height: bodyScreenHeight,
               child: CustomAsyncDataTable(
                 controller: _source,
-                fixedLeftColumns: 2,
+                fixedLeftColumns: 1,
               ),
             ),
           ],

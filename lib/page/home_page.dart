@@ -221,6 +221,7 @@ class _HomePageState extends State<HomePage>
               alignment: WrapAlignment.spaceBetween,
               children: [
                 DropdownMenu(
+                  menuHeight: 250,
                   inputDecorationTheme: const InputDecorationTheme(
                     contentPadding: EdgeInsets.only(left: 10),
                     isDense: true,

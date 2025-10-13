@@ -37,8 +37,11 @@ class _DiscountPageState extends State<DiscountPage>
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
+    final columns = setting.tableColumn('discount');
     _source = CustomAsyncDataTableSource<Discount>(
-        columns: setting.tableColumn('discount'), fetchData: fetchDiscounts);
+        columns: columns, fetchData: fetchDiscounts);
+    _source.sortColumn = columns[16];
+    _source.isAscending = false;
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
