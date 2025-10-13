@@ -62,20 +62,21 @@ class SalesCashierItem extends Model {
   Money get total => subtotal - discountAmount;
 
   @override
-  factory SalesCashierItem.fromJson(Map<String, dynamic> json,
-      {SalesCashierItem? model, List included = const []}) {
+  String get modelName => 'sales_cashier_item';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model ??= SalesCashierItem();
-    model.itemBarcode = attributes['item_barcode'];
+    super.setFromJson(json, included: included);
+
+    itemBarcode = attributes['item_barcode'];
     if (included.isNotEmpty) {
-      model.item = Model.findRelationData<Item>(
-              included: included,
-              relation: json['relationships']['item'],
-              convert: Item.fromJson) ??
-          Item();
+      item = ItemClass().findRelationData(
+            included: included,
+            relation: json['relationships']['item'],
+          ) ??
+          item;
     }
-    Model.fromModel(model, attributes);
-    model.id = json['id'];
     // model.userName = attributes['user1'];
     // model.datetime = DateTime.parse(attributes['tanggal']);
     // model.description = attributes['keterangan'];
@@ -98,9 +99,13 @@ class SalesCashierItem extends Model {
     // model.taxAmount = Money.tryParse(attributes['pajak']) ?? const Money(0);
     // model.code = attributes['notransaksi'];
     // model.bankCode = attributes['bank_code'] ?? '';
-    return model;
   }
 
   @override
   String get modelValue => id;
+}
+
+class SalesCashierItemClass extends ModelClass<SalesCashierItem> {
+  @override
+  SalesCashierItem initModel() => SalesCashierItem();
 }

@@ -5,15 +5,19 @@ class DiscountRule extends Model {
   @override
   Map<String, dynamic> toMap() => {};
   @override
-  factory DiscountRule.fromJson(Map<String, dynamic> json,
-      {DiscountRule? model, List included = const []}) {
+  String get modelName => 'discount_rule';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model ??= DiscountRule();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    return model;
+    super.setFromJson(json, included: included);
   }
 
   @override
   String get modelValue => id;
+}
+
+class DiscountRuleClass extends ModelClass<DiscountRule> {
+  @override
+  DiscountRule initModel() => DiscountRule();
 }

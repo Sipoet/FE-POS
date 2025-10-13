@@ -60,7 +60,7 @@ class _ItemModalSelectState extends State<ItemModalSelect>
 
       models = data['data']
           .map<ItemReport>((row) =>
-              ItemReport.fromJson(row, included: data['include'] ?? []))
+              ItemReportClass().fromJson(row, included: data['include'] ?? []))
           .toList();
 
       return DataTableResponse<ItemReport>(

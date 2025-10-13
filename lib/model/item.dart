@@ -85,6 +85,8 @@ class Item extends Model {
         ItemType();
     brand = BrandClass().findRelationData(
         relation: json['relationships']['brand'], included: included);
+    discountRules = DiscountRuleClass().findRelationsData(
+        relation: json['relationships']['discount_rules'], included: included);
   }
 
   Percentage get margin => cogs == Money(0)

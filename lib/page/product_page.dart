@@ -96,7 +96,8 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
       }
       Map responseBody = response.data;
       final models = responseBody['data'].map<Product>((json) {
-        return Product.fromJson(json, included: responseBody['included']);
+        return ProductClass()
+            .fromJson(json, included: responseBody['included']);
       }).toList();
       return DataTableResponse<Product>(
           totalPage: responseBody['meta']['total_pages'], models: models);

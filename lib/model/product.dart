@@ -5,24 +5,27 @@ class Product extends Model {
   Product({super.id, this.description = '', super.createdAt, super.updatedAt});
 
   @override
-  Map<String, dynamic> toMap() {
-    // TODO: implement toMap
-    throw UnimplementedError();
-  }
+  Map<String, dynamic> toMap() => {
+        'description': description,
+        'created_at': createdAt,
+        'updated_at': updatedAt,
+      };
 
   @override
-  factory Product.fromJson(Map<String, dynamic> json,
-      {List included = const [], Product? model}) {
-    // TODO: implement fromJson
-    var attributes = json['attributes'];
-    model ??= Product();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.description = attributes['description'];
+  String get modelName => 'product';
 
-    return model;
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    var attributes = json['attributes'];
+    super.setFromJson(json, included: included);
+    description = attributes['description'];
   }
 
   @override
   String get modelValue => description;
+}
+
+class ProductClass extends ModelClass<Product> {
+  @override
+  Product initModel() => Product();
 }

@@ -39,24 +39,30 @@ class Customer extends Model {
       };
 
   @override
-  factory Customer.fromJson(Map<String, dynamic> json,
-      {Customer? model, List included = const []}) {
+  String get modelName => 'customer';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model ??= Customer();
-    model.id = json['id'];
-    model.code = attributes['kode'];
-    model.name = attributes['nama'];
-    model.bank = attributes['bank'];
-    model.account = attributes['norek'];
-    model.accountRegisterName = attributes['atasnama'];
-    model.address = attributes['alamat'];
-    model.contact = attributes['kontak'];
-    model.email = attributes['email'];
-    model.city = attributes['kota'];
-    model.description = attributes['keterangan'];
-    return model;
+    super.setFromJson(json, included: included);
+
+    code = attributes['kode'];
+    name = attributes['nama'];
+    bank = attributes['bank'];
+    account = attributes['norek'];
+    accountRegisterName = attributes['atasnama'];
+    address = attributes['alamat'];
+    contact = attributes['kontak'];
+    email = attributes['email'];
+    city = attributes['kota'];
+    description = attributes['keterangan'];
   }
 
   @override
   String get modelValue => "$code - $name";
+}
+
+class CustomerClass extends ModelClass<Customer> {
+  @override
+  Customer initModel() => Customer();
 }

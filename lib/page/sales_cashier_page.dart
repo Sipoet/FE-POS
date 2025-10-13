@@ -85,8 +85,8 @@ class _SalesCashierPageState extends State<SalesCashierPage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<SalesCashier>((json) => SalesCashier.fromJson(json,
-                included: responseBody['included'] ?? []))
+            .map<SalesCashier>((json) => SalesCashierClass()
+                .fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         final totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;

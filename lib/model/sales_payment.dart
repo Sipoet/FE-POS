@@ -24,29 +24,32 @@ class SalesPayment extends Model {
   bool get isCash => paymentType.name.toLowerCase().trim() == 'cash';
 
   @override
-  factory SalesPayment.fromJson(Map<String, dynamic> json,
-      {SalesPayment? model, List included = const []}) {
-    var attributes = json['attributes'];
+  String get modelName => 'sales_payment';
 
-    model ??= SalesPayment();
-    model.amount = Money.parse(attributes['amount']);
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    var attributes = json['attributes'];
+    super.setFromJson(json, included: included);
+    amount = Money.parse(attributes['amount']);
     if (included.isNotEmpty) {
-      model.paymentType = Model.findRelationData<PaymentType>(
-              included: included,
-              relation: json['relationships']['payment_type'],
-              convert: PaymentType.fromJson) ??
-          model.paymentType;
-      model.paymentProvider = Model.findRelationData<PaymentProvider>(
-              included: included,
-              relation: json['relationships']['payment_provider'],
-              convert: PaymentProvider.fromJson) ??
-          model.paymentProvider;
+      paymentType = PaymentTypeClass().findRelationData(
+            included: included,
+            relation: json['relationships']['payment_type'],
+          ) ??
+          paymentType;
+      paymentProvider = PaymentProviderClass().findRelationData(
+            included: included,
+            relation: json['relationships']['payment_provider'],
+          ) ??
+          paymentProvider;
     }
-    Model.fromModel(model, attributes);
-    model.id = json['id'];
-    return model;
   }
 
   @override
   String get modelValue => id;
+}
+
+class SalesPaymentClass extends ModelClass<SalesPayment> {
+  @override
+  SalesPayment initModel() => SalesPayment();
 }
