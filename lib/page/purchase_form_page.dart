@@ -65,8 +65,8 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
-          Purchase.fromJson(response.data['data'],
-              included: response.data['included'], model: purchase);
+          purchase.setFromJson(response.data['data'],
+              included: response.data['included']);
           _source.setModels(purchase.purchaseItems, _columns);
         });
       }

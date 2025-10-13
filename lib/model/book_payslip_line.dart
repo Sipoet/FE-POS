@@ -44,34 +44,36 @@ class BookPayslipLine extends Model {
         'created_at': createdAt,
         'updated_at': updatedAt,
       };
-
   @override
-  factory BookPayslipLine.fromJson(Map<String, dynamic> json,
-      {BookPayslipLine? model, List included = const []}) {
+  String get modelName => 'book_payslip_line';
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model ??= BookPayslipLine();
-    model.id = int.parse(json['id']);
-    Model.fromModel(model, attributes);
-    model.group = PayrollGroup.fromString(attributes['group']);
-    model.payrollType = Model.findRelationData<PayrollType>(
-            included: included,
-            relation: json['relationships']['payroll_type'],
-            convert: PayrollType.fromJson) ??
-        model.payrollType;
-    model.employee = Model.findRelationData<Employee>(
-            included: included,
-            relation: json['relationships']['employee'],
-            convert: Employee.fromJson) ??
-        model.employee;
-    model.amount = Money.parse(attributes['amount']);
-    model.status = attributes['status'];
-    model.description = attributes['description'];
-    model.transactionDate = Date.parse(attributes['transaction_date']);
-    return model;
+    super.setFromJson(json, included: included);
+    group = PayrollGroup.fromString(attributes['group']);
+    payrollType = PayrollTypeClass().findRelationData(
+          included: included,
+          relation: json['relationships']['payroll_type'],
+        ) ??
+        payrollType;
+    employee = EmployeeClass().findRelationData(
+          included: included,
+          relation: json['relationships']['employee'],
+        ) ??
+        employee;
+    amount = Money.parse(attributes['amount']);
+    status = attributes['status'];
+    description = attributes['description'];
+    transactionDate = Date.parse(attributes['transaction_date']);
   }
 
   @override
   String get modelValue =>
       description ??
       '${group.toString()} ${payrollType.modelValue} ${id.toString()}';
+}
+
+class BookPayslipLineClass extends ModelClass<BookPayslipLine> {
+  @override
+  BookPayslipLine initModel() => BookPayslipLine();
 }

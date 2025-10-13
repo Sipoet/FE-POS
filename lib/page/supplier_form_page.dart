@@ -38,8 +38,8 @@ class _SupplierFormPageState extends State<SupplierFormPage>
     showLoadingPopup();
     _server.get('suppliers/${supplier.id}').then((response) {
       if (mounted && response.statusCode == 200) {
-        Supplier.fromJson(response.data['data'],
-            included: response.data['included'] ?? [], model: supplier);
+        supplier.setFromJson(response.data['data'],
+            included: response.data['included'] ?? []);
         supplier.toMap().forEach((key, value) {
           _controller[key]!.text = value.toString();
         });

@@ -26,21 +26,23 @@ class CashierSession extends Model {
         'created_at': createdAt,
         'updated_at': updatedAt,
       };
-
+  @override
+  String get modelName => 'cashier_session';
   @override
   String get modelValue => date.format();
 
   @override
-  factory CashierSession.fromJson(Map<String, dynamic> json,
-      {CashierSession? model, List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model ??= CashierSession();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.date = Date.parse(attributes['date']);
+    super.setFromJson(json, included: included);
+    date = Date.parse(attributes['date']);
 
-    model.totalIn = Money.parse(attributes['total_in']);
-    model.totalOut = Money.parse(attributes['total_out']);
-    return model;
+    totalIn = Money.parse(attributes['total_in']);
+    totalOut = Money.parse(attributes['total_out']);
   }
+}
+
+class CashierSessionClass extends ModelClass<CashierSession> {
+  @override
+  CashierSession initModel() => CashierSession();
 }

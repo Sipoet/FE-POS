@@ -14,16 +14,19 @@ class Brand extends Model {
 
   @override
   String get modelValue => name;
+  @override
+  String get modelName => 'brand';
 
   @override
-  factory Brand.fromJson(Map<String, dynamic> json,
-      {Brand? model, List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model ??= Brand();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.description = attributes['description'] ?? '';
-    model.name = attributes['name'];
-    return model;
+    super.setFromJson(json, included: included);
+    description = attributes['description'] ?? '';
+    name = attributes['name'];
   }
+}
+
+class BrandClass extends ModelClass<Brand> {
+  @override
+  Brand initModel() => Brand();
 }

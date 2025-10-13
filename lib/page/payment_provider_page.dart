@@ -81,8 +81,8 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
           throw 'error: invalid data provider ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<PaymentProvider>((json) => PaymentProvider.fromJson(json,
-                included: responseBody['included'] ?? []))
+            .map<PaymentProvider>((json) => PaymentProviderClass()
+                .fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         int totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;

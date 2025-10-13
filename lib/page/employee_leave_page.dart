@@ -36,9 +36,11 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
     server = context.read<Server>();
     flash = Flash();
     setting = context.read<Setting>();
+    final columns = setting.tableColumn('employeeLeave');
     _source = CustomAsyncDataTableSource<EmployeeLeave>(
-        columns: setting.tableColumn('employeeLeave'),
-        fetchData: fetchEmployeeLeaves);
+        columns: columns, fetchData: fetchEmployeeLeaves);
+    _source.sortColumn = columns[1];
+    _source.isAscending = false;
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
@@ -81,8 +83,8 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<EmployeeLeave>((json) => EmployeeLeave.fromJson(json,
-                included: responseBody['included']))
+            .map<EmployeeLeave>((json) => EmployeeLeaveClass()
+                .fromJson(json, included: responseBody['included']))
             .toList();
 
         flash.hide();

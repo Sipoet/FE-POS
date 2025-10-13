@@ -86,52 +86,54 @@ class PurchaseReturn extends Model {
       };
 
   @override
-  factory PurchaseReturn.fromJson(Map<String, dynamic> json,
-      {PurchaseReturn? model, List included = const []}) {
+  String get modelName => 'purchase_return';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
 
-    model ??= PurchaseReturn(userName: '');
     if (included.isNotEmpty) {
-      model.purchaseItems = Model.findRelationsData<PurchaseReturnItem>(
-          included: included,
-          relation: json['relationships']['purchase_return_items'],
-          convert: PurchaseReturnItem.fromJson);
-      model.supplier = Model.findRelationData<Supplier>(
-              included: included,
-              relation: json['relationships']['supplier'],
-              convert: Supplier.fromJson) ??
-          model.supplier;
+      purchaseItems = PurchaseReturnItemClass().findRelationsData(
+        included: included,
+        relation: json['relationships']['purchase_return_items'],
+      );
+      supplier = SupplierClass().findRelationData(
+            included: included,
+            relation: json['relationships']['supplier'],
+          ) ??
+          supplier;
     }
-    Model.fromModel(model, attributes);
-    model.id = json['id'];
-    model.userName = attributes['user1'];
-    model.datetime = DateTime.parse(attributes['tanggal']);
-    model.description = attributes['keterangan'];
-    model.totalItem = double.parse(attributes['totalitem']);
-    model.subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
-    model.grandtotal =
-        Money.tryParse(attributes['totalakhir']) ?? const Money(0);
-    model.discountAmount =
+    id = json['id'];
+    userName = attributes['user1'];
+    datetime = DateTime.parse(attributes['tanggal']);
+    description = attributes['keterangan'];
+    totalItem = double.parse(attributes['totalitem']);
+    subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
+    grandtotal = Money.tryParse(attributes['totalakhir']) ?? const Money(0);
+    discountAmount =
         Money.tryParse(attributes['potnomfaktur']) ?? const Money(0);
-    model.otherCost = Money.tryParse(attributes['biayalain']) ?? const Money(0);
-    model.cashAmount = Money.tryParse(attributes['jmltunai']) ?? const Money(0);
-    model.debitCardAmount =
-        Money.tryParse(attributes['jmldebit']) ?? const Money(0);
-    model.creditCardAmount =
-        Money.tryParse(attributes['jmlkk']) ?? const Money(0);
-    model.emoneyAmount =
-        Money.tryParse(attributes['jmlemoney']) ?? const Money(0);
-    model.paymentMethodType = attributes['payment_type'] ?? '';
-    model.taxType = attributes['ppn'];
-    model.taxAmount = Money.tryParse(attributes['pajak']) ?? const Money(0);
-    model.code = attributes['notransaksi'];
-    model.orderCode = attributes['notrsorder'];
-    model.location = attributes['kodekantor'];
-    model.destLocation = attributes['kantortujuan'];
-    model.bankCode = attributes['bank_code'];
-    model.supplierCode = attributes['kodesupel'];
-    return model;
+    otherCost = Money.tryParse(attributes['biayalain']) ?? const Money(0);
+    cashAmount = Money.tryParse(attributes['jmltunai']) ?? const Money(0);
+    debitCardAmount = Money.tryParse(attributes['jmldebit']) ?? const Money(0);
+    creditCardAmount = Money.tryParse(attributes['jmlkk']) ?? const Money(0);
+    emoneyAmount = Money.tryParse(attributes['jmlemoney']) ?? const Money(0);
+    paymentMethodType = attributes['payment_type'] ?? '';
+    taxType = attributes['ppn'];
+    taxAmount = Money.tryParse(attributes['pajak']) ?? const Money(0);
+    code = attributes['notransaksi'];
+    orderCode = attributes['notrsorder'];
+    location = attributes['kodekantor'];
+    destLocation = attributes['kantortujuan'];
+    bankCode = attributes['bank_code'];
+    supplierCode = attributes['kodesupel'];
   }
+
   @override
   String get modelValue => code;
+}
+
+class PurchaseReturnClass extends ModelClass<PurchaseReturn> {
+  @override
+  PurchaseReturn initModel() => PurchaseReturn();
 }

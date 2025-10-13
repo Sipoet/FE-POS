@@ -43,8 +43,8 @@ class _ItemFormPageState extends State<ItemFormPage>
     showLoadingPopup();
     _server.get('items/${item.id}').then((response) {
       if (mounted && response.statusCode == 200) {
-        Item.fromJson(response.data['data'],
-            included: response.data['included'] ?? [], model: item);
+        item.setFromJson(response.data['data'],
+            included: response.data['included'] ?? []);
 
         setState(() {
           item.toMap().forEach((key, value) {
@@ -182,8 +182,10 @@ class _ItemFormPageState extends State<ItemFormPage>
     server.put('items/${item.code}', body: params).then((response) {
       if (mounted && response.statusCode == 200) {
         setState(() {
-          Item.fromJson(response.data['data'],
-              included: response.data['included'] ?? [], model: item);
+          item.setFromJson(
+            response.data['data'],
+            included: response.data['included'] ?? [],
+          );
         });
 
         _flash.show(Text('Sukses simpan item'), ToastificationType.success);

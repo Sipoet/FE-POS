@@ -101,8 +101,8 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
         }
         try {
           final responsedModels = responseBody['data']
-              .map<CashierSession>((json) => CashierSession.fromJson(json,
-                  included: responseBody['included'] ?? []))
+              .map<CashierSession>((json) => CashierSessionClass()
+                  .fromJson(json, included: responseBody['included'] ?? []))
               .toList();
           int totalRows = responseBody['meta']?['total_rows'] ??
               responseBody['data'].length;

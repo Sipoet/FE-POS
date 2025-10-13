@@ -43,32 +43,35 @@ class Transfer extends Model {
       };
 
   @override
-  factory Transfer.fromJson(Map<String, dynamic> json,
-      {Transfer? model, List included = const []}) {
+  String get modelName => 'transfer';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
 
-    model ??= Transfer(userName: '');
     if (included.isNotEmpty) {
-      model.transferItems = Model.findRelationsData<TransferItem>(
-          included: included,
-          relation: json['relationships']['transfer_items'],
-          convert: TransferItem.fromJson);
+      transferItems = TransferItemClass().findRelationsData(
+        included: included,
+        relation: json['relationships']['transfer_items'],
+      );
     }
-    Model.fromModel(model, attributes);
-    model.id = json['id'];
-    model.userName = attributes['user1'];
-    model.datetime = DateTime.parse(attributes['tanggal']);
-    model.description = attributes['keterangan'];
-    model.totalItem = double.parse(attributes['totalitem']);
+    userName = attributes['user1'];
+    datetime = DateTime.parse(attributes['tanggal']);
+    description = attributes['keterangan'];
+    totalItem = double.parse(attributes['totalitem']);
 
-    model.code = attributes['notransaksi'];
-    model.shift = attributes['shiftkerja'];
-    model.sourceLocation = attributes['kantordari'];
-    model.destLocation = attributes['kantortujuan'];
-
-    return model;
+    code = attributes['notransaksi'];
+    shift = attributes['shiftkerja'];
+    sourceLocation = attributes['kantordari'];
+    destLocation = attributes['kantortujuan'];
   }
 
   @override
   String get modelValue => code;
+}
+
+class TransferClass extends ModelClass<Transfer> {
+  @override
+  Transfer initModel() => Transfer();
 }

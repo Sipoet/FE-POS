@@ -25,6 +25,9 @@ class ItemWithDiscount extends Model {
         sellPrice = sellPrice ?? const Money(0);
 
   @override
+  String get modelName => 'item';
+
+  @override
   Map<String, dynamic> toMap() => {
         'item_code': code,
         'item_name': name,
@@ -40,26 +43,26 @@ class ItemWithDiscount extends Model {
   Money get discountAmount => sellPrice - sellPriceAfterDiscount;
 
   @override
-  factory ItemWithDiscount.fromJson(Map<String, dynamic> json,
-      {ItemWithDiscount? model, List included = const []}) {
-    var attributes = json['attributes'];
-    model ??= ItemWithDiscount();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.code = attributes['item_code'];
-    model.name = attributes['item_name'];
-    model.discountDesc = attributes['discount_desc'];
-    model.storeStock = double.parse(attributes['store_stock']);
-    model.warehouseStock = double.parse(attributes['warehouse_stock']);
-    model.sellPriceAfterDiscount =
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
+    final attributes = json['attributes'];
+    code = attributes['item_code'];
+    name = attributes['item_name'];
+    discountDesc = attributes['discount_desc'];
+    storeStock = double.parse(attributes['store_stock']);
+    warehouseStock = double.parse(attributes['warehouse_stock']);
+    sellPriceAfterDiscount =
         Money.tryParse(attributes['sell_price_after_discount']) ??
-            model.sellPriceAfterDiscount;
-    model.uom = attributes['uom'] ?? '';
-    model.sellPrice =
-        Money.tryParse(attributes['sell_price']) ?? model.sellPrice;
-    return model;
+            sellPriceAfterDiscount;
+    uom = attributes['uom'] ?? '';
+    sellPrice = Money.tryParse(attributes['sell_price']) ?? sellPrice;
   }
 
   @override
   String get modelValue => "$code - $name";
+}
+
+class ItemWithDiscountClass extends ModelClass<ItemWithDiscount> {
+  @override
+  ItemWithDiscount initModel() => ItemWithDiscount();
 }

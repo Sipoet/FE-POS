@@ -1,6 +1,7 @@
 library;
 
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
@@ -42,10 +43,12 @@ class AsyncDropdownMultiple<T extends Object> extends StatefulWidget {
       required this.textOnSearch,
       this.textOnSelected,
       this.compareValue,
-      required this.converter,
+      // required this.converter,
+      required this.modelClass,
       this.selecteds = const []});
 
   final String? path;
+  final ModelClass modelClass;
   final String? attributeKey;
   final Duration delayedSearch;
   final int recordLimit;
@@ -58,7 +61,7 @@ class AsyncDropdownMultiple<T extends Object> extends StatefulWidget {
   final String? Function(List<T>? models)? validator;
   final String Function(T model) textOnSearch;
   final String Function(T model)? textOnSelected;
-  final T Function(Map<String, dynamic>, {List included}) converter;
+  // final T Function(Map<String, dynamic>, {List included}) converter;
   final Widget? label;
   final bool Function(T, T)? compareValue;
   final RequestRemote? request;
@@ -256,7 +259,8 @@ class _AsyncDropdownMultipleState<T extends Object>
 
   List<T> convertToOptions(List list, List relationships) {
     return list
-        .map<T>((row) => widget.converter(row, included: relationships))
+        .map<T>((row) =>
+            widget.modelClass.fromJson(row, included: relationships) as T)
         .toList();
   }
 }
@@ -283,7 +287,8 @@ class AsyncDropdown<T> extends StatefulWidget {
       required this.textOnSearch,
       this.textOnSelected,
       this.compareValue,
-      required this.converter,
+      required this.modelClass,
+      // required this.converter,
       this.selected});
 
   final String? path;
@@ -300,7 +305,8 @@ class AsyncDropdown<T> extends StatefulWidget {
   final String? Function(T? model)? validator;
   final String Function(T model) textOnSearch;
   final String Function(T model)? textOnSelected;
-  final T Function(Map<String, dynamic>, {List included}) converter;
+  final ModelClass modelClass;
+  // final T Function(Map<String, dynamic>, {List included}) converter;
   final Widget? label;
   final bool Function(T, T)? compareValue;
   final RequestRemote? request;
@@ -433,7 +439,8 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
 
   List<T> convertToOptions(List list, List relationships) {
     return list
-        .map<T>((row) => widget.converter(row, included: relationships))
+        .map<T>((row) =>
+            widget.modelClass.fromJson(row, included: relationships) as T)
         .toList();
   }
 }

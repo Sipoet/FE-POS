@@ -226,56 +226,55 @@ class Employee extends Model {
         employeeDayOffs = employeeDayOffs ?? <EmployeeDayOff>[];
 
   @override
-  factory Employee.fromJson(Map<String, dynamic> json,
-      {List included = const [], Employee? model}) {
+  String get modelName => 'employee';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     final attributes = json['attributes'];
 
-    model ??= Employee();
-
-    model.payroll = Model.findRelationData<Payroll>(
-        included: included,
-        relation: json['relationships']['payroll'],
-        convert: Payroll.fromJson);
-    model.role = Model.findRelationData<Role>(
-            included: included,
-            relation: json['relationships']['role'],
-            convert: Role.fromJson) ??
+    payroll = PayrollClass().findRelationData(
+      included: included,
+      relation: json['relationships']['payroll'],
+    );
+    role = RoleClass().findRelationData(
+          included: included,
+          relation: json['relationships']['role'],
+        ) ??
         Role();
 
-    Model.fromModel(model, attributes);
-    model.employeeDayOffs = Model.findRelationsData<EmployeeDayOff>(
-        relation: json['relationships']['employee_day_offs'],
-        included: included,
-        convert: EmployeeDayOff.fromJson);
-    model.schedules = Model.findRelationsData<WorkSchedule>(
-        relation: json['relationships']['schedules'],
-        included: included,
-        convert: WorkSchedule.fromJson);
-    model.id = int.parse(json['id']);
-    model.code = attributes['code']?.trim();
-    model.name = attributes['name']?.trim();
-    model.maritalStatus = EmployeeMaritalStatus.convertFromString(
+    super.setFromJson(json, included: included);
+    employeeDayOffs = EmployeeDayOffClass().findRelationsData(
+      relation: json['relationships']['employee_day_offs'],
+      included: included,
+    );
+    schedules = WorkScheduleClass().findRelationsData(
+      relation: json['relationships']['schedules'],
+      included: included,
+    );
+    id = int.parse(json['id']);
+    code = attributes['code']?.trim();
+    name = attributes['name']?.trim();
+    maritalStatus = EmployeeMaritalStatus.convertFromString(
         attributes['marital_status'] ??
             EmployeeMaritalStatus.single.toString());
-    model.taxNumber = attributes['tax_number'];
-    model.userCode = attributes['user_code'];
-    model.status =
-        EmployeeStatus.convertFromString(attributes['status'].toString());
-    model.startWorkingDate = Date.parse(attributes['start_working_date']);
-    model.endWorkingDate = Date.tryParse(attributes['end_working_date'] ?? '');
-    model.debt = Money.parse(attributes['debt'] ?? 0);
-    model.idNumber = attributes['id_number'];
-    model.contactNumber = attributes['contact_number'];
-    model.address = attributes['address'];
-    model.bank = attributes['bank'];
-    model.bankAccount = attributes['bank_account'];
-    model.description = attributes['description'];
-    model.imageCode = attributes['image_code'];
-    model.shift = attributes['shift'];
-    model.bankRegisterName = attributes['bank_register_name'];
-    model.religion = Religion.fromString(attributes['religion']);
-    model.email = attributes['email'];
-    return model;
+    taxNumber = attributes['tax_number'];
+    userCode = attributes['user_code'];
+    status = EmployeeStatus.convertFromString(attributes['status'].toString());
+    startWorkingDate = Date.parse(attributes['start_working_date']);
+    endWorkingDate = Date.tryParse(attributes['end_working_date'] ?? '');
+    debt = Money.parse(attributes['debt'] ?? 0);
+    idNumber = attributes['id_number'];
+    contactNumber = attributes['contact_number'];
+    address = attributes['address'];
+    bank = attributes['bank'];
+    bankAccount = attributes['bank_account'];
+    description = attributes['description'];
+    imageCode = attributes['image_code'];
+    shift = attributes['shift'];
+    bankRegisterName = attributes['bank_register_name'];
+    religion = Religion.fromString(attributes['religion']);
+    email = attributes['email'];
   }
 
   @override
@@ -312,4 +311,9 @@ class Employee extends Model {
 
   @override
   String get modelValue => "$code - $name";
+}
+
+class EmployeeClass extends ModelClass<Employee> {
+  @override
+  Employee initModel() => Employee();
 }

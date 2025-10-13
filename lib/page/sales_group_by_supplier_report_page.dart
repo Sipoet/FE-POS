@@ -120,7 +120,7 @@ class _SalesGroupBySupplierReportPageState
     var data = response.data;
     setState(() {
       var rawData = data['data'].map<SalesGroupBySupplier>((row) {
-        return SalesGroupBySupplier.fromJson(row);
+        return SalesGroupBySupplierClass().fromJson(row);
       }).toList();
 
       _source.setTableColumns(whitelistColumns,
@@ -199,7 +199,7 @@ class _SalesGroupBySupplierReportPageState
                       label: const Text('Merek :', style: _filterLabelStyle),
                       key: const ValueKey('brandSelect'),
                       textOnSearch: (Brand brand) => brand.name,
-                      converter: Brand.fromJson,
+                      modelClass: BrandClass(),
                       attributeKey: 'merek',
                       path: '/brands',
                       onSaved: (value) => _brands = value == null
@@ -215,7 +215,7 @@ class _SalesGroupBySupplierReportPageState
                       textOnSearch: (itemType) =>
                           "${itemType.name} - ${itemType.description}",
                       textOnSelected: (itemType) => itemType.name,
-                      converter: ItemType.fromJson,
+                      modelClass: ItemTypeClass(),
                       attributeKey: 'jenis',
                       path: '/item_types',
                       onSaved: (value) => _itemTypes = value == null
@@ -232,7 +232,7 @@ class _SalesGroupBySupplierReportPageState
                     textOnSearch: (supplier) =>
                         "${supplier.code} - ${supplier.name}",
                     textOnSelected: (supplier) => supplier.code,
-                    converter: Supplier.fromJson,
+                    modelClass: SupplierClass(),
                     onSaved: (value) => _suppliers = value == null
                         ? []
                         : value.map<String>((e) => e.code).toList(),

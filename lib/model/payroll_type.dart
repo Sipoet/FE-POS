@@ -17,6 +17,9 @@ class PayrollType extends Model {
   });
 
   @override
+  String get modelName => 'payroll_type';
+
+  @override
   Map<String, dynamic> toMap() => {
         'name': name,
         'initial': initial,
@@ -27,21 +30,20 @@ class PayrollType extends Model {
       };
 
   @override
-  factory PayrollType.fromJson(Map<String, dynamic> json,
-      {PayrollType? model, List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-
-    model ??= PayrollType();
-
-    Model.fromModel(model, attributes);
-    model.id = int.parse(json['id']);
-    model.name = attributes['name'];
-    model.order = attributes['order'];
-    model.isShowOnPayslipDesc = attributes['is_show_on_payslip_desc'] ?? false;
-    model.initial = attributes['initial'] ?? '';
-    return model;
+    super.setFromJson(json, included: included);
+    name = attributes['name'];
+    order = attributes['order'];
+    isShowOnPayslipDesc = attributes['is_show_on_payslip_desc'] ?? false;
+    initial = attributes['initial'] ?? '';
   }
 
   @override
   String get modelValue => name;
+}
+
+class PayrollTypeClass extends ModelClass<PayrollType> {
+  @override
+  PayrollType initModel() => PayrollType();
 }

@@ -80,7 +80,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<PaymentType>((json) => PaymentType.fromJson(json))
+            .map<PaymentType>((json) => PaymentTypeClass().fromJson(json))
             .toList();
         int totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;

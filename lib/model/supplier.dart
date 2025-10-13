@@ -26,6 +26,9 @@ class Supplier extends Model {
   });
 
   @override
+  String get modelName => 'supplier';
+
+  @override
   Map<String, dynamic> toMap() => {
         'code': code,
         'name': name,
@@ -39,25 +42,26 @@ class Supplier extends Model {
       };
 
   @override
-  factory Supplier.fromJson(Map<String, dynamic> json,
-      {Supplier? model, List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    model ??= Supplier();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.code = attributes['code'];
-    model.name = attributes['name'];
-    model.bank = attributes['bank'];
-    model.account = attributes['account'];
-    model.accountRegisterName = attributes['account_register_name'];
-    model.address = attributes['address'];
-    model.contact = attributes['contact'];
-    model.email = attributes['email'];
-    model.city = attributes['city'];
-    model.description = attributes['description'];
-    return model;
+    code = attributes['code'];
+    name = attributes['name'];
+    bank = attributes['bank'];
+    account = attributes['account'];
+    accountRegisterName = attributes['account_register_name'];
+    address = attributes['address'];
+    contact = attributes['contact'];
+    email = attributes['email'];
+    city = attributes['city'];
+    description = attributes['description'];
   }
 
   @override
   String get modelValue => id.toString();
+}
+
+class SupplierClass extends ModelClass<Supplier> {
+  @override
+  Supplier initModel() => Supplier();
 }

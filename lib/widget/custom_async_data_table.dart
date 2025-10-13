@@ -8,6 +8,8 @@ import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/tool/table_decorator.dart';
+import 'package:fe_pos/tool/query_data.dart';
+export 'package:fe_pos/tool/query_data.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 import 'package:provider/provider.dart';
 export 'package:pluto_grid/pluto_grid.dart';
@@ -414,11 +416,7 @@ class _CustomAsyncDataTable2State<T extends Model>
                       width: 400,
                       selecteds: itemBefore,
                       textOnSearch: (item) => _itemText(item, attributeKey),
-                      converter: (json, {included = const []}) {
-                        var model = Item(id: json['id']);
-                        Model.fromModel(model, json['attributes']);
-                        return model;
-                      },
+                      modelClass: ItemClass(),
                       onChanged: (List<Item> items) =>
                           selectedItems[title] = items,
                     ),
@@ -610,10 +608,4 @@ class DataTableResponse<T extends Model> {
   int totalPage;
   List<T> models;
   DataTableResponse({this.totalPage = 0, this.models = const []});
-}
-
-class SortData {
-  String key;
-  bool isAscending;
-  SortData({required this.key, required this.isAscending});
 }

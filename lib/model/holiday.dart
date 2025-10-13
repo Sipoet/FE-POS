@@ -1,6 +1,5 @@
 import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/model.dart';
-
 export 'package:fe_pos/tool/custom_type.dart';
 
 class Holiday extends Model {
@@ -20,20 +19,21 @@ class Holiday extends Model {
       };
 
   @override
-  factory Holiday.fromJson(Map<String, dynamic> json,
-      {Holiday? model, List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    model ??= Holiday();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.religion = attributes['religion'] == null
+    religion = attributes['religion'] == null
         ? null
         : Religion.fromString(attributes['religion']);
-    model.description = attributes['description'];
-    model.date = Date.tryParse(attributes['date'] ?? '') ?? model.date;
-    return model;
+    description = attributes['description'];
+    date = Date.tryParse(attributes['date'] ?? '') ?? date;
   }
 
   @override
   String get modelValue => description ?? '';
+}
+
+class HolidayClass extends ModelClass<Holiday> {
+  @override
+  Holiday initModel() => Holiday();
 }

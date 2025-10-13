@@ -4,18 +4,22 @@ class PayrollReport extends Model {
   Money salaryTotal;
   int employeeId;
   String employeeName;
+  Date startWorkingDate;
   Map<String, Money> amountBasedPayrollType;
   PayrollReport(
       {this.salaryTotal = const Money(0),
       this.employeeId = 0,
+      Date? startWorkingDate,
       this.employeeName = '',
-      this.amountBasedPayrollType = const {}});
+      this.amountBasedPayrollType = const {}})
+      : startWorkingDate = startWorkingDate ?? Date.today();
   @override
   Map<String, dynamic> toMap() {
     var result = {
       'employee_id': employeeId,
       'employee_name': employeeName,
       'salary_total': salaryTotal,
+      'start_working_date': startWorkingDate,
     };
     for (MapEntry<String, Money> val in amountBasedPayrollType.entries) {
       result[val.key] = val.value;
@@ -24,21 +28,28 @@ class PayrollReport extends Model {
   }
 
   @override
-  factory PayrollReport.fromJson(Map<String, dynamic> json,
-      {PayrollReport? model, List included = const []}) {
+  String get modelName => 'payroll_report';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    model ??= PayrollReport();
-    model.employeeId = attributes['employee_id'];
-    model.employeeName = attributes['employee_name'];
-    model.salaryTotal = Money.parse(attributes['salary_total']);
-    model.amountBasedPayrollType = {};
+    employeeId = attributes['employee_id'];
+    employeeName = attributes['employee_name'];
+    salaryTotal = Money.parse(attributes['salary_total']);
+    startWorkingDate = Date.parse(attributes['start_working_date']);
+    amountBasedPayrollType = {};
     for (MapEntry<String, dynamic> val
         in attributes['payroll_type_amount'].entries) {
-      model.amountBasedPayrollType[val.key] = Money.parse(val.value ?? '0');
+      amountBasedPayrollType[val.key] = Money.parse(val.value ?? '0');
     }
-    return model;
   }
 
   @override
   String get modelValue => employeeName;
+}
+
+class PayrollReportClass extends ModelClass<PayrollReport> {
+  @override
+  PayrollReport initModel() => PayrollReport();
 }

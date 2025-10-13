@@ -19,17 +19,20 @@ class PaymentProviderEdc extends Model {
       };
 
   @override
-  factory PaymentProviderEdc.fromJson(Map<String, dynamic> json,
-      {PaymentProviderEdc? model, List included = const []}) {
+  String get modelName => 'payment_provider_edc';
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    model ??= PaymentProviderEdc();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.terminalId = attributes['terminal_id'] ?? '';
-    model.merchantId = attributes['merchant_id'] ?? '';
-    return model;
+    terminalId = attributes['terminal_id'] ?? '';
+    merchantId = attributes['merchant_id'] ?? '';
   }
 
   @override
   String get modelValue => "$terminalId - $merchantId";
+}
+
+class PaymentProviderEdcClass extends ModelClass<PaymentProviderEdc> {
+  @override
+  PaymentProviderEdc initModel() => PaymentProviderEdc();
 }

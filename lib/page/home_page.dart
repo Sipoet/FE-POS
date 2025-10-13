@@ -187,7 +187,8 @@ class _HomePageState extends State<HomePage>
     }).then((response) {
       if (mounted && response.statusCode == 200) {
         var data = response.data['data'];
-        final salesTransactionReport = SalesTransactionReport.fromJson(data);
+        final salesTransactionReport =
+            SalesTransactionReportClass().fromJson(data);
         setState(() {
           totalSales = salesTransactionReport.totalSales;
           _panels.insert(
@@ -220,6 +221,7 @@ class _HomePageState extends State<HomePage>
               alignment: WrapAlignment.spaceBetween,
               children: [
                 DropdownMenu(
+                  menuHeight: 250,
                   inputDecorationTheme: const InputDecorationTheme(
                     contentPadding: EdgeInsets.only(left: 10),
                     isDense: true,

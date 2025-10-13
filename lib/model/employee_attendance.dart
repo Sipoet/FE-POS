@@ -16,7 +16,7 @@ class EmployeeAttendance extends Model {
       {DateTime? startTime,
       DateTime? endTime,
       Date? date,
-      required this.employee,
+      Employee? employee,
       this.shift = 1,
       this.isLate = false,
       super.createdAt,
@@ -25,6 +25,7 @@ class EmployeeAttendance extends Model {
       super.id})
       : startTime = startTime ?? DateTime.now(),
         endTime = endTime ?? DateTime.now(),
+        employee = employee ?? EmployeeClass().initModel(),
         date = date ?? Date.today();
 
   @override
@@ -46,37 +47,35 @@ class EmployeeAttendance extends Model {
 
   TimeOfDay get startWork => TimeOfDay.fromDateTime(startTime.toLocal());
   TimeOfDay get endWork => TimeOfDay.fromDateTime(endTime.toLocal());
+  @override
+  String get modelName => 'employee_attendance';
 
   @override
-  factory EmployeeAttendance.fromJson(Map<String, dynamic> json,
-      {EmployeeAttendance? model, List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    Employee employee = Employee(
-        code: '',
-        name: '',
-        role: Role(name: ''),
-        startWorkingDate: Date.today());
     final employeeRelated = json['relationships']['employee'];
     if (included.isNotEmpty && employeeRelated != null) {
-      employee = Model.findRelationData<Employee>(
-              included: included,
-              relation: employeeRelated,
-              convert: Employee.fromJson) ??
+      employee = EmployeeClass().findRelationData(
+            included: included,
+            relation: employeeRelated,
+          ) ??
           employee;
     }
-    model ??= EmployeeAttendance(employee: employee);
-    model.id = int.parse(json['id']);
-    model.startTime = DateTime.parse(attributes['start_time']);
-    model.endTime = DateTime.parse(attributes['end_time']);
-    model.date = Date.parse(attributes['date']);
-    Model.fromModel(model, attributes);
-    model.employee = employee;
-    model.isLate = attributes['is_late'] ?? false;
-    model.allowOvertime = attributes['allow_overtime'] ?? false;
-    model.shift = attributes['shift'];
-    return model;
+    startTime = DateTime.parse(attributes['start_time']);
+    endTime = DateTime.parse(attributes['end_time']);
+    date = Date.parse(attributes['date']);
+    employee = employee;
+    isLate = attributes['is_late'] ?? false;
+    allowOvertime = attributes['allow_overtime'] ?? false;
+    shift = attributes['shift'];
   }
 
   @override
   String get modelValue => "${employee.modelValue}(${date.format()})";
+}
+
+class EmployeeAttendanceClass extends ModelClass<EmployeeAttendance> {
+  @override
+  EmployeeAttendance initModel() => EmployeeAttendance();
 }

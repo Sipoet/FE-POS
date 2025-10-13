@@ -56,8 +56,10 @@ class _PayrollTypeFormPageState extends State<PayrollTypeFormPage>
       if ([200, 201].contains(response.statusCode)) {
         var data = response.data['data'];
         setState(() {
-          PayrollType.fromJson(data,
-              included: response.data['included'] ?? [], model: payrollType);
+          payrollType.setFromJson(
+            data,
+            included: response.data['included'] ?? [],
+          );
           var tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(
               widget, 'Edit Payroll Type ${payrollType.name}');

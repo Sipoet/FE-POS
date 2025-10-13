@@ -58,8 +58,8 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
-          PurchaseReturn.fromJson(response.data['data'],
-              included: response.data['included'], model: purchaseReturn);
+          purchaseReturn.setFromJson(response.data['data'],
+              included: response.data['included']);
           _source.setModels(purchaseReturn.purchaseItems, _columns);
         });
       }

@@ -110,34 +110,33 @@ class CustomerGroupDiscount extends Model {
       };
   String get customerGroupCode => customerGroup.code;
   @override
-  factory CustomerGroupDiscount.fromJson(Map<String, dynamic> json,
-      {CustomerGroupDiscount? model, List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    model ??= CustomerGroupDiscount();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.discountPercentage =
-        Percentage.parse(attributes['discount_percentage']);
-    model.periodType =
+    discountPercentage = Percentage.parse(attributes['discount_percentage']);
+    periodType =
         CustomerGroupDiscountPeriodType.fromString(attributes['period_type']);
-    model.startActiveDate = Date.parse(attributes['start_active_date']);
-    model.endActiveDate = Date.parse(attributes['end_active_date']);
-    model.level = attributes['level'];
-    model.variable1 = attributes['variable1'];
-    model.variable2 = attributes['variable2'];
-    model.variable3 = attributes['variable3'];
-    model.variable4 = attributes['variable4'];
-    model.variable5 = attributes['variable5'];
-    model.variable6 = attributes['variable6'];
-    model.variable7 = attributes['variable7'];
-    model.customerGroup = Model.findRelationData(
+    startActiveDate = Date.parse(attributes['start_active_date']);
+    endActiveDate = Date.parse(attributes['end_active_date']);
+    level = attributes['level'];
+    variable1 = attributes['variable1'];
+    variable2 = attributes['variable2'];
+    variable3 = attributes['variable3'];
+    variable4 = attributes['variable4'];
+    variable5 = attributes['variable5'];
+    variable6 = attributes['variable6'];
+    variable7 = attributes['variable7'];
+    customerGroup = CustomerGroupClass().findRelationData(
             included: included,
-            convert: CustomerGroup.fromJson,
             relation: json['relationships']?['customer_group']) ??
-        model.customerGroup;
-    return model;
+        customerGroup;
   }
 
   @override
   String get modelValue => customerGroupCode;
+}
+
+class CustomerGroupDiscountClass extends ModelClass<CustomerGroupDiscount> {
+  @override
+  CustomerGroupDiscount initModel() => CustomerGroupDiscount();
 }

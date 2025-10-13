@@ -25,18 +25,24 @@ class ActivityLog extends Model {
       };
 
   @override
-  factory ActivityLog.fromJson(Map<String, dynamic> json,
-      {List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    return ActivityLog(
-        itemId: attributes['item_id'],
-        itemType: attributes['item_type'],
-        actor: attributes['actor'] ?? 'Script',
-        description: attributes['description'],
-        createdAt: DateTime.tryParse(attributes['created_at'] ?? ''),
-        event: attributes['event']);
+
+    itemId = attributes['item_id'];
+    itemType = attributes['item_type'];
+    actor = attributes['actor'] ?? 'Script';
+    description = attributes['description'];
+    createdAt = DateTime.tryParse(attributes['created_at'] ?? '');
+    event = attributes['event'];
   }
 
   @override
   String get modelValue => '$event - $itemType - ${id.toString()}';
+}
+
+class ActivityLogClass extends ModelClass<ActivityLog> {
+  @override
+  ActivityLog initModel() => ActivityLog(
+      itemId: 0, itemType: '', actor: '', event: '', description: '');
 }

@@ -72,8 +72,8 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<Supplier>((json) => Supplier.fromJson(json,
-                included: responseBody['included'] ?? []))
+            .map<Supplier>((json) => SupplierClass()
+                .fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         final totalPage = responseBody['meta']?['total_pages'] ?? 1;
         return DataTableResponse<Supplier>(

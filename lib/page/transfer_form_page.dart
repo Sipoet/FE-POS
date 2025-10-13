@@ -59,8 +59,8 @@ class _TransferFormPageState extends State<TransferFormPage>
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
-          Transfer.fromJson(response.data['data'],
-              included: response.data['included'], model: transfer);
+          transfer.setFromJson(response.data['data'],
+              included: response.data['included'] ?? []);
           _source.setModels(transfer.transferItems, _columns);
         });
       }

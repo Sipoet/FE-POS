@@ -39,4 +39,12 @@ mixin TextFormatter {
   String compactNumberFormat(number) {
     return NumberFormat.compact().format(number);
   }
+
+  String percentageFormat(num value, {String locale = 'id_ID', int digit = 1}) {
+    var numberFormatter = NumberFormat.decimalPercentPattern(
+      locale: locale,
+      decimalDigits: digit,
+    );
+    return numberFormatter.format(value);
+  }
 }

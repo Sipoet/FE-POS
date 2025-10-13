@@ -69,8 +69,7 @@ class _BookPayslipLineFormPageState extends State<BookPayslipLineFormPage>
       if ([200, 201].contains(response.statusCode)) {
         var data = response.data['data'];
         setState(() {
-          BookPayslipLine.fromJson(data,
-              model: bookPayslipLine,
+          bookPayslipLine.setFromJson(data,
               included: response.data['included'] ?? []);
           var tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(
@@ -164,7 +163,7 @@ class _BookPayslipLineFormPageState extends State<BookPayslipLineFormPage>
                   AsyncDropdown<Employee>(
                     label:
                         Text(setting.columnName('bookPayslipLine', 'employee')),
-                    converter: Employee.fromJson,
+                    modelClass: EmployeeClass(),
                     allowClear: false,
                     path: 'employees',
                     selected: bookPayslipLine.employee,
@@ -180,7 +179,7 @@ class _BookPayslipLineFormPageState extends State<BookPayslipLineFormPage>
                   AsyncDropdown<PayrollType>(
                     label: Text(
                         setting.columnName('bookPayslipLine', 'payroll_type')),
-                    converter: PayrollType.fromJson,
+                    modelClass: PayrollTypeClass(),
                     allowClear: false,
                     path: 'payroll_types',
                     selected: bookPayslipLine.payrollType,

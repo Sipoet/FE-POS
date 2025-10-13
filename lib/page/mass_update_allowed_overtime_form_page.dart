@@ -85,7 +85,7 @@ class _MassUpdateAllowedOvertimeFormPageState
                         attributeKey: 'name',
                         textOnSearch: (employee) =>
                             "${employee.code} - ${employee.name}",
-                        converter: Employee.fromJson,
+                        modelClass: EmployeeClass(),
                         label: const Text(
                           'Karyawan :',
                           style: labelStyle,
@@ -167,9 +167,8 @@ class _MassUpdateAllowedOvertimeFormPageState
             title: 'Berhasil update Absensi Karyawan');
         final json = response.data;
         final employeeAttendances = json['data']
-            .map<EmployeeAttendance>((rawData) => EmployeeAttendance.fromJson(
-                rawData,
-                included: json['included'] ?? []))
+            .map<EmployeeAttendance>((rawData) => EmployeeAttendanceClass()
+                .fromJson(rawData, included: json['included'] ?? []))
             .toList();
         setState(() {
           _source.setModels(

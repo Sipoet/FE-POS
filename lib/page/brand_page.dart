@@ -73,8 +73,8 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<Brand>((json) =>
-                Brand.fromJson(json, included: responseBody['included'] ?? []))
+            .map<Brand>((json) => BrandClass()
+                .fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         brands.addAll(models);
         final totalPage = responseBody['meta']?['total_pages'] ?? 1;

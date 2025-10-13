@@ -17,16 +17,21 @@ class ItemType extends Model {
   }
 
   @override
-  factory ItemType.fromJson(Map<String, dynamic> json,
-      {ItemType? model, List included = const []}) {
+  String get modelName => 'item_type';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model ??= ItemType();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.description = attributes['description'];
-    model.name = attributes['name'];
-    return model;
+    super.setFromJson(json, included: included);
+    description = attributes['description'];
+    name = attributes['name'];
   }
+
   @override
   String get modelValue => name;
+}
+
+class ItemTypeClass extends ModelClass<ItemType> {
+  @override
+  ItemType initModel() => ItemType();
 }

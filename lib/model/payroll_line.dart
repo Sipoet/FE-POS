@@ -178,27 +178,30 @@ class PayrollLine extends Model {
       };
 
   @override
-  factory PayrollLine.fromJson(Map<String, dynamic> json,
-      {PayrollLine? model, List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    model ??=
-        PayrollLine(group: PayrollGroup.earning, formula: PayrollFormula.basic);
-    model.id = int.parse(json['id']);
-    model.row = attributes['row'];
-    model.group = PayrollGroup.fromString(attributes['group']);
-    model.payrollType = Model.findRelationData<PayrollType>(
-        included: included,
-        relation: json['relationships']['payroll_type'],
-        convert: PayrollType.fromJson);
-    model.formula = PayrollFormula.fromString(attributes['formula']);
-    model.variable1 = double.tryParse(attributes['variable1'] ?? '');
-    model.variable2 = double.tryParse(attributes['variable2'] ?? '');
-    model.variable3 = double.tryParse(attributes['variable3'] ?? '');
-    model.variable4 = double.tryParse(attributes['variable4'] ?? '');
-    model.variable5 = double.tryParse(attributes['variable5'] ?? '');
-    model.description = attributes['description'];
-    return model;
+
+    row = attributes['row'];
+    group = PayrollGroup.fromString(attributes['group']);
+    payrollType = PayrollTypeClass().findRelationData(
+      included: included,
+      relation: json['relationships']['payroll_type'],
+    );
+    formula = PayrollFormula.fromString(attributes['formula']);
+    variable1 = double.tryParse(attributes['variable1'] ?? '');
+    variable2 = double.tryParse(attributes['variable2'] ?? '');
+    variable3 = double.tryParse(attributes['variable3'] ?? '');
+    variable4 = double.tryParse(attributes['variable4'] ?? '');
+    variable5 = double.tryParse(attributes['variable5'] ?? '');
+    description = attributes['description'];
   }
+
   @override
   String get modelValue => id;
+}
+
+class PayrollLineClass extends ModelClass<PayrollLine> {
+  @override
+  PayrollLine initModel() => PayrollLine();
 }

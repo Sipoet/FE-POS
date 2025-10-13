@@ -69,71 +69,62 @@ class ItemReport extends Model {
         supplier = supplier ?? Supplier(id: supplierCode),
         itemType = itemType ?? ItemType(id: itemTypeName),
         brand = brand ?? Brand(id: brandName);
+
   @override
-  factory ItemReport.fromJson(Map<String, dynamic> json,
-      {List included = const [], ItemReport? model}) {
-    model ??= ItemReport();
+  String get modelName => 'item_report';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model.id = json['id'];
-    model.itemCode = attributes['item_code'];
-    model.itemName = attributes['item_name'];
-    model.itemTypeName = attributes['item_type_name'];
-    model.itemTypeDesc = attributes['item_type_desc'];
-    model.supplierCode = attributes['supplier_code'];
-    model.supplierName = attributes['supplier_name'];
-    model.storeStock = attributes['store_stock'];
-    model.warehouseStock = attributes['warehouse_stock'];
-    model.brandName = attributes['brand_name'] ?? '';
-    model.isConsignment = attributes['is_consignment'];
-    model.stockLeft = double.tryParse(attributes['stock_left'].toString()) ?? 0;
-    model.percentageSales = Percentage(attributes['percentage_sales']);
-    model.margin = Percentage(attributes['margin'] ?? -1);
-    model.limitProfitDiscount =
-        Percentage(attributes['limit_profit_discount'] ?? -1);
-    model.cogs = Money.parse(attributes['cogs'] ?? '0');
-    model.numberOfReturn = attributes['qty_return'];
-    model.sellPrice =
-        Money.tryParse(attributes['sell_price']) ?? const Money(0);
-    model.avgBuyPrice =
-        Money.tryParse(attributes['avg_buy_price']) ?? const Money(0);
-    model.numberOfSales = attributes['number_of_sales'];
-    model.salesTotal =
-        Money.tryParse(attributes['sales_total']) ?? const Money(0);
-    model.numberOfPurchase = attributes['number_of_purchase'];
-    model.itemOut = attributes['item_out'];
-    model.purchaseTotal =
+    id = json['id'];
+    itemCode = attributes['item_code'];
+    itemName = attributes['item_name'];
+    itemTypeName = attributes['item_type_name'];
+    itemTypeDesc = attributes['item_type_desc'];
+    supplierCode = attributes['supplier_code'];
+    supplierName = attributes['supplier_name'];
+    storeStock = attributes['store_stock'];
+    warehouseStock = attributes['warehouse_stock'];
+    brandName = attributes['brand_name'] ?? '';
+    isConsignment = attributes['is_consignment'];
+    stockLeft = double.tryParse(attributes['stock_left'].toString()) ?? 0;
+    percentageSales = Percentage(attributes['percentage_sales']);
+    margin = Percentage(attributes['margin'] ?? -1);
+    limitProfitDiscount = Percentage(attributes['limit_profit_discount'] ?? -1);
+    cogs = Money.parse(attributes['cogs'] ?? '0');
+    numberOfReturn = attributes['qty_return'];
+    sellPrice = Money.tryParse(attributes['sell_price']) ?? const Money(0);
+    avgBuyPrice = Money.tryParse(attributes['avg_buy_price']) ?? const Money(0);
+    numberOfSales = attributes['number_of_sales'];
+    salesTotal = Money.tryParse(attributes['sales_total']) ?? const Money(0);
+    numberOfPurchase = attributes['number_of_purchase'];
+    itemOut = attributes['item_out'];
+    purchaseTotal =
         Money.tryParse(attributes['purchase_total']) ?? const Money(0);
-    model.grossProfit =
-        Money.tryParse(attributes['gross_profit']) ?? const Money(0);
-    model.lastPurchaseDate =
+    grossProfit = Money.tryParse(attributes['gross_profit']) ?? const Money(0);
+    lastPurchaseDate =
         DateTime.tryParse(attributes['last_purchase_date'] ?? '');
-    model.item = Model.findRelationData<Item>(
-            relation: json['relationships']?['item'],
-            included: included,
-            convert: Item.fromJson) ??
-        Item(id: model.itemCode, code: model.itemCode, name: model.itemName);
-    model.itemType = Model.findRelationData<ItemType>(
-            relation: json['relationships']?['item_type'],
-            included: included,
-            convert: ItemType.fromJson) ??
+    item = ItemClass().findRelationData(
+          relation: json['relationships']?['item'],
+          included: included,
+        ) ??
+        Item(id: itemCode, code: itemCode, name: itemName);
+    itemType = ItemTypeClass().findRelationData(
+          relation: json['relationships']?['item_type'],
+          included: included,
+        ) ??
         ItemType(
-            id: model.itemTypeName,
-            name: model.itemTypeName,
-            description: model.itemTypeDesc);
-    model.brand = Model.findRelationData<Brand>(
-            relation: json['relationships']?['brand'],
-            included: included,
-            convert: Brand.fromJson) ??
-        Brand(id: model.brandName, name: model.brandName ?? '');
-    model.supplier = Model.findRelationData<Supplier>(
-            relation: json['relationships']?['supplier'],
-            included: included,
-            convert: Supplier.fromJson) ??
-        Supplier(
-            id: model.supplierCode,
-            code: model.supplierCode,
-            name: model.supplierName);
-    return model;
+            id: itemTypeName, name: itemTypeName, description: itemTypeDesc);
+    brand = BrandClass().findRelationData(
+          relation: json['relationships']?['brand'],
+          included: included,
+        ) ??
+        Brand(id: brandName, name: brandName ?? '');
+    supplier = SupplierClass().findRelationData(
+          relation: json['relationships']?['supplier'],
+          included: included,
+        ) ??
+        Supplier(id: supplierCode, code: supplierCode, name: supplierName);
   }
 
   @override
@@ -172,4 +163,9 @@ class ItemReport extends Model {
 
   @override
   String get modelValue => itemCode;
+}
+
+class ItemReportClass extends ModelClass<ItemReport> {
+  @override
+  ItemReport initModel() => ItemReport();
 }

@@ -106,15 +106,18 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                       attributeKey: 'name',
                       textOnSearch: (employee) =>
                           "${employee.code} - ${employee.name}",
-                      converter: Employee.fromJson,
+                      modelClass: EmployeeClass(),
                       label: const Text(
                         'Nama Karyawan :',
                         style: labelStyle,
                       ),
                       onChanged: (employee) {
-                        employeeLeave.employee = employee ?? Employee();
+                        employeeLeave.employee =
+                            employee ?? employeeLeave.employee;
                       },
-                      selected: employeeLeave.employee,
+                      selected: employeeLeave.employee.isNewRecord
+                          ? null
+                          : employeeLeave.employee,
                       validator: (value) {
                         if (employeeLeave.employee.id == null) {
                           return 'harus diisi';

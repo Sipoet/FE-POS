@@ -16,20 +16,19 @@ class Account extends Model {
       this.name = ''});
 
   @override
-  factory Account.fromJson(Map<String, dynamic> json,
-      {List included = const [], Account? model}) {
-    final attributes = json['attributes'];
+  String get modelName => 'account';
 
-    model ??= Account();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.code = attributes['code'];
-    model.name = attributes['name'];
-    model.parentCode = attributes['parentacc'];
-    model.currency = attributes['matauang'];
-    model.cashBank = attributes['kasbank'] ?? false;
-    return model;
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
+    final attributes = json['attributes'];
+    code = attributes['code'];
+    name = attributes['name'];
+    parentCode = attributes['parentacc'];
+    currency = attributes['matauang'];
+    cashBank = attributes['kasbank'] ?? false;
   }
+
   @override
   Map<String, dynamic> toMap() => {
         'code': code,
@@ -42,4 +41,9 @@ class Account extends Model {
 
   @override
   String get modelValue => '$code - $name';
+}
+
+class AccountClass extends ModelClass<Account> {
+  @override
+  Account initModel() => Account();
 }

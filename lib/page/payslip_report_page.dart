@@ -69,7 +69,8 @@ class _PayslipReportPageState extends State<PayslipReportPage>
           tableStateManager?.setTableColumns(tableColumns,
               tabManager: tabManager);
           for (final row in json['data']) {
-            final model = PayslipReport.fromJson(row, included: included ?? []);
+            final model =
+                PayslipReportClass().fromJson(row, included: included ?? []);
             tableStateManager?.appendModel(model, tableColumns);
           }
         });
@@ -179,8 +180,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                           ),
                           textOnSearch: (employee) =>
                               "${employee.code} - ${employee.name}",
-                          converter: (json, {included = const [], model}) =>
-                              Employee.fromJson(json, included: included),
+                          modelClass: EmployeeClass(),
                           path: 'employees',
                           attributeKey: 'name',
                           onChanged: (value) => _employeeIds = value

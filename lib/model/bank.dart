@@ -6,16 +6,13 @@ class Bank extends Model {
   Bank({super.id, this.code = '', this.name = ''});
 
   @override
-  factory Bank.fromJson(Map<String, dynamic> json,
-      {List included = const [], Bank? model}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     final attributes = json['attributes'];
-
-    model ??= Bank();
-    model.id = json['id'];
-    model.code = attributes['kodebank'];
-    model.name = attributes['namabank'];
-    return model;
+    code = attributes['kodebank'];
+    name = attributes['namabank'];
   }
+
   @override
   Map<String, dynamic> toMap() => {
         'kodebank': code,
@@ -24,4 +21,9 @@ class Bank extends Model {
 
   @override
   String get modelValue => '$code - $name';
+}
+
+class BankClass extends ModelClass<Bank> {
+  @override
+  Bank initModel() => Bank();
 }

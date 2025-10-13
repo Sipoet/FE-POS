@@ -39,9 +39,11 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
     server = context.read<Server>();
     flash = Flash();
     setting = context.read<Setting>();
+    final columns = setting.tableColumn('employeeAttendance');
     _source = CustomAsyncDataTableSource<EmployeeAttendance>(
-        columns: setting.tableColumn('employeeAttendance'),
-        fetchData: fetchEmployeeAttendances);
+        columns: columns, fetchData: fetchEmployeeAttendances);
+    _source.sortColumn = columns[1];
+    _source.isAscending = false;
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
@@ -61,8 +63,8 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
       {int page = 1,
       int limit = 100,
       TableColumn? sortColumn,
-      bool isAscending = true}) {
-    String orderKey = sortColumn?.name ?? 'employees.name';
+      bool isAscending = false}) {
+    String orderKey = sortColumn?.name ?? 'start_date';
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'page[page]': page.toString(),
@@ -86,8 +88,8 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<EmployeeAttendance>((json) => EmployeeAttendance.fromJson(json,
-                included: responseBody['included']))
+            .map<EmployeeAttendance>((json) => EmployeeAttendanceClass()
+                .fromJson(json, included: responseBody['included']))
             .toList();
         employeeAttendances.addAll(models);
 
@@ -263,7 +265,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
               height: bodyScreenHeight,
               child: CustomAsyncDataTable(
                 controller: _source,
-                fixedLeftColumns: 2,
+                fixedLeftColumns: 1,
                 showCheckboxColumn: true,
               ),
             ),

@@ -73,8 +73,7 @@ class _CustomerGroupDiscountFormPageState
       if ([200, 201].contains(response.statusCode)) {
         var data = response.data['data'];
         setState(() {
-          CustomerGroupDiscount.fromJson(data,
-              model: customerGroupDiscount,
+          customerGroupDiscount.setFromJson(data,
               included: response.data['included'] ?? []);
           var tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(widget,
@@ -127,7 +126,7 @@ class _CustomerGroupDiscountFormPageState
                         'customerGroupDiscount', 'customer_group_code'),
                     child: AsyncDropdown<CustomerGroup>(
                       allowClear: false,
-                      converter: CustomerGroup.fromJson,
+                      modelClass: CustomerGroupClass(),
                       label: const Text(
                         'Customer Group',
                         style: labelStyle,
