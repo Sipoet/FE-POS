@@ -83,9 +83,8 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<BookEmployeeAttendance>((json) =>
-                BookEmployeeAttendance.fromJson(json,
-                    included: responseBody['included'] ?? []))
+            .map<BookEmployeeAttendance>((json) => BookEmployeeAttendanceClass()
+                .fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         int totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;

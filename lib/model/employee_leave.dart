@@ -69,15 +69,17 @@ class EmployeeLeave extends Model {
   int? changeShift;
 
   EmployeeLeave(
-      {required this.leaveType,
-      required this.date,
-      required this.employee,
+      {this.leaveType = LeaveType.annualLeave,
+      Date? date,
+      Employee? employee,
       super.createdAt,
       super.updatedAt,
       this.changeDate,
       this.changeShift,
       this.description,
-      super.id});
+      super.id})
+      : employee = employee ?? EmployeeClass().initModel(),
+        date = date ?? Date.today();
 
   @override
   Map<String, dynamic> toMap() => {
@@ -92,37 +94,34 @@ class EmployeeLeave extends Model {
       };
 
   @override
-  factory EmployeeLeave.fromJson(Map<String, dynamic> json,
-      {EmployeeLeave? model, List included = const []}) {
+  String get modelName => 'employee_leave';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    Employee employee = Employee(
-        code: '',
-        name: '',
-        role: Role(name: ''),
-        startWorkingDate: Date.today());
-    final employeeRelated = json['relationships']['employee'];
-    if (included.isNotEmpty && employeeRelated != null) {
-      employee = Model.findRelationData<Employee>(
-              included: included,
-              relation: employeeRelated,
-              convert: Employee.fromJson) ??
-          employee;
-    }
-    model ??= EmployeeLeave(
-        date: Date.today(),
-        leaveType: LeaveType.annualLeave,
-        employee: employee);
-    model.id = int.parse(json['id']);
-    model.date = Date.parse(attributes['date']);
-    model.leaveType = LeaveType.fromString(attributes['leave_type'] ?? '');
-    model.employee = employee;
-    model.description = attributes['description'];
-    model.changeDate = Date.tryParse(attributes['change_date'] ?? '');
-    model.changeShift = attributes['change_shift'];
-    return model;
+
+    employee = EmployeeClass().findRelationData(
+          included: included,
+          relation: json['relationships']['employee'],
+        ) ??
+        employee;
+
+    id = int.parse(json['id']);
+    date = Date.parse(attributes['date']);
+    leaveType = LeaveType.fromString(attributes['leave_type'] ?? '');
+    employee = employee;
+    description = attributes['description'];
+    changeDate = Date.tryParse(attributes['change_date'] ?? '');
+    changeShift = attributes['change_shift'];
   }
 
   @override
   String get modelValue =>
       description ?? "${employee.modelValue} (${date.format()})";
+}
+
+class EmployeeLeaveClass extends ModelClass<EmployeeLeave> {
+  @override
+  EmployeeLeave initModel() => EmployeeLeave();
 }

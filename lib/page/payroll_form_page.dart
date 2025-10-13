@@ -54,8 +54,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
       if (response.statusCode == 200) {
         final jsonData = response.data;
         setState(() {
-          Payroll.fromJson(jsonData['data'],
-              model: payroll, included: jsonData['included']);
+          payroll.setFromJson(jsonData['data'], included: jsonData['included']);
         });
       }
     }, onError: (error) {
@@ -281,7 +280,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                       .toList(),
                                 )),
                                 DataCell(AsyncDropdown<PayrollType>(
-                                  converter: PayrollType.fromJson,
+                                  modelClass: PayrollTypeClass(),
                                   allowClear: false,
                                   path: 'payroll_types',
                                   selected: payrollLine.payrollType,

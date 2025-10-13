@@ -143,7 +143,7 @@ class _BrandSalesPerformanceReportPageState
                           }
                           return null;
                         },
-                        converter: Brand.fromJson),
+                        modelClass: BrandClass()),
                   ),
                   const SizedBox(height: 10),
                   Text('Filter',
@@ -165,7 +165,7 @@ class _BrandSalesPerformanceReportPageState
                                 "${itemType.name} -  ${itemType.description}",
                             textOnSelected: (ItemType itemType) =>
                                 itemType.name,
-                            converter: ItemType.fromJson,
+                            modelClass: ItemTypeClass(),
                             attributeKey: 'jenis',
                             path: '/item_types',
                             onChanged: (value) => _itemTypes = value,
@@ -179,7 +179,7 @@ class _BrandSalesPerformanceReportPageState
                             textOnSearch: (supplier) =>
                                 "${supplier.code} - ${supplier.name}",
                             textOnSelected: (supplier) => supplier.code,
-                            converter: Supplier.fromJson,
+                            modelClass: SupplierClass(),
                             attributeKey: 'kode',
                             path: '/suppliers',
                             onChanged: (value) => _suppliers = value,
@@ -312,7 +312,7 @@ class _BrandSalesPerformanceReportPageState
                   return null;
                 },
                 selecteds: brandChartFilter['brands'],
-                converter: Brand.fromJson),
+                modelClass: BrandClass()),
           ),
           DropdownMenu(
             dropdownMenuEntries: valueTypeLocales.entries

@@ -65,8 +65,10 @@ class _ConsignmentInFormPageState extends State<ConsignmentInFormPage>
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
-          ConsignmentIn.fromJson(response.data['data'],
-              included: response.data['included'], model: consignmentIn);
+          consignmentIn.setFromJson(
+            response.data['data'],
+            included: response.data['included'],
+          );
           _source.setModels(consignmentIn.purchaseItems, _columns);
         });
       }

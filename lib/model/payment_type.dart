@@ -5,16 +5,15 @@ class PaymentType extends Model {
   PaymentType({super.id, this.name = ''});
 
   @override
-  factory PaymentType.fromJson(Map<String, dynamic> json,
-      {List included = const [], PaymentType? model}) {
-    final attributes = json['attributes'];
+  String get modelName => 'payment_type';
 
-    model ??= PaymentType();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.name = attributes['name'];
-    return model;
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
+    final attributes = json['attributes'];
+    name = attributes['name'];
   }
+
   @override
   Map<String, dynamic> toMap() => {
         'name': name,
@@ -24,4 +23,9 @@ class PaymentType extends Model {
 
   @override
   String get modelValue => name;
+}
+
+class PaymentTypeClass extends ModelClass<PaymentType> {
+  @override
+  PaymentType initModel() => PaymentType();
 }

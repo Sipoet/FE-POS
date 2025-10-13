@@ -59,7 +59,7 @@ class _RefreshTablePageState extends State<RefreshTablePage> {
                         path: 'system_settings/list_tables',
                         onChanged: (model) => _tableKey = model?.data['value'],
                         textOnSearch: (e) => e.data['label'],
-                        converter: HashModel.fromJson),
+                        modelClass: HashModelClass()),
                   ),
                   const SizedBox(width: 10),
                   IconButton.filledTonal(

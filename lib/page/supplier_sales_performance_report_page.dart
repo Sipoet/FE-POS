@@ -145,7 +145,7 @@ class _SupplierSalesPerformanceReportPageState
                           }
                           return null;
                         },
-                        converter: Supplier.fromJson),
+                        modelClass: SupplierClass()),
                   ),
                   const SizedBox(height: 10),
                   Text('Filter',
@@ -164,7 +164,7 @@ class _SupplierSalesPerformanceReportPageState
                                 const Text('Merek :', style: _filterLabelStyle),
                             key: const ValueKey('brandSelect'),
                             textOnSearch: (Brand brand) => brand.name,
-                            converter: Brand.fromJson,
+                            modelClass: BrandClass(),
                             attributeKey: 'merek',
                             path: '/brands',
                             onChanged: (value) => _brands = value,
@@ -178,7 +178,7 @@ class _SupplierSalesPerformanceReportPageState
                             textOnSearch: (itemType) =>
                                 "${itemType.name} - ${itemType.description}",
                             textOnSelected: (itemType) => itemType.name,
-                            converter: ItemType.fromJson,
+                            modelClass: ItemTypeClass(),
                             attributeKey: 'jenis',
                             path: '/item_types',
                             onChanged: (value) => _itemTypes = value,
@@ -312,7 +312,7 @@ class _SupplierSalesPerformanceReportPageState
                   return null;
                 },
                 selecteds: supplierChartFilter['suppliers'],
-                converter: Supplier.fromJson),
+                modelClass: SupplierClass()),
           ),
           DropdownMenu(
             dropdownMenuEntries: valueTypeLocales.entries

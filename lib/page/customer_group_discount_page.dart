@@ -84,9 +84,8 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<CustomerGroupDiscount>((json) =>
-                CustomerGroupDiscount.fromJson(json,
-                    included: responseBody['included']))
+            .map<CustomerGroupDiscount>((json) => CustomerGroupDiscountClass()
+                .fromJson(json, included: responseBody['included']))
             .toList();
         int totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;

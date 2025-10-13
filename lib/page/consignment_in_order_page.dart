@@ -84,8 +84,8 @@ class _ConsignmentInOrderPageState extends State<ConsignmentInOrderPage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<ConsignmentInOrder>((json) => ConsignmentInOrder.fromJson(json,
-                included: responseBody['included'] ?? []))
+            .map<ConsignmentInOrder>((json) => ConsignmentInOrderClass()
+                .fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         final totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;

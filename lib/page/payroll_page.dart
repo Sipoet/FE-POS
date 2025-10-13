@@ -80,7 +80,7 @@ class _PayrollPageState extends State<PayrollPage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<Payroll>((json) => Payroll.fromJson(json))
+            .map<Payroll>((json) => PayrollClass().fromJson(json))
             .toList();
         int totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;

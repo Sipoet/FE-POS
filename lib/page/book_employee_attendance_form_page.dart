@@ -75,8 +75,7 @@ class _BookEmployeeAttendanceFormPageState
       if ([200, 201].contains(response.statusCode)) {
         var data = response.data['data'];
         setState(() {
-          BookEmployeeAttendance.fromJson(data,
-              model: record, included: response.data['included'] ?? []);
+          record.setFromJson(data, included: response.data['included'] ?? []);
           final tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(
               widget, 'Edit BookEmployeeAttendance ${record.id}');
@@ -223,7 +222,7 @@ class _BookEmployeeAttendanceFormPageState
                     child: AsyncDropdown<Employee>(
                       label: Text(setting.columnName(
                           'bookEmployeeAttendance', 'employee')),
-                      converter: Employee.fromJson,
+                      modelClass: EmployeeClass(),
                       allowClear: false,
                       path: 'employees',
                       selected: bookEmployeeAttendance.employee,
@@ -239,7 +238,7 @@ class _BookEmployeeAttendanceFormPageState
                     child: AsyncDropdownMultiple<Employee>(
                       label: Text(setting.columnName(
                           'bookEmployeeAttendance', 'employee')),
-                      converter: Employee.fromJson,
+                      modelClass: EmployeeClass(),
                       path: 'employees',
                       textOnSearch: (employee) => employee.name,
                       onChanged: (employees) => _employees = employees,

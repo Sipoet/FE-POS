@@ -13,17 +13,21 @@ class AccessAuthorize extends Model {
       };
 
   @override
-  factory AccessAuthorize.fromJson(Map<String, dynamic> json,
-      {AccessAuthorize? model, List included = const []}) {
+  String get modelName => 'access_authorize';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    model ??= AccessAuthorize(controller: '', action: []);
-    model.id = int.parse(json['id']);
-    model.controller = attributes['controller'];
-    model.action =
-        attributes['action'].map<String>((e) => e.toString()).toList();
-    return model;
+    controller = attributes['controller'];
+    action = attributes['action'].map<String>((e) => e.toString()).toList();
   }
 
   @override
   String get modelValue => '$controller - ${action.join(',')}';
+}
+
+class AccessAuthorizeClass extends ModelClass<AccessAuthorize> {
+  @override
+  AccessAuthorize initModel() => AccessAuthorize(controller: '', action: []);
 }

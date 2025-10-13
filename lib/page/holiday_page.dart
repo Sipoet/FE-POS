@@ -80,8 +80,8 @@ class _HolidayPageState extends State<HolidayPage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<Holiday>((json) => Holiday.fromJson(json,
-                included: responseBody['included'] ?? []))
+            .map<Holiday>((json) => HolidayClass()
+                .fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         int totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;

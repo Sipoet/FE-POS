@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/hash_model.dart';
 import 'package:fe_pos/model/role_work_schedule.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
@@ -56,8 +57,8 @@ class _RoleFormPageState extends State<RoleFormPage>
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
-          Role.fromJson(response.data['data'],
-              model: role, included: response.data['included']);
+          role.setFromJson(response.data['data'],
+              included: response.data['included']);
           groupWorkSchedules = [];
           groupBy<RoleWorkSchedule, GroupWorkSchedule>(
             role.roleWorkSchedules,
@@ -175,7 +176,7 @@ class _RoleFormPageState extends State<RoleFormPage>
       if ([200, 201].contains(response.statusCode)) {
         var data = response.data['data'];
         setState(() {
-          Role.fromJson(data, included: response.data['included'], model: role);
+          role.setFromJson(data, included: response.data['included']);
           var tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(widget, 'Edit role ${role.name}');
         });
@@ -643,35 +644,41 @@ class _RoleFormPageState extends State<RoleFormPage>
                                         DataRow(cells: [
                                           DataCell(SizedBox(
                                             width: 350,
-                                            child: AsyncDropdown<String>(
+                                            child: AsyncDropdown<HashModel>(
                                                 onChanged: (value) =>
                                                     setState(() {
                                                       accessAuthorize
-                                                              .controller =
-                                                          value ?? '';
+                                                          .controller = value
+                                                              ?.id
+                                                              .toString() ??
+                                                          '';
                                                     }),
-                                                selected:
-                                                    accessAuthorize.controller,
-                                                textOnSearch: (value) => value,
-                                                converter: (json,
-                                                        {List included =
-                                                            const []}) =>
-                                                    json['id'].toString(),
+                                                selected: accessAuthorize
+                                                        .controller.isEmpty
+                                                    ? null
+                                                    : HashModel(
+                                                        id: accessAuthorize
+                                                            .controller),
+                                                textOnSearch: (value) =>
+                                                    value.id,
+                                                modelClass: HashModelClass(),
                                                 path: 'roles/controller_names'),
                                           )),
                                           DataCell(SizedBox(
                                             width: 350,
-                                            child:
-                                                AsyncDropdownMultiple<String>(
+                                            child: AsyncDropdownMultiple<
+                                                HashModel>(
                                               onChanged: (value) =>
-                                                  accessAuthorize.action =
-                                                      value,
-                                              selecteds: accessAuthorize.action,
-                                              textOnSearch: (value) => value,
-                                              converter: (json,
-                                                      {List included =
-                                                          const []}) =>
-                                                  json['id'].toString(),
+                                                  accessAuthorize.action = value
+                                                      .map<String>((e) =>
+                                                          e.id.toString())
+                                                      .toList(),
+                                              selecteds: accessAuthorize.action
+                                                  .map<HashModel>(
+                                                      (e) => HashModel(id: e))
+                                                  .toList(),
+                                              textOnSearch: (value) => value.id,
+                                              modelClass: HashModelClass(),
                                               request: (
                                                   {int page = 1,
                                                   int limit = 20,
@@ -748,34 +755,42 @@ class _RoleFormPageState extends State<RoleFormPage>
                                         DataRow(cells: [
                                           DataCell(SizedBox(
                                             width: 350,
-                                            child: AsyncDropdown<String>(
-                                                textOnSearch: (value) => value,
+                                            child: AsyncDropdown<HashModel>(
+                                                textOnSearch: (value) =>
+                                                    value.id,
                                                 onChanged: (value) =>
                                                     columnAuthorize.table =
-                                                        value ?? '',
-                                                selected: columnAuthorize.table,
-                                                converter: (json,
-                                                        {List included =
-                                                            const []}) =>
-                                                    json['id'].toString(),
+                                                        value?.id ?? '',
+                                                selected: columnAuthorize
+                                                        .table.isEmpty
+                                                    ? null
+                                                    : HashModel(
+                                                        id: columnAuthorize
+                                                            .table),
+                                                modelClass: HashModelClass(),
                                                 path: 'roles/table_names'),
                                           )),
                                           DataCell(SizedBox(
                                             width: 350,
                                             child: AsyncDropdownMultiple<
-                                                    String>(
+                                                    HashModel>(
                                                 onChanged: (value) =>
                                                     setState(() {
                                                       columnAuthorize.column =
-                                                          value;
+                                                          value
+                                                              .map<String>(
+                                                                  (e) => e.id
+                                                                      .toString())
+                                                              .toList();
                                                     }),
-                                                selecteds:
-                                                    columnAuthorize.column,
-                                                textOnSearch: (value) => value,
-                                                converter: (json,
-                                                        {List included =
-                                                            const []}) =>
-                                                    json['id'].toString(),
+                                                selecteds: columnAuthorize
+                                                    .column
+                                                    .map<HashModel>(
+                                                        (e) => HashModel(id: e))
+                                                    .toList(),
+                                                textOnSearch: (value) =>
+                                                    value.id,
+                                                modelClass: HashModelClass(),
                                                 request: (
                                                     {int page = 1,
                                                     int limit = 20,

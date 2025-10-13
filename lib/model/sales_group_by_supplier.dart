@@ -15,42 +15,44 @@ class SalesGroupBySupplier extends Model {
   Money grossProfit;
 
   SalesGroupBySupplier({
-    required super.id,
-    required this.itemTypeName,
-    required this.supplierCode,
-    required this.supplierName,
-    required this.brandName,
+    super.id,
+    this.itemTypeName,
+    this.supplierCode,
+    this.supplierName,
+    this.brandName,
     this.lastPurchaseDate,
-    required this.salesPercentage,
-    required this.numberOfPurchase,
-    required this.numberOfSales,
-    required this.stockLeft,
-    required this.salesTotal,
-    required this.purchaseTotal,
-    required this.grossProfit,
+    this.salesPercentage = const Percentage(0),
+    this.numberOfPurchase = 0,
+    this.numberOfSales = 0,
+    this.stockLeft = 0,
+    this.salesTotal = const Money(0),
+    this.purchaseTotal = const Money(0),
+    this.grossProfit = const Money(0),
   });
 
   String get supplier => "$supplierCode - $supplierName";
 
   @override
-  factory SalesGroupBySupplier.fromJson(Map<String, dynamic> json) {
+  String get modelName => 'sales_group_by_supplier';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    return SalesGroupBySupplier(
-      id: json['id'],
-      lastPurchaseDate: Date.tryParse(attributes['last_purchase_date'] ?? ''),
-      itemTypeName: attributes['item_type_name'],
-      supplierCode: attributes['supplier_code'],
-      supplierName: attributes['supplier_name'],
-      brandName: attributes['brand_name'],
-      salesPercentage: Percentage(attributes['sales_percentage']),
-      numberOfPurchase: attributes['number_of_purchase'],
-      numberOfSales: attributes['number_of_sales'],
-      stockLeft: attributes['stock_left'],
-      grossProfit: Money.tryParse(attributes['gross_profit']) ?? const Money(0),
-      salesTotal: Money.tryParse(attributes['sales_total']) ?? const Money(0),
-      purchaseTotal:
-          Money.tryParse(attributes['purchase_total']) ?? const Money(0),
-    );
+
+    lastPurchaseDate = Date.tryParse(attributes['last_purchase_date'] ?? '');
+    itemTypeName = attributes['item_type_name'];
+    supplierCode = attributes['supplier_code'];
+    supplierName = attributes['supplier_name'];
+    brandName = attributes['brand_name'];
+    salesPercentage = Percentage(attributes['sales_percentage']);
+    numberOfPurchase = attributes['number_of_purchase'];
+    numberOfSales = attributes['number_of_sales'];
+    stockLeft = attributes['stock_left'];
+    grossProfit = Money.tryParse(attributes['gross_profit']) ?? const Money(0);
+    salesTotal = Money.tryParse(attributes['sales_total']) ?? const Money(0);
+    purchaseTotal =
+        Money.tryParse(attributes['purchase_total']) ?? const Money(0);
   }
 
   @override
@@ -73,4 +75,9 @@ class SalesGroupBySupplier extends Model {
 
   @override
   String get modelValue => id.toString();
+}
+
+class SalesGroupBySupplierClass extends ModelClass<SalesGroupBySupplier> {
+  @override
+  SalesGroupBySupplier initModel() => SalesGroupBySupplier();
 }

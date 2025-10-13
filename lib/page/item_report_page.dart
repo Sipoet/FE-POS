@@ -59,7 +59,7 @@ class _ItemReportPageState extends State<ItemReportPage>
       }
       var data = response.data;
       final models = data['data']
-          .map<ItemReport>((row) => ItemReport.fromJson(row))
+          .map<ItemReport>((row) => ItemReportClass().fromJson(row))
           .toList();
 
       return DataTableResponse<ItemReport>(

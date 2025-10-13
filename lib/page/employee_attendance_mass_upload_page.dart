@@ -248,9 +248,8 @@ class _EmployeeAttendanceMassUploadPageState
         final responseBody = response.data['data'] as List;
         setState(() {
           final employeeAttendances = responseBody
-              .map<EmployeeAttendance>((json) => EmployeeAttendance.fromJson(
-                  json,
-                  included: response.data['included']))
+              .map<EmployeeAttendance>((json) => EmployeeAttendanceClass()
+                  .fromJson(json, included: response.data['included']))
               .toList();
           _source.setData(employeeAttendances);
         });

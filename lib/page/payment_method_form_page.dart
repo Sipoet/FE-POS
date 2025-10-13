@@ -54,8 +54,10 @@ class _PaymentMethodFormPageState extends State<PaymentMethodFormPage>
       if ([200, 201].contains(response.statusCode)) {
         var data = response.data['data'];
         setState(() {
-          PaymentMethod.fromJson(data,
-              included: response.data['included'], model: paymentMethod);
+          paymentMethod.setFromJson(
+            data,
+            included: response.data['included'],
+          );
           var tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(
               widget, 'Edit Karyawan ${paymentMethod.name}');
@@ -121,7 +123,7 @@ class _PaymentMethodFormPageState extends State<PaymentMethodFormPage>
                                   },
                                   textOnSearch: (bank) =>
                                       "${bank.code} - ${bank.name}",
-                                  converter: Bank.fromJson,
+                                  modelClass: BankClass(),
                                   selected: paymentMethod.bank,
                                   validator: (bank) {
                                     if (bank == null) {

@@ -65,7 +65,7 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
                         attributeKey: 'name',
                         textOnSearch: (employee) =>
                             "${employee.code} - ${employee.name}",
-                        converter: Employee.fromJson,
+                        modelClass: EmployeeClass(),
                         label: const Text(
                           'Nama Karyawan :',
                           style: labelStyle,

@@ -16,40 +16,44 @@ class ItemSalesPeriodReport extends Model {
   bool isConsignment;
 
   ItemSalesPeriodReport({
-    required super.id,
-    required this.itemCode,
-    required this.itemName,
-    required this.itemTypeName,
-    required this.supplierCode,
-    required this.brandName,
-    required this.discountPercentage,
-    required this.buyPrice,
-    required this.sellPrice,
-    required this.quantity,
-    required this.subtotal,
-    required this.discountTotal,
-    required this.salesTotal,
+    super.id,
+    this.itemCode = '',
+    this.itemName = '',
+    this.itemTypeName,
+    this.supplierCode,
+    this.brandName,
+    this.discountPercentage = const Percentage(0),
+    this.buyPrice = const Money(0),
+    this.sellPrice = const Money(999999),
+    this.quantity = 0,
+    this.subtotal = const Money(0),
+    this.discountTotal = const Money(0),
+    this.salesTotal = const Money(0),
     this.isConsignment = false,
   });
 
   @override
-  factory ItemSalesPeriodReport.fromJson(Map<String, dynamic> json) {
+  String get modelName => 'item_sales_period_report';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    return ItemSalesPeriodReport(
-        id: json['id'],
-        itemCode: attributes['item_code'],
-        itemName: attributes['item_name'],
-        itemTypeName: attributes['item_type_name'],
-        supplierCode: attributes['supplier_code'],
-        brandName: attributes['brand_name'],
-        discountPercentage: Percentage(attributes['discount_percentage']),
-        buyPrice: Money(attributes['buy_price']),
-        sellPrice: Money(attributes['sell_price']),
-        quantity: attributes['quantity'],
-        subtotal: Money(attributes['subtotal']),
-        discountTotal: Money(attributes['discount_total']),
-        salesTotal: Money(attributes['sales_total']),
-        isConsignment: attributes['is_consignment'] == true);
+
+    id = json['id'];
+    itemCode = attributes['item_code'];
+    itemName = attributes['item_name'];
+    itemTypeName = attributes['item_type_name'];
+    supplierCode = attributes['supplier_code'];
+    brandName = attributes['brand_name'];
+    discountPercentage = Percentage(attributes['discount_percentage']);
+    buyPrice = Money(attributes['buy_price']);
+    sellPrice = Money(attributes['sell_price']);
+    quantity = attributes['quantity'];
+    subtotal = Money(attributes['subtotal']);
+    discountTotal = Money(attributes['discount_total']);
+    salesTotal = Money(attributes['sales_total']);
+    isConsignment = attributes['is_consignment'] == true;
   }
 
   @override
@@ -70,4 +74,9 @@ class ItemSalesPeriodReport extends Model {
       };
   @override
   String get modelValue => itemCode;
+}
+
+class ItemSalesPeriodReportClass extends ModelClass<ItemSalesPeriodReport> {
+  @override
+  ItemSalesPeriodReport initModel() => ItemSalesPeriodReport();
 }

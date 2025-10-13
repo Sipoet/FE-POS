@@ -95,7 +95,7 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
       if (response.statusCode == 200) {
         var data = response.data['data'] as List;
         setState(() {
-          sales = data.map<Sale>((row) => Sale.fromJson(row)).toList();
+          sales = data.map<Sale>((row) => SaleClass().fromJson(row)).toList();
         });
       }
     },

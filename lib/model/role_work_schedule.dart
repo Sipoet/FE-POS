@@ -41,25 +41,31 @@ class RoleWorkSchedule extends Model {
       };
 
   @override
-  factory RoleWorkSchedule.fromJson(Map<String, dynamic> json,
-      {RoleWorkSchedule? model, List included = const []}) {
+  String get modelName => 'role_work_schedule';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    model ??= RoleWorkSchedule();
-    model.id = int.parse(json['id']);
-    model.beginWork = TimeDay.parse(attributes['begin_work']);
-    model.endWork = TimeDay.parse(attributes['end_work']);
-    model.shift = attributes['shift'];
-    model.dayOfWeek = attributes['day_of_week'];
-    model.groupName = attributes['group_name'];
-    model.level = attributes['level'];
-    model.beginActiveAt = Date.tryParse(attributes['begin_active_at'] ?? '') ??
-        model.beginActiveAt;
-    model.endActiveAt =
-        Date.tryParse(attributes['end_active_at'] ?? '') ?? model.endActiveAt;
-    model.isFlexible = attributes['is_flexible'];
-    return model;
+
+    beginWork = TimeDay.parse(attributes['begin_work']);
+    endWork = TimeDay.parse(attributes['end_work']);
+    shift = attributes['shift'];
+    dayOfWeek = attributes['day_of_week'];
+    groupName = attributes['group_name'];
+    level = attributes['level'];
+    beginActiveAt =
+        Date.tryParse(attributes['begin_active_at'] ?? '') ?? beginActiveAt;
+    endActiveAt =
+        Date.tryParse(attributes['end_active_at'] ?? '') ?? endActiveAt;
+    isFlexible = attributes['is_flexible'];
   }
 
   @override
   String get modelValue => id.toString();
+}
+
+class RoleWorkScheduleClass extends ModelClass<RoleWorkSchedule> {
+  @override
+  RoleWorkSchedule initModel() => RoleWorkSchedule();
 }

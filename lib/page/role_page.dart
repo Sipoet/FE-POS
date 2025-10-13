@@ -79,7 +79,7 @@ class _RolePageState extends State<RolePage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<Role>((json) => Role.fromJson(json))
+            .map<Role>((json) => RoleClass().fromJson(json))
             .toList();
         int totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;

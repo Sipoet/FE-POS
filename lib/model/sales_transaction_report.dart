@@ -30,25 +30,28 @@ class SalesTransactionReport extends Model {
       super.id});
 
   @override
-  factory SalesTransactionReport.fromJson(Map<String, dynamic> json) {
+  String get modelName => 'sales_transaction_report';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    return SalesTransactionReport(
-      id: "${attributes['start_time']}-${attributes['end_time']}",
-      range: DateTimeRange(
-        start: DateTime.parse(attributes['start_time']).toLocal(),
-        end: DateTime.parse(attributes['end_time']).toLocal(),
-      ),
-      totalSales: Money.tryParse(attributes['sales_total']) ?? const Money(0),
-      totalDebit: Money.tryParse(attributes['debit_total']) ?? const Money(0),
-      totalCredit: Money.tryParse(attributes['credit_total']) ?? const Money(0),
-      totalCash: Money.tryParse(attributes['cash_total']) ?? const Money(0),
-      totalOnline: Money.tryParse(attributes['online_total']) ?? const Money(0),
-      totalQRIS: Money.tryParse(attributes['qris_total']) ?? const Money(0),
-      totalDiscount:
-          Money.tryParse(attributes['discount_total']) ?? const Money(0),
-      totalTransaction: attributes['num_of_transaction'] ?? 0,
-      grossProfit: Money.tryParse(attributes['gross_profit']) ?? const Money(0),
+
+    id = "${attributes['start_time']}-${attributes['end_time']}";
+    range = DateTimeRange(
+      start: DateTime.parse(attributes['start_time']).toLocal(),
+      end: DateTime.parse(attributes['end_time']).toLocal(),
     );
+    totalSales = Money.tryParse(attributes['sales_total']) ?? const Money(0);
+    totalDebit = Money.tryParse(attributes['debit_total']) ?? const Money(0);
+    totalCredit = Money.tryParse(attributes['credit_total']) ?? const Money(0);
+    totalCash = Money.tryParse(attributes['cash_total']) ?? const Money(0);
+    totalOnline = Money.tryParse(attributes['online_total']) ?? const Money(0);
+    totalQRIS = Money.tryParse(attributes['qris_total']) ?? const Money(0);
+    totalDiscount =
+        Money.tryParse(attributes['discount_total']) ?? const Money(0);
+    totalTransaction = attributes['num_of_transaction'] ?? 0;
+    grossProfit = Money.tryParse(attributes['gross_profit']) ?? const Money(0);
   }
 
   DateTime get startDate => range.start;
@@ -71,4 +74,10 @@ class SalesTransactionReport extends Model {
 
   @override
   String get modelValue => id.toString();
+}
+
+class SalesTransactionReportClass extends ModelClass<SalesTransactionReport> {
+  @override
+  SalesTransactionReport initModel() => SalesTransactionReport(
+      range: DateTimeRange(start: DateTime.now(), end: DateTime.now()));
 }

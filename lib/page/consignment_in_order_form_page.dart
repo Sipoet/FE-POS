@@ -67,9 +67,10 @@ class _ConsignmentInOrderFormPageState extends State<ConsignmentInOrderFormPage>
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
-          ConsignmentInOrder.fromJson(response.data['data'],
-              included: response.data['included'] ?? [],
-              model: consignmentInOrder);
+          consignmentInOrder.setFromJson(
+            response.data['data'],
+            included: response.data['included'] ?? [],
+          );
           _source.setModels(consignmentInOrder.purchaseOrderItems, _columns);
         });
       }

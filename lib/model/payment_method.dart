@@ -84,23 +84,21 @@ class PaymentMethod extends Model {
       super.updatedAt})
       : bank = bank ?? Bank();
   @override
-  factory PaymentMethod.fromJson(Map<String, dynamic> json,
-      {List included = const [], PaymentMethod? model}) {
+  String get modelName => 'payment_method';
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     final attributes = json['attributes'];
 
-    model ??= PaymentMethod();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.bank = Model.findRelationData<Bank>(
-            included: included,
-            relation: json['relationships']['bank'],
-            convert: Bank.fromJson) ??
+    bank = BankClass().findRelationData(
+          included: included,
+          relation: json['relationships']['bank'],
+        ) ??
         Bank();
-    model.providerCode = model.bank.code;
-    model.paymentType =
-        PaymentType.convertFromString(attributes['payment_type']);
-    return model;
+    providerCode = bank.code;
+    paymentType = PaymentType.convertFromString(attributes['payment_type']);
   }
+
   @override
   Map<String, dynamic> toMap() => {
         'name': name,
@@ -109,4 +107,9 @@ class PaymentMethod extends Model {
       };
   @override
   String get modelValue => name;
+}
+
+class PaymentMethodClass extends ModelClass<PaymentMethod> {
+  @override
+  PaymentMethod initModel() => PaymentMethod();
 }

@@ -62,37 +62,42 @@ class TransferItem extends Model {
       };
 
   @override
-  factory TransferItem.fromJson(Map<String, dynamic> json,
-      {TransferItem? model, List included = const []}) {
+  String get modelName => 'transfer_item';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
 
-    model ??= TransferItem();
     if (included.isNotEmpty) {
-      model.item = Model.findRelationData<Item>(
-              included: included,
-              relation: json['relationships']?['item'],
-              convert: Item.fromJson) ??
+      item = ItemClass().findRelationData(
+            included: included,
+            relation: json['relationships']?['item'],
+          ) ??
           Item();
     }
-    model.id = json['id'];
-    model.itemCode = attributes['kodeitem'];
-    model.row = attributes['nobaris'];
-    model.quantity = double.parse(attributes['jumlah']);
-    model.uom = attributes['satuan'];
-    model.conversionQuantity = double.parse(attributes['jmlkonversi']);
-    model.sellPrice = Money.parse(attributes['sell_price']);
-    model.productionCode = attributes['production_code'];
-    model.expiredDate = DateTime.tryParse(attributes['tglexp'] ?? '');
-    model.detinfo = attributes['detinfo'] ?? 0;
-    model.cogs = Money.parse(attributes['hppdasar'] ?? '0');
-    model.transferCode = attributes['notransaksi'];
-    model.itemTypeName = attributes['item_type_name'];
-    model.supplierCode = attributes['supplier_code'];
-    model.brandName = attributes['brand_name'];
-    Model.fromModel(model, attributes);
-    return model;
+    id = json['id'];
+    itemCode = attributes['kodeitem'];
+    row = attributes['nobaris'];
+    quantity = double.parse(attributes['jumlah']);
+    uom = attributes['satuan'];
+    conversionQuantity = double.parse(attributes['jmlkonversi']);
+    sellPrice = Money.parse(attributes['sell_price']);
+    productionCode = attributes['production_code'];
+    expiredDate = DateTime.tryParse(attributes['tglexp'] ?? '');
+    detinfo = attributes['detinfo'] ?? 0;
+    cogs = Money.parse(attributes['hppdasar'] ?? '0');
+    transferCode = attributes['notransaksi'];
+    itemTypeName = attributes['item_type_name'];
+    supplierCode = attributes['supplier_code'];
+    brandName = attributes['brand_name'];
   }
 
   @override
   String get modelValue => id.toString();
+}
+
+class TransferItemClass extends ModelClass<TransferItem> {
+  @override
+  TransferItem initModel() => TransferItem();
 }

@@ -86,8 +86,8 @@ class _EmployeePageState extends State<EmployeePage>
         }
         try {
           final responsedModels = responseBody['data']
-              .map<Employee>((json) =>
-                  Employee.fromJson(json, included: responseBody['included']))
+              .map<Employee>((json) => EmployeeClass()
+                  .fromJson(json, included: responseBody['included']))
               .toList();
           int totalRows = responseBody['meta']?['total_rows'] ??
               responseBody['data'].length;
@@ -168,7 +168,7 @@ class _EmployeePageState extends State<EmployeePage>
             await server.post('employees/${employee.id}/activate').then(
                 (response) {
               setState(() {
-                Employee.fromJson(response.data['data'], model: employee);
+                employee.setFromJson(response.data['data']);
                 _source.refreshDatasource();
               });
             }, onError: (error, stack) {
@@ -190,7 +190,7 @@ class _EmployeePageState extends State<EmployeePage>
             await server.post('employees/${employee.id}/deactivate').then(
                 (response) {
               setState(() {
-                Employee.fromJson(response.data['data'], model: employee);
+                employee.setFromJson(response.data['data']);
               });
               _source.refreshDatasource();
             }, onError: (error, stack) {

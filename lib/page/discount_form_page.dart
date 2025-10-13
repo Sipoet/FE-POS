@@ -271,7 +271,8 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         var data = response.data;
 
         final models = data['data'].map<ItemReport>((row) {
-          return ItemReport.fromJson(row, included: data['included'] ?? []);
+          return ItemReportClass()
+              .fromJson(row, included: data['included'] ?? []);
         }).toList();
         return DataTableResponse<ItemReport>(
             models: models, totalPage: data['meta']['total_pages']);
@@ -328,8 +329,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       if (response.statusCode == 200) {
         var json = response.data['data'];
         setState(() {
-          Discount.fromJson(json,
-              included: response.data['included'], model: discount);
+          discount.setFromJson(json, included: response.data['included']);
           _codeController.text = discount.code;
         });
         _focusNode.requestFocus();
@@ -578,7 +578,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     textOnSelected: (itemType) => itemType.name,
                                     textOnSearch: (itemType) =>
                                         '${itemType.name} - ${itemType.description}',
-                                    converter: ItemType.fromJson,
+                                    modelClass: ItemTypeClass(),
                                     onChanged: (option) {
                                       discount.itemTypes = option;
                                     },
@@ -604,7 +604,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     textOnSelected: (supplier) => supplier.code,
                                     textOnSearch: (supplier) =>
                                         '${supplier.code} - ${supplier.name}',
-                                    converter: Supplier.fromJson,
+                                    modelClass: SupplierClass(),
                                     label: const Text(
                                       'Supplier:',
                                       style: labelStyle,
@@ -632,7 +632,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     path: '/brands',
                                     attributeKey: 'merek',
                                     textOnSearch: (brand) => brand.name,
-                                    converter: Brand.fromJson,
+                                    modelClass: BrandClass(),
                                     label: const Text(
                                       'Merek:',
                                       style: labelStyle,
@@ -662,7 +662,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     textOnSelected: (item) => item.code,
                                     textOnSearch: (item) =>
                                         "${item.code} - ${item.name}",
-                                    converter: Item.fromJson,
+                                    modelClass: ItemClass(),
                                     label: const Text(
                                       'Item:',
                                       style: labelStyle,
@@ -693,7 +693,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     textOnSelected: (itemType) => itemType.name,
                                     textOnSearch: (itemType) =>
                                         '${itemType.name} - ${itemType.description}',
-                                    converter: ItemType.fromJson,
+                                    modelClass: ItemTypeClass(),
                                     label: const Text(
                                       'Blacklist Jenis/Departemen :',
                                       style: labelStyle,
@@ -715,7 +715,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     textOnSelected: (supplier) => supplier.code,
                                     textOnSearch: (supplier) =>
                                         '${supplier.code} - ${supplier.name}',
-                                    converter: Supplier.fromJson,
+                                    modelClass: SupplierClass(),
                                     label: const Text(
                                       'Blacklist Supplier:',
                                       style: labelStyle,
@@ -734,7 +734,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     path: '/brands',
                                     attributeKey: 'merek',
                                     textOnSearch: (brand) => brand.name,
-                                    converter: Brand.fromJson,
+                                    modelClass: BrandClass(),
                                     label: const Text(
                                       'Blacklist Merek:',
                                       style: labelStyle,
@@ -755,7 +755,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     textOnSelected: (item) => item.code,
                                     textOnSearch: (item) =>
                                         "${item.code} - ${item.name}",
-                                    converter: Item.fromJson,
+                                    modelClass: ItemClass(),
                                     label: const Text(
                                       'Blacklist Item:',
                                       style: labelStyle,
@@ -777,7 +777,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                         customerGroup.code,
                                     textOnSearch: (customerGroup) =>
                                         "${customerGroup.code} - ${customerGroup.name}",
-                                    converter: CustomerGroup.fromJson,
+                                    modelClass: CustomerGroupClass(),
                                     label: const Text(
                                       'Grup Pelanggan:',
                                       style: labelStyle,

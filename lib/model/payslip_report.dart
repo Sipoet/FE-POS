@@ -81,54 +81,55 @@ class PayslipReport extends Model {
   }
 
   @override
-  factory PayslipReport.fromJson(Map<String, dynamic> json,
-      {PayslipReport? model, List included = const []}) {
+  String get modelName => 'payslip_report';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
+    startDate = Date.parse(attributes['start_date']);
+    endDate = Date.parse(attributes['end_date']);
 
-    model ??= PayslipReport(
-        employeeId: 0,
-        employeeName: '',
-        startDate: Date.today(),
-        endDate: Date.today());
-    model.id = int.parse(json['id']);
-
-    model.startDate = Date.parse(attributes['start_date']);
-    model.endDate = Date.parse(attributes['end_date']);
-
-    model.employeeId = attributes['employee_id'];
-    model.employeeName = attributes['employee_name'];
-    model.employee = Employee(id: model.employeeId, name: model.employeeName);
-    model.payslip = Payslip(id: model.payslipId);
-    model.bank = attributes['bank'];
-    model.bankAccount = attributes['bank_account'];
-    model.bankRegisterName = attributes['bank_register_name'];
-    model.employeeStatus =
+    employeeId = attributes['employee_id'];
+    employeeName = attributes['employee_name'];
+    employee = Employee(id: employeeId, name: employeeName);
+    payslip = Payslip(id: payslipId);
+    bank = attributes['bank'];
+    bankAccount = attributes['bank_account'];
+    bankRegisterName = attributes['bank_register_name'];
+    employeeStatus =
         EmployeeStatus.convertFromString(attributes['employee_status']);
-    model.payslipStatus =
-        PayslipStatus.fromString(attributes['payslip_status']);
-    model.sickLeave = attributes['sick_leave'];
-    model.knownAbsence = attributes['known_absence'];
-    model.unknownAbsence = attributes['unknown_absence'];
-    model.overtimeHour =
-        double.tryParse(attributes['overtime_hour'].toString()) ?? 0;
-    model.late = attributes['late'] ?? model.late;
-    model.workDays = double.tryParse(attributes['work_days'].toString()) ?? 0;
+    payslipStatus = PayslipStatus.fromString(attributes['payslip_status']);
+    sickLeave = attributes['sick_leave'];
+    knownAbsence = attributes['known_absence'];
+    unknownAbsence = attributes['unknown_absence'];
+    overtimeHour = double.tryParse(attributes['overtime_hour'].toString()) ?? 0;
+    late = attributes['late'] ?? late;
+    workDays = double.tryParse(attributes['work_days'].toString()) ?? 0;
 
-    model.totalDay = attributes['total_day'];
-    model.description = attributes['description'];
-    model.employeeStartWorkingDate =
+    totalDay = attributes['total_day'];
+    description = attributes['description'];
+    employeeStartWorkingDate =
         Date.parse(attributes['employee_start_working_date']);
-    model.amountBasedPayrollType = {};
-    model.nettSalary =
+    amountBasedPayrollType = {};
+    nettSalary =
         Money.tryParse(attributes['nett_salary'] ?? '') ?? const Money(0);
     for (MapEntry<String, dynamic> val
         in attributes['payroll_type_amounts'].entries) {
-      model.amountBasedPayrollType[val.key] =
+      amountBasedPayrollType[val.key] =
           Money.tryParse(val.value ?? '0') ?? const Money(0);
     }
-    return model;
   }
 
   @override
   String get modelValue => payslip?.id.toString() ?? '';
+}
+
+class PayslipReportClass extends ModelClass<PayslipReport> {
+  @override
+  PayslipReport initModel() => PayslipReport(
+      employeeId: 0,
+      employeeName: '',
+      startDate: Date.today(),
+      endDate: Date.today());
 }

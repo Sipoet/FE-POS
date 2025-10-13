@@ -10,13 +10,16 @@ class HashModel extends Model {
   Map<String, dynamic> toMap() => data;
 
   @override
-  factory HashModel.fromJson(Map<String, dynamic> json,
-      {HashModel? model, List included = const []}) {
-    model ??= HashModel(data: json);
-    model.id = json['id'];
-    return model;
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
+    data = json;
   }
 
   @override
   String get modelValue => '';
+}
+
+class HashModelClass extends ModelClass<HashModel> {
+  @override
+  HashModel initModel() => HashModel();
 }

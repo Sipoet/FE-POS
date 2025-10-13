@@ -9,16 +9,13 @@ class DiscountItemType extends Model {
   DiscountItemType({super.id, this.isExclude = false, this.itemType});
 
   @override
-  factory DiscountItemType.fromJson(Map<String, dynamic> json,
-      {List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    return DiscountItemType(
-      id: int.parse(json['id']),
-      isExclude: attributes['is_exclude'],
-      itemType: Model.findRelationData<ItemType>(
-          included: included,
-          relation: json['relationships']['item_type'],
-          convert: ItemType.fromJson),
+    isExclude = attributes['is_exclude'];
+    itemType = ItemTypeClass().findRelationData(
+      included: included,
+      relation: json['relationships']['item_type'],
     );
   }
 
@@ -33,4 +30,9 @@ class DiscountItemType extends Model {
 
   @override
   String get modelValue => itemType?.modelValue ?? '';
+}
+
+class DiscountItemTypeClass extends ModelClass<DiscountItemType> {
+  @override
+  DiscountItemType initModel() => DiscountItemType();
 }

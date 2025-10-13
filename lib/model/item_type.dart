@@ -25,27 +25,32 @@ class ItemType extends Model {
   }
 
   @override
-  factory ItemType.fromJson(Map<String, dynamic> json,
-      {ItemType? model, List included = const []}) {
+  String get modelName => 'item_type';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model ??= ItemType();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.description = attributes['description'];
-    model.name = attributes['name'];
+    super.setFromJson(json, included: included);
     if (attributes['parent_id'] != null) {
-      model.parent =
+      parent =
           ItemType(id: attributes['parent_id'], name: attributes['parent_id']);
     }
-
-    return model;
+    description = attributes['description'];
+    name = attributes['name'];
   }
+
   set parent(ItemType? itemType) {
     parentId = itemType?.id;
     _parent = itemType;
   }
 
   ItemType? get parent => _parent;
+
   @override
   String get modelValue => name;
+}
+
+class ItemTypeClass extends ModelClass<ItemType> {
+  @override
+  ItemType initModel() => ItemType();
 }

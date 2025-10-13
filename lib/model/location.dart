@@ -13,18 +13,17 @@ class Location extends Model {
       this.name = ''});
 
   @override
-  factory Location.fromJson(Map<String, dynamic> json,
-      {List included = const [], Location? model}) {
+  String get modelName => 'location';
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     final attributes = json['attributes'];
-
-    model ??= Location();
-    model.id = json['id'];
-    model.code = attributes['code'];
-    model.name = attributes['name'];
-    model.branch = attributes['cabang'];
-    model.accountCode = attributes['kodeacc'];
-    return model;
+    code = attributes['code'];
+    name = attributes['name'];
+    branch = attributes['cabang'];
+    accountCode = attributes['kodeacc'];
   }
+
   @override
   Map<String, dynamic> toMap() => {
         'code': code,
@@ -35,4 +34,9 @@ class Location extends Model {
 
   @override
   String get modelValue => '$code - $name';
+}
+
+class LocationClass extends ModelClass<Location> {
+  @override
+  Location initModel() => Location();
 }

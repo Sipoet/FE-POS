@@ -78,7 +78,7 @@ class _SalesTransactionReportWidgetState
         data['start_time'] = _dateRange.start.toIso8601String();
         data['end_time'] = _dateRange.end.toIso8601String();
         setState(() {
-          salesTransactionReport = SalesTransactionReport.fromJson(data);
+          salesTransactionReport = SalesTransactionReportClass().fromJson(data);
         });
       }
     },

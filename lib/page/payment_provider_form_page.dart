@@ -54,8 +54,8 @@ class _PaymentProviderFormPageState extends State<PaymentProviderFormPage>
       if (response.statusCode == 200) {
         final data = response.data;
         setState(() {
-          PaymentProvider.fromJson(data['data'],
-              model: paymentProvider, included: data['included'] ?? []);
+          paymentProvider.setFromJson(data['data'],
+              included: data['included'] ?? []);
         });
       }
     }, onError: (error) {
@@ -93,8 +93,8 @@ class _PaymentProviderFormPageState extends State<PaymentProviderFormPage>
       if ([200, 201].contains(response.statusCode)) {
         final data = response.data;
         setState(() {
-          PaymentProvider.fromJson(data['data'],
-              model: paymentProvider, included: data['included'] ?? []);
+          paymentProvider.setFromJson(data['data'],
+              included: data['included'] ?? []);
 
           var tabManager = context.read<TabManager>();
           tabManager.changeTabHeader(

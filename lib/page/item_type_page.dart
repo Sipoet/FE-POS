@@ -82,8 +82,8 @@ class _ItemTypePageState extends State<ItemTypePage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<ItemType>((json) => ItemType.fromJson(json,
-                included: responseBody['included'] ?? []))
+            .map<ItemType>((json) => ItemTypeClass()
+                .fromJson(json, included: responseBody['included'] ?? []))
             .toList();
 
         flash.hide();

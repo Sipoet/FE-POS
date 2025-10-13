@@ -83,8 +83,8 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<PurchaseOrder>((json) => PurchaseOrder.fromJson(json,
-                included: responseBody['included'] ?? []))
+            .map<PurchaseOrder>((json) => PurchaseOrderClass()
+                .fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         final totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;

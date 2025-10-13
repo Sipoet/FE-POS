@@ -95,47 +95,51 @@ class PurchaseItem extends Model {
       };
   Money get sellPrice => item.sellPrice;
   @override
-  factory PurchaseItem.fromJson(Map<String, dynamic> json,
-      {PurchaseItem? model, List included = const []}) {
+  String get modelName => 'purchase_item';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
 
-    model ??= PurchaseItem();
+    super.setFromJson(json, included: included);
     if (included.isNotEmpty) {
-      model.item = Model.findRelationData<Item>(
-              included: included,
-              relation: json['relationships']?['item'],
-              convert: Item.fromJson) ??
+      item = ItemClass().findRelationData(
+            included: included,
+            relation: json['relationships']?['item'],
+          ) ??
           Item();
     }
-    model.id = json['id'];
-    model.itemCode = attributes['kodeitem'];
-    model.row = attributes['nobaris'];
-    model.quantity = double.parse(attributes['jumlah']);
-    model.stockLeft = double.tryParse(attributes['stock_left'] ?? '');
-    model.warehouseStock = double.tryParse(attributes['warehouse_stock'] ?? '');
-    model.storeStock = double.tryParse(attributes['store_stock'] ?? '');
-    model.numberOfSales = double.tryParse(attributes['number_of_sales'] ?? '');
-    model.price = Money.parse(attributes['harga']);
-    model.uom = attributes['satuan'];
-    model.subtotal = Money.parse(attributes['subtotal']);
-    model.discountAmount1 = double.parse(attributes['potongan']);
-    model.discountPercentage2 = Percentage.parse(attributes['potongan2']);
-    model.discountPercentage3 = Percentage.parse(attributes['potongan3']);
-    model.discountPercentage4 = Percentage.parse(attributes['potongan4']);
-    model.taxAmount = Money.parse(attributes['pajak']);
-    model.total = Money.parse(attributes['total']);
-    model.productionCode = attributes['production_code'];
-    model.expiredDate = DateTime.tryParse(attributes['tglexp'] ?? '');
-    model.orderQuantity = double.tryParse(attributes['jmlpesan'] ?? '') ?? 0;
-    model.cogs = Money.parse(attributes['hppdasar']);
-    model.itemTypeName = attributes['item_type_name'];
-    model.supplierCode = attributes['supplier_code'];
-    model.brandName = attributes['brand_name'];
-    model.purchaseCode = attributes['notransaksi'];
-    Model.fromModel(model, attributes);
-    return model;
+    itemCode = attributes['kodeitem'];
+    row = attributes['nobaris'];
+    quantity = double.parse(attributes['jumlah']);
+    stockLeft = double.tryParse(attributes['stock_left'] ?? '');
+    warehouseStock = double.tryParse(attributes['warehouse_stock'] ?? '');
+    storeStock = double.tryParse(attributes['store_stock'] ?? '');
+    numberOfSales = double.tryParse(attributes['number_of_sales'] ?? '');
+    price = Money.parse(attributes['harga']);
+    uom = attributes['satuan'];
+    subtotal = Money.parse(attributes['subtotal']);
+    discountAmount1 = double.parse(attributes['potongan']);
+    discountPercentage2 = Percentage.parse(attributes['potongan2']);
+    discountPercentage3 = Percentage.parse(attributes['potongan3']);
+    discountPercentage4 = Percentage.parse(attributes['potongan4']);
+    taxAmount = Money.parse(attributes['pajak']);
+    total = Money.parse(attributes['total']);
+    productionCode = attributes['production_code'];
+    expiredDate = DateTime.tryParse(attributes['tglexp'] ?? '');
+    orderQuantity = double.tryParse(attributes['jmlpesan'] ?? '') ?? 0;
+    cogs = Money.parse(attributes['hppdasar']);
+    itemTypeName = attributes['item_type_name'];
+    supplierCode = attributes['supplier_code'];
+    brandName = attributes['brand_name'];
+    purchaseCode = attributes['notransaksi'];
   }
 
   @override
   String get modelValue => id.toString();
+}
+
+class PurchaseItemClass extends ModelClass<PurchaseItem> {
+  @override
+  PurchaseItem initModel() => PurchaseItem();
 }

@@ -156,72 +156,66 @@ class Discount extends Model {
       this.weight = 1});
 
   @override
-  factory Discount.fromJson(Map<String, dynamic> json,
-      {List included = const [], Discount? model}) {
+  String get modelName => 'discount';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model ??= Discount(
-        calculationType: DiscountCalculationType.percentage,
-        discount1: const Percentage(0),
-        startTime: DateTime.now(),
-        endTime: DateTime.now());
-    model.id = int.parse(json['id']);
-    Model.fromModel(model, attributes);
-    model.code = attributes['code']?.trim();
-    model.itemCode = attributes['item_code'];
-    model.itemType = attributes['item_type_name'];
-    model.supplierCode = attributes['supplier_code'];
-    model.brandName = attributes['brand_name'];
+    super.setFromJson(json, included: included);
+    code = attributes['code']?.trim();
+    itemCode = attributes['item_code'];
+    itemType = attributes['item_type_name'];
+    supplierCode = attributes['supplier_code'];
+    brandName = attributes['brand_name'];
 
-    model.calculationType = DiscountCalculationType.convertFromString(
+    calculationType = DiscountCalculationType.convertFromString(
         attributes['calculation_type'].toString());
-    model.discountType =
+    discountType =
         DiscountType.convertFromString(attributes['discount_type'].toString());
-    model.blacklistItemType = attributes['blacklist_item_type_name'];
-    model.blacklistSupplierCode = attributes['blacklist_supplier_code'];
-    model.blacklistBrandName = attributes['blacklist_brand_name'];
-    model.discount1 =
-        model.calculationType == DiscountCalculationType.percentage
-            ? Percentage(attributes['discount1'] ?? 0)
-            : Money(attributes['discount1'] * 100);
-    model.discount2 = Percentage(attributes['discount2'] ?? 0);
-    model.discount3 = Percentage(attributes['discount3'] ?? 0);
-    model.discount4 = Percentage(attributes['discount4'] ?? 0);
-    model.week1 = attributes['week1'];
-    model.week2 = attributes['week2'];
-    model.week3 = attributes['week3'];
-    model.week4 = attributes['week4'];
-    model.week5 = attributes['week5'];
-    model.week6 = attributes['week6'];
-    model.week7 = attributes['week7'];
+    blacklistItemType = attributes['blacklist_item_type_name'];
+    blacklistSupplierCode = attributes['blacklist_supplier_code'];
+    blacklistBrandName = attributes['blacklist_brand_name'];
+    discount1 = calculationType == DiscountCalculationType.percentage
+        ? Percentage(attributes['discount1'] ?? 0)
+        : Money(attributes['discount1'] * 100);
+    discount2 = Percentage(attributes['discount2'] ?? 0);
+    discount3 = Percentage(attributes['discount3'] ?? 0);
+    discount4 = Percentage(attributes['discount4'] ?? 0);
+    week1 = attributes['week1'];
+    week2 = attributes['week2'];
+    week3 = attributes['week3'];
+    week4 = attributes['week4'];
+    week5 = attributes['week5'];
+    week6 = attributes['week6'];
+    week7 = attributes['week7'];
     final relationships = json['relationships'];
-    model.discountItems = Model.findRelationsData<DiscountItem>(
-        included: included,
-        relation: relationships['discount_items'],
-        convert: DiscountItem.fromJson);
+    discountItems = DiscountItemClass().findRelationsData(
+      included: included,
+      relation: relationships['discount_items'],
+    );
 
-    model.discountSuppliers = Model.findRelationsData<DiscountSupplier>(
-        included: included,
-        relation: relationships['discount_suppliers'],
-        convert: DiscountSupplier.fromJson);
+    discountSuppliers = DiscountSupplierClass().findRelationsData(
+      included: included,
+      relation: relationships['discount_suppliers'],
+    );
 
-    model.discountBrands = Model.findRelationsData<DiscountBrand>(
-        included: included,
-        relation: relationships['discount_brands'],
-        convert: DiscountBrand.fromJson);
+    discountBrands = DiscountBrandClass().findRelationsData(
+      included: included,
+      relation: relationships['discount_brands'],
+    );
 
-    model.discountItemTypes = Model.findRelationsData<DiscountItemType>(
-        included: included,
-        relation: relationships['discount_item_types'],
-        convert: DiscountItemType.fromJson);
+    discountItemTypes = DiscountItemTypeClass().findRelationsData(
+      included: included,
+      relation: relationships['discount_item_types'],
+    );
 
-    model.customerGroup = Model.findRelationData<CustomerGroup>(
-        included: included,
-        relation: relationships['customer_group'],
-        convert: CustomerGroup.fromJson);
-    model.weight = attributes['weight'];
-    model.startTime = DateTime.parse(attributes['start_time']);
-    model.endTime = DateTime.parse(attributes['end_time']);
-    return model;
+    customerGroup = CustomerGroupClass().findRelationData(
+      included: included,
+      relation: relationships['customer_group'],
+    );
+    weight = attributes['weight'];
+    startTime = DateTime.parse(attributes['start_time']);
+    endTime = DateTime.parse(attributes['end_time']);
   }
 
   String? get customerGroupCode => customerGroup?.code;
@@ -372,4 +366,13 @@ class Discount extends Model {
 
   @override
   String get modelValue => code;
+}
+
+class DiscountClass extends ModelClass<Discount> {
+  @override
+  Discount initModel() => Discount(
+      calculationType: DiscountCalculationType.percentage,
+      discount1: 0,
+      startTime: DateTime.now(),
+      endTime: DateTime.now());
 }

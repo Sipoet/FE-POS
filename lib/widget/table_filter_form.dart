@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/hash_model.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
@@ -291,11 +292,11 @@ class _TableFilterFormState extends State<TableFilterForm> {
     return Container(
       width: 300,
       constraints: const BoxConstraints(minHeight: 50),
-      child: AsyncDropdownMultiple<Map>(
-        converter: (json, {List included = const []}) => json,
+      child: AsyncDropdownMultiple<HashModel>(
+        modelClass: HashModelClass(),
         textOnSearch: (value) =>
             "${value['id'].toString()} - ${value['attributes'][attributeKey]}",
-        textOnSelected: (value) => value['id'].toString(),
+        textOnSelected: (value) => value.modelValue.toString(),
         label: Text(column.humanizeName, style: _labelStyle),
         request: (
             {int page = 1,
@@ -316,7 +317,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
         onSaved: (value) {
           if (value != null && value.isNotEmpty) {
             final decoratedValue =
-                value.map<String>((e) => e['id'].toString()).join(',');
+                value.map<String>((e) => e.id.toString()).join(',');
             controller.setFilter(column.name, 'eq', decoratedValue);
           } else {
             controller.removeFilter(column.name);

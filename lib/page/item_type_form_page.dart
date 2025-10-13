@@ -41,10 +41,8 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
     showLoadingPopup();
     _server.get('item_types/${itemType.id}').then((response) {
       if (mounted && response.statusCode == 200) {
-        setState(() {
-          ItemType.fromJson(response.data['data'],
-              included: response.data['included'] ?? [], model: itemType);
-        });
+        itemType.setFromJson(response.data['data'],
+            included: response.data['included'] ?? []);
       }
     }).whenComplete(() => hideLoadingPopup());
   }
@@ -70,8 +68,8 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
     response.then((response) {
       if (mounted && [200, 201].contains(response.statusCode)) {
         setState(() {
-          ItemType.fromJson(response.data['data'],
-              included: response.data['included'] ?? [], model: itemType);
+          itemType.setFromJson(response.data['data'],
+              included: response.data['included'] ?? []);
         });
         _tabManager.changeTabHeader(widget, 'Edit Jenis ${itemType.name}');
         toastification.show(
@@ -158,7 +156,7 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
               key: const ValueKey('itemTypeSelect'),
               textOnSearch: (ItemType itemType) => itemType.name,
               selected: itemType.parent,
-              converter: ItemType.fromJson,
+              modelClass: ItemTypeClass(),
               attributeKey: 'jenis',
               path: '/item_types',
               onChanged: (value) => itemType.parent = value,

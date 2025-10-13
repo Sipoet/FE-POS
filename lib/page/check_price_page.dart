@@ -321,8 +321,8 @@ class _CheckPricePageState extends State<CheckPricePage>
         final data = response.data;
         setState(() {
           models = data['data']
-              .map<ItemWithDiscount>((row) => ItemWithDiscount.fromJson(row,
-                  included: data['included'] ?? []))
+              .map<ItemWithDiscount>((row) => ItemWithDiscountClass()
+                  .fromJson(row, included: data['included'] ?? []))
               .toList();
         });
 

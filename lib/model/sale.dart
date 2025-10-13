@@ -69,44 +69,44 @@ class Sale extends Model {
       };
 
   @override
-  factory Sale.fromJson(Map<String, dynamic> json,
-      {Sale? model, List included = const []}) {
-    var attributes = json['attributes'];
+  String get modelName => 'sale_item';
 
-    model ??= Sale(userName: '');
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
+    var attributes = json['attributes'];
     if (included.isNotEmpty) {
-      model.saleItems = Model.findRelationsData<SaleItem>(
-          included: included,
-          relation: json['relationships']['sale_items'],
-          convert: SaleItem.fromJson);
+      saleItems = SaleItemClass().findRelationsData(
+        included: included,
+        relation: json['relationships']['sale_items'],
+      );
     }
-    Model.fromModel(model, attributes);
-    model.id = json['id'];
-    model.userName = attributes['user1'];
-    model.datetime = DateTime.parse(attributes['tanggal']);
-    model.description = attributes['keterangan'];
-    model.totalItem = double.parse(attributes['totalitem']);
-    model.subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
-    model.grandtotal =
-        Money.tryParse(attributes['totalakhir']) ?? const Money(0);
-    model.discountAmount =
+    id = json['id'];
+    userName = attributes['user1'];
+    datetime = DateTime.parse(attributes['tanggal']);
+    description = attributes['keterangan'];
+    totalItem = double.parse(attributes['totalitem']);
+    subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
+    grandtotal = Money.tryParse(attributes['totalakhir']) ?? const Money(0);
+    discountAmount =
         Money.tryParse(attributes['potnomfaktur']) ?? const Money(0);
-    model.otherCost = Money.tryParse(attributes['biayalain']) ?? const Money(0);
-    model.cashAmount = Money.tryParse(attributes['jmltunai']) ?? const Money(0);
-    model.debitCardAmount =
-        Money.tryParse(attributes['jmldebit']) ?? const Money(0);
-    model.creditCardAmount =
-        Money.tryParse(attributes['jmlkk']) ?? const Money(0);
-    model.emoneyAmount =
-        Money.tryParse(attributes['jmlemoney']) ?? const Money(0);
-    model.paymentMethodType = attributes['payment_type'] ?? '';
-    model.taxType = attributes['ppn'];
-    model.taxAmount = Money.tryParse(attributes['pajak']) ?? const Money(0);
-    model.code = attributes['notransaksi'];
-    model.bankCode = attributes['bank_code'] ?? '';
-    return model;
+    otherCost = Money.tryParse(attributes['biayalain']) ?? const Money(0);
+    cashAmount = Money.tryParse(attributes['jmltunai']) ?? const Money(0);
+    debitCardAmount = Money.tryParse(attributes['jmldebit']) ?? const Money(0);
+    creditCardAmount = Money.tryParse(attributes['jmlkk']) ?? const Money(0);
+    emoneyAmount = Money.tryParse(attributes['jmlemoney']) ?? const Money(0);
+    paymentMethodType = attributes['payment_type'] ?? '';
+    taxType = attributes['ppn'];
+    taxAmount = Money.tryParse(attributes['pajak']) ?? const Money(0);
+    code = attributes['notransaksi'];
+    bankCode = attributes['bank_code'] ?? '';
   }
 
   @override
   String get modelValue => code;
+}
+
+class SaleClass extends ModelClass<Sale> {
+  @override
+  Sale initModel() => Sale();
 }

@@ -29,6 +29,9 @@ class BookEmployeeAttendance extends Model {
         endDate = endDate ?? Date.today();
 
   @override
+  String get modelName => 'book_employee_attendance';
+
+  @override
   Map<String, dynamic> toMap() => {
         'employee': employee,
         'employee_id': employee?.id,
@@ -44,29 +47,31 @@ class BookEmployeeAttendance extends Model {
       };
 
   @override
-  factory BookEmployeeAttendance.fromJson(Map<String, dynamic> json,
-      {BookEmployeeAttendance? model, List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model ??= BookEmployeeAttendance();
-    model.id = int.parse(json['id']);
-    Model.fromModel(model, attributes);
 
-    model.employee = Model.findRelationData<Employee>(
-            included: included,
-            relation: json['relationships']?['employee'],
-            convert: Employee.fromJson) ??
-        model.employee;
-    model.isFlexible = attributes['is_flexible'];
-    model.isLate = attributes['is_late'];
-    model.allowOvertime = attributes['allow_overtime'];
-    model.description = attributes['description'];
-    model.startDate = Date.parse(attributes['start_date']);
-    model.endDate = Date.parse(attributes['end_date']);
-    return model;
+    super.setFromJson(json, included: included);
+
+    employee = EmployeeClass().findRelationData(
+          included: included,
+          relation: json['relationships']?['employee'],
+        ) ??
+        employee;
+    isFlexible = attributes['is_flexible'];
+    isLate = attributes['is_late'];
+    allowOvertime = attributes['allow_overtime'];
+    description = attributes['description'];
+    startDate = Date.parse(attributes['start_date']);
+    endDate = Date.parse(attributes['end_date']);
   }
 
   @override
   String get modelValue =>
       description ??
       '${employee?.modelValue} ${startDate.format()} ${endDate.format()}';
+}
+
+class BookEmployeeAttendanceClass extends ModelClass<BookEmployeeAttendance> {
+  @override
+  BookEmployeeAttendance initModel() => BookEmployeeAttendance();
 }

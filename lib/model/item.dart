@@ -45,6 +45,9 @@ class Item extends Model {
         sellPrice = sellPrice ?? const Money(0);
 
   @override
+  String get modelName => 'item';
+
+  @override
   Map<String, dynamic> toMap() => {
         'code': code,
         'name': name,
@@ -61,40 +64,27 @@ class Item extends Model {
       };
 
   @override
-  factory Item.fromJson(Map<String, dynamic> json,
-      {Item? model, List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
-    model ??= Item();
-    model.id = json['id'];
-    Model.fromModel(model, attributes);
-    model.code = attributes['code'];
-    model.name = attributes['name'];
-    model.description = attributes['description'];
-    model.brandName = attributes['brand_name'] ?? '';
-    model.itemTypeName = attributes['item_type_name'] ?? '';
-    model.supplierCode = attributes['supplier_code'] ?? '';
-    model.cogs = Money.tryParse(attributes['cogs']) ?? model.cogs;
-    model.uom = attributes['uom'] ?? '';
-    model.sellPrice =
-        Money.tryParse(attributes['sell_price']) ?? model.sellPrice;
-    model.supplier = Model.findRelationData<Supplier>(
-        relation: json['relationships']['supplier'],
-        included: included,
-        convert: Supplier.fromJson);
-    model.itemType = Model.findRelationData<ItemType>(
-            relation: json['relationships']['item_type'],
-            included: included,
-            convert: ItemType.fromJson) ??
+    super.setFromJson(json, included: included);
+    code = attributes['code'];
+    name = attributes['name'];
+    description = attributes['description'];
+    brandName = attributes['brand_name'] ?? '';
+    itemTypeName = attributes['item_type_name'] ?? '';
+    supplierCode = attributes['supplier_code'] ?? '';
+    cogs = Money.tryParse(attributes['cogs']) ?? cogs;
+    uom = attributes['uom'] ?? '';
+    sellPrice = Money.tryParse(attributes['sell_price']) ?? sellPrice;
+    supplier = SupplierClass().findRelationData(
+        relation: json['relationships']['supplier'], included: included);
+    itemType = ItemTypeClass().findRelationData(
+          relation: json['relationships']['item_type'],
+          included: included,
+        ) ??
         ItemType();
-    model.brand = Model.findRelationData<Brand>(
-        relation: json['relationships']['brand'],
-        included: included,
-        convert: Brand.fromJson);
-    model.discountRules = Model.findRelationsData<DiscountRule>(
-        relation: json['relationships']['discount_rules'],
-        included: included,
-        convert: DiscountRule.fromJson);
-    return model;
+    brand = BrandClass().findRelationData(
+        relation: json['relationships']['brand'], included: included);
   }
 
   Percentage get margin => cogs == Money(0)
@@ -103,4 +93,9 @@ class Item extends Model {
 
   @override
   String get modelValue => "$code - $name";
+}
+
+class ItemClass extends ModelClass<Item> {
+  @override
+  Item initModel() => Item();
 }

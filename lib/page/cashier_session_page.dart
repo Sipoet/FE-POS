@@ -46,8 +46,8 @@ class _CashierSessionPageState extends State<CashierSessionPage>
       if (response.statusCode == 200) {
         final json = response.data;
         setState(() {
-          cashierSession = CashierSession.fromJson(json['data'],
-              included: json['included'] ?? []);
+          cashierSession = CashierSessionClass()
+              .fromJson(json['data'], included: json['included'] ?? []);
           _isTodayCashierFetched = true;
         });
       }
@@ -70,8 +70,8 @@ class _CashierSessionPageState extends State<CashierSessionPage>
       if (response.statusCode == 200) {
         final json = response.data;
         setState(() {
-          cashierSession = CashierSession.fromJson(json['data'],
-              included: json['included'] ?? []);
+          cashierSession = CashierSessionClass()
+              .fromJson(json['data'], included: json['included'] ?? []);
           _isTodayCashierFetched = true;
         });
       }
