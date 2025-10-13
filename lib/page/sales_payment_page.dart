@@ -102,7 +102,7 @@ class _SalesPaymentPageState extends State<SalesPaymentPage> {
                               allowClear: false,
                               textOnSearch: (paymentType) => paymentType.name,
                               selected: salesPayment.paymentType,
-                              converter: PaymentType.fromJson,
+                              modelClass: PaymentTypeClass(),
                               onChanged: (paymentType) {
                                 setState(() {
                                   salesPayment.paymentType =
@@ -127,7 +127,7 @@ class _SalesPaymentPageState extends State<SalesPaymentPage> {
                               textOnSearch: (paymentProvider) =>
                                   paymentProvider.name,
                               selected: salesPayment.paymentProvider,
-                              converter: PaymentProvider.fromJson,
+                              modelClass: PaymentProviderClass(),
                               request: (
                                   {int page = 1,
                                   int limit = 20,

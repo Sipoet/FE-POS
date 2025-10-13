@@ -64,8 +64,8 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
     }).then((response) {
       if (response.statusCode == 200) {
         setState(() {
-          SalesCashier.fromJson(response.data['data'],
-              included: response.data['included'], model: salesCashier);
+          salesCashier.setFromJson(response.data['data'],
+              included: response.data['included']);
         });
       }
     }, onError: (error) {
@@ -85,7 +85,7 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
         return null;
       }
       var data = response.data;
-      return Item.fromJson(
+      return ItemClass().fromJson(
         data['data'],
         included: data['included'],
       );
@@ -218,7 +218,7 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                           ),
                           textOnSearch: (customer) =>
                               "${customer.code} - ${customer.name}",
-                          converter: Customer.fromJson,
+                          modelClass: CustomerClass(),
                           selected: salesCashier.customer,
                         ),
                       ),
@@ -235,7 +235,7 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                           ),
                           textOnSearch: (customer) =>
                               "${customer.code} - ${customer.name}",
-                          converter: Customer.fromJson,
+                          modelClass: CustomerClass(),
                           selected: salesCashier.customer,
                         ),
                       ),
