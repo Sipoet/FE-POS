@@ -94,7 +94,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
                   textOnSelected: (itemType) => itemType.name,
                   textOnSearch: (itemType) =>
                       '${itemType.name} - ${itemType.description}',
-                  converter: ItemType.fromJson,
+                  modelClass: ItemTypeClass(),
                   label: const Text('Jenis/Departemen'),
                   onChanged: (itemType) => setState(() {
                     itemTypeName = itemType?.name;
@@ -109,7 +109,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
                   textOnSelected: (brand) => brand.name,
                   textOnSearch: (brand) =>
                       '${brand.name} - ${brand.description}',
-                  converter: Brand.fromJson,
+                  modelClass: BrandClass(),
                   label: const Text('Merek'),
                   onChanged: (brand) => setState(() {
                     brandName = brand?.name;
@@ -124,7 +124,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
                   textOnSelected: (supplier) => supplier.name,
                   textOnSearch: (supplier) =>
                       '${supplier.code} - ${supplier.name}',
-                  converter: Supplier.fromJson,
+                  modelClass: SupplierClass(),
                   label: const Text('Suppliers'),
                   onChanged: (supplier) => setState(() {
                     supplierCode = supplier?.code;
@@ -213,8 +213,8 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
       if (response.statusCode == 200) {
         setState(() {
           itemReports = response.data['data']
-              .map<ItemReport>((data) => ItemReport.fromJson(data,
-                  included: response.data['included'] ?? []))
+              .map<ItemReport>((data) => ItemReportClass()
+                  .fromJson(data, included: response.data['included'] ?? []))
               .toList();
           _source?.setModels(itemReports, tableColumns);
         });

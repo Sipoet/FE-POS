@@ -56,7 +56,7 @@ class _ItemReportPageState extends State<ItemReportPage>
         _isDisplayTable = true;
       });
       final models = data['data']
-          .map<ItemReport>((row) => ItemReport.fromJson(row))
+          .map<ItemReport>((row) => ItemReportClass().fromJson(row))
           .toList();
       _source.removeAllRows();
       for (final model in models) {

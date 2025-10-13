@@ -104,31 +104,28 @@ class SalesCashier extends Model {
       .fold(const Money(0), (a, b) => a + b);
 
   @override
-  factory SalesCashier.fromJson(Map<String, dynamic> json,
-      {SalesCashier? model, List included = const []}) {
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
 
-    model ??= SalesCashier();
-    model.code = attributes['code'];
-    model.description = attributes['description'];
-    model.location = attributes['location'];
-    model.transactionDate = DateTime.parse(attributes['transaction_date']);
+    code = attributes['code'];
+    description = attributes['description'];
+    location = attributes['location'];
+    transactionDate = DateTime.parse(attributes['transaction_date']);
     if (included.isNotEmpty) {
-      model.salesCashierItems = Model.findRelationsData<SalesCashierItem>(
-          included: included,
-          relation: json['relationships']['sales_cashier_items'],
-          convert: SalesCashierItem.fromJson);
-      model.salesPayments = Model.findRelationsData<SalesPayment>(
-          included: included,
-          relation: json['relationships']['sales_payments'],
-          convert: SalesPayment.fromJson);
-      model.customer = Model.findRelationData<Customer>(
-          included: included,
-          relation: json['relationships']['customer'],
-          convert: Customer.fromJson);
+      salesCashierItems = SalesCashierItemClass().findRelationsData(
+        included: included,
+        relation: json['relationships']['sales_cashier_items'],
+      );
+      salesPayments = SalesPaymentClass().findRelationsData(
+        included: included,
+        relation: json['relationships']['sales_payments'],
+      );
+      customer = CustomerClass().findRelationData(
+        included: included,
+        relation: json['relationships']['customer'],
+      );
     }
-    Model.fromModel(model, attributes);
-    model.id = json['id'];
     // model.userName = attributes['user1'];
     // model.datetime = DateTime.parse(attributes['tanggal']);
     // model.description = attributes['keterangan'];
@@ -151,9 +148,13 @@ class SalesCashier extends Model {
     // model.taxAmount = Money.tryParse(attributes['pajak']) ?? const Money(0);
     // model.code = attributes['notransaksi'];
     // model.bankCode = attributes['bank_code'] ?? '';
-    return model;
   }
 
   @override
   String get modelValue => id;
+}
+
+class SalesCashierClass extends ModelClass<SalesCashier> {
+  @override
+  SalesCashier initModel() => SalesCashier();
 }
