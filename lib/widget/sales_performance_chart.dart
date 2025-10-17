@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:collection/collection.dart';
 import 'package:fe_pos/tool/custom_type.dart';
+export 'package:fl_chart/fl_chart.dart';
 
 class SalesPerformanceChart extends StatefulWidget {
   final List<Widget> filterForm;

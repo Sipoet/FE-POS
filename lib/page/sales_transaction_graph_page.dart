@@ -13,7 +13,6 @@ import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fl_chart/fl_chart.dart';
 
 class SalesTransactionGraphPage extends StatefulWidget {
   const SalesTransactionGraphPage({super.key});
@@ -165,6 +164,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
         for (var spot in detail['spots']) {
           models.add(HashModel(data: {
             'group_key': datePkFormat(spot[0], identifierList, startDate),
+            'value': spot[0],
             'total': spot[1],
             'description': detail['description'] ?? '',
             'last_purchase_year': detail['last_purchase_year'].toString(),
@@ -314,7 +314,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
               width: 300,
               child: DateRangeFormField(
                 label: Text('Rentang Periode'),
-                datePickerOnly: true,
+                rangeType: DateRangeType(),
                 initialDateRange: _dateRange,
                 onChanged: (range) => _dateRange = range ?? _dateRange,
                 allowClear: false,
@@ -480,10 +480,11 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
                 height: bodyScreenHeight,
                 child: SyncDataTable<HashModel>(
                   columns: [
-                    TableColumn(
+                    TableColumn<HashModel>(
                         clientWidth: 180,
                         name: 'group_key',
                         canFilter: true,
+                        // getValue: (model) => model.data['value'],
                         renderBody: (model) =>
                             Text(model.cell.value.toString()),
                         humanizeName: groupKeyLocales[_groupType] ?? ''),

@@ -61,6 +61,10 @@ extension DateTimeRangeExt on DateTimeRange {
   bool get isSameDay {
     return start.isSameDay(end);
   }
+
+  bool get isSameYear {
+    return start.year == end.year;
+  }
 }
 
 class Date extends DateTime {
