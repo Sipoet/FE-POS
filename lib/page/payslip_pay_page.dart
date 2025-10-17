@@ -30,6 +30,9 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
   List<Employee> employees = [];
   late final Server server;
   DateTimeRange? _range;
+  bool isNotify = true;
+  static const TextStyle _filterLabelStyle =
+      TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
   @override
   void initState() {
     server = context.read<Server>();
@@ -50,6 +53,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
       'cash_account': account!.id,
       'description': description,
       'location': location!.id,
+      'is_notify': isNotify ? '1' : '0',
     }).then((response) {
       final flash = Flash();
       if (response.statusCode != 200) {
@@ -80,8 +84,8 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
           child: Column(
             children: [
               DateRangeFormField(
-                datePickerOnly: true,
-                label: Text('Periode Gaji'),
+                rangeType: DateRangeType(),
+                label: Text('Periode Gaji', style: _filterLabelStyle),
                 onChanged: (range) => _range = range,
                 validator: (range) {
                   if (range == null) {
@@ -94,7 +98,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
                 height: 10,
               ),
               AsyncDropdownMultiple<Employee>(
-                label: Text('Karyawan'),
+                label: Text('Karyawan', style: _filterLabelStyle),
                 path: 'employees',
                 textOnSearch: (model) => model.modelValue,
                 modelClass: EmployeeClass(),
@@ -110,7 +114,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
                 height: 10,
               ),
               DateFormField(
-                label: Text("Tanggal Bayar"),
+                label: Text("Tanggal Bayar", style: _filterLabelStyle),
                 allowClear: false,
                 onChanged: (value) => paidAt = value,
                 validator: (date) {
@@ -124,7 +128,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
                 height: 10,
               ),
               AsyncDropdown<Account>(
-                label: Text('Akun Pembayaran'),
+                label: Text('Akun Pembayaran', style: _filterLabelStyle),
                 request: (
                     {required cancelToken,
                     int limit = 20,
@@ -155,7 +159,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
                 height: 10,
               ),
               AsyncDropdown<Location>(
-                label: Text('Lokasi'),
+                label: Text('Lokasi', style: _filterLabelStyle),
                 path: 'locations',
                 allowClear: false,
                 textOnSearch: (model) => model.modelValue,
@@ -168,6 +172,19 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
                   return null;
                 },
               ),
+              const SizedBox(
+                height: 10,
+              ),
+              CheckboxListTile.adaptive(
+                  title: Text(
+                    'Notifikasi via email?',
+                    style: _filterLabelStyle,
+                  ),
+                  value: isNotify,
+                  selected: isNotify,
+                  onChanged: (value) => setState(() {
+                        isNotify = value ?? false;
+                      })),
               const SizedBox(
                 height: 10,
               ),
@@ -187,7 +204,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
               const SizedBox(
                 height: 10,
               ),
-              ElevatedButton(onPressed: _submit, child: Text('simpan')),
+              ElevatedButton(onPressed: _submit, child: Text('Simpan')),
             ],
           ),
         ),

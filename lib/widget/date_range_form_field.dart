@@ -2,6 +2,152 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:fe_pos/tool/custom_type.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
+
+abstract class RangeType {
+  const RangeType();
+  String displayFormat(DateTimeRange range);
+  Future<DateTimeRange?> showDialog(
+      {required BuildContext context,
+      required ColorScheme colorScheme,
+      String? helpText,
+      DateTimeRange? initialDateRange});
+}
+
+class DateTimeRangeType implements RangeType {
+  const DateTimeRangeType();
+
+  @override
+  String displayFormat(DateTimeRange range) {
+    var formater = DateFormat('dd/MM/y');
+    if (range.isSameDay) {
+      var hourFormat = DateFormat('HH:mm');
+      return "${formater.format(range.start)} ${hourFormat.format(range.start)} - ${hourFormat.format(range.end)}";
+    } else {
+      final formater = DateFormat('dd/MM/y HH:mm');
+      return "${formater.format(range.start)} - ${formater.format(range.end)}";
+    }
+  }
+
+  @override
+  Future<DateTimeRange?> showDialog(
+      {required BuildContext context,
+      required ColorScheme colorScheme,
+      String? helpText,
+      DateTimeRange? initialDateRange}) {
+    return showBoardDateTimeMultiPicker(
+      context: context,
+      options: BoardDateTimeOptions(
+          withSecond: false,
+          pickerFormat: PickerFormat.dmy,
+          startDayOfWeek: DateTime.monday,
+          boardTitle: helpText,
+          useAmpm: false,
+          languages: const BoardPickerLanguages(
+              today: 'Hari ini',
+              tomorrow: 'Besok',
+              now: 'Sekarang',
+              locale: 'id')),
+      startDate: initialDateRange?.start,
+      endDate: initialDateRange?.end,
+      showDragHandle: false,
+      enableDrag: false,
+      pickerType: DateTimePickerType.datetime,
+    ).then((dateTimeRange) {
+      if (dateTimeRange != null) {
+        return DateTimeRange(
+            start: dateTimeRange.start.toLocal(),
+            end: dateTimeRange.end.toLocal());
+      }
+      return null;
+    });
+  }
+}
+
+class DateRangeType implements RangeType {
+  const DateRangeType();
+  @override
+  String displayFormat(DateTimeRange range) {
+    final formater = DateFormat('dd/MM/y');
+    return "${formater.format(range.start)} - ${formater.format(range.end)}";
+  }
+
+  @override
+  Future<DateTimeRange?> showDialog(
+      {required BuildContext context,
+      required ColorScheme colorScheme,
+      String? helpText,
+      DateTimeRange? initialDateRange}) {
+    return showDateRangePicker(
+      context: context,
+      locale: const Locale('id', 'ID'),
+      fieldStartHintText: 'Mulai',
+      fieldEndHintText: 'Akhir',
+      initialDateRange: initialDateRange,
+      currentDate: DateTime.now(),
+      firstDate: DateTime(1000),
+      lastDate: DateTime.now().add(Duration(days: 36500)),
+      // useRootNavigator: false,
+      initialEntryMode: DatePickerEntryMode.calendar,
+    );
+  }
+}
+
+class MonthRangeType implements RangeType {
+  const MonthRangeType();
+  @override
+  String displayFormat(DateTimeRange range) {
+    if (range.isSameYear) {
+      final formatter = DateFormat('MMMM');
+      return '${formatter.format(range.start)} - ${formatter.format(range.end)} ${range.start.year.toString()}';
+    } else {
+      final formatter = DateFormat('MMMM y');
+      return '${formatter.format(range.start)} - ${formatter.format(range.end)}';
+    }
+  }
+
+  @override
+  Future<DateTimeRange?> showDialog(
+      {required BuildContext context,
+      required ColorScheme colorScheme,
+      String? helpText,
+      DateTimeRange? initialDateRange}) {
+    return showMonthRangePicker(
+            context: context,
+            headerTitle: helpText == null ? null : Text(helpText),
+            initialRangeDate: initialDateRange?.start,
+            endRangeDate: initialDateRange?.end)
+        .then((value) {
+      if (value == null || value.isEmpty) {
+        return null;
+      } else {
+        return DateTimeRange(start: value.first, end: value.last);
+      }
+    });
+  }
+}
+
+// class YearRangeType implements RangeType {
+//   const YearRangeType();
+//   @override
+//   String displayFormat(DateTimeRange range) {
+//     return 'MM/yyyy';
+//   }
+
+//   @override
+//   Future<DateTimeRange?> showDialog(BuildContext context,ColorScheme colorScheme) {}
+// }
+
+// class TimeRangeType implements RangeType {
+//   const TimeRangeType();
+//   @override
+//   String displayFormat(DateTimeRange range) {
+//     return 'MM/yyyy';
+//   }
+
+//   @override
+//   Future<DateTimeRange?> showDialog(BuildContext context) {}
+// }
 
 class DateRangeFormField extends StatefulWidget {
   const DateRangeFormField({
@@ -11,7 +157,7 @@ class DateRangeFormField extends StatefulWidget {
     this.textStyle,
     this.enabled = true,
     this.initialDateRange,
-    this.datePickerOnly = false,
+    this.rangeType = const DateTimeRangeType(),
     this.validator,
     this.onSaved,
     this.onChanged,
@@ -21,13 +167,13 @@ class DateRangeFormField extends StatefulWidget {
     this.allowClear = false,
   });
   final Widget? label;
+  final RangeType rangeType;
   final Widget? icon;
   final String? helpText;
   final TextStyle? textStyle;
   final DateTimeRange? initialDateRange;
   final bool enabled;
   final bool allowClear;
-  final bool datePickerOnly;
   final FocusNode? focusNode;
   final Function(DateTimeRange? range)? onChanged;
   final Function(DateTimeRange? range)? onSaved;
@@ -56,88 +202,20 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
     if (_dateRange == null) {
       return '';
     }
-    var formater = DateFormat('dd/MM/y');
-    if (widget.datePickerOnly) {
-      return "${formater.format(_dateRange!.start)} - ${formater.format(_dateRange!.end)}";
-    }
-    if (_dateRange!.isSameDay) {
-      var hourFormat = DateFormat('HH:mm');
-      return "${formater.format(_dateRange!.start)} ${hourFormat.format(_dateRange!.start)} - ${hourFormat.format(_dateRange!.end)}";
-    } else {
-      final formater = DateFormat('dd/MM/y HH:mm');
-      return "${formater.format(_dateRange!.start)} - ${formater.format(_dateRange!.end)}";
-    }
+    return widget.rangeType.displayFormat(_dateRange!);
   }
 
-  final maxDate = DateTime(9999, 12, 31, 23, 59, 59, 59);
-  final minDate = DateTime(1900);
   void _openDialog() {
     final colorScheme = Theme.of(context).colorScheme;
-    if (widget.datePickerOnly) {
-      showNativePicker(colorScheme);
-    } else {
-      showBoardPicker(colorScheme);
-    }
-  }
-
-  void showNativePicker(ColorScheme colorScheme) {
-    showDateRangePicker(
-      context: context,
-      locale: const Locale('id', 'ID'),
-      fieldStartHintText: 'Mulai',
-      fieldEndHintText: 'Akhir',
-      initialDateRange: _dateRange,
-      currentDate: DateTime.now(),
-      firstDate: minDate,
-      lastDate: maxDate,
-      useRootNavigator: false,
-      initialEntryMode: DatePickerEntryMode.calendarOnly,
-    ).then(
-      (pickedDateRange) {
-        if (pickedDateRange == null) {
-          return;
-        }
-        setState(() {
-          _dateRange = pickedDateRange;
-
-          _controller.text = _daterangeFormat();
-          if (widget.onChanged != null) {
-            widget.onChanged!(_dateRange);
-          }
-        });
-        return;
-      },
-    );
-  }
-
-  void showBoardPicker(ColorScheme colorscheme) {
-    showBoardDateTimeMultiPicker(
-      context: context,
-      options: BoardDateTimeOptions(
-          withSecond: false,
-          pickerFormat: PickerFormat.dmy,
-          startDayOfWeek: DateTime.monday,
-          boardTitle: widget.helpText,
-          useAmpm: false,
-          languages: const BoardPickerLanguages(
-              today: 'Hari ini',
-              tomorrow: 'Besok',
-              now: 'Sekarang',
-              locale: 'id')),
-      startDate: _dateRange?.start,
-      endDate: _dateRange?.end,
-      showDragHandle: false,
-      enableDrag: false,
-      pickerType: widget.datePickerOnly
-          ? DateTimePickerType.date
-          : DateTimePickerType.datetime,
-    ).then((dateTimeRange) {
+    widget.rangeType
+        .showDialog(
+            context: context,
+            colorScheme: colorScheme,
+            initialDateRange: _dateRange,
+            helpText: widget.helpText)
+        .then((DateTimeRange? range) {
       setState(() {
-        if (dateTimeRange != null) {
-          _dateRange = DateTimeRange(
-              start: dateTimeRange.start.toLocal(),
-              end: dateTimeRange.end.toLocal());
-        }
+        _dateRange = range;
         _controller.text = _daterangeFormat();
         if (widget.onChanged != null) {
           widget.onChanged!(_dateRange);

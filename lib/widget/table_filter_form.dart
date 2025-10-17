@@ -214,7 +214,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
       width: 300,
       height: 50,
       child: DateRangeFormField(
-        datePickerOnly: datePickerOnly,
+        rangeType: datePickerOnly ? DateRangeType() : DateTimeRangeType(),
         label: Text(column.humanizeName, style: _labelStyle),
         helpText: column.name,
         key: ValueKey(column.name),

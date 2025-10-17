@@ -126,7 +126,7 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
               initialValue: systemSetting.value is Date
                   ? systemSetting.value.toDateTime()
                   : null,
-              datePickerOnly: true,
+              dateType: DateType(),
               onChanged: (value) => systemSetting.value =
                   value == null ? null : Date.parsingDateTime(value),
               label: Text(_setting.columnName('systemSetting', 'value')),

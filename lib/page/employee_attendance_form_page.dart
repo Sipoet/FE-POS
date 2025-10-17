@@ -88,7 +88,7 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
                         initialValue: employeeAttendance.date,
                         label: const Text('Tanggal', style: labelStyle),
                         helpText: 'Tanggal',
-                        datePickerOnly: true,
+                        dateType: DateType(),
                         onSaved: (value) {
                           if (value != null) {
                             employeeAttendance.startTime =

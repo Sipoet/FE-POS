@@ -2,6 +2,103 @@ import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 
+class DateType with TextFormatter {
+  const DateType();
+  String displayFormat(DateTime date) {
+    return dateFormat(date);
+  }
+
+  Future<DateTime?> showDialog(
+      {required BuildContext context,
+      required ColorScheme colorScheme,
+      String? helpText,
+      DateTime? initialDate}) {
+    return showBoardDateTimePicker(
+      context: context,
+      showDragHandle: false,
+      enableDrag: false,
+      options: BoardDateTimeOptions(
+          pickerFormat: PickerFormat.dmy,
+          startDayOfWeek: DateTime.monday,
+          boardTitle: helpText,
+          useAmpm: false,
+          languages: const BoardPickerLanguages(
+              today: 'Hari ini',
+              tomorrow: 'Besok',
+              now: 'Sekarang',
+              locale: 'id')),
+      initialDate: initialDate,
+      pickerType: DateTimePickerType.date,
+    );
+  }
+}
+
+class DateTimeType with TextFormatter implements DateType {
+  const DateTimeType();
+  @override
+  String displayFormat(DateTime date) {
+    return dateTimeFormat(date);
+  }
+
+  @override
+  Future<DateTime?> showDialog(
+      {required BuildContext context,
+      required ColorScheme colorScheme,
+      String? helpText,
+      DateTime? initialDate}) {
+    return showBoardDateTimePicker(
+      context: context,
+      showDragHandle: false,
+      enableDrag: false,
+      options: BoardDateTimeOptions(
+          pickerFormat: PickerFormat.dmy,
+          startDayOfWeek: DateTime.monday,
+          boardTitle: helpText,
+          useAmpm: false,
+          languages: const BoardPickerLanguages(
+              today: 'Hari ini',
+              tomorrow: 'Besok',
+              now: 'Sekarang',
+              locale: 'id')),
+      initialDate: initialDate,
+      pickerType: DateTimePickerType.datetime,
+    );
+  }
+}
+
+class TimeType with TextFormatter implements DateType {
+  const TimeType();
+  @override
+  String displayFormat(DateTime date) {
+    return timeFormat(TimeOfDay.fromDateTime(date));
+  }
+
+  @override
+  Future<DateTime?> showDialog(
+      {required BuildContext context,
+      required ColorScheme colorScheme,
+      String? helpText,
+      DateTime? initialDate}) {
+    return showBoardDateTimePicker(
+      context: context,
+      showDragHandle: false,
+      enableDrag: false,
+      options: BoardDateTimeOptions(
+          pickerFormat: PickerFormat.dmy,
+          startDayOfWeek: DateTime.monday,
+          boardTitle: helpText,
+          useAmpm: false,
+          languages: const BoardPickerLanguages(
+              today: 'Hari ini',
+              tomorrow: 'Besok',
+              now: 'Sekarang',
+              locale: 'id')),
+      initialDate: initialDate,
+      pickerType: DateTimePickerType.time,
+    );
+  }
+}
+
 class DateFormField extends StatefulWidget {
   final DateTime? initialValue;
   final Widget? label;
@@ -9,7 +106,7 @@ class DateFormField extends StatefulWidget {
   final DateTime? firstDate;
   final DateTime? lastDate;
   final bool allowClear;
-  final bool datePickerOnly;
+  final DateType dateType;
   final FocusNode? focusNode;
   final void Function(DateTime?)? onSaved;
   final void Function(DateTime? date)? onChanged;
@@ -17,7 +114,7 @@ class DateFormField extends StatefulWidget {
   const DateFormField(
       {super.key,
       this.label,
-      this.datePickerOnly = false,
+      this.dateType = const DateType(),
       this.firstDate,
       this.lastDate,
       this.helpText,
@@ -35,6 +132,8 @@ class DateFormField extends StatefulWidget {
 class _DateFormFieldState extends State<DateFormField> with TextFormatter {
   DateTime? _datetime;
 
+  DateType get dateType => widget.dateType;
+
   final _controller = TextEditingController();
 
   @override
@@ -48,25 +147,14 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
   final maxDate = DateTime(9999);
 
   void _openDialog() {
-    showBoardDateTimePicker(
+    dateType
+        .showDialog(
       context: context,
-      showDragHandle: false,
-      enableDrag: false,
-      options: BoardDateTimeOptions(
-          pickerFormat: PickerFormat.dmy,
-          startDayOfWeek: DateTime.monday,
-          boardTitle: widget.helpText,
-          useAmpm: false,
-          languages: const BoardPickerLanguages(
-              today: 'Hari ini',
-              tomorrow: 'Besok',
-              now: 'Sekarang',
-              locale: 'id')),
-      initialDate: widget.initialValue,
-      pickerType: widget.datePickerOnly
-          ? DateTimePickerType.date
-          : DateTimePickerType.datetime,
-    ).then((date) {
+      colorScheme: Theme.of(context).colorScheme,
+      initialDate: _datetime,
+      helpText: widget.helpText,
+    )
+        .then((date) {
       setState(() {
         _datetime = date;
         writeToTextField();
@@ -80,10 +168,8 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
   void writeToTextField() {
     if (_datetime == null) {
       _controller.text = '';
-    } else if (widget.datePickerOnly) {
-      _controller.text = dateFormat(_datetime!);
     } else {
-      _controller.text = dateTimeFormat(_datetime!);
+      _controller.text = dateType.displayFormat(_datetime!);
     }
   }
 
