@@ -34,10 +34,10 @@ abstract class Model {
   String get modelName => 'model';
 
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
-    final attributes = json['attributes'];
+    final attributes = json['attributes'] ?? {};
     id = json['id'];
-    createdAt = DateTime.tryParse(attributes['created_at'] ?? '');
-    updatedAt = DateTime.tryParse(attributes['updated_at'] ?? '');
+    createdAt = DateTime.tryParse(attributes?['created_at'] ?? '');
+    updatedAt = DateTime.tryParse(attributes?['updated_at'] ?? '');
     rawData = {'data': json, 'included': included};
   }
 

@@ -35,7 +35,7 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
   final _chartController = SalesChartController();
 
   DateTimeRange _range = DateTimeRange(
-      start: DateTime.now().beginningOfMonth(),
+      start: DateTime.now().beginningOfYear(),
       end: DateTime.now().endOfMonth());
 
   List<String> _comparisonKeys = [];

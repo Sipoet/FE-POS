@@ -147,7 +147,7 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
                       touchTooltipData: LineTouchTooltipData(
                         fitInsideHorizontally: true,
                         // fitInsideVertically: true,
-                        maxContentWidth: 220,
+                        maxContentWidth: 260,
                         getTooltipColor: (touchedSpot) => Colors.grey.shade900,
                         getTooltipItems: (touchedSpots) => touchedSpots
                             .mapIndexed<LineTooltipItem>(
