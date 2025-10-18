@@ -11,7 +11,7 @@ class MonthlyExpenseReport extends Model {
   MonthlyExpenseReport({
     super.id,
     this.year = 0,
-    this.month = 0,
+    this.month = 1,
     required this.datePk,
     this.total = const Money(0),
   });
@@ -22,9 +22,9 @@ class MonthlyExpenseReport extends Model {
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
     final attributes = json['attributes'];
-    year = attributes['year'];
-    month = attributes['month'];
-    datePk = Date.parse(attributes['date_pk']);
+    year = attributes['year'] ?? year;
+    month = attributes['month'] ?? month;
+    datePk = Date.tryParse(attributes['date_pk'] ?? '') ?? Date(year, month);
     total = Money.parse(attributes['total']);
   }
 

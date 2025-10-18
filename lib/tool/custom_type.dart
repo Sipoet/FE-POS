@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+extension StringExt on String {
+  String toSnakeCase() => toLowerCase().replaceAll(' ', '_');
+}
+
 extension DateTimeExt on DateTime {
   DateTime beginningOfDay() {
     return copyWith(

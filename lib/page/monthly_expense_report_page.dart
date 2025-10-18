@@ -21,16 +21,13 @@ class MonthlyExpenseReportPage extends StatefulWidget {
 
 class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
     with TextFormatter {
-  final groupPeriodLocales = {
-    'yearly': 'Tahun',
-    'monthly': 'Bulan',
-  };
   static const TextStyle _filterLabelStyle =
       TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
   late final Server server;
   late final Setting setting;
   late Flash flash;
-  String _groupPeriod = 'monthly';
+  GroupPeriodMonthlyExpenseReport _groupPeriod =
+      GroupPeriodMonthlyExpenseReport.monthly;
   List<MonthlyExpenseReport> _reports = [];
   final _chartController = SalesChartController();
 
@@ -54,7 +51,9 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
     var identifierList = ['Total Pengeluaran'];
 
     _reports = await MonthlyExpenseReportClass().groupBy(
-            server: server, groupPeriod: _groupPeriod, range: _range) ??
+            server: server,
+            groupPeriod: _groupPeriod.toString(),
+            range: _range) ??
         [];
     if (_reports.isEmpty) {
       return;
@@ -76,8 +75,12 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
       LineTitle lineTitle = LineTitle(
           name: key.replaceAll('_', ' '),
           description: detail['description'] ?? '');
+      final datePkCast = _groupPeriod == GroupPeriodMonthlyExpenseReport.yearly
+          ? (String data) => Date.parse('$data-01-01')
+          : (String data) => Date.parse('${data.toString()}-01-01');
+
       lines[lineTitle] = (detail['spots'] as List).map<FlSpot>((spot) {
-        final datePk = Date.parse(spot[0]);
+        final datePk = datePkCast.call(spot[0].toString());
         int xCoord = reportIndex[datePk] ?? -1;
         if (xCoord == -1) {
           debugPrint('spot x ${spot[0]}');
@@ -99,7 +102,7 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
     return server.get('item_sales_performance_reports/group_by', queryParam: {
       'start_date': _range.start.toIso8601String(),
       'end_date': _range.end.toIso8601String(),
-      'group_period': _groupPeriod,
+      'group_period': _groupPeriod.toString(),
       'group_type': 'period',
       'value_type': valueType,
       'separate_purchase_year': '0',
@@ -109,9 +112,9 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
   String xFormat(double value, SalesChartController controller) {
     if (_reports.length > value) {
       final data = _reports[value.toInt()];
-      if (_groupPeriod == 'yearly') {
+      if (_groupPeriod == GroupPeriodMonthlyExpenseReport.yearly) {
         return data.year.toString();
-      } else if (_groupPeriod == 'monthly') {
+      } else if (_groupPeriod == GroupPeriodMonthlyExpenseReport.monthly) {
         return data.datePk.format(pattern: 'MMM y');
       }
       return data.datePk.format();
@@ -131,19 +134,12 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
             alignment: WrapAlignment.start,
             runAlignment: WrapAlignment.start,
             children: [
-              SizedBox(
-                  width: 300,
-                  child: DateRangeFormField(
-                    onChanged: (range) => _range = range ?? _range,
-                    label: Text('Rentang Periode'),
-                    rangeType: MonthRangeType(),
-                    initialDateRange: _range,
-                  )),
-              DropdownMenu(
-                dropdownMenuEntries: groupPeriodLocales.entries
-                    .map<DropdownMenuEntry>(
-                      (entry) => DropdownMenuEntry(
-                          value: entry.key, label: entry.value),
+              DropdownMenu<GroupPeriodMonthlyExpenseReport>(
+                dropdownMenuEntries: GroupPeriodMonthlyExpenseReport.values
+                    .map<DropdownMenuEntry<GroupPeriodMonthlyExpenseReport>>(
+                      (entry) =>
+                          DropdownMenuEntry<GroupPeriodMonthlyExpenseReport>(
+                              value: entry, label: entry.humanize()),
                     )
                     .toList(),
                 label:
@@ -158,6 +154,14 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
                 inputDecorationTheme: InputDecorationTheme(
                     isDense: true, border: OutlineInputBorder()),
               ),
+              SizedBox(
+                  width: 300,
+                  child: DateRangeFormField(
+                    onChanged: (range) => _range = range ?? _range,
+                    label: Text('Rentang Periode'),
+                    rangeType: MonthRangeType(),
+                    initialDateRange: _range,
+                  )),
               SizedBox(
                 width: 250,
                 child: DropdownSearch<String>.multiSelection(
@@ -193,5 +197,24 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
         ],
       ),
     );
+  }
+}
+
+enum GroupPeriodMonthlyExpenseReport {
+  yearly,
+  monthly;
+
+  static const groupPeriodLocales = {
+    yearly: 'Tahun',
+    monthly: 'Bulan',
+  };
+
+  String humanize() {
+    return groupPeriodLocales[this] ?? '';
+  }
+
+  @override
+  String toString() {
+    return super.toString().split('.').last.toSnakeCase();
   }
 }
