@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:fe_pos/model/monthly_expense_report.dart';
 import 'package:fe_pos/tool/flash.dart';
@@ -36,14 +35,33 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
       end: DateTime.now().endOfMonth());
 
   List<String> _comparisonKeys = [];
+  List<Date> _listDates = [];
   Map<LineTitle, List<FlSpot>> lines = {};
-  Map<dynamic, int> reportIndex = {};
+
   @override
   void initState() {
     flash = Flash();
     server = context.read<Server>();
     setting = context.read<Setting>();
     super.initState();
+  }
+
+  Map<Date, int> _rangeX(GroupPeriodMonthlyExpenseReport groupPeriod) {
+    Map<Date, int> result = {};
+    Date date = _range.start.toDate();
+    int index = 0;
+    if (groupPeriod == GroupPeriodMonthlyExpenseReport.monthly) {
+      while (date.isBefore(_range.end.endOfMonth())) {
+        result[date.beginningOfMonth()] = index++;
+        date = date.endOfMonth().add(Duration(days: 1));
+      }
+    } else {
+      for (int year = date.year; year <= _range.end.year; year++) {
+        result[Date(year, 1, 1)] = index++;
+      }
+    }
+
+    return result;
   }
 
   void generateReport() async {
@@ -58,14 +76,13 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
     if (_reports.isEmpty) {
       return;
     }
-    reportIndex = {};
-    for (final (int index, MonthlyExpenseReport report) in _reports.indexed) {
-      reportIndex[report.datePk] = index;
-    }
-    lines[LineTitle(name: 'Pengeluaran')] = _reports
-        .mapIndexed<FlSpot>((int index, MonthlyExpenseReport e) =>
-            FlSpot(index.toDouble(), e.total.value))
-        .toList();
+    final rangeXIndex = _rangeX(_groupPeriod);
+    _listDates = rangeXIndex.keys.toList();
+    lines[LineTitle(name: 'Pengeluaran')] =
+        _reports.map<FlSpot>((MonthlyExpenseReport e) {
+      int xCoord = rangeXIndex[e.datePk] ?? -1;
+      return FlSpot(xCoord.toDouble(), e.total.value);
+    }).toList();
     for (final key in _comparisonKeys) {
       final response = await fetchSalesPerformance(key);
       if (response.statusCode != 200) {
@@ -77,13 +94,14 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
           description: detail['description'] ?? '');
       final datePkCast = _groupPeriod == GroupPeriodMonthlyExpenseReport.yearly
           ? (String data) => Date.parse('$data-01-01')
-          : (String data) => Date.parse('${data.toString()}-01-01');
+          : (String data) => Date.parse(data);
 
       lines[lineTitle] = (detail['spots'] as List).map<FlSpot>((spot) {
         final datePk = datePkCast.call(spot[0].toString());
-        int xCoord = reportIndex[datePk] ?? -1;
+        int xCoord = rangeXIndex[datePk] ?? -1;
         if (xCoord == -1) {
-          debugPrint('spot x ${spot[0]}');
+          debugPrint(
+              '==========spot x ${spot[0]} datePk ${datePk.toIso8601String()}');
         }
         return FlSpot(xCoord.toDouble(), spot[1]);
       }).toList();
@@ -110,17 +128,13 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
   }
 
   String xFormat(double value, SalesChartController controller) {
-    if (_reports.length > value) {
-      final data = _reports[value.toInt()];
-      if (_groupPeriod == GroupPeriodMonthlyExpenseReport.yearly) {
-        return data.year.toString();
-      } else if (_groupPeriod == GroupPeriodMonthlyExpenseReport.monthly) {
-        return data.datePk.format(pattern: 'MMM y');
-      }
-      return data.datePk.format();
-    } else {
-      return 'N/A';
+    Date date = _listDates[value.toInt()];
+    if (_groupPeriod == GroupPeriodMonthlyExpenseReport.yearly) {
+      return date.year.toString();
+    } else if (_groupPeriod == GroupPeriodMonthlyExpenseReport.monthly) {
+      return date.format(pattern: 'MMM y');
     }
+    return date.format();
   }
 
   @override
