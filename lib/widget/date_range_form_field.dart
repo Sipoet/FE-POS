@@ -178,7 +178,7 @@ class DateRangeFormField extends StatefulWidget {
   final Function(DateTimeRange? range)? onChanged;
   final Function(DateTimeRange? range)? onSaved;
   final String? Function(DateTimeRange? range)? validator;
-  final PickerController? controller;
+  final DateRangeEditingController? controller;
   @override
   State<DateRangeFormField> createState() => _DateRangeFormFieldState();
 }
@@ -191,7 +191,7 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
     _controller = TextEditingController(text: _daterangeFormat());
     widget.controller?.addListener(() {
       setState(() {
-        _dateRange = widget.controller?.range ?? _dateRange;
+        _dateRange = widget.controller?.value;
         _controller.text = _daterangeFormat();
       });
     });
@@ -273,12 +273,11 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
   }
 }
 
-class PickerController extends ChangeNotifier {
-  DateTimeRange range;
-  PickerController(this.range);
+class DateRangeEditingController extends ValueNotifier<DateTimeRange?> {
+  DateRangeEditingController(super.value);
 
-  void changeDate(DateTimeRange newRange) {
-    range = newRange;
+  void clear() {
+    value = null;
     notifyListeners();
   }
 }

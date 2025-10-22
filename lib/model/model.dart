@@ -86,7 +86,7 @@ abstract class Model {
     setFromJson(rawData['data'], included: rawData['included']);
   }
 
-  String get modelValue;
+  String get modelValue => id.toString();
 
   bool get isNewRecord => id == null;
 }

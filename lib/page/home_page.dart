@@ -27,7 +27,7 @@ class _HomePageState extends State<HomePage>
   bool _isCustom = false;
   late List<Widget> _panels;
   late final Setting setting;
-  final pickerController = PickerController(
+  final pickerController = DateRangeEditingController(
       DateTimeRange(start: DateTime.now(), end: DateTime.now()));
   Money? totalSales;
   final Period period = Period.week;
@@ -152,7 +152,7 @@ class _HomePageState extends State<HomePage>
       DateTimeRange range = _rangeDateList[rangeType] ??
           DateTimeRange(start: DateTime.now(), end: DateTime.now());
       controller.changeDate(range);
-      pickerController.changeDate(range);
+      pickerController.value = range;
     }
   }
 

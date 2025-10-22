@@ -108,6 +108,7 @@ class DateFormField extends StatefulWidget {
   final bool allowClear;
   final DateType dateType;
   final FocusNode? focusNode;
+  final DateEditingController? controller;
   final void Function(DateTime?)? onSaved;
   final void Function(DateTime? date)? onChanged;
   final String? Function(DateTime?)? validator;
@@ -116,6 +117,7 @@ class DateFormField extends StatefulWidget {
       this.label,
       this.dateType = const DateType(),
       this.firstDate,
+      this.controller,
       this.lastDate,
       this.helpText,
       this.onSaved,
@@ -139,6 +141,13 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
   @override
   void initState() {
     _datetime = widget.initialValue;
+    widget.controller?.addListener(() {
+      setState(() {
+        _datetime = widget.controller?.value;
+        _controller.text =
+            _datetime == null ? '' : dateType.displayFormat(_datetime!);
+      });
+    });
     writeToTextField();
     super.initState();
   }
@@ -211,5 +220,14 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
       ),
       controller: _controller,
     );
+  }
+}
+
+class DateEditingController extends ValueNotifier<DateTime?> {
+  DateEditingController(super.value);
+
+  void clear() {
+    value = null;
+    notifyListeners();
   }
 }
