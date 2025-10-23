@@ -143,7 +143,7 @@ class _ItemReportPageState extends State<ItemReportPage>
           const Divider(),
           const SizedBox(height: 10),
           SizedBox(
-            height: bodyScreenHeight + 300,
+            height: bodyScreenHeight,
             child: SyncDataTable<ItemReport>(
               showFilter: false,
               showSummary: true,
