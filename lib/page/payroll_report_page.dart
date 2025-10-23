@@ -126,7 +126,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
                     focusNode: _focusNode,
                     label: const Text('Tanggal'),
                     initialValue: _date,
-                    datePickerOnly: true,
+                    dateType: DateType(),
                     onChanged: (date) => _date = date ?? _date,
                   ),
                 ),

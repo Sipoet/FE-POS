@@ -25,7 +25,10 @@ class DropdownResult {
   String get searchableText => customSearch ?? "$value $text";
 }
 
-class AsyncDropdownMultiple<T extends Object> extends StatefulWidget {
+typedef DropdownText<T> = String Function(T model);
+typedef DropdownValidator<T> = String? Function(List<T>? models);
+
+class AsyncDropdownMultiple<T extends Model> extends StatefulWidget {
   const AsyncDropdownMultiple(
       {super.key,
       this.path,
@@ -58,9 +61,9 @@ class AsyncDropdownMultiple<T extends Object> extends StatefulWidget {
   final FocusNode? focusNode;
   final void Function(List<T> models)? onChanged;
   final void Function(List<T>? models)? onSaved;
-  final String? Function(List<T>? models)? validator;
-  final String Function(T model) textOnSearch;
-  final String Function(T model)? textOnSelected;
+  final DropdownValidator<T>? validator;
+  final DropdownText<T> textOnSearch;
+  final DropdownText<T>? textOnSelected;
   // final T Function(Map<String, dynamic>, {List included}) converter;
   final Widget? label;
   final bool Function(T, T)? compareValue;
@@ -71,7 +74,7 @@ class AsyncDropdownMultiple<T extends Object> extends StatefulWidget {
       _AsyncDropdownMultipleState<T>();
 }
 
-class _AsyncDropdownMultipleState<T extends Object>
+class _AsyncDropdownMultipleState<T extends Model>
     extends State<AsyncDropdownMultiple<T>>
     with DefaultResponse, PlatformChecker {
   final notFoundSign = const DropdownMenuEntry<String>(
@@ -79,10 +82,12 @@ class _AsyncDropdownMultipleState<T extends Object>
   late final Server server;
   CancelToken _cancelToken = CancelToken();
   late final String Function(T) textFormat;
+
   @override
   void initState() {
     server = context.read<Server>();
     _focusNode = widget.focusNode ?? FocusNode();
+
     textFormat = widget.textOnSelected ?? widget.textOnSearch;
     super.initState();
   }
@@ -303,8 +308,8 @@ class AsyncDropdown<T> extends StatefulWidget {
   final void Function(T? model)? onChanged;
   final void Function(T? model)? onSaved;
   final String? Function(T? model)? validator;
-  final String Function(T model) textOnSearch;
-  final String Function(T model)? textOnSelected;
+  final DropdownText<T> textOnSearch;
+  final DropdownText<T>? textOnSelected;
   final ModelClass modelClass;
   // final T Function(Map<String, dynamic>, {List included}) converter;
   final Widget? label;

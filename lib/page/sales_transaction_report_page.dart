@@ -95,7 +95,7 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
             width: 350,
             child: DateRangeFormField(
               initialDateRange: range,
-              datePickerOnly: true,
+              rangeType: DateRangeType(),
               onChanged: (newRange) {
                 range = newRange ??
                     DateTimeRange(start: DateTime.now(), end: DateTime.now());

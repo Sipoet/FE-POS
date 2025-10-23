@@ -6,6 +6,7 @@ import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/table_filter_form.dart';
+import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/file_saver.dart';
@@ -21,16 +22,17 @@ class _ItemReportPageState extends State<ItemReportPage>
     with AutomaticKeepAliveClientMixin, LoadingPopup, DefaultResponse {
   late Server server;
   String? _reportType;
-  bool _isDisplayTable = false;
   double minimumColumnWidth = 150;
-  late final PlutoGridStateManager _source;
-  late final Setting _setting;
+  PlutoGridStateManager? _source;
   late Flash flash;
+  late final List<TableColumn> columns;
+  List<ItemReport> _itemReports = [];
   Map _filter = {};
   @override
   void initState() {
     server = context.read<Server>();
-    _setting = context.read<Setting>();
+    final setting = context.read<Setting>();
+    columns = setting.tableColumn('itemReport');
     flash = Flash();
     super.initState();
   }
@@ -39,36 +41,34 @@ class _ItemReportPageState extends State<ItemReportPage>
   bool get wantKeepAlive => true;
 
   void _displayReport() async {
-    _reportType = 'json';
-    _source.setShowLoading(true);
-    _requestReport(
-      page: 1,
-      limit: 500,
-      // sortColumn: sortColumn,
-      // isAscending: isAscending,
-    ).then((response) {
-      // try {
-      if (response.statusCode != 200) {
-        return;
+    _source?.setShowLoading(true);
+    final sortData = SortData(
+        key: _source?.getSortedColumn?.field ?? 'item_code',
+        isAscending: _source?.getSortedColumn?.sort.isAscending ?? true);
+    _requestReport(page: 1, limit: 2000, sortData: sortData).then((response) {
+      try {
+        if (response.statusCode != 200) {
+          setState(() {
+            _itemReports = [];
+            _source?.setModels(_itemReports, columns);
+          });
+          return;
+        }
+        var data = response.data;
+        final initClass = ItemReportClass();
+        setState(() {
+          _itemReports = data['data'].map<ItemReport>((row) {
+            return initClass.fromJson(row);
+          }).toList();
+          _source?.setModels(_itemReports, columns);
+        });
+      } catch (error, stackTrace) {
+        debugPrint(error.toString());
+        debugPrint(stackTrace.toString());
       }
-      var data = response.data;
-      setState(() {
-        _isDisplayTable = true;
-      });
-      final models = data['data']
-          .map<ItemReport>((row) => ItemReportClass().fromJson(row))
-          .toList();
-      _source.removeAllRows();
-      for (final model in models) {
-        _source.appendModel(model, _setting.tableColumn('itemReport'));
-      }
-      // } catch (error, stackTrace) {
-      //   debugPrint(error.toString());
-      //   debugPrint(stackTrace.toString());
-      // }
-    }, onError: ((error, stackTrace) {
-      defaultErrorResponse(error: error);
-    })).whenComplete(() => _source.setShowLoading(false));
+    },
+        onError: ((error, stackTrace) => defaultErrorResponse(
+            error: error))).whenComplete(() => _source?.setShowLoading(false));
   }
 
   void _downloadReport() async {
@@ -77,22 +77,19 @@ class _ItemReportPageState extends State<ItemReportPage>
       ToastificationType.info,
     );
     _reportType = 'xlsx';
-    _requestReport().then(_downloadResponse,
+    _requestReport(limit: null).then(_downloadResponse,
         onError: ((error, stackTrace) => defaultErrorResponse(error: error)));
   }
 
   Future _requestReport(
-      {int page = 1,
-      int limit = 10,
-      TableColumn? sortColumn,
-      bool isAscending = true}) async {
-    String orderKey = sortColumn?.name ?? 'item_code';
+      {int page = 1, int? limit = 10, SortData? sortData}) async {
+    String orderKey = sortData?.key ?? 'item_code';
     Map<String, dynamic> param = {
       'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
+      'page[limit]': (limit ?? '').toString(),
       'report_type': _reportType ?? 'json',
       'include': 'item,supplier,brand,item_type',
-      'sort': '${isAscending ? '' : '-'}$orderKey',
+      'sort': '${sortData?.isAscending == false ? '-' : ''}$orderKey',
     };
     _filter.forEach((key, value) {
       param[key] = value;
@@ -126,43 +123,38 @@ class _ItemReportPageState extends State<ItemReportPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final padding = MediaQuery.of(context).padding;
-    final size = MediaQuery.of(context).size;
-    double tableHeight = size.height - padding.top - padding.bottom - 100;
-    tableHeight = tableHeight > 600 ? 600 : tableHeight;
-    final columns = _setting.tableColumn('itemReport');
 
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TableFilterForm(
-                showCanopy: false,
-                onSubmit: (filter) {
-                  _filter = filter;
-                  _displayReport();
-                },
-                onDownload: (filter) {
-                  _filter = filter;
-                  _downloadReport();
-                },
-                columns: columns),
-            const SizedBox(height: 10),
-            Visibility(visible: _isDisplayTable, child: const Divider()),
-            SizedBox(
-              height: tableHeight,
-              child: SyncDataTable<ItemReport>(
-                showSummary: true,
-                columns: columns,
-                showFilter: false,
-                onLoaded: (stateManager) => _source = stateManager,
-                fixedLeftColumns: 2,
-              ),
+    return VerticalBodyScroll(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TableFilterForm(
+              showCanopy: false,
+              onSubmit: (filter) {
+                _filter = filter;
+                _displayReport();
+              },
+              onDownload: (filter) {
+                _filter = filter;
+                _downloadReport();
+              },
+              columns: columns),
+          const SizedBox(height: 5),
+          const Divider(),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: bodyScreenHeight,
+            child: SyncDataTable<ItemReport>(
+              showFilter: false,
+              showSummary: true,
+              isPaginated: true,
+              rows: _itemReports,
+              columns: columns,
+              onLoaded: (stateManager) => _source = stateManager,
+              fixedLeftColumns: 1,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

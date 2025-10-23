@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+extension StringExt on String {
+  String toSnakeCase() => toLowerCase().replaceAll(' ', '_');
+}
+
 extension DateTimeExt on DateTime {
   DateTime beginningOfDay() {
     return copyWith(
@@ -60,6 +64,10 @@ extension DateTimeExt on DateTime {
 extension DateTimeRangeExt on DateTimeRange {
   bool get isSameDay {
     return start.isSameDay(end);
+  }
+
+  bool get isSameYear {
+    return start.year == end.year;
   }
 }
 

@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/hash_model.dart';
+import 'package:fe_pos/page/background_job_page.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
@@ -66,6 +67,7 @@ class _RefreshTablePageState extends State<RefreshTablePage> {
                       onPressed: () => refreshTable(),
                       icon: Icon(Icons.refresh))
                 ]),
+            Expanded(child: BackgroundJobPage()),
           ],
         ),
       ),

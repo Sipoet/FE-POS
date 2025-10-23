@@ -14,9 +14,6 @@ class HashModel extends Model {
     super.setFromJson(json, included: included);
     data = json;
   }
-
-  @override
-  String get modelValue => '';
 }
 
 class HashModelClass extends ModelClass<HashModel> {

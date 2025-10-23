@@ -121,7 +121,7 @@ class _HolidayFormPageState extends State<HolidayFormPage>
                           'Tanggal',
                           style: labelStyle,
                         ),
-                        datePickerOnly: true,
+                        dateType: DateType(),
                         onSaved: (newValue) {
                           if (newValue == null) {
                             return;

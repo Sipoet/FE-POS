@@ -4,14 +4,13 @@ class SortData {
   SortData({required this.key, required this.isAscending});
 }
 
-enum Operator {
+enum QueryOperator {
   contains,
   equals,
   not,
   lessThan,
   lessThanOrEqualTo,
   greaterThan,
-  between,
   greaterThanOrEqualTo;
 
   @override
@@ -31,20 +30,55 @@ enum Operator {
         return 'gt';
       case greaterThanOrEqualTo:
         return 'gte';
-      case between:
-        return 'btw';
     }
   }
 }
 
-class FilterData {
+abstract class FilterData {
   String key;
-  Operator operator;
-  String value;
-  FilterData(
-      {required this.key,
-      this.operator = Operator.equals,
+  FilterData({
+    required this.key,
+  });
+
+  MapEntry<String, String> toJson();
+
+  String _convertValue(dynamic value) {
+    if (value == null) {
+      return '';
+    }
+    if (value is DateTime) {
+      return value.toIso8601String();
+    }
+    return value.toString();
+  }
+}
+
+class ComparisonFilterData extends FilterData {
+  dynamic value;
+  QueryOperator operator;
+  ComparisonFilterData(
+      {required super.key,
+      this.operator = QueryOperator.equals,
       required this.value});
+
+  @override
+  MapEntry<String, String> toJson() {
+    final jsonKey = 'filter[$key][${operator.toString()}]';
+    final jsonValue = _convertValue(value);
+    return MapEntry(jsonKey, jsonValue);
+  }
+}
+
+class BetweenFilterData extends FilterData {
+  List<dynamic> values;
+
+  BetweenFilterData({required super.key, required this.values});
+  @override
+  MapEntry<String, String> toJson() {
+    final jsonValue =
+        values.map<String>((value) => _convertValue(value)).join(',');
+    return MapEntry('filter[$key][btw]', jsonValue);
+  }
 }
 
 class QueryData {

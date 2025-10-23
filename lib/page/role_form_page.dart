@@ -258,7 +258,7 @@ class _RoleFormPageState extends State<RoleFormPage>
         SizedBox(
           width: 600,
           child: DateRangeFormField(
-            datePickerOnly: true,
+            rangeType: DateRangeType(),
             initialDateRange: DateTimeRange(
                 start: groupWorkSchedule.beginActiveAt,
                 end: groupWorkSchedule.endActiveAt),

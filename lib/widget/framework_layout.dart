@@ -218,6 +218,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                   ),
                 ]),
             Menu(
+                icon: Icons.show_chart,
+                isClosed: true,
+                label: 'Laporan Pengeluaran',
+                key: 'monthlyExpenseReport',
+                isDisabled:
+                    !setting.isAuthorize('monthlyExpenseReport', 'index'),
+                pageFunct: () => const MonthlyExpenseReportPage()),
+            Menu(
                 key: 'humanResourceGroup',
                 icon: Icons.people,
                 label: 'Laporan SDM',

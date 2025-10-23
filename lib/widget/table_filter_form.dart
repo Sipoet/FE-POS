@@ -36,6 +36,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
 
   final Map _textController = {};
   final Map _numComparison = {};
+  Map<String, dynamic> val = {};
 
   @override
   void initState() {
@@ -91,8 +92,9 @@ class _TableFilterFormState extends State<TableFilterForm> {
                       .map<Widget>((column) => formFilter(column))
                       .toList(),
                 ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
+                Wrap(
+                  runSpacing: 10.0,
+                  spacing: 10.0,
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(10.0),
@@ -119,14 +121,22 @@ class _TableFilterFormState extends State<TableFilterForm> {
                             child: const Text('Download')),
                       ),
                     ),
-                    // Padding(
-                    //   padding: const EdgeInsets.all(10.0),
-                    //   child: ElevatedButton(
-                    //       onPressed: () {
-                    //         controller.removeAllFilter();
-                    //       },
-                    //       child: const Text('Hapus Filter')),
-                    // )
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: ElevatedButton(
+                          onPressed: () {
+                            controller.removeAllFilter();
+                            for (final controller in _textController.values) {
+                              controller.clear();
+                            }
+                            setState(() {
+                              for (final key in val.keys) {
+                                val[key] = null;
+                              }
+                            });
+                          },
+                          child: const Text('Reset')),
+                    )
                   ],
                 ),
               ],
@@ -148,9 +158,9 @@ class _TableFilterFormState extends State<TableFilterForm> {
       case TableColumnType.boolean:
         return boolFilter(column);
       case TableColumnType.date:
-        return dateFilter(column, datePickerOnly: true);
+        return dateFilter(column, DateRangeType());
       case TableColumnType.datetime:
-        return dateFilter(column);
+        return dateFilter(column, DateTimeRangeType());
       case TableColumnType.enums:
         return enumFilter(column);
       case TableColumnType.model:
@@ -187,14 +197,13 @@ class _TableFilterFormState extends State<TableFilterForm> {
     }
   }
 
-  Map<String, bool?> val = {};
   Widget boolFilter(TableColumn column) {
     return SizedBox(
       width: 300,
       child: CheckboxListTile(
           title: Text(column.humanizeName),
           controlAffinity: ListTileControlAffinity.leading,
-          value: val[column.name],
+          value: val[column.name] as bool?,
           tristate: true,
           onChanged: (value) {
             setState(() {
@@ -209,12 +218,14 @@ class _TableFilterFormState extends State<TableFilterForm> {
     );
   }
 
-  Widget dateFilter(TableColumn column, {bool datePickerOnly = false}) {
+  Widget dateFilter(TableColumn column, RangeType rangeType) {
+    _textController[column.name] ??= DateRangeEditingController(null);
     return SizedBox(
       width: 300,
       height: 50,
       child: DateRangeFormField(
-        datePickerOnly: datePickerOnly,
+        rangeType: rangeType,
+        controller: _textController[column.name],
         label: Text(column.humanizeName, style: _labelStyle),
         helpText: column.name,
         key: ValueKey(column.name),
@@ -233,8 +244,10 @@ class _TableFilterFormState extends State<TableFilterForm> {
 
   Widget enumFilter(TableColumn column) {
     final enumList = widget.enums[column.name];
+    _textController[column.name] ??= TextEditingController();
     return DropdownMenu<String>(
         width: 300,
+        controller: _textController[column.name],
         inputDecorationTheme: const InputDecorationTheme(
             contentPadding: EdgeInsets.all(12), border: OutlineInputBorder()),
         key: ValueKey(column.name),
@@ -259,6 +272,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
   }
 
   Widget textFilter(TableColumn column) {
+    _textController[column.name] ??= TextEditingController();
     return SizedBox(
       width: 300,
       height: 50,
@@ -278,6 +292,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
           }
           controller.setFilter(column.name, 'like', newValue);
         },
+        controller: _textController[column.name],
         decoration: InputDecoration(
             contentPadding: const EdgeInsets.all(12),
             label: Text(column.humanizeName, style: _labelStyle),
@@ -289,6 +304,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
   Widget linkFilter(TableColumn column) {
     final modelName = column.inputOptions['model_name'] ?? '';
     final attributeKey = column.inputOptions['attribute_key'] ?? 'id';
+
     return Container(
       width: 300,
       constraints: const BoxConstraints(minHeight: 50),
@@ -296,7 +312,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
         modelClass: HashModelClass(),
         textOnSearch: (value) =>
             "${value['id'].toString()} - ${value['attributes'][attributeKey]}",
-        textOnSelected: (value) => value.modelValue.toString(),
+        textOnSelected: (value) => value.modelValue,
         label: Text(column.humanizeName, style: _labelStyle),
         request: (
             {int page = 1,
@@ -313,8 +329,12 @@ class _TableFilterFormState extends State<TableFilterForm> {
               },
               cancelToken: cancelToken);
         },
+        selecteds: val[column.name] as List<HashModel>? ?? <HashModel>[],
         attributeKey: attributeKey,
         onSaved: (value) {
+          setState(() {
+            val[column.name] = value;
+          });
           if (value != null && value.isNotEmpty) {
             final decoratedValue =
                 value.map<String>((e) => e.id.toString()).join(',');
@@ -457,5 +477,11 @@ class TableFilterFormController extends ChangeNotifier {
       });
     });
     return newFilter;
+  }
+}
+
+extension FilterText on TextEditingController {
+  void clear() {
+    text = '';
   }
 }

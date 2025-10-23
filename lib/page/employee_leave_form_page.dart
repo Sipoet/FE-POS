@@ -130,7 +130,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                     height: 10,
                   ),
                   DateFormField(
-                      datePickerOnly: true,
+                      dateType: DateType(),
                       helpText: 'Tanggal Cuti',
                       label: const Text(
                         'Tanggal Cuti',
@@ -193,7 +193,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                               'Tanggal Ganti Hari',
                               style: labelStyle,
                             ),
-                            datePickerOnly: true,
+                            dateType: DateType(),
                             helpText: 'Tanggal Ganti Hari',
                             onSaved: (newValue) {
                               if (newValue == null) {

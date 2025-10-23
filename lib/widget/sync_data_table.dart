@@ -27,6 +27,7 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
   final OnSelectedCallback? onSelected;
   final OnRowDoubleTapCallback? onRowDoubleTap;
   final bool showFilter;
+  final bool isPaginated;
 
   const SyncDataTable({
     super.key,
@@ -35,6 +36,7 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
     this.showFilter = true,
     List<TableColumn>? columns,
     List<T>? rows,
+    this.isPaginated = false,
     this.enums = const {},
     this.onRowChecked,
     this.onRowDoubleTap,
@@ -85,7 +87,9 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
         final stateManager = event.stateManager;
         stateManager.setShowColumnFilter(widget.showFilter);
         stateManager.setShowColumnFooter(widget.showSummary);
-        stateManager.columnFooterHeight = 115.0;
+        setState(() {
+          stateManager.columnFooterHeight = 150.0;
+        });
         if (widget.onLoaded is Function) {
           widget.onLoaded!(stateManager);
         }
@@ -98,6 +102,12 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
       onSelected: widget.onSelected,
       onRowDoubleTap: widget.onRowDoubleTap,
       onRowChecked: widget.onRowChecked,
+      createFooter: (stateManager) {
+        return PlutoPagination(
+          stateManager,
+          pageSizeToMove: 1,
+        );
+      },
       configuration: PlutoGridConfiguration(
           scrollbar: const PlutoGridScrollbarConfig(
             isAlwaysShown: true,
