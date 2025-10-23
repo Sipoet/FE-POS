@@ -122,7 +122,7 @@ class _BookPayslipLineFormPageState extends State<BookPayslipLineFormPage>
                         'Tanggal',
                         style: labelStyle,
                       ),
-                      datePickerOnly: true,
+                      dateType: DateType(),
                       onSaved: (newValue) {
                         if (newValue == null) {
                           return;

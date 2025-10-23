@@ -68,7 +68,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                         children: [
                           DateRangeFormField(
                             focusNode: _focusNode,
-                            datePickerOnly: true,
+                            rangeType: DateRangeType(),
                             key: const ValueKey('generate_payslip-periode'),
                             label: const Text(
                               'Periode',

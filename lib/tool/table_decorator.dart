@@ -439,6 +439,8 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
                   Offstage(
                     offstage: tableColumn.type.isPercentage(),
                     child: PlutoAggregateColumnFooter(
+                      iterateRowType:
+                          PlutoAggregateColumnIterateRowType.filtered,
                       padding: const EdgeInsets.only(top: 5.0),
                       rendererContext: rendererContext,
                       formatAsCurrency: tableColumn.type.isMoney(),
@@ -465,6 +467,7 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
                     ),
                   ),
                   PlutoAggregateColumnFooter(
+                    iterateRowType: PlutoAggregateColumnIterateRowType.filtered,
                     padding: const EdgeInsets.only(top: 5.0),
                     rendererContext: rendererContext,
                     formatAsCurrency: tableColumn.type.isMoney(),
@@ -490,6 +493,7 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
                     },
                   ),
                   PlutoAggregateColumnFooter(
+                    iterateRowType: PlutoAggregateColumnIterateRowType.filtered,
                     padding: const EdgeInsets.only(top: 5.0),
                     rendererContext: rendererContext,
                     formatAsCurrency: tableColumn.type.isMoney(),
@@ -515,6 +519,7 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
                     },
                   ),
                   PlutoAggregateColumnFooter(
+                    iterateRowType: PlutoAggregateColumnIterateRowType.filtered,
                     padding: const EdgeInsets.only(top: 5.0),
                     rendererContext: rendererContext,
                     formatAsCurrency: tableColumn.type.isMoney(),

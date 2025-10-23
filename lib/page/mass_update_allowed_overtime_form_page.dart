@@ -72,7 +72,7 @@ class _MassUpdateAllowedOvertimeFormPageState
                         initialValue: _dateTime,
                         label: const Text('Tanggal', style: labelStyle),
                         helpText: 'Tanggal',
-                        datePickerOnly: true,
+                        dateType: DateType(),
                         onSaved: (value) {
                           _dateTime = value ?? _dateTime;
                         },

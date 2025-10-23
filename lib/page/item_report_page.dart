@@ -4,7 +4,7 @@ import 'package:fe_pos/model/item_report.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
-import 'package:fe_pos/widget/custom_async_data_table.dart';
+import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/table_filter_form.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
@@ -22,16 +22,19 @@ class ItemReportPage extends StatefulWidget {
 class _ItemReportPageState extends State<ItemReportPage>
     with AutomaticKeepAliveClientMixin, LoadingPopup, DefaultResponse {
   late Server server;
-  String _searchText = '';
+  String? _reportType;
   double minimumColumnWidth = 150;
-  late final PlutoGridStateManager _source;
-  late final Setting _setting;
+  PlutoGridStateManager? _source;
   late Flash flash;
+  late final List<TableColumn> columns;
+  List<ItemReport> _itemReports = [];
   Map _filter = {};
+  String _searchText = '';
   @override
   void initState() {
     server = context.read<Server>();
-    _setting = context.read<Setting>();
+    final setting = context.read<Setting>();
+    columns = setting.tableColumn('itemReport');
     flash = Flash();
     super.initState();
   }
@@ -39,37 +42,36 @@ class _ItemReportPageState extends State<ItemReportPage>
   @override
   bool get wantKeepAlive => true;
 
-  Future<DataTableResponse<ItemReport>> _displayReport(
-      {DataTableRequest? request, CancelToken? cancelToken}) async {
-    if (request == null) {
-      _source.setPage(1);
-      _source.refreshTable();
-      return DataTableResponse<ItemReport>(models: []);
-    }
-
-    _source.setShowLoading(true);
-    return _requestReport(
-      page: request.page,
-      limit: 15,
-      cancelToken: request.cancelToken,
-      sorts: request.sorts,
-    ).then((response) {
-      if (response.statusCode != 200) {
-        return DataTableResponse<ItemReport>(models: []);
+  void _displayReport() async {
+    _source?.setShowLoading(true);
+    final sortData = SortData(
+        key: _source?.getSortedColumn?.field ?? 'item_code',
+        isAscending: _source?.getSortedColumn?.sort.isAscending ?? true);
+    _reportType = 'json';
+    _requestReport(page: 1, limit: 2000, sortData: sortData).then((response) {
+      try {
+        if (response.statusCode != 200) {
+          setState(() {
+            _itemReports = [];
+            _source?.setModels(_itemReports, columns);
+          });
+          return;
+        }
+        var data = response.data;
+        final initClass = ItemReportClass();
+        setState(() {
+          _itemReports = data['data'].map<ItemReport>((row) {
+            return initClass.fromJson(row);
+          }).toList();
+          _source?.setModels(_itemReports, columns);
+        });
+      } catch (error, stackTrace) {
+        debugPrint(error.toString());
+        debugPrint(stackTrace.toString());
       }
-      var data = response.data;
-      final models = data['data']
-          .map<ItemReport>((row) => ItemReportClass().fromJson(row))
-          .toList();
-
-      return DataTableResponse<ItemReport>(
-          models: models, totalPage: response.data['meta']['total_pages']);
-    }, onError: ((error, stackTrace) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse<ItemReport>(models: []);
-    })).whenComplete(() {
-      _source.setShowLoading(false);
-    });
+    },
+        onError: ((error, stackTrace) => defaultErrorResponse(
+            error: error))).whenComplete(() => _source?.setShowLoading(false));
   }
 
   void _downloadReport() async {
@@ -77,33 +79,31 @@ class _ItemReportPageState extends State<ItemReportPage>
       const Text('Dalam proses.'),
       ToastificationType.info,
     );
-    _requestReport(reportType: 'xlsx').then(_downloadResponse,
+    _reportType = 'xlsx';
+    _requestReport(limit: null).then(_downloadResponse,
         onError: ((error, stackTrace) => defaultErrorResponse(error: error)));
   }
 
-  Future _requestReport({
-    int page = 1,
-    String reportType = 'json',
-    int limit = 10,
-    CancelToken? cancelToken,
-    List<SortData> sorts = const [],
-  }) async {
-    final sort = sorts.isEmpty
-        ? SortData(key: 'item_code', isAscending: true)
-        : sorts.first;
+  Future _requestReport(
+      {int page = 1,
+      int? limit = 10,
+      CancelToken? cancelToken,
+      SortData? sortData}) async {
+    String orderKey = sortData?.key ?? 'item_code';
     Map<String, dynamic> param = {
       'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'report_type': reportType,
-      'search_text': _searchText,
+      'page[limit]': (limit ?? '').toString(),
+      'report_type': _reportType ?? 'json',
       'include': 'item,supplier,brand,item_type',
-      'sort': sort.isAscending ? sort.key : "-${sort.key}",
+      'sort': '${sortData?.isAscending == false ? '-' : ''}$orderKey',
     };
     _filter.forEach((key, value) {
       param[key] = value;
     });
     return server.get('item_reports',
-        queryParam: param, type: reportType, cancelToken: cancelToken);
+        queryParam: param,
+        type: _reportType ?? 'json',
+        cancelToken: cancelToken);
   }
 
   void _downloadResponse(response) async {
@@ -151,7 +151,6 @@ class _ItemReportPageState extends State<ItemReportPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final columns = _setting.tableColumn('itemReport');
     return VerticalBodyScroll(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,8 +166,9 @@ class _ItemReportPageState extends State<ItemReportPage>
                 _downloadReport();
               },
               columns: columns),
-          const SizedBox(height: 10),
+          const SizedBox(height: 5),
           const Divider(),
+          const SizedBox(height: 10),
           Row(mainAxisAlignment: MainAxisAlignment.end, children: [
             IconButton(
               onPressed: () {
@@ -189,14 +189,14 @@ class _ItemReportPageState extends State<ItemReportPage>
               ),
             ),
           ]),
-          const SizedBox(height: 10),
           SizedBox(
             height: bodyScreenHeight,
-            child: CustomAsyncDataTable2<ItemReport>(
-              columns: columns,
+            child: SyncDataTable<ItemReport>(
               showFilter: false,
-              fetchData: (DataTableRequest request) =>
-                  _displayReport(request: request),
+              showSummary: true,
+              isPaginated: true,
+              rows: _itemReports,
+              columns: columns,
               onLoaded: (stateManager) => _source = stateManager,
               fixedLeftColumns: 1,
             ),

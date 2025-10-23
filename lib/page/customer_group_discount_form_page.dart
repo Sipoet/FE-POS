@@ -178,7 +178,7 @@ class _CustomerGroupDiscountFormPageState
                           'Tanggal Mulai Aktif',
                           style: labelStyle,
                         ),
-                        datePickerOnly: true,
+                        dateType: DateType(),
                         onSaved: (newValue) {
                           if (newValue == null) {
                             return;
@@ -214,7 +214,7 @@ class _CustomerGroupDiscountFormPageState
                           'Tanggal terakhir Aktif',
                           style: labelStyle,
                         ),
-                        datePickerOnly: true,
+                        dateType: DateType(),
                         onSaved: (newValue) {
                           if (newValue == null) {
                             return;

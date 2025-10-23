@@ -186,7 +186,7 @@ class _BookEmployeeAttendanceFormPageState
                         'Tanggal',
                         style: labelStyle,
                       ),
-                      datePickerOnly: true,
+                      rangeType: DateRangeType(),
                       onSaved: (newValue) {
                         if (newValue == null) {
                           return;

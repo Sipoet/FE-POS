@@ -144,7 +144,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                             'Periode',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          datePickerOnly: true,
+                          rangeType: DateRangeType(),
                           initialDateRange: _dateRange,
                           onChanged: (range) =>
                               _dateRange = range ?? _dateRange,
