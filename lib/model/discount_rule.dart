@@ -9,7 +9,7 @@ class DiscountRule extends Model {
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
-    var attributes = json['attributes'];
+    // var attributes = json['attributes'];
     super.setFromJson(json, included: included);
   }
 

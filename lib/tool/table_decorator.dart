@@ -597,6 +597,16 @@ extension TableStateMananger on PlutoGridStateManager {
     eventManager!.addEvent(PlutoGridChangeColumnSortEvent(
         column: columns.first, oldSort: PlutoColumnSort.none));
   }
+
+  SortData? get sortData {
+    if (getSortedColumn == null) {
+      return null;
+    } else {
+      return SortData(
+          key: getSortedColumn!.field,
+          isAscending: getSortedColumn!.sort.isAscending);
+    }
+  }
 }
 
 class PlutoFilterTypeNot implements PlutoFilterType {

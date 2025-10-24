@@ -22,7 +22,6 @@ class ItemReportPage extends StatefulWidget {
 class _ItemReportPageState extends State<ItemReportPage>
     with AutomaticKeepAliveClientMixin, LoadingPopup, DefaultResponse {
   late Server server;
-  String? _reportType;
   double minimumColumnWidth = 150;
   PlutoGridStateManager? _source;
   late Flash flash;
@@ -44,11 +43,9 @@ class _ItemReportPageState extends State<ItemReportPage>
 
   void _displayReport() async {
     _source?.setShowLoading(true);
-    final sortData = SortData(
-        key: _source?.getSortedColumn?.field ?? 'item_code',
-        isAscending: _source?.getSortedColumn?.sort.isAscending ?? true);
-    _reportType = 'json';
-    _requestReport(page: 1, limit: 2000, sortData: sortData).then((response) {
+
+    _requestReport(page: 1, limit: 2000, sortData: _source?.sortData).then(
+        (response) {
       try {
         if (response.statusCode != 200) {
           setState(() {
@@ -79,21 +76,21 @@ class _ItemReportPageState extends State<ItemReportPage>
       const Text('Dalam proses.'),
       ToastificationType.info,
     );
-    _reportType = 'xlsx';
-    _requestReport(limit: null).then(_downloadResponse,
+    _requestReport(limit: null, reportType: 'xlsx').then(_downloadResponse,
         onError: ((error, stackTrace) => defaultErrorResponse(error: error)));
   }
 
   Future _requestReport(
       {int page = 1,
       int? limit = 10,
+      String reportType = 'json',
       CancelToken? cancelToken,
       SortData? sortData}) async {
     String orderKey = sortData?.key ?? 'item_code';
     Map<String, dynamic> param = {
       'page[page]': page.toString(),
       'page[limit]': (limit ?? '').toString(),
-      'report_type': _reportType ?? 'json',
+      'report_type': reportType,
       'include': 'item,supplier,brand,item_type',
       'sort': '${sortData?.isAscending == false ? '-' : ''}$orderKey',
     };
@@ -101,9 +98,7 @@ class _ItemReportPageState extends State<ItemReportPage>
       param[key] = value;
     });
     return server.get('item_reports',
-        queryParam: param,
-        type: _reportType ?? 'json',
-        cancelToken: cancelToken);
+        queryParam: param, type: reportType, cancelToken: cancelToken);
   }
 
   void _downloadResponse(response) async {
