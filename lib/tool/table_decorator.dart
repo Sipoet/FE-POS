@@ -563,7 +563,7 @@ extension TableStateMananger on PlutoGridStateManager {
     notifyListeners();
   }
 
-  void setModels(models, List<TableColumn> tableColumns) {
+  void setModels(List models, List<TableColumn> tableColumns) {
     if (rows.isNotEmpty) {
       removeAllRows();
     }

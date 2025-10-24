@@ -279,8 +279,9 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
   }
 
   String bottomText(double valueX, TitleMeta meta) {
+    final formattedX = xFormatDetail(valueX);
     if (valueX == meta.min) {
-      _lastBottomText = xFormatDetail(valueX);
+      _lastBottomText = formattedX;
       return _lastBottomText;
     }
     if ((meta.max - valueX).abs() <= 0.01) {
@@ -288,20 +289,22 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
       return _lastBottomText;
     }
 
-    if (xFormatDetail(valueX) == xFormatDetail(meta.max)) {
+    if (formattedX == xFormatDetail(meta.max) ||
+        _lastBottomText == formattedX) {
       return '';
     }
+
     double lengthSep = (((meta.max - meta.min) / widget.xTitleDividerTotal) *
             (controller.visibleBottomTitles.length + 1))
         .ceilToDouble();
     if (controller.visibleBottomTitles.contains(valueX)) {
-      return xFormatDetail(valueX);
+      return formattedX;
     }
     if (controller.visibleBottomTitles.length <= widget.xTitleDividerTotal &&
-        _lastBottomText != xFormatDetail(valueX) &&
+        _lastBottomText != formattedX &&
         (valueX - meta.min) >= (lengthSep - 0.01)) {
       controller.visibleBottomTitles.add(valueX);
-      _lastBottomText = xFormatDetail(valueX);
+      _lastBottomText = formattedX;
 
       return _lastBottomText;
     }

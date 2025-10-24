@@ -4,6 +4,7 @@ import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
@@ -33,6 +34,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   late Flash flash;
   String _groupPeriod = 'daily';
   String _generatedGroupPeriod = 'daily';
+  PlutoGridStateManager? _source;
 
   String fieldKey = 'sales_total';
   static const TextStyle _filterLabelStyle =
@@ -50,7 +52,9 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   bool _separatePurchaseYear = false;
   String _groupType = 'period';
   List<String> _lastPurchaseYears = [];
-  List<HashModel> _groupModels = [];
+
+  List<TableColumn> _columns = [];
+
   @override
   bool get wantKeepAlive => true;
   static const Map<String, String> groupKeyLocales = {
@@ -73,11 +77,14 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
     'online_total': 'Total Online Transfer(Rp)',
   };
 
+  late final TabManager tabManager;
+
   @override
   void initState() {
     flash = Flash();
     server = context.read<Server>();
     setting = context.read<Setting>();
+    tabManager = context.read<TabManager>();
     super.initState();
     Future.delayed(Duration.zero, () => _refreshGraph());
   }
@@ -133,7 +140,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
     for (var detail in data['data']) {
       String name, description;
       if (detail['last_purchase_year'] == null) {
-        name = detail['name'] ?? '';
+        name = (detail['name'] ?? '').toString();
         description = detail['description'] ?? '';
       } else {
         name = "${detail['name']} (${detail['last_purchase_year']})";
@@ -144,7 +151,60 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
       lines[lineTitle] = convertDataToSpots(detail['spots'], identifierList);
     }
     setState(() {
-      _groupModels = convertResponseToHashModels(data);
+      _columns = [
+        TableColumn<HashModel>(
+            clientWidth: 180,
+            name: 'group_key',
+            canFilter: true,
+            renderBody: (model) => Text(model.cell.value.toString()),
+            humanizeName: groupKeyLocales[_groupType] ?? ''),
+        if (_groupType != 'period' || _groupPeriod != 'dow')
+          TableColumn(
+              clientWidth: 180,
+              name: 'description',
+              canFilter: true,
+              renderBody: (model) =>
+                  Text(model.row.cells['description']?.value.toString() ?? ''),
+              humanizeName: 'Deskripsi'),
+        if (_separatePurchaseYear)
+          TableColumn<HashModel>(
+              clientWidth: 180,
+              name: 'last_purchase_year',
+              type: TableColumnType.text,
+              humanizeName: 'Tahun Beli Terakhir'),
+        if (fieldKey == 'sales_through_rate')
+          TableColumn<HashModel>(
+              clientWidth: 180,
+              name: 'start_stock',
+              type: TableColumnType.number,
+              humanizeName: 'Stok Awal'),
+        if (fieldKey == 'sales_through_rate')
+          TableColumn<HashModel>(
+              clientWidth: 200,
+              name: 'increase_period_stock',
+              type: TableColumnType.number,
+              humanizeName: 'Tambahan Stok(Periode)'),
+        if (fieldKey == 'sales_through_rate')
+          TableColumn<HashModel>(
+              clientWidth: 180,
+              name: 'sales_quantity',
+              type: TableColumnType.number,
+              humanizeName: 'Jumlah Penjualan'),
+        TableColumn(
+            clientWidth: 220,
+            name: 'total',
+            type: basedValueType(),
+            canSort: true,
+            humanizeName: fieldKeyLocales[fieldKey] ?? ''),
+      ];
+      final groupModels = convertResponseToHashModels(data);
+
+      if (_source != null) {
+        _source?.setTableColumns(_columns, tabManager: tabManager);
+        _source?.setModels(groupModels, _columns);
+        _source?.sortAscending(_source!.columns.first);
+      }
+
       salesReportController.setChartData(
           lines: lines,
           filteredDetails: filteredDetails,
@@ -163,7 +223,9 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
       for (var detail in data['data']) {
         for (var spot in detail['spots']) {
           models.add(HashModel(data: {
-            'group_key': datePkFormat(spot[0], identifierList, startDate),
+            'group_key': datePkFormat(
+                spot[0].toString(), identifierList, startDate,
+                shortText: false),
             'value': spot[0],
             'total': spot[1],
             'description': detail['description'] ?? '',
@@ -239,21 +301,35 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
     return datePkFormat(datePk, identifierList, startDate);
   }
 
-  String datePkFormat(String datePk, List identifierList, DateTime startDate) {
+  String datePkFormat(String datePk, List identifierList, DateTime startDate,
+      {bool shortText = true}) {
     DateTime date = DateTime.tryParse(datePk) ?? DateTime.now();
     switch (_generatedGroupPeriod) {
       case 'hourly':
         return TimeOfDay(hour: int.parse(datePk), minute: 0).format24Hour();
       case 'dow':
-        return [
-          'Min',
-          'Sen',
-          'Sel',
-          'Rab',
-          'Kam',
-          'Jum',
-          'Sab',
-        ][int.parse(datePk)];
+        if (shortText) {
+          return [
+            'Min',
+            'Sen',
+            'Sel',
+            'Rab',
+            'Kam',
+            'Jum',
+            'Sab',
+          ][int.parse(datePk)];
+        } else {
+          return [
+            '(7)Minggu',
+            '(1)Senin',
+            '(2)Selasa',
+            '(3)Rabu',
+            '(4)Kamis',
+            '(5)Jumat',
+            '(6)Sabtu',
+          ][int.parse(datePk)];
+        }
+
       case 'daily':
         if (date.year == startDate.year) {
           return date.format(pattern: 'dd MMM');
@@ -474,64 +550,14 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
           ),
           Text('Grouped Result',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          Visibility(
-            visible: !salesReportController.isLoading,
-            child: SizedBox(
-                height: bodyScreenHeight,
-                child: SyncDataTable<HashModel>(
-                  columns: [
-                    TableColumn<HashModel>(
-                        clientWidth: 180,
-                        name: 'group_key',
-                        canFilter: true,
-                        // getValue: (model) => model.data['value'],
-                        renderBody: (model) =>
-                            Text(model.cell.value.toString()),
-                        humanizeName: groupKeyLocales[_groupType] ?? ''),
-                    TableColumn(
-                        clientWidth: 180,
-                        name: 'description',
-                        canFilter: true,
-                        renderBody: (model) => Text(
-                            model.row.cells['description']?.value.toString() ??
-                                ''),
-                        humanizeName: groupKeyLocales[_groupType] ?? ''),
-                    if (_separatePurchaseYear)
-                      TableColumn<HashModel>(
-                          clientWidth: 180,
-                          name: 'last_purchase_year',
-                          type: TableColumnType.text,
-                          humanizeName: 'Tahun Beli Terakhir'),
-                    if (fieldKey == 'sales_through_rate')
-                      TableColumn<HashModel>(
-                          clientWidth: 180,
-                          name: 'start_stock',
-                          type: TableColumnType.number,
-                          humanizeName: 'Stok Awal'),
-                    if (fieldKey == 'sales_through_rate')
-                      TableColumn<HashModel>(
-                          clientWidth: 200,
-                          name: 'increase_period_stock',
-                          type: TableColumnType.number,
-                          humanizeName: 'Tambahan Stok(Periode)'),
-                    if (fieldKey == 'sales_through_rate')
-                      TableColumn<HashModel>(
-                          clientWidth: 180,
-                          name: 'sales_quantity',
-                          type: TableColumnType.number,
-                          humanizeName: 'Jumlah Penjualan'),
-                    TableColumn(
-                        clientWidth: 180,
-                        name: 'total',
-                        canSort: true,
-                        renderBody: (model) =>
-                            Text(_tooltipFormat(model.cell.value.toDouble())),
-                        humanizeName: fieldKeyLocales[fieldKey] ?? ''),
-                  ],
-                  showSummary: true,
-                  rows: _groupModels,
-                )),
-          ),
+          SizedBox(
+              height: bodyScreenHeight,
+              child: SyncDataTable<HashModel>(
+                columns: _columns,
+                isPaginated: true,
+                onLoaded: (stateManager) => _source = stateManager,
+                showSummary: true,
+              )),
           const SizedBox(
             height: 10,
           ),
