@@ -1,5 +1,6 @@
 library;
 
+import 'package:collection/collection.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/server.dart';
@@ -82,12 +83,20 @@ class _AsyncDropdownMultipleState<T extends Model>
   late final Server server;
   CancelToken _cancelToken = CancelToken();
   late final String Function(T) textFormat;
-
+  final option = SortableWrapOptions();
   @override
   void initState() {
     server = context.read<Server>();
     _focusNode = widget.focusNode ?? FocusNode();
-
+    option.draggableFeedbackBuilder = (Widget child) {
+      return Material(
+        elevation: 18.0,
+        shadowColor: Colors.grey,
+        color: Colors.transparent,
+        borderRadius: BorderRadius.zero,
+        child: Card(child: child),
+      );
+    };
     textFormat = widget.textOnSelected ?? widget.textOnSearch;
     super.initState();
   }
@@ -154,56 +163,61 @@ class _AsyncDropdownMultipleState<T extends Model>
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               )
-            : IgnorePointer(ignoring: true, child: SizedBox());
-        return SortableWrap(
-            onSorted: (int oldIndex, int newIndex) {
-              setState(() {
-                var item = selectedItems[oldIndex];
-                selectedItems.removeAt(oldIndex);
-                selectedItems.insert(newIndex, item);
-              });
-            },
-            spacing: 10,
-            runSpacing: 15,
-            children: List<Widget>.generate(
-                selectedItems.length > widget.selectedDisplayLimit
-                    ? widget.selectedDisplayLimit
-                    : selectedItems.length, (index) {
-              final item = selectedItems[index];
-              return Container(
-                padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 5),
-                decoration: BoxDecoration(
+            : IgnorePointer(
+                ignoring: true,
+                child: SizedBox(
+                  height: 1,
+                  width: 1,
+                ));
+        return Tooltip(
+          message: selectedItems.map(textFormat).join(', '),
+          child: SortableWrap(
+              onSorted: (int oldIndex, int newIndex) {
+                setState(() {
+                  var item = selectedItems[oldIndex];
+                  selectedItems.removeAt(oldIndex);
+                  selectedItems.insert(newIndex, item);
+                });
+              },
+              spacing: 10,
+              runSpacing: 15,
+              children: selectedItems
+                  .take([widget.selectedDisplayLimit, selectedItems.length].min)
+                  .mapIndexed<Widget>((index, item) {
+                return Card(
                   color: colorScheme.primaryContainer,
-                  borderRadius:
-                      const BorderRadius.all(Radius.elliptical(10, 10)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                        child: Text(
-                      textFormat(item),
-                      style: const TextStyle(
-                          decoration: TextDecoration.none,
-                          fontSize: 14,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.black),
-                    )),
-                    IconButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedItems.remove(item);
-                            if (widget.onChanged != null) {
-                              widget.onChanged!(selectedItems);
-                            }
-                          });
-                        },
-                        icon: const Icon(Icons.close_rounded))
-                  ],
-                ),
-              );
-            })
-              ..add(moreWidget));
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                            child: Text(
+                          textFormat(item),
+                          style: const TextStyle(
+                              decoration: TextDecoration.none,
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.black),
+                        )),
+                        IconButton(
+                            onPressed: () {
+                              setState(() {
+                                selectedItems.remove(item);
+                                if (widget.onChanged != null) {
+                                  widget.onChanged!(selectedItems);
+                                }
+                              });
+                            },
+                            icon: const Icon(Icons.close_rounded))
+                      ],
+                    ),
+                  ),
+                );
+              }).toList()
+                ..add(moreWidget)),
+        );
       },
       popupProps: isMobile()
           ? PopupPropsMultiSelection.dialog(
