@@ -44,6 +44,7 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
   }
 
   Future<DataTableResponse<Brand>> fetchBrands(QueryRequest request) {
+    _source.setShowLoading(true);
     request.searchText = _searchText;
     request.cancelToken = cancelToken;
 
@@ -56,7 +57,7 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
           description: trace.toString(),
           messageType: ToastificationType.error);
       return DataTableResponse<Brand>(totalPage: 0, models: []);
-    });
+    }).whenComplete(() => _source.setShowLoading(false));
   }
 
   void searchChanged(value) {

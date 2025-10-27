@@ -42,6 +42,7 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
   }
 
   Future<DataTableResponse<Supplier>> fetchSuppliers(QueryRequest request) {
+    _source.setShowLoading(true);
     request.searchText = _searchText;
     request.cancelToken = cancelToken;
 
@@ -52,7 +53,7 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
     }, onError: (error, stackTrace) {
       defaultErrorResponse(error: error, valueWhenError: []);
       return DataTableResponse<Supplier>(models: []);
-    });
+    }).whenComplete(() => _source.setShowLoading(false));
   }
 
   void searchChanged(value) {

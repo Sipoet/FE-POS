@@ -67,6 +67,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
   }
 
   Future<DataTableResponse<Item>> fetchItems(request) {
+    _source.setShowLoading(true);
     request.searchText = _searchText;
     request.cancelToken = cancelToken;
     request.include = ['supplier', 'brand', 'item_type'];
@@ -78,7 +79,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
     }, onError: (error, stackTrace) {
       defaultErrorResponse(error: error, valueWhenError: []);
       return DataTableResponse<Item>(models: [], totalPage: 1);
-    });
+    }).whenComplete(() => _source.setShowLoading(false));
   }
 
   void searchChanged(value) {
