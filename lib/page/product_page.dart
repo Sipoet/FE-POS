@@ -26,7 +26,7 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
   final cancelToken = CancelToken();
   late Flash flash;
   late final List<TableColumn> columns;
-  Map _filter = {};
+  List<FilterData> _filter = [];
   final _menuController = MenuController();
 
   @override
@@ -66,7 +66,7 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
 
     final desc = product.isNewRecord ? 'Tambah' : 'Edit';
     tabManager.addTab(
-        '$desc Produk ${product.id}', ProductFormPage(product: product));
+        '$desc Produk ${product.id ?? ''}', ProductFormPage(product: product));
   }
 
   void _openEditForm(int index) {
@@ -78,29 +78,15 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
     _source.refreshTable();
   }
 
-  Future<DataTableResponse<Product>> fetchData(DataTableRequest request) {
+  Future<DataTableResponse<Product>> fetchData(QueryRequest request) {
     _source.setShowLoading(true);
-    Map<String, dynamic> params = {};
-    _filter.forEach((key, value) {
-      params[key] = value;
-    });
-    return server
-        .get('products', queryParam: params, cancelToken: request.cancelToken)
-        .then((response) {
-      if (response.statusCode != 200) {
-        flash.showBanner(
-            messageType: ToastificationType.error,
-            title: 'Gagal ambil data',
-            description: (response.data['errors'] ?? []).toString());
-        return DataTableResponse<Product>(totalPage: 1, models: []);
-      }
-      Map responseBody = response.data;
-      final models = responseBody['data'].map<Product>((json) {
-        return ProductClass()
-            .fromJson(json, included: responseBody['included']);
-      }).toList();
+    request.searchText = _searchText;
+    request.cancelToken = cancelToken;
+    request.filters.addAll(_filter);
+
+    return ProductClass().finds(server, request).then((response) {
       return DataTableResponse<Product>(
-          totalPage: responseBody['meta']['total_pages'], models: models);
+          totalPage: response.metadata['total_pages'], models: response.models);
     }, onError: (error, stackTrace) {
       defaultErrorResponse(error: error);
       return DataTableResponse<Product>(totalPage: 1, models: []);

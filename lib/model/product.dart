@@ -65,7 +65,7 @@ class Product extends Model with SaveNDestroyModel {
   String get modelValue => description;
 }
 
-class ProductClass extends ModelClass<Product> {
+class ProductClass extends ModelClass<Product> with FindModel<Product> {
   @override
   Product initModel() => Product();
 }
