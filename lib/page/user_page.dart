@@ -25,7 +25,7 @@ class _UserPageState extends State<UserPage>
   final cancelToken = CancelToken();
   late Flash flash;
   final _menuController = MenuController();
-  Map _filter = {};
+  List<FilterData> _filter = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -64,9 +64,10 @@ class _UserPageState extends State<UserPage>
       'include': 'role',
       'sort': '${isAscending ? '' : '-'}$orderKey',
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filterData in _filter) {
+      final data = filterData.toEntryJson();
+      param[data.key] = data.value;
+    }
     try {
       return server
           .get('users', queryParam: param, cancelToken: cancelToken)

@@ -24,7 +24,7 @@ class _PayrollPageState extends State<PayrollPage>
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
-  Map _filter = {};
+  List<FilterData> _filter = [];
   final _menuController = MenuController();
   @override
   bool get wantKeepAlive => true;
@@ -65,9 +65,10 @@ class _PayrollPageState extends State<PayrollPage>
       'page[limit]': limit.toString(),
       'sort': '${isAscending ? '' : '-'}$orderKey',
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filterData in _filter) {
+      final data = filterData.toEntryJson();
+      param[data.key] = data.value;
+    }
     try {
       return server
           .get('payrolls', queryParam: param, cancelToken: cancelToken)

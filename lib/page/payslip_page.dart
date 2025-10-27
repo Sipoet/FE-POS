@@ -28,7 +28,7 @@ class _PayslipPageState extends State<PayslipPage>
   List<Payslip> payslips = [];
   final cancelToken = CancelToken();
   late Flash flash;
-  Map _filter = {};
+  List<FilterData> _filter = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -71,9 +71,10 @@ class _PayslipPageState extends State<PayslipPage>
       'include': 'payroll,employee',
       'sort': "${isAscending ? '' : '-'}$orderKey",
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filterData in _filter) {
+      final data = filterData.toEntryJson();
+      param[data.key] = data.value;
+    }
     try {
       return server
           .get('payslips', queryParam: param, cancelToken: cancelToken)

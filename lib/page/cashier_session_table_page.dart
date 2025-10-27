@@ -27,7 +27,7 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
   final cancelToken = CancelToken();
   late Flash flash;
   late final TabManager tabManager;
-  Map _filter = {};
+  List<FilterData> _filter = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -85,9 +85,10 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
         'page[limit]': limit.toString(),
         'sort': '${isAscending ? '' : '-'}$orderKey',
       };
-      _filter.forEach((key, value) {
-        param[key] = value;
-      });
+      for (final filterData in _filter) {
+        final data = filterData.toEntryJson();
+        param[data.key] = data.value;
+      }
 
       return server
           .get('cashier_sessions', queryParam: param, cancelToken: cancelToken)

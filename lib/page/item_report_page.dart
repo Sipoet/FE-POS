@@ -27,7 +27,7 @@ class _ItemReportPageState extends State<ItemReportPage>
   late Flash flash;
   late final List<TableColumn> columns;
   List<ItemReport> _itemReports = [];
-  Map _filter = {};
+  List<FilterData> _filter = [];
   String _searchText = '';
   @override
   void initState() {
@@ -95,9 +95,10 @@ class _ItemReportPageState extends State<ItemReportPage>
       'include': 'item,supplier,brand,item_type',
       'sort': '${sortData?.isAscending == false ? '-' : ''}$orderKey',
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filterData in _filter) {
+      final data = filterData.toEntryJson();
+      param[data.key] = data.value;
+    }
     return server.get('item_reports',
         queryParam: param, type: reportType, cancelToken: cancelToken);
   }

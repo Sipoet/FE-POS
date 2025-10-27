@@ -26,7 +26,7 @@ class _ConsignmentInOrderPageState extends State<ConsignmentInOrderPage>
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
-  Map _filter = {};
+  List<FilterData> _filter = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -68,9 +68,10 @@ class _ConsignmentInOrderPageState extends State<ConsignmentInOrderPage>
       'sort': '${isAscending ? '' : '-'}$orderKey',
       'include': 'supplier',
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filterData in _filter) {
+      final data = filterData.toEntryJson();
+      param[data.key] = data.value;
+    }
     try {
       return server
           .get('consignment_in_orders',

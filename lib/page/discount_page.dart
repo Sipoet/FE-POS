@@ -26,7 +26,7 @@ class _DiscountPageState extends State<DiscountPage>
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
-  Map _filter = {};
+  List<FilterData> _filter = [];
   final _controller = MenuController();
   late final CustomAsyncDataTableSource<Discount> _source;
   @override
@@ -73,9 +73,10 @@ class _DiscountPageState extends State<DiscountPage>
           'discount_items,discount_suppliers,discount_item_types,discount_brands',
       'sort': '${isAscending ? '' : '-'}$orderKey',
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filterData in _filter) {
+      final data = filterData.toEntryJson();
+      param[data.key] = data.value;
+    }
     try {
       return server
           .get('discounts', queryParam: param, cancelToken: cancelToken)

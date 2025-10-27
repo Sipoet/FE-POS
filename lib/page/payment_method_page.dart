@@ -25,7 +25,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
   final cancelToken = CancelToken();
   late Flash flash;
   final _menuController = MenuController();
-  Map _filter = {};
+  List<FilterData> _filter = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -68,9 +68,10 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
       'include': 'bank',
       'sort': '${isAscending ? '' : '-'}$orderKey',
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filterData in _filter) {
+      final data = filterData.toEntryJson();
+      param[data.key] = data.value;
+    }
     try {
       return server
           .get('payment_methods', queryParam: param, cancelToken: cancelToken)

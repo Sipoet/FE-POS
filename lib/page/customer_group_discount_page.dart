@@ -26,7 +26,7 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
-  Map _filter = {};
+  List<FilterData> _filter = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -67,9 +67,10 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
       'include': 'customer_group',
       'sort': '${isAscending ? '' : '-'}$orderKey',
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filterData in _filter) {
+      final data = filterData.toEntryJson();
+      param[data.key] = data.value;
+    }
 
     return server
         .get('customer_group_discounts',

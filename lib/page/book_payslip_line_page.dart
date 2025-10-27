@@ -25,7 +25,7 @@ class _BookPayslipLinePageState extends State<BookPayslipLinePage>
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
-  Map _filter = {};
+  List<FilterData> _filter = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -65,9 +65,10 @@ class _BookPayslipLinePageState extends State<BookPayslipLinePage>
       'sort': '${isAscending ? '' : '-'}$orderKey',
       'include': 'employee,payroll_type'
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filterData in _filter) {
+      final data = filterData.toEntryJson();
+      param[data.key] = data.value;
+    }
     try {
       return server
           .get('book_payslip_lines',

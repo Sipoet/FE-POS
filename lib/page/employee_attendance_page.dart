@@ -29,7 +29,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
-  Map _filter = {};
+  List<FilterData> _filter = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -72,9 +72,10 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
       'include': 'employee',
       'sort': '${isAscending ? '' : '-'}$orderKey',
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filterData in _filter) {
+      final data = filterData.toEntryJson();
+      param[data.key] = data.value;
+    }
     try {
       return server
           .get('employee_attendances',

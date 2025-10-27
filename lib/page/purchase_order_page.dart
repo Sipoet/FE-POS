@@ -26,7 +26,7 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
-  Map _filter = {};
+  List<FilterData> _filter = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -68,9 +68,10 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
       'sort': '${isAscending ? '' : '-'}$orderKey',
       'include': 'supplier',
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filterData in _filter) {
+      final data = filterData.toEntryJson();
+      param[data.key] = data.value;
+    }
     try {
       return server
           .get('purchase_orders', queryParam: param, cancelToken: cancelToken)

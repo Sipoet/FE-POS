@@ -26,7 +26,7 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
   double minimumColumnWidth = 150;
   late final CustomAsyncDataTableSource<PurchaseReport> _source;
   late Flash flash;
-  Map _filter = {};
+  List<FilterData> _filter = [];
   @override
   void initState() {
     server = context.read<Server>();
@@ -104,9 +104,10 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
       'sort': '${isAscending ? '' : '-'}$orderKey',
       'include': 'supplier',
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filterData in _filter) {
+      final data = filterData.toEntryJson();
+      param[data.key] = data.value;
+    }
     return server.get('purchases/report',
         queryParam: param, type: _reportType ?? 'json');
   }

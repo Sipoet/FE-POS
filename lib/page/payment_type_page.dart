@@ -25,7 +25,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
-  Map _filter = {};
+  List<FilterData> _filter = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -65,9 +65,10 @@ class _PaymentTypePageState extends State<PaymentTypePage>
       'page[limit]': limit.toString(),
       'sort': '${isAscending ? '' : '-'}$orderKey',
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filterData in _filter) {
+      final data = filterData.toEntryJson();
+      param[data.key] = data.value;
+    }
     try {
       return server
           .get('payment_types', queryParam: param, cancelToken: cancelToken)
