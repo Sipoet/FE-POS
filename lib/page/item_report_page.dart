@@ -91,6 +91,7 @@ class _ItemReportPageState extends State<ItemReportPage>
       'page[page]': page.toString(),
       'page[limit]': (limit ?? '').toString(),
       'report_type': reportType,
+      'search_text': _searchText,
       'include': 'item,supplier,brand,item_type',
       'sort': '${sortData?.isAscending == false ? '-' : ''}$orderKey',
     };
@@ -165,6 +166,14 @@ class _ItemReportPageState extends State<ItemReportPage>
           const Divider(),
           const SizedBox(height: 10),
           Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+            SizedBox(
+              width: 150,
+              child: TextField(
+                decoration: const InputDecoration(hintText: 'Search Text'),
+                onChanged: searchChanged,
+                onSubmitted: searchChanged,
+              ),
+            ),
             IconButton(
               onPressed: () {
                 setState(() {
@@ -175,15 +184,10 @@ class _ItemReportPageState extends State<ItemReportPage>
               tooltip: 'Reset Table',
               icon: const Icon(Icons.refresh),
             ),
-            SizedBox(
-              width: 150,
-              child: TextField(
-                decoration: const InputDecoration(hintText: 'Search Text'),
-                onChanged: searchChanged,
-                onSubmitted: searchChanged,
-              ),
-            ),
           ]),
+          const SizedBox(
+            height: 5,
+          ),
           SizedBox(
             height: bodyScreenHeight,
             child: SyncDataTable<ItemReport>(

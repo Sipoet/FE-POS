@@ -8,10 +8,10 @@ export 'package:fe_pos/tool/query_data.dart';
 
 final plural = Pluralize();
 
-abstract class Model {
+abstract class Model with ChangeNotifier {
   DateTime? createdAt;
   DateTime? updatedAt;
-  Map rawData;
+  Map<String, dynamic> rawData;
   dynamic id;
 
   List<String> _errors = [];
@@ -83,7 +83,8 @@ abstract class Model {
   }
 
   void reset() {
-    setFromJson(rawData['data'], included: rawData['included']);
+    setFromJson(rawData['data'] ?? {}, included: rawData['included'] ?? []);
+    notifyListeners();
   }
 
   String get modelValue => id.toString();
@@ -202,39 +203,23 @@ mixin FindModel<T extends Model> on ModelClass<T> {
     });
   }
 
-  Map<String, dynamic> _encodeQuery(QueryData queryData) {
-    Map<String, dynamic> result = {
-      'sort': _encodeSorts(queryData.sorts),
-      'page[page]': queryData.page.toString(),
-      'page[limit]': queryData.limit.toString(),
-    };
-    for (final filter in queryData.filters) {
-      final entry = filter.toJson();
-      result[entry.key] = entry.value;
-    }
-
-    return result;
-  }
-
-  String _encodeSorts(List<SortData> sorts) {
-    List result = [];
-    for (final sort in sorts) {
-      result.add("'${sort.isAscending ? '' : '-'}${sort.key}'");
-    }
-    return result.join(',');
-  }
-
-  Future<List<T>?> finds(Server server, QueryData queryData) async {
+  Future<QueryResponse<T>> finds(
+      Server server, QueryRequest queryRequest) async {
     final path = initModel().path;
-    final param = _encodeQuery(queryData);
-    return server.get(path, queryParam: param).then((response) {
-      if (response.statusCode == 200) {
-        return response.data['data']
-            .map<T>((json) =>
-                fromJson(json, included: response.data['included'] ?? []))
-            .toList();
+    final param = queryRequest.toQueryParam();
+    return server
+        .get(path, queryParam: param, cancelToken: queryRequest.cancelToken)
+        .then((response) {
+      if (response.statusCode != 200) {
+        throw 'error: ${response.data.toString()}';
       }
-      return null;
+      final data = response.data;
+      return QueryResponse(
+          metadata: data['meta'],
+          models: data['data']
+              .map<T>(
+                  (json) => fromJson(json, included: data['included'] ?? []))
+              .toList());
     }, onError: (error) {
       debugPrint(error.toString());
       return null;

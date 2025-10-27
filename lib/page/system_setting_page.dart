@@ -71,27 +71,12 @@ class _SystemSettingPageState extends State<SystemSettingPage>
   }
 
   Future<DataTableResponse<SystemSetting>> fetchSystemSettings(
-      {int page = 1,
-      int limit = 100,
-      List<SortData> sorts = const [],
-      Map filter = const {}}) {
-    var sort = sorts.isEmpty ? null : sorts.first;
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'sort': sort == null
-          ? ''
-          : sort.isAscending
-              ? sort.key
-              : "-${sort.key}",
-    };
-    filter.forEach((key, value) {
-      param[key] = value;
-    });
+      QueryRequest request) {
+    request.searchText = _searchText;
     try {
       return server
-          .get('system_settings', queryParam: param, cancelToken: cancelToken)
+          .get('system_settings',
+              queryParam: request.toQueryParam(), cancelToken: cancelToken)
           .then((response) {
         if (response.statusCode != 200) {
           throw 'error: ${response.data.toString()}';
@@ -172,11 +157,7 @@ class _SystemSettingPageState extends State<SystemSettingPage>
               child: CustomAsyncDataTable2<SystemSetting>(
                 onLoaded: (stateManager) => _source = stateManager,
                 fixedLeftColumns: 0,
-                fetchData: (request) => fetchSystemSettings(
-                  page: request.page,
-                  sorts: request.sorts,
-                  filter: request.filter,
-                ),
+                fetchData: (request) => fetchSystemSettings(request),
                 columns: columns,
               ),
             ),

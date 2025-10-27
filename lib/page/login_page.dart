@@ -7,6 +7,7 @@ import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/framework_layout.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -94,6 +95,11 @@ class _LoginPageState extends State<LoginPage>
                   onSaved: (newValue) {
                     _username = newValue.toString().trim();
                   },
+                  keyboardType: TextInputType.name,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.singleLineFormatter,
+                    FilteringTextInputFormatter.allow(RegExp('[a-z0-9]')),
+                  ],
                   validator: (value) {
                     if (value == null || value.toString().trim().isEmpty) {
                       return 'username belum diisi';

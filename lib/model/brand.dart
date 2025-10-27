@@ -26,7 +26,7 @@ class Brand extends Model {
   }
 }
 
-class BrandClass extends ModelClass<Brand> {
+class BrandClass extends ModelClass<Brand> with FindModel<Brand> {
   @override
   Brand initModel() => Brand();
 }

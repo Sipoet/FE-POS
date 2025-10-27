@@ -33,25 +33,11 @@ class _ItemModalSelectState extends State<ItemModalSelect>
     super.initState();
   }
 
-  Future<DataTableResponse<ItemReport>> fetchItem(
-      {int page = 1,
-      int limit = 20,
-      List<SortData> sorts = const [],
-      Map<String, dynamic> filter = const {}}) {
+  Future<DataTableResponse<ItemReport>> fetchItem(QueryRequest queryData) {
     _source.setShowLoading(true);
-    Map<String, dynamic> param = {
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'report_type': 'json',
-      'sort': sorts
-          .map<String>((e) => e.isAscending ? e.key : "-${e.key}")
-          .toList()
-          .join(','),
-      'include': 'item'
-    };
-    filter.forEach((key, value) {
-      param[key] = value;
-    });
+    Map<String, dynamic> param = queryData.toQueryParam();
+    param['include'] = 'item';
+    param['report_type'] = 'json';
     return _server.get('item_reports/', queryParam: param).then((response) {
       if (response.statusCode != 200) {
         return DataTableResponse<ItemReport>(models: [], totalPage: 0);
@@ -85,10 +71,7 @@ class _ItemModalSelectState extends State<ItemModalSelect>
               }
             },
             fetchData: (request) {
-              return fetchItem(
-                  page: request.page,
-                  sorts: request.sorts,
-                  filter: request.filter);
+              return fetchItem(request);
             },
             primaryKey: 'item_code',
             showCheckboxColumn: true,
@@ -96,7 +79,7 @@ class _ItemModalSelectState extends State<ItemModalSelect>
             showFilter: true,
             onLoaded: (stateManager) {
               _source = stateManager;
-              fetchItem();
+              fetchItem(QueryRequest());
             },
             fixedLeftColumns: 2,
           ),

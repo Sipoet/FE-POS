@@ -1,7 +1,15 @@
+import 'package:dio/dio.dart';
+import 'package:fe_pos/model/model.dart';
+
 class SortData {
   String key;
   bool isAscending;
   SortData({required this.key, required this.isAscending});
+
+  @override
+  String toString() {
+    return "${isAscending ? '' : '-'}$key";
+  }
 }
 
 enum QueryOperator {
@@ -49,6 +57,12 @@ abstract class FilterData {
     if (value is DateTime) {
       return value.toIso8601String();
     }
+    if (value is Model) {
+      return value.id.toString();
+    }
+    if (value is List) {
+      return value.map<String>((e) => _convertValue(e)).join(',');
+    }
     return value.toString();
   }
 }
@@ -81,14 +95,42 @@ class BetweenFilterData extends FilterData {
   }
 }
 
-class QueryData {
+class QueryRequest {
   int page;
   int limit;
   List<FilterData> filters;
   List<SortData> sorts;
-  QueryData(
+  CancelToken? cancelToken;
+  String? searchText;
+  List<String> include;
+
+  QueryRequest(
       {this.page = 1,
       this.limit = 10,
+      this.cancelToken,
+      this.include = const [],
       this.filters = const [],
       this.sorts = const []});
+
+  Map<String, String?> toQueryParam() {
+    Map<String, String?> result = {
+      'page[page]': page.toString(),
+      'page[limit]': limit.toString(),
+      'search_text': searchText,
+      'include': include.join(','),
+    };
+    for (final filter in filters) {
+      final entry = filter.toJson();
+      result[entry.key] = entry.value;
+    }
+    result['sort'] = sorts.map((sort) => sort.toString()).join(',');
+
+    return result;
+  }
+}
+
+class QueryResponse<T> {
+  final List<T> models;
+  final Map<String, dynamic> metadata;
+  const QueryResponse({this.metadata = const {}, this.models = const []});
 }

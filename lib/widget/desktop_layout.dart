@@ -50,64 +50,66 @@ class _DesktopLayoutState extends State<DesktopLayout>
   Widget build(BuildContext context) {
     final tabManager = context.watch<TabManager>();
     final server = context.read<Server>();
-    final message =
-        'SERVER: ${widget.host} | USER: ${widget.userName} | Allegra POS';
+
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            message,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          actions: [
-            PopupMenuButton(
-              itemBuilder: (BuildContext context) {
-                List<PopupMenuEntry> result = [];
-                if (!isWeb()) {
-                  result.add(PopupMenuItem(
-                    onTap: () => openAboutDialog(version),
-                    child: Text('About'),
-                  ));
-                  result.add(PopupMenuItem(
-                    onTap: () => checkUpdate(server, isManual: true),
-                    child: Text('Cek Update App'),
-                  ));
-                }
-                result.add(PopupMenuItem(
-                  onTap: () {
-                    final server = context.read<Server>();
-                    var user = User(username: server.userName);
-                    tabManager.addTab('Profilku', UserFormPage(user: user));
-                  },
-                  child: Row(
-                    children: [
-                      Text('Profile'),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Icon(Icons.person_2),
-                    ],
-                  ),
-                ));
-                result.add(PopupMenuItem(
-                  onTap: () {
-                    final server = context.read<Server>();
-                    logout(server);
-                  },
-                  child: Row(
-                    children: [
-                      Text('Logout'),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Icon(Icons.logout)
-                    ],
-                  ),
-                ));
-                return result;
-              },
-              icon: Icon(Icons.menu),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(38),
+          child: AppBar(
+            title: Text(
+              'SERVER: ${widget.host} | USER: ${widget.userName} | Allegra POS',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-          ],
+            actions: [
+              PopupMenuButton(
+                itemBuilder: (BuildContext context) {
+                  List<PopupMenuEntry> result = [];
+                  if (!isWeb()) {
+                    result.add(PopupMenuItem(
+                      onTap: () => openAboutDialog(version),
+                      child: Text('About'),
+                    ));
+                    result.add(PopupMenuItem(
+                      onTap: () => checkUpdate(server, isManual: true),
+                      child: Text('Cek Update App'),
+                    ));
+                  }
+                  result.add(PopupMenuItem(
+                    onTap: () {
+                      final server = context.read<Server>();
+                      var user = User(username: server.userName);
+                      tabManager.addTab('Profilku', UserFormPage(user: user));
+                    },
+                    child: Row(
+                      children: [
+                        Text('Profile'),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Icon(Icons.person_2),
+                      ],
+                    ),
+                  ));
+                  result.add(PopupMenuItem(
+                    onTap: () {
+                      final server = context.read<Server>();
+                      logout(server);
+                    },
+                    child: Row(
+                      children: [
+                        Text('Logout'),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Icon(Icons.logout)
+                      ],
+                    ),
+                  ));
+                  return result;
+                },
+                icon: Icon(Icons.menu),
+              ),
+            ],
+          ),
         ),
         body: PlutoLayout(
           top: PlutoLayoutContainer(
@@ -170,6 +172,7 @@ class _TopMenuBarState extends State<TopMenuBar> with PlatformChecker {
   @override
   Widget build(BuildContext context) {
     return PlutoMenuBar(
+        height: 35,
         showBackButton: false,
         mode: isMobile() ? PlutoMenuBarMode.tap : PlutoMenuBarMode.hover,
         menus: decorateMenus(widget.menuTree));

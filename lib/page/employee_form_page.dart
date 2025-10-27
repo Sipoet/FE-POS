@@ -227,6 +227,10 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                       onSaved: (newValue) {
                         employee.code = newValue.toString();
                       },
+                      inputFormatters: [
+                        FilteringTextInputFormatter.singleLineFormatter,
+                        FilteringTextInputFormatter.allow(RegExp('[A-Za-z0-9]'))
+                      ],
                       onChanged: (newValue) {
                         employee.code = newValue.toString();
                       },
@@ -250,6 +254,11 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           labelStyle: labelStyle,
                           border: OutlineInputBorder()),
                       initialValue: employee.name,
+                      keyboardType: TextInputType.name,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.singleLineFormatter,
+                        FilteringTextInputFormatter.allow(RegExp('[A-Za-z]'))
+                      ],
                       onSaved: (newValue) {
                         employee.name = newValue.toString();
                       },
@@ -587,6 +596,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           labelStyle: labelStyle,
                           border: OutlineInputBorder()),
                       initialValue: employee.address,
+                      keyboardType: TextInputType.streetAddress,
                       onSaved: (newValue) {
                         employee.address = newValue.toString();
                       },
@@ -641,6 +651,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           labelStyle: labelStyle,
                           border: OutlineInputBorder()),
                       initialValue: employee.description,
+                      keyboardType: TextInputType.text,
                       maxLines: 4,
                       onSaved: (newValue) {
                         employee.description = newValue.toString();

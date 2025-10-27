@@ -1,11 +1,14 @@
 import 'dart:developer';
 
+import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:fe_pos/page/loading_page.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/flash.dart';
 
 mixin DefaultResponse<T extends StatefulWidget> on State<T> {
+  static const labelStyle =
+      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
   dynamic defaultErrorResponse(
       {required var error, List trace = const [], var valueWhenError}) {
     if (error.runtimeType.toString() == '_TypeError') {
@@ -17,6 +20,10 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
           description: trace.toString(),
           messageType: ToastificationType.error);
       throw error;
+    }
+    if (error is ArgumentError) {
+      debugPrint('error: ${error.toString()}');
+      return;
     }
     var response = error.response;
     switch (error.type) {
@@ -56,8 +63,8 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
   double get bodyScreenHeight {
     final padding = MediaQuery.of(context).padding;
     final size = MediaQuery.of(context).size;
-    double tableHeight = size.height - padding.top - padding.bottom - 250;
-    return tableHeight < 400 ? 400.0 : tableHeight;
+    double tableHeight = size.height - padding.top - padding.bottom - 150;
+    return <double>[400.0, tableHeight].max;
   }
 
   void showConfirmDialog(

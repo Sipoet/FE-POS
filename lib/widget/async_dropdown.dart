@@ -301,13 +301,13 @@ class AsyncDropdown<T> extends StatefulWidget {
       this.validator,
       this.onSaved,
       this.focusNode,
+      this.isDense = false,
       this.selectedDisplayLimit = 6,
       this.recordLimit = 10,
       required this.textOnSearch,
       this.textOnSelected,
       this.compareValue,
       required this.modelClass,
-      // required this.converter,
       this.selected});
 
   final String? path;
@@ -317,6 +317,7 @@ class AsyncDropdown<T> extends StatefulWidget {
   final double? width;
   final T? selected;
   final bool allowClear;
+  final bool isDense;
   final FocusNode? focusNode;
   final int selectedDisplayLimit;
   final void Function(T? model)? onChanged;
@@ -325,7 +326,6 @@ class AsyncDropdown<T> extends StatefulWidget {
   final DropdownText<T> textOnSearch;
   final DropdownText<T>? textOnSelected;
   final ModelClass modelClass;
-  // final T Function(Map<String, dynamic>, {List included}) converter;
   final Widget? label;
   final bool Function(T, T)? compareValue;
   final RequestRemote? request;
@@ -433,6 +433,7 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
       decoratorProps: DropDownDecoratorProps(
           decoration: InputDecoration(
         label: widget.label,
+        isDense: widget.isDense,
         border: const OutlineInputBorder(),
       )),
     );

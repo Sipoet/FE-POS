@@ -43,52 +43,20 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
     _source.refreshTable();
   }
 
-  Future<DataTableResponse<Brand>> fetchBrands(
-      {int page = 1,
-      int limit = 20,
-      List<SortData> sorts = const [],
-      Map filter = const {}}) {
-    var sort = sorts.isEmpty ? null : sorts.first;
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'sort': sort == null
-          ? ''
-          : sort.isAscending
-              ? sort.key
-              : "-${sort.key}",
-    };
-    filter.forEach((key, value) {
-      param[key] = value;
-    });
-    try {
-      return server.get('brands', queryParam: param, cancelToken: cancelToken).then(
-          (response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<Brand>((json) => BrandClass()
-                .fromJson(json, included: responseBody['included'] ?? []))
-            .toList();
-        brands.addAll(models);
-        final totalPage = responseBody['meta']?['total_pages'] ?? 1;
-        return DataTableResponse<Brand>(totalPage: totalPage, models: models);
-      },
-          onError: (error, stackTrace) =>
-              defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
+  Future<DataTableResponse<Brand>> fetchBrands(QueryRequest request) {
+    request.searchText = _searchText;
+    request.cancelToken = cancelToken;
+
+    return BrandClass().finds(server, request).then((response) {
+      return DataTableResponse<Brand>(
+          totalPage: response.metadata['total_pages'], models: response.models);
+    }, onError: (e, trace) {
       flash.showBanner(
           title: e.toString(),
           description: trace.toString(),
           messageType: ToastificationType.error);
-      return Future(() => DataTableResponse<Brand>(totalPage: 0, models: []));
-    }
+      return DataTableResponse<Brand>(totalPage: 0, models: []);
+    });
   }
 
   void searchChanged(value) {
@@ -144,10 +112,7 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
               child: CustomAsyncDataTable2<Brand>(
                 onLoaded: (stateManager) => _source = stateManager,
                 columns: setting.tableColumn('ipos::Brand'),
-                fetchData: (request) => fetchBrands(
-                    page: request.page,
-                    filter: request.filter,
-                    sorts: request.sorts),
+                fetchData: (request) => fetchBrands(request),
                 fixedLeftColumns: 0,
               ),
             ),

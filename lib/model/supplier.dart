@@ -61,7 +61,7 @@ class Supplier extends Model {
   String get modelValue => id.toString();
 }
 
-class SupplierClass extends ModelClass<Supplier> {
+class SupplierClass extends ModelClass<Supplier> with FindModel<Supplier> {
   @override
   Supplier initModel() => Supplier();
 }

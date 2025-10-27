@@ -283,7 +283,7 @@ class CustomAsyncDataTable2<T extends Model> extends StatefulWidget {
   final bool showCheckboxColumn;
   final bool showSummary;
   final List<TableColumn> columns;
-  final Future<DataTableResponse<T>> Function(DataTableRequest) fetchData;
+  final Future<DataTableResponse<T>> Function(QueryRequest) fetchData;
   final Map<String, List<Enum>> enums;
   final OnLoadedCallBack? onLoaded;
   final OnRowCheckedCallback? onRowChecked;
@@ -346,33 +346,34 @@ class _CustomAsyncDataTable2State<T extends Model>
     return selectedValues.contains(row[widget.primaryKey]);
   }
 
-  String filterTypeRemote(filterType) {
+  QueryOperator filterTypeRemote(filterType) {
     if (filterType is PlutoFilterTypeContains) {
-      return 'like';
+      return QueryOperator.contains;
     } else if (filterType is PlutoFilterTypeLessThanOrEqualTo) {
-      return 'lte';
+      return QueryOperator.lessThanOrEqualTo;
     } else if (filterType is PlutoFilterTypeNot) {
-      return 'not';
+      return QueryOperator.not;
     } else if (filterType is PlutoFilterTypeEquals) {
-      return 'eq';
+      return QueryOperator.equals;
     } else if (filterType is PlutoFilterTypeGreaterThan) {
-      return 'gt';
+      return QueryOperator.greaterThan;
     } else if (filterType is PlutoFilterTypeGreaterThanOrEqualTo) {
-      return 'gte';
+      return QueryOperator.greaterThanOrEqualTo;
     } else if (filterType is PlutoFilterTypeLessThan) {
-      return 'lt';
+      return QueryOperator.lessThan;
     } else {
-      return 'eq';
+      return QueryOperator.equals;
     }
   }
 
-  Map<String, String> remoteFilters() {
-    Map<String, String> filter = {};
+  List<FilterData> remoteFilters() {
+    List<FilterData> filter = [];
     for (final row in _source.filterRows) {
-      final columnName = row.cells['column']!.value;
-      final comparator = filterTypeRemote(row.cells['type']!.value);
-      final key = 'filter[$columnName][$comparator]';
-      filter[key] = row.cells['value']!.value.toString();
+      filter.add(ComparisonFilterData(
+        key: row.cells['column']!.value,
+        operator: filterTypeRemote(row.cells['type']!.value),
+        value: row.cells['value']!.value.toString(),
+      ));
     }
     return filter;
   }
@@ -456,9 +457,9 @@ class _CustomAsyncDataTable2State<T extends Model>
         }
         cancelToken?.cancel();
         cancelToken = CancelToken();
-        var request = DataTableRequest(
+        var request = QueryRequest(
             page: 1,
-            filter: remoteFilters(),
+            filters: remoteFilters(),
             sorts: sorts,
             cancelToken: cancelToken);
 
@@ -538,7 +539,7 @@ class _CustomAsyncDataTable2State<T extends Model>
             cancelToken?.cancel();
             cancelToken = CancelToken();
             var request =
-                DataTableRequest(page: event.page, cancelToken: cancelToken);
+                QueryRequest(page: event.page, cancelToken: cancelToken);
             final sortColumn = event.sortColumn;
 
             if (sortColumn != null) {
@@ -548,7 +549,7 @@ class _CustomAsyncDataTable2State<T extends Model>
                     isAscending: event.sortColumn!.sort.isAscending),
               ];
             }
-            request.filter = remoteFilters();
+            request.filters = remoteFilters();
             return widget.fetchData(request).then(
               (DataTableResponse<T> response) {
                 return PlutoLazyPaginationResponse(
@@ -599,19 +600,6 @@ class _CustomAsyncDataTable2State<T extends Model>
               evenRowColor: colorScheme.onPrimary)),
     );
   }
-}
-
-class DataTableRequest {
-  int page;
-  Map<String, dynamic> filter;
-  List<SortData> sorts;
-  CancelToken? cancelToken;
-  DataTableRequest({
-    this.page = 1,
-    this.cancelToken,
-    this.sorts = const [],
-    this.filter = const {},
-  });
 }
 
 class DataTableResponse<T extends Model> {

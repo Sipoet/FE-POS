@@ -41,53 +41,18 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
     _source.refreshTable();
   }
 
-  Future<DataTableResponse<Supplier>> fetchSuppliers(
-      {int page = 1,
-      int limit = 100,
-      List<SortData> sorts = const [],
-      Map filter = const {}}) {
-    var sort = sorts.isEmpty ? null : sorts.first;
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'sort': sort == null
-          ? ''
-          : sort.isAscending
-              ? sort.key
-              : "-${sort.key}",
-    };
-    filter.forEach((key, value) {
-      param[key] = value;
+  Future<DataTableResponse<Supplier>> fetchSuppliers(QueryRequest request) {
+    request.searchText = _searchText;
+    request.cancelToken = cancelToken;
+
+    return SupplierClass().finds(server, request).then((response) {
+      return DataTableResponse<Supplier>(
+          models: response.models,
+          totalPage: response.metadata['total_pages'] ?? 1);
+    }, onError: (error, stackTrace) {
+      defaultErrorResponse(error: error, valueWhenError: []);
+      return DataTableResponse<Supplier>(models: []);
     });
-    try {
-      return server
-          .get('suppliers', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<Supplier>((json) => SupplierClass()
-                .fromJson(json, included: responseBody['included'] ?? []))
-            .toList();
-        final totalPage = responseBody['meta']?['total_pages'] ?? 1;
-        return DataTableResponse<Supplier>(
-            models: models, totalPage: totalPage);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      return Future(() => DataTableResponse<Supplier>(models: []));
-    }
   }
 
   void searchChanged(value) {
@@ -143,11 +108,7 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
               child: CustomAsyncDataTable2<Supplier>(
                 onLoaded: (stateManager) => _source = stateManager,
                 fixedLeftColumns: 0,
-                fetchData: (request) => fetchSuppliers(
-                  page: request.page,
-                  sorts: request.sorts,
-                  filter: request.filter,
-                ),
+                fetchData: (request) => fetchSuppliers(request),
                 columns: setting.tableColumn('ipos::Supplier'),
               ),
             ),

@@ -199,7 +199,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     });
   }
 
-  Future<DataTableResponse<ItemReport>> fetchItem(DataTableRequest request) {
+  Future<DataTableResponse<ItemReport>> fetchItem(QueryRequest request) {
     _source.setShowLoading(true);
     setState(() {
       discount1 = discount.discount1;
@@ -207,59 +207,61 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       discount3 = discount.discount3;
       discount4 = discount.discount4;
     });
-    var sortParams = request.sorts
-        .map<String>((sort) => sort.isAscending ? sort.key : "-${sort.key}")
-        .toList()
-        .join(',');
-    Map<String, dynamic> param = {
-      'page[page]': request.page.toString(),
-      'page[limit]': '50',
-      'report_type': 'json',
-      'sort': sortParams,
-    };
+    request.limit = 50;
     if (discount.items.isNotEmpty) {
-      param['filter[item][eq]'] =
-          discount.items.map((line) => line.code).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+        key: 'item',
+        value: discount.items,
+      ));
     }
     if (discount.suppliers.isNotEmpty) {
-      param['filter[supplier][eq]'] =
-          discount.suppliers.map((line) => line.code).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+        key: 'supplier',
+        value: discount.suppliers,
+      ));
     }
     if (discount.itemTypes.isNotEmpty) {
-      param['filter[item_type][eq]'] =
-          discount.itemTypes.map((line) => line.name).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+        key: 'item_type',
+        value: discount.itemTypes,
+      ));
     }
     if (discount.brands.isNotEmpty) {
-      param['filter[brand][eq]'] =
-          discount.brands.map((line) => line.name).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+        key: 'brand',
+        value: discount.brands,
+      ));
     }
     if (discount.blacklistItems.isNotEmpty) {
-      param['filter[item][not]'] =
-          discount.blacklistItems.map((line) => line.code).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+        key: 'item',
+        operator: QueryOperator.not,
+        value: discount.blacklistItems,
+      ));
     }
     if (discount.blacklistSuppliers.isNotEmpty) {
-      param['filter[supplier][not]'] = discount.blacklistSuppliers
-          .map((line) => line.code)
-          .toList()
-          .join(',');
+      request.filters.add(ComparisonFilterData(
+        key: 'supplier',
+        operator: QueryOperator.not,
+        value: discount.blacklistSuppliers,
+      ));
     }
     if (discount.blacklistItemTypes.isNotEmpty) {
-      param['filter[item_type][not]'] = discount.blacklistItemTypes
-          .map((line) => line.name)
-          .toList()
-          .join(',');
+      request.filters.add(ComparisonFilterData(
+        key: 'item_type',
+        operator: QueryOperator.not,
+        value: discount.blacklistItemTypes,
+      ));
     }
     if (discount.blacklistBrands.isNotEmpty) {
-      param['filter[brand][not]'] =
-          discount.blacklistBrands.map((line) => line.name).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+        key: 'brand',
+        operator: QueryOperator.not,
+        value: discount.blacklistBrands,
+      ));
     }
-    request.filter.forEach((key, value) {
-      if (param[key] == null) {
-        param[key] = value;
-      } else {
-        param[key] = "${param[key]},$value";
-      }
-    });
+
+    final param = request.toQueryParam();
 
     return server.get('item_reports', queryParam: param).then((response) {
       try {

@@ -23,7 +23,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
   late final Server server;
   String _searchText = '';
   List<Item> items = [];
-  final cancelToken = CancelToken();
+  CancelToken cancelToken = CancelToken();
   late Flash flash;
   late final List<TableColumn> columns;
 
@@ -66,50 +66,24 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
     super.dispose();
   }
 
-  Future<DataTableResponse<Item>> fetchItems(
-      {int page = 1,
-      int limit = 20,
-      List<SortData> sorts = const [],
-      Map filter = const {}}) {
-    var sort = sorts.isEmpty ? null : sorts.first;
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'include': 'supplier,brand,item_type',
-      'sort': sort == null
-          ? ''
-          : sort.isAscending
-              ? sort.key
-              : "-${sort.key}",
-    };
-    filter.forEach((key, value) {
-      param[key] = value;
-    });
+  Future<DataTableResponse<Item>> fetchItems(request) {
+    request.searchText = _searchText;
+    request.cancelToken = cancelToken;
+    request.include = ['supplier', 'brand', 'item_type'];
 
-    return server
-        .get('items', queryParam: param, cancelToken: cancelToken)
-        .then((response) {
-      if (response.statusCode != 200) {
-        throw 'error: ${response.data.toString()}';
-      }
-      Map responseBody = response.data;
-      if (responseBody['data'] is! List) {
-        throw 'error: invalid data type ${response.data.toString()}';
-      }
-      items = responseBody['data']
-          .map<Item>((json) => ItemClass()
-              .fromJson(json, included: responseBody['included'] ?? []))
-          .toList();
-      final totalPage = responseBody['meta']?['total_pages'] ?? 1;
-      return DataTableResponse<Item>(totalPage: totalPage, models: items);
-    },
-            onError: (error, stackTrace) =>
-                defaultErrorResponse(error: error, valueWhenError: []));
+    return ItemClass().finds(server, request).then((response) {
+      return DataTableResponse<Item>(
+          totalPage: response.metadata['total_pages'] ?? 1,
+          models: response.models);
+    }, onError: (error, stackTrace) {
+      defaultErrorResponse(error: error, valueWhenError: []);
+      return DataTableResponse<Item>(models: [], totalPage: 1);
+    });
   }
 
   void searchChanged(value) {
     String container = _searchText;
+
     setState(() {
       if (value.length >= 3) {
         _searchText = value;
@@ -118,6 +92,8 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
       }
     });
     if (container != _searchText) {
+      cancelToken.cancel();
+      cancelToken = CancelToken();
       refreshTable();
     }
   }
@@ -162,11 +138,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
             child: CustomAsyncDataTable2<Item>(
               onLoaded: (stateManager) => _source = stateManager,
               fixedLeftColumns: 1,
-              fetchData: (request) => fetchItems(
-                page: request.page,
-                sorts: request.sorts,
-                filter: request.filter,
-              ),
+              fetchData: (request) => fetchItems(request),
               columns: columns,
             ),
           ),
