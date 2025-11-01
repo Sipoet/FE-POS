@@ -23,13 +23,12 @@ class _ProductFormPageState extends State<ProductFormPage>
   final _formState = GlobalKey<FormState>();
   Product get product => widget.product;
   late final Server _server;
-  bool isDetailListExpanded = false;
   final flash = Flash();
   static const labelStyle =
       TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
   final descriptionController = TextEditingController();
   final supplierProductCodeController = TextEditingController();
-
+  List<bool> panelPool = List.generate(2, (e) => false);
   @override
   void initState() {
     _server = context.read<Server>();
@@ -157,21 +156,23 @@ class _ProductFormPageState extends State<ProductFormPage>
               ExpansionPanelList(
                 expansionCallback: (int index, bool isExpanded) {
                   setState(() {
-                    isDetailListExpanded = isExpanded;
+                    panelPool[index] = isExpanded;
                   });
                 },
                 children: [
                   ExpansionPanel(
-                    isExpanded: isDetailListExpanded,
+                    isExpanded: panelPool[0],
                     headerBuilder: (context, isExpanded) => Row(
                       spacing: 10,
                       children: [
-                        Text(
-                          'Detail Produk',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 18),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10.0),
+                          child: Text(
+                            'Detail Produk',
+                            style: labelStyle,
+                          ),
                         ),
-                        if (isDetailListExpanded)
+                        if (panelPool[0])
                           IconButton.outlined(
                             onPressed: () => setState(() {
                               product.tags.add(ProductTag());
@@ -180,43 +181,55 @@ class _ProductFormPageState extends State<ProductFormPage>
                           ),
                       ],
                     ),
-                    body: Table(
-                      columnWidths: {2: FixedColumnWidth(150)},
-                      border: TableBorder.symmetric(inside: BorderSide()),
-                      children: [
-                            TableRow(children: [
-                              TableCell(
-                                  child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Kategori',
-                                  style: labelStyle,
-                                ),
-                              )),
-                              TableCell(
-                                  child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Value',
-                                  style: labelStyle,
-                                ),
-                              )),
-                              TableCell(
-                                  child: IconButton(
-                                      onPressed: () => showConfirmDialog(
-                                          message: 'Apakah yakin hapus semua?',
-                                          onSubmit: () => setState(() {
-                                                product.tags.clear();
-                                              })),
-                                      icon: Icon(Icons.delete))),
-                            ]),
-                          ] +
-                          product.tags.map(renderRowTag).toList(),
+                    body: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Table(
+                        columnWidths: {2: FixedColumnWidth(150)},
+                        border: TableBorder.symmetric(inside: BorderSide()),
+                        children: [
+                              TableRow(children: [
+                                TableCell(
+                                    child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'Kategori',
+                                    style: labelStyle,
+                                  ),
+                                )),
+                                TableCell(
+                                    child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'Value',
+                                    style: labelStyle,
+                                  ),
+                                )),
+                                TableCell(
+                                    child: IconButton(
+                                        onPressed: () => showConfirmDialog(
+                                            message:
+                                                'Apakah yakin hapus semua?',
+                                            onSubmit: () => setState(() {
+                                                  product.tags.clear();
+                                                })),
+                                        icon: Icon(Icons.delete))),
+                              ]),
+                            ] +
+                            product.tags.map(renderRowTag).toList(),
+                      ),
                     ),
                   ),
                   ExpansionPanel(
-                      headerBuilder: (context, isExpanded) => Text('SKU'),
-                      body: Expanded(
+                      isExpanded: panelPool[1],
+                      headerBuilder: (context, isExpanded) => Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Text(
+                              'SKU',
+                              style: labelStyle,
+                            ),
+                          ),
+                      body: SizedBox(
+                        height: bodyScreenHeight,
                         child: CustomAsyncDataTable2<StockKeepingUnit>(
                           fetchData: (QueryRequest request) {
                             request.filters.add(ComparisonFilterData(
@@ -267,7 +280,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                                 humanizeName: 'Harga Jual'),
                             TableColumn(
                                 clientWidth: 150,
-                                name: 'expiredDate',
+                                name: 'expired_date',
                                 type: TableColumnType.date,
                                 humanizeName: 'Tanggal Expired'),
                           ],
@@ -301,7 +314,7 @@ class _ProductFormPageState extends State<ProductFormPage>
   }
 
   TableRow renderRowTag(ProductTag productTag) {
-    return TableRow(children: [
+    return TableRow(key: ObjectKey(productTag), children: [
       TableCell(
           child: Padding(
         padding: const EdgeInsets.all(8.0),

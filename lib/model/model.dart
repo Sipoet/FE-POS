@@ -159,9 +159,11 @@ mixin SaveNDestroyModel on Model {
             included: response.data['included'] ?? []);
         return true;
       } else if (response.statusCode == 409) {
-        _errors = response.data['errors'];
+        _errors = response.data['errors']
+            .map<String>((e) => e.toString())
+            .toList() as List<String>;
       } else {
-        _errors = [response.data.toString()];
+        _errors = <String>[response.data.toString()];
       }
       return false;
     }, onError: (error) {
