@@ -136,6 +136,7 @@ class QueryRequest {
       {this.page = 1,
       this.limit = 10,
       this.cancelToken,
+      this.searchText,
       this.include = const [],
       this.filters = const [],
       this.sorts = const []});

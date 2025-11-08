@@ -26,15 +26,20 @@ class _ProductFormPageState extends State<ProductFormPage>
   final flash = Flash();
   static const labelStyle =
       TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
-  final descriptionController = TextEditingController();
-  final supplierProductCodeController = TextEditingController();
+  final controllers = {
+    'default_barcode': TextEditingController(),
+    'description': TextEditingController(),
+    'supplier_product_code': TextEditingController(),
+  };
   List<bool> panelPool = List.generate(2, (e) => false);
   @override
   void initState() {
     _server = context.read<Server>();
     product.addListener(() {
-      descriptionController.text = product.description;
-      supplierProductCodeController.text = product.supplierProductCode ?? '';
+      for (final entry in controllers.entries) {
+        final controller = entry.value;
+        controller.text = product[entry.key] ?? '';
+      }
     });
 
     super.initState();
@@ -74,7 +79,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                   SizedBox(
                     width: 350,
                     child: TextFormField(
-                      controller: descriptionController,
+                      controller: controllers['description'],
                       keyboardType: TextInputType.text,
                       decoration: InputDecoration(
                           label: Text(
@@ -88,13 +93,33 @@ class _ProductFormPageState extends State<ProductFormPage>
                   SizedBox(
                     width: 250,
                     child: TextFormField(
-                      controller: supplierProductCodeController,
+                      controller: controllers['supplier_product_code'],
                       keyboardType: TextInputType.text,
                       decoration: InputDecoration(
                           label: Text(
                             'Kode Produk dari Supplier',
                             style: labelStyle,
                           ),
+                          isDense: true,
+                          border: OutlineInputBorder()),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 250,
+                    child: TextFormField(
+                      controller: controllers['default_barcode'],
+                      keyboardType: TextInputType.text,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.singleLineFormatter,
+                        UpperCaseTextFormatter(),
+                        FilteringTextInputFormatter.allow(RegExp('[0-9A-Z]')),
+                      ],
+                      decoration: InputDecoration(
+                          label: Text(
+                            'Default Barcode',
+                            style: labelStyle,
+                          ),
+                          helperText: 'hanya boleh diisi huruf dan angka',
                           isDense: true,
                           border: OutlineInputBorder()),
                     ),
@@ -232,6 +257,11 @@ class _ProductFormPageState extends State<ProductFormPage>
                         height: bodyScreenHeight,
                         child: CustomAsyncDataTable2<StockKeepingUnit>(
                           fetchData: (QueryRequest request) {
+                            if (product.isNewRecord) {
+                              return Future.value(
+                                  DataTableResponse<StockKeepingUnit>(
+                                      totalPage: 1, models: []));
+                            }
                             request.filters.add(ComparisonFilterData(
                               key: 'product_id',
                               value: product.id.toString(),
@@ -348,5 +378,16 @@ class _ProductFormPageState extends State<ProductFormPage>
                   }),
               icon: Icon(Icons.delete)))
     ]);
+  }
+}
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
+    );
   }
 }

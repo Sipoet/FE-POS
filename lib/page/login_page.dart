@@ -205,7 +205,7 @@ class _LoginPageState extends State<LoginPage>
               description: body,
               messageType: ToastificationType.error,
             );
-          }).whenComplete(() => hideLoadingPopup());
+          }).whenComplete(hideLoadingPopup);
     } catch (error) {
       flash.showBanner(
         title: 'Gagal Login',

@@ -106,6 +106,7 @@ class DateFormField extends StatefulWidget {
   final DateTime? firstDate;
   final DateTime? lastDate;
   final bool allowClear;
+  final bool isDense;
   final DateType dateType;
   final FocusNode? focusNode;
   final DateEditingController? controller;
@@ -117,6 +118,7 @@ class DateFormField extends StatefulWidget {
       this.label,
       this.dateType = const DateType(),
       this.firstDate,
+      this.isDense = false,
       this.controller,
       this.lastDate,
       this.helpText,
@@ -204,7 +206,8 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
       },
       decoration: InputDecoration(
         label: widget.label,
-        contentPadding: EdgeInsets.all(5),
+        isDense: widget.isDense,
+        contentPadding: widget.isDense ? null : EdgeInsets.all(5),
         border: const OutlineInputBorder(),
         suffix: widget.allowClear
             ? IconButton(

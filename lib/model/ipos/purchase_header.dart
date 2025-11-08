@@ -1,13 +1,13 @@
-import 'package:fe_pos/model/purchase_item.dart';
-export 'package:fe_pos/model/purchase_item.dart';
+import 'package:fe_pos/model/ipos/purchase_item.dart';
+export 'package:fe_pos/model/ipos/purchase_item.dart';
 import 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-class Purchase extends Model {
+class IposPurchaseHeader extends Model {
   String code;
   String? orderCode;
   String userName;
-  List<PurchaseItem> purchaseItems;
+  List<IposPurchaseItem> purchaseItems;
   DateTime datetime;
   DateTime? noteDate;
   String description;
@@ -28,7 +28,7 @@ class Purchase extends Model {
   String destLocation;
   String supplierCode;
   Supplier supplier;
-  Purchase(
+  IposPurchaseHeader(
       {this.userName = '',
       this.description = '',
       this.totalItem = 0,
@@ -55,8 +55,8 @@ class Purchase extends Model {
       super.updatedAt,
       Supplier? supplier,
       DateTime? datetime,
-      List<PurchaseItem>? purchaseItems})
-      : purchaseItems = purchaseItems ?? <PurchaseItem>[],
+      List<IposPurchaseItem>? purchaseItems})
+      : purchaseItems = purchaseItems ?? <IposPurchaseItem>[],
         supplier = supplier ?? Supplier(),
         datetime = datetime ?? DateTime.now();
 
@@ -97,7 +97,7 @@ class Purchase extends Model {
     var attributes = json['attributes'];
 
     if (included.isNotEmpty) {
-      purchaseItems = PurchaseItemClass().findRelationsData(
+      purchaseItems = IposPurchaseItemClass().findRelationsData(
         included: included,
         relation: json['relationships']['purchase_items'],
       );
@@ -137,7 +137,7 @@ class Purchase extends Model {
   String get modelValue => code;
 }
 
-class PurchaseClass extends ModelClass<Purchase> {
+class IposPurchaseHeaderClass extends ModelClass<IposPurchaseHeader> {
   @override
-  Purchase initModel() => Purchase();
+  IposPurchaseHeader initModel() => IposPurchaseHeader();
 }

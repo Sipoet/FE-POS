@@ -12,6 +12,7 @@ class Product extends Model with SaveNDestroyModel {
   String description;
   String? supplierProductCode;
   ItemType? itemType;
+  String defaultBarcode;
   Brand? brand;
   Supplier? supplier;
   List<ProductTag> tags = [];
@@ -20,6 +21,7 @@ class Product extends Model with SaveNDestroyModel {
       {super.id,
       this.description = '',
       this.supplierProductCode,
+      this.defaultBarcode = '',
       this.itemType,
       List<ProductTag>? tags,
       this.brand,
@@ -30,12 +32,14 @@ class Product extends Model with SaveNDestroyModel {
 
   @override
   Map<String, dynamic> toMap() => {
+        'name': name,
         'description': description,
         'item_type_id': itemType?.id,
         'brand_id': brand?.id,
         'supplier_id': supplier?.id,
         'item_type': itemType,
         'brand': brand,
+        'default_barcode': defaultBarcode,
         'supplier': supplier,
         'supplier_product_code': supplierProductCode,
         'created_at': createdAt,
@@ -45,11 +49,14 @@ class Product extends Model with SaveNDestroyModel {
   @override
   String get modelName => 'product';
 
+  String get name => description;
+
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'] ?? {};
     super.setFromJson(json, included: included);
     description = attributes['description'] ?? '';
+    defaultBarcode = attributes['default_barcode'] ?? '';
     supplierProductCode = attributes['supplier_product_code'];
     brand = BrandClass().findRelationData(
         relation: json['relationships']?['brand'], included: included);
@@ -65,7 +72,7 @@ class Product extends Model with SaveNDestroyModel {
   String get modelValue => description;
 }
 
-class ProductClass extends ModelClass<Product> with FindModel<Product> {
+class ProductClass extends ModelClass<Product> {
   @override
   Product initModel() => Product();
 }

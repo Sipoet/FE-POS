@@ -46,6 +46,7 @@ class AsyncDropdownMultiple<T extends Model> extends StatefulWidget {
       this.recordLimit = 10,
       required this.textOnSearch,
       this.textOnSelected,
+      this.dropdownConfig,
       this.compareValue,
       // required this.converter,
       required this.modelClass,
@@ -60,6 +61,7 @@ class AsyncDropdownMultiple<T extends Model> extends StatefulWidget {
   final List<T> selecteds;
   final int selectedDisplayLimit;
   final FocusNode? focusNode;
+  final DropdownConfig<T>? dropdownConfig;
   final void Function(List<T> models)? onChanged;
   final void Function(List<T>? models)? onSaved;
   final DropdownValidator<T>? validator;
@@ -260,6 +262,14 @@ class _AsyncDropdownMultipleState<T extends Model>
 
   Future<List<T>> getData(String filter, LoadProps? prop) async {
     int page = (prop!.skip / widget.recordLimit).round() + 1;
+    final queryRequest = QueryRequest(
+        searchText: filter,
+        cancelToken: _cancelToken,
+        page: page,
+        limit: widget.recordLimit);
+    if (widget.dropdownConfig != null) {
+      return widget.dropdownConfig!.requestData(queryRequest);
+    }
     var response = await request(
             page: page,
             limit: widget.recordLimit,
@@ -306,6 +316,7 @@ class AsyncDropdown<T> extends StatefulWidget {
       this.recordLimit = 10,
       required this.textOnSearch,
       this.textOnSelected,
+      this.dropdownConfig,
       this.compareValue,
       required this.modelClass,
       this.selected});
@@ -318,6 +329,7 @@ class AsyncDropdown<T> extends StatefulWidget {
   final T? selected;
   final bool allowClear;
   final bool isDense;
+  final DropdownConfig<T>? dropdownConfig;
   final FocusNode? focusNode;
   final int selectedDisplayLimit;
   final void Function(T? model)? onChanged;
@@ -392,7 +404,7 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
       itemAsString: widget.textOnSearch,
       selectedItem: widget.selected,
       onBeforePopupOpening: (selItems) {
-        return Future.delayed(Duration.zero, () {
+        return Future.delayed(Durations.extralong4, () {
           if (_focusNode.canRequestFocus) {
             _focusNode.requestFocus();
           }
@@ -441,6 +453,14 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
 
   Future<List<T>> getData(String filter, LoadProps? prop) async {
     int page = (prop!.skip / widget.recordLimit).round() + 1;
+    final queryRequest = QueryRequest(
+        searchText: filter,
+        cancelToken: _cancelToken,
+        page: page,
+        limit: widget.recordLimit);
+    if (widget.dropdownConfig != null) {
+      return widget.dropdownConfig!.requestData(queryRequest);
+    }
     var response = await request(
       page: page,
       limit: widget.recordLimit,
@@ -462,5 +482,202 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
         .map<T>((row) =>
             widget.modelClass.fromJson(row, included: relationships) as T)
         .toList();
+  }
+}
+
+abstract class DropdownConfig<T> {
+  Future<List<T>> requestData(QueryRequest request);
+}
+
+class ModelDropdownConfig<T extends Model> implements DropdownConfig<T> {
+  ModelClass modelClass;
+  Server server;
+
+  ModelDropdownConfig({required this.modelClass, required this.server});
+
+  @override
+  Future<List<T>> requestData(QueryRequest request) {
+    return modelClass
+        .finds(server, request)
+        .then((QueryResponse queryResponse) => queryResponse.models as List<T>);
+  }
+}
+
+typedef FilterText = bool Function(String text);
+
+class StringDropdownConfig implements DropdownConfig<String> {
+  List<String> items;
+
+  StringDropdownConfig({
+    this.items = const [],
+  });
+  @override
+  Future<List<String>> requestData(QueryRequest request) {
+    if (request.searchText == null) {
+      return Future.value(items);
+    }
+    return Future.value(items.where(_filterText(request.searchText!)).toList());
+  }
+
+  FilterText _filterText(String searchText) {
+    return (text) => text.contains(searchText);
+  }
+}
+
+typedef FutureTexts = Future<List<String>>;
+
+class StringAsyncDropdownConfig implements DropdownConfig<String> {
+  String? path;
+  Server? server;
+  FutureTexts Function(QueryRequest request)? serverRequest;
+  StringAsyncDropdownConfig({this.path, this.serverRequest, this.server});
+  @override
+  FutureTexts requestData(QueryRequest request) {
+    if (serverRequest != null) {
+      return serverRequest!(request);
+    }
+    if (server == null) {
+      throw 'server must exists';
+    }
+    return server!
+        .get(path!, queryParam: request.toQueryParam())
+        .then((response) {
+      if (response.statusCode != 200) {
+        return [];
+      }
+      return response.data['data'] ?? [];
+    });
+  }
+}
+
+class AllegraDropdown<T> extends StatefulWidget {
+  const AllegraDropdown(
+      {super.key,
+      this.allowClear = true,
+      this.delayedSearch = const Duration(milliseconds: 500),
+      this.onChanged,
+      this.label,
+      this.validator,
+      this.onSaved,
+      this.focusNode,
+      this.isDense = false,
+      this.recordLimit = 10,
+      required this.textOnSearch,
+      this.textOnSelected,
+      required this.dropdownConfig,
+      this.compareValue,
+      this.selected});
+
+  final Duration delayedSearch;
+  final int recordLimit;
+  final T? selected;
+  final bool allowClear;
+  final bool isDense;
+  final DropdownConfig<T> dropdownConfig;
+  final FocusNode? focusNode;
+  final void Function(T? model)? onChanged;
+  final void Function(T? model)? onSaved;
+  final String? Function(T? model)? validator;
+  final DropdownText<T> textOnSearch;
+  final DropdownText<T>? textOnSelected;
+  final Widget? label;
+  final bool Function(T, T)? compareValue;
+
+  @override
+  State<AllegraDropdown<T>> createState() => _AllegraDropdownState<T>();
+}
+
+class _AllegraDropdownState<T> extends State<AllegraDropdown<T>>
+    with DefaultResponse, PlatformChecker {
+  final notFoundSign = const DropdownMenuEntry<String>(
+      label: 'Data tidak Ditemukan', value: '', enabled: false);
+  late final Server server;
+  final CancelToken _cancelToken = CancelToken();
+  late final FocusNode _focusNode;
+  DropdownConfig<T> get dropdownConfig => widget.dropdownConfig;
+
+  @override
+  void initState() {
+    server = context.read<Server>();
+    _focusNode = widget.focusNode ?? FocusNode();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _cancelToken.cancel();
+    super.dispose();
+  }
+
+  bool compareResult(T a, T b) =>
+      widget.textOnSearch(a) == widget.textOnSearch(b);
+
+  @override
+  Widget build(BuildContext context) {
+    final textFormat = widget.textOnSelected ?? widget.textOnSearch;
+    return DropdownSearch<T>(
+      items: (a, b) => getData(a, b),
+      onChanged: widget.onChanged,
+      onSaved: widget.onSaved,
+      validator: widget.validator,
+      compareFn: widget.compareValue ?? compareResult,
+      itemAsString: widget.textOnSearch,
+      selectedItem: widget.selected,
+      onBeforePopupOpening: (selItems) {
+        return Future.delayed(Durations.medium1, () {
+          if (_focusNode.canRequestFocus) {
+            _focusNode.requestFocus();
+          }
+          return true;
+        });
+      },
+      suffixProps: DropdownSuffixProps(
+          clearButtonProps: ClearButtonProps(isVisible: widget.allowClear)),
+      dropdownBuilder: (context, selectedItem) {
+        if (selectedItem == null) {
+          return const SizedBox();
+        }
+        return SelectableText(textFormat(selectedItem));
+      },
+      popupProps: isMobile()
+          ? PopupProps.dialog(
+              searchDelay: widget.delayedSearch,
+              searchFieldProps: TextFieldProps(focusNode: _focusNode),
+              onItemsLoaded: (selectedItems) => _focusNode.requestFocus(),
+              showSearchBox: true,
+              showSelectedItems: true,
+              disableFilter: true,
+              infiniteScrollProps: InfiniteScrollProps(
+                loadProps: LoadProps(skip: 0, take: widget.recordLimit),
+              ),
+            )
+          : PopupProps.menu(
+              searchDelay: widget.delayedSearch,
+              searchFieldProps: TextFieldProps(focusNode: _focusNode),
+              onItemsLoaded: (selectedItems) => _focusNode.requestFocus(),
+              showSearchBox: true,
+              showSelectedItems: true,
+              disableFilter: true,
+              infiniteScrollProps: InfiniteScrollProps(
+                loadProps: LoadProps(skip: 0, take: widget.recordLimit),
+              ),
+            ),
+      decoratorProps: DropDownDecoratorProps(
+          decoration: InputDecoration(
+        label: widget.label,
+        isDense: widget.isDense,
+        border: const OutlineInputBorder(),
+      )),
+    );
+  }
+
+  Future<List<T>> getData(String filter, LoadProps? prop) async {
+    int page = (prop!.skip / widget.recordLimit).round() + 1;
+    final queryRequest = QueryRequest(
+        searchText: filter,
+        cancelToken: _cancelToken,
+        page: page,
+        limit: widget.recordLimit);
+    return dropdownConfig.requestData(queryRequest);
   }
 }

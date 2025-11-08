@@ -1,11 +1,12 @@
-import 'package:fe_pos/model/product.dart';
-export 'package:fe_pos/model/product.dart';
+import 'package:fe_pos/model/item.dart';
+export 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-class PurchaseItem extends Model {
+class IposPurchaseItem extends Model {
   double quantity;
-  Product _product;
+  Item item;
+  String itemCode;
   int row;
   Money price;
   String uom;
@@ -28,11 +29,11 @@ class PurchaseItem extends Model {
   double? warehouseStock;
   double? storeStock;
   double? numberOfSales;
-  PurchaseItem(
-      {Product? product,
+  IposPurchaseItem(
+      {Item? item,
       super.id,
       this.purchaseCode,
-      String? productId,
+      this.itemCode = '',
       this.row = 0,
       this.quantity = 0,
       this.price = const Money(0),
@@ -57,13 +58,13 @@ class PurchaseItem extends Model {
       this.productionCode,
       this.expiredDate,
       this.cogs = const Money(0)})
-      : _product = product ?? Product(id: productId);
+      : item = item ?? Item();
 
   @override
   Map<String, dynamic> toMap() => {
-        'product': _product,
-        'product_id': _product.id,
-        'product_name': _product.name,
+        'kodeitem': itemCode,
+        'item_code': itemCode,
+        'item_name': item.name,
         'jumlah': quantity,
         'nobaris': row,
         'harga': price,
@@ -79,7 +80,7 @@ class PurchaseItem extends Model {
         'warehouse_stock': warehouseStock,
         'store_stock': storeStock,
         'number_of_sales': numberOfSales,
-        // 'sell_price': sellPrice,
+        'sell_price': sellPrice,
         'jmlpesan': orderQuantity,
         'tglexp': expiredDate,
         'kodeprod': productionCode,
@@ -92,14 +93,7 @@ class PurchaseItem extends Model {
         'supplier_code': supplierCode,
         'brand_name': brandName,
       };
-
-  Product get product => _product;
-  String get productId => _product.id;
-  set productId(String val) => _product.id = val;
-  set product(Product? newProduct) =>
-      _product = newProduct ?? ProductClass().initModel();
-
-  // Money get sellPrice => product.sellPrice;
+  Money get sellPrice => item.sellPrice;
   @override
   String get modelName => 'purchase_item';
 
@@ -109,15 +103,13 @@ class PurchaseItem extends Model {
 
     super.setFromJson(json, included: included);
     if (included.isNotEmpty) {
-      product = ProductClass().findRelationData(
+      item = ItemClass().findRelationData(
             included: included,
             relation: json['relationships']?['item'],
           ) ??
-          product;
+          Item();
     }
-    if (product.id == null) {
-      productId = attributes['product_id'];
-    }
+    itemCode = attributes['kodeitem'];
     row = attributes['nobaris'];
     quantity = double.parse(attributes['jumlah']);
     stockLeft = double.tryParse(attributes['stock_left'] ?? '');
@@ -147,7 +139,7 @@ class PurchaseItem extends Model {
   String get modelValue => id.toString();
 }
 
-class PurchaseItemClass extends ModelClass<PurchaseItem> {
+class IposPurchaseItemClass extends ModelClass<IposPurchaseItem> {
   @override
-  PurchaseItem initModel() => PurchaseItem();
+  IposPurchaseItem initModel() => IposPurchaseItem();
 }

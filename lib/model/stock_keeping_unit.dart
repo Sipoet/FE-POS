@@ -43,8 +43,7 @@ class StockKeepingUnit extends Model {
   }
 }
 
-class StockKeepingUnitClass extends ModelClass<StockKeepingUnit>
-    with FindModel<StockKeepingUnit> {
+class StockKeepingUnitClass extends ModelClass<StockKeepingUnit> {
   @override
   StockKeepingUnit initModel() => StockKeepingUnit();
 }

@@ -1,4 +1,4 @@
-import 'package:fe_pos/model/purchase.dart';
+import 'package:fe_pos/model/ipos/purchase_header.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class PurchaseFormPage extends StatefulWidget {
-  final Purchase purchase;
+  final IposPurchaseHeader purchase;
   const PurchaseFormPage({super.key, required this.purchase});
 
   @override
@@ -30,7 +30,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
   late Flash flash;
 
   final _formKey = GlobalKey<FormState>();
-  Purchase get purchase => widget.purchase;
+  IposPurchaseHeader get purchase => widget.purchase;
   late final Server _server;
   late final Setting setting;
   late final PlutoGridStateManager _source;
@@ -611,7 +611,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                 ),
                 SizedBox(
                   height: 500,
-                  child: SyncDataTable<PurchaseItem>(
+                  child: SyncDataTable<IposPurchaseItem>(
                     columns: _columns,
                     showSummary: true,
                     onLoaded: (stateManager) => _source = stateManager,

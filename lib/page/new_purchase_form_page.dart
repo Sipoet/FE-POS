@@ -1,9 +1,14 @@
+import 'package:fe_pos/model/purchase_header.dart';
+import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_form_field.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class NewPurchaseFormPage extends StatefulWidget {
-  const NewPurchaseFormPage({super.key});
+  final PurchaseHeader purchaseHeader;
+  const NewPurchaseFormPage({super.key, required this.purchaseHeader});
 
   @override
   State<NewPurchaseFormPage> createState() => _NewPurchaseFormPageState();
@@ -11,324 +16,94 @@ class NewPurchaseFormPage extends StatefulWidget {
 
 class _NewPurchaseFormPageState extends State<NewPurchaseFormPage> {
   bool isConsignment = false;
-  List details = [{}];
+  late final Server _server;
+  PurchaseHeader get purchaseHeader => widget.purchaseHeader;
+  final _formState = GlobalKey<FormState>();
+  @override
+  void initState() {
+    _server = context.read<Server>();
+    super.initState();
+  }
+
   void openDetailSkus(detail) {}
 
   void addDetail() {
     setState(() {
-      details.add({});
+      purchaseHeader.purchaseItems.add(PurchaseItem());
     });
   }
 
-  void removeDetail(detail) {
+  void removeDetail(PurchaseItem detail) {
     setState(() {
-      details.remove(detail);
+      purchaseHeader.purchaseItems.remove(detail);
+    });
+  }
+
+  void submitForm() {
+    if (_formState.currentState?.validate() != true) {
+      return;
+    }
+    _formState.currentState?.save();
+    final flash = Flash();
+    purchaseHeader.save(_server).then((result) {
+      if (result) {
+        flash.show(
+          Text('Sukses Simpan Pembelian'),
+          ToastificationType.success,
+        );
+      } else {
+        flash.showBanner(
+            messageType: ToastificationType.error,
+            title: 'Gagal Simpan Pembelian',
+            description: purchaseHeader.errors.join(', '));
+      }
     });
   }
 
   void addOtherCost() {}
 
+  static const _widthInput = 250.0;
+
   @override
   Widget build(BuildContext context) {
     final labelStyle = TextStyle(
         fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1.2);
-    return VerticalBodyScroll(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Wrap(
-            runSpacing: 20,
-            spacing: 20,
-            children: [
-              SizedBox(
-                width: 200,
-                child: TextFormField(
-                  decoration: InputDecoration(
-                      label: Text('No Transaksi'),
-                      isDense: true,
-                      border: OutlineInputBorder()),
-                ),
-              ),
-              SizedBox(
-                width: 200,
-                child: TextFormField(
-                  decoration: InputDecoration(
-                      isDense: true,
-                      label: Text('No Faktur'),
-                      border: OutlineInputBorder()),
-                ),
-              ),
-              SizedBox(
-                width: 200,
-                child: DateFormField(
-                  label: Text('Tanggal Faktur'),
-                ),
-              ),
-              SizedBox(
-                width: 200,
-                child: DateFormField(
-                  label: Text('Tgl Barang Datang'),
-                ),
-              ),
-              SizedBox(
-                width: 200,
-                child: TextFormField(
-                  decoration: InputDecoration(
-                      isDense: true,
-                      label: Text('Supplier'),
-                      border: OutlineInputBorder()),
-                ),
-              ),
-              SizedBox(
-                width: 200,
-                child: TextFormField(
-                  decoration: InputDecoration(
-                      isDense: true,
-                      label: Text('Lokasi'),
-                      border: OutlineInputBorder()),
-                ),
-              ),
-              SizedBox(
-                width: 200,
-                child: CheckboxListTile(
-                  value: isConsignment,
-                  onChanged: (val) => setState(() {
-                    isConsignment = val ?? false;
-                  }),
-                  title: Text('Konsinyasi?'),
-                ),
-              ),
-              SizedBox(
-                width: 200,
-                child: TextFormField(
-                  decoration: InputDecoration(
-                      isDense: true,
-                      label: Text('Tipe Pajak'),
-                      border: OutlineInputBorder()),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          IconButton.filled(
-            onPressed: addDetail,
-            icon: Icon(Icons.add),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Table(
-              border: TableBorder(horizontalInside: BorderSide()),
-              defaultColumnWidth: FixedColumnWidth(220),
+    List<TableRow> tableBodies = [];
+    for (final purchaseItem in purchaseHeader.purchaseItems) {
+      tableBodies.add(TableRow(children: [
+        TableCell(
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
               children: [
-                    TableRow(children: [
-                      TableCell(
+                AllegraDropdown<Product>(
+                  dropdownConfig: ModelDropdownConfig(
+                      modelClass: ProductClass(), server: _server),
+                  allowClear: false,
+                  selected: purchaseItem.product,
+                  textOnSearch: (model) => model.name,
+                  onChanged: (model) => purchaseItem.product = model,
+                  isDense: true,
+                ),
+                Row(
+                  children: [
+                    Text('Tags: '),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
                         child: Text(
-                          'Produk',
-                          style: labelStyle,
+                          'UK XL',
+                          style: TextStyle(fontSize: 10),
                         ),
                       ),
-                      TableCell(
-                        child: Text('Jumlah', style: labelStyle),
-                      ),
-                      TableCell(
-                        child: Text('Satuan', style: labelStyle),
-                      ),
-                      TableCell(
-                        child: Text('Harga', style: labelStyle),
-                      ),
-                      TableCell(
-                        child: Text('Barcode', style: labelStyle),
-                      ),
-                      TableCell(
-                        child: Text('Tgl Expired', style: labelStyle),
-                      ),
-                      TableCell(
-                        child: Text(''),
-                      ),
-                    ])
-                  ] +
-                  details
-                      .map<TableRow>(
-                        (detail) => TableRow(children: [
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: Column(
-                                children: [
-                                  TextFormField(
-                                    decoration: InputDecoration(
-                                        isDense: true,
-                                        border: OutlineInputBorder()),
-                                  ),
-                                  Row(
-                                    children: [
-                                      Text('Tags: '),
-                                      Card(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: Text(
-                                            'UK XL',
-                                            style: TextStyle(fontSize: 10),
-                                          ),
-                                        ),
-                                      ),
-                                      Card(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: Text(
-                                            'Warna Hitam',
-                                            style: TextStyle(fontSize: 10),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: TextFormField(
-                                decoration: InputDecoration(
-                                    isDense: true,
-                                    border: OutlineInputBorder()),
-                              ),
-                            ),
-                          ),
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: TextFormField(
-                                decoration: InputDecoration(
-                                    isDense: true,
-                                    border: OutlineInputBorder()),
-                              ),
-                            ),
-                          ),
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: TextFormField(
-                                decoration: InputDecoration(
-                                    isDense: true,
-                                    border: OutlineInputBorder()),
-                              ),
-                            ),
-                          ),
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: TextFormField(
-                                decoration: InputDecoration(
-                                    isDense: true,
-                                    border: OutlineInputBorder()),
-                              ),
-                            ),
-                          ),
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: DateFormField(),
-                            ),
-                          ),
-                          TableCell(
-                              child: Row(
-                            children: [
-                              IconButton(
-                                  onPressed: () => openDetailSkus(detail),
-                                  icon: Icon(Icons.arrow_downward_outlined)),
-                              IconButton(
-                                  onPressed: () => removeDetail(detail),
-                                  icon: Icon(Icons.remove))
-                            ],
-                          ))
-                        ]),
-                      )
-                      .toList()),
-          SizedBox(
-            height: 20,
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: 300,
-                      child: TextFormField(
-                        minLines: 3,
-                        maxLines: 5,
-                        decoration: InputDecoration(
-                            isDense: true,
-                            label: Text('Keterangan'),
-                            border: OutlineInputBorder()),
-                      ),
-                    )
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  spacing: 15,
-                  children: [
-                    SizedBox(
-                      width: 250,
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                            isDense: true,
-                            label: Text('Subtotal'),
-                            border: OutlineInputBorder()),
-                      ),
                     ),
-                    SizedBox(
-                      width: 250,
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                            isDense: true,
-                            label: Text('Header Diskon'),
-                            border: OutlineInputBorder()),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 250,
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                            isDense: true,
-                            label: Text('Pajak'),
-                            border: OutlineInputBorder()),
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Text('Biaya Lain : '),
-                        IconButton.filled(
-                            onPressed: addOtherCost, icon: Icon(Icons.add))
-                      ],
-                    ),
-                    SizedBox(
-                      width: 250,
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                            isDense: true,
-                            label: Text('Grand Total'),
-                            border: OutlineInputBorder()),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 250,
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                            isDense: true,
-                            label: Text('DP'),
-                            border: OutlineInputBorder()),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Text(
+                          'Warna Hitam',
+                          style: TextStyle(fontSize: 10),
+                        ),
                       ),
                     ),
                   ],
@@ -336,8 +111,308 @@ class _NewPurchaseFormPageState extends State<NewPurchaseFormPage> {
               ],
             ),
           ),
-        ],
+        ),
+        TableCell(
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: TextFormField(
+              decoration:
+                  InputDecoration(isDense: true, border: OutlineInputBorder()),
+            ),
+          ),
+        ),
+        TableCell(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextFormField(
+              decoration:
+                  InputDecoration(isDense: true, border: OutlineInputBorder()),
+            ),
+          ),
+        ),
+        TableCell(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextFormField(
+              decoration:
+                  InputDecoration(isDense: true, border: OutlineInputBorder()),
+            ),
+          ),
+        ),
+        TableCell(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextFormField(
+              decoration:
+                  InputDecoration(isDense: true, border: OutlineInputBorder()),
+            ),
+          ),
+        ),
+        TableCell(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: DateFormField(
+              isDense: true,
+            ),
+          ),
+        ),
+        TableCell(
+            child: Row(
+          children: [
+            IconButton(
+                onPressed: () => openDetailSkus(purchaseItem),
+                icon: Icon(Icons.arrow_downward_outlined)),
+            IconButton(
+                onPressed: () => removeDetail(purchaseItem),
+                icon: Icon(Icons.delete))
+          ],
+        ))
+      ]));
+    }
+
+    return Stack(alignment: Alignment.bottomLeft, children: [
+      VerticalBodyScroll(
+        child: Form(
+          key: _formState,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                runSpacing: 15,
+                spacing: 15,
+                children: [
+                  SizedBox(
+                    width: _widthInput,
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                          label: Text('No Transaksi', style: labelStyle),
+                          isDense: true,
+                          border: OutlineInputBorder()),
+                    ),
+                  ),
+                  SizedBox(
+                    width: _widthInput,
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                          isDense: true,
+                          label: Text('No Faktur', style: labelStyle),
+                          border: OutlineInputBorder()),
+                    ),
+                  ),
+                  SizedBox(
+                    width: _widthInput,
+                    child: DateFormField(
+                      isDense: true,
+                      label: Text('Tanggal Faktur', style: labelStyle),
+                    ),
+                  ),
+                  SizedBox(
+                    width: _widthInput,
+                    child: DateFormField(
+                      isDense: true,
+                      label: Text('Tgl Barang Datang', style: labelStyle),
+                    ),
+                  ),
+                  SizedBox(
+                    width: _widthInput,
+                    child: AsyncDropdown<Supplier>(
+                      path: 'suppliers',
+                      modelClass: SupplierClass(),
+                      allowClear: false,
+                      isDense: true,
+                      validator: (model) {
+                        if (model == null) {
+                          return 'Harus diisi';
+                        }
+                        return null;
+                      },
+                      textOnSearch: (model) => "${model.code} - ${model.name}",
+                      textOnSelected: (model) => model.code,
+                      label: Text(
+                        'Supplier',
+                        style: labelStyle,
+                      ),
+                      selected: purchaseHeader.supplier,
+                    ),
+                  ),
+                  SizedBox(
+                    width: _widthInput,
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                          isDense: true,
+                          label: Text('Lokasi'),
+                          border: OutlineInputBorder()),
+                    ),
+                  ),
+                  SizedBox(
+                    width: _widthInput,
+                    child: CheckboxListTile(
+                      value: isConsignment,
+                      onChanged: (val) => setState(() {
+                        isConsignment = val ?? false;
+                      }),
+                      title: Text('Konsinyasi?'),
+                    ),
+                  ),
+                  SizedBox(
+                    width: _widthInput,
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                          isDense: true,
+                          label: Text('Tipe Pajak'),
+                          border: OutlineInputBorder()),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              IconButton.filled(
+                onPressed: addDetail,
+                icon: Icon(Icons.add),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Table(
+                    border: TableBorder(horizontalInside: BorderSide()),
+                    defaultColumnWidth: FixedColumnWidth(220),
+                    columnWidths: {
+                      6: FixedColumnWidth(90),
+                    },
+                    children: [
+                          TableRow(children: [
+                            TableCell(
+                              child: Text(
+                                'Produk',
+                                style: labelStyle,
+                              ),
+                            ),
+                            TableCell(
+                              child: Text('Jumlah', style: labelStyle),
+                            ),
+                            TableCell(
+                              child: Text('Satuan', style: labelStyle),
+                            ),
+                            TableCell(
+                              child: Text('Harga', style: labelStyle),
+                            ),
+                            TableCell(
+                              child: Text('Barcode', style: labelStyle),
+                            ),
+                            TableCell(
+                              child: Text('Tgl Expired', style: labelStyle),
+                            ),
+                            TableCell(
+                              child: Text(''),
+                            ),
+                          ])
+                        ] +
+                        tableBodies),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 300,
+                          child: TextFormField(
+                            minLines: 3,
+                            maxLines: 5,
+                            decoration: InputDecoration(
+                                isDense: true,
+                                label: Text('Keterangan'),
+                                border: OutlineInputBorder()),
+                          ),
+                        )
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      spacing: 15,
+                      children: [
+                        SizedBox(
+                          width: 250,
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                isDense: true,
+                                label: Text('Subtotal'),
+                                border: OutlineInputBorder()),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 250,
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                isDense: true,
+                                label: Text('Header Diskon'),
+                                border: OutlineInputBorder()),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 250,
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                isDense: true,
+                                label: Text('Pajak'),
+                                border: OutlineInputBorder()),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Text('Biaya Lain : '),
+                            IconButton.filled(
+                                onPressed: addOtherCost, icon: Icon(Icons.add))
+                          ],
+                        ),
+                        SizedBox(
+                          width: 250,
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                isDense: true,
+                                label: Text('Grand Total'),
+                                border: OutlineInputBorder()),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 250,
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                                isDense: true,
+                                label: Text('DP'),
+                                border: OutlineInputBorder()),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-    );
+      Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: FloatingActionButton(
+          onPressed: submitForm,
+          isExtended: true,
+          elevation: 2,
+          child: Text('Simpan'),
+        ),
+      )
+    ]);
   }
 }

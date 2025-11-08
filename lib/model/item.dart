@@ -97,7 +97,7 @@ class Item extends Model {
   String get modelValue => "$code - $name";
 }
 
-class ItemClass extends ModelClass<Item> with FindModel<Item> {
+class ItemClass extends ModelClass<Item> {
   @override
   Item initModel() => Item();
 }

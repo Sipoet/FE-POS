@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/purchase_header.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/page/new_purchase_form_page.dart';
@@ -13,7 +14,11 @@ class NewPurchasePage extends StatefulWidget {
 class _NewPurchasePageState extends State<NewPurchasePage> {
   void openForm() {
     final tabManager = context.read<TabManager>();
-    tabManager.addTab('Pembelian Baru', NewPurchaseFormPage());
+    tabManager.addTab(
+        'Pembelian Baru',
+        NewPurchaseFormPage(
+          purchaseHeader: PurchaseHeader(),
+        ));
   }
 
   @override

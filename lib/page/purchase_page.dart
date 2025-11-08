@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:fe_pos/model/purchase.dart';
+import 'package:fe_pos/model/ipos/purchase_header.dart';
 import 'package:fe_pos/page/purchase_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
@@ -21,10 +21,10 @@ class PurchasePage extends StatefulWidget {
 
 class _PurchasePageState extends State<PurchasePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final CustomAsyncDataTableSource<Purchase> _source;
+  late final CustomAsyncDataTableSource<IposPurchaseHeader> _source;
   late final Server server;
   String _searchText = '';
-  List<Purchase> items = [];
+  List<IposPurchaseHeader> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
@@ -38,7 +38,7 @@ class _PurchasePageState extends State<PurchasePage>
     server = context.read<Server>();
     flash = Flash();
     setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<Purchase>(
+    _source = CustomAsyncDataTableSource<IposPurchaseHeader>(
         columns: setting.tableColumn('ipos::Purchase'),
         fetchData: fetchPurchases);
     _source.sortColumn = _source.columns[2];
@@ -57,7 +57,7 @@ class _PurchasePageState extends State<PurchasePage>
     _source.refreshDataFromFirstPage();
   }
 
-  Future<ResponseResult<Purchase>> fetchPurchases(
+  Future<ResponseResult<IposPurchaseHeader>> fetchPurchases(
       {int page = 1,
       int limit = 50,
       TableColumn? sortColumn,
@@ -87,12 +87,13 @@ class _PurchasePageState extends State<PurchasePage>
           throw 'error: invalid data type ${response.data.toString()}';
         }
         final models = responseBody['data']
-            .map<Purchase>((json) => PurchaseClass()
+            .map<IposPurchaseHeader>((json) => IposPurchaseHeaderClass()
                 .fromJson(json, included: responseBody['included'] ?? []))
             .toList();
         final totalRows =
             responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<Purchase>(totalRows: totalRows, models: models);
+        return ResponseResult<IposPurchaseHeader>(
+            totalRows: totalRows, models: models);
       } catch (e, trace) {
         log(e.toString());
         log(trace.toString());
@@ -122,7 +123,7 @@ class _PurchasePageState extends State<PurchasePage>
     }
   }
 
-  void viewRecord(Purchase purchase) {
+  void viewRecord(IposPurchaseHeader purchase) {
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab('Lihat Pembelian ${purchase.code}',

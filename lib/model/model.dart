@@ -41,6 +41,20 @@ abstract class Model with ChangeNotifier {
     rawData = {'data': json, 'included': included};
   }
 
+  Future<bool> refresh(Server server) {
+    return server.get("$path/${id.toString()}").then((response) {
+      if (response.statusCode == 200) {
+        setFromJson(response.data['data'],
+            included: response.data['included'] ?? []);
+        return true;
+      }
+      return false;
+    }, onError: (error) {
+      debugPrint(error.toString());
+      return false;
+    });
+  }
+
   Map<String, dynamic> asMap() {
     Map<String, dynamic> value = toMap();
     if (createdAt != null) {
@@ -78,8 +92,8 @@ abstract class Model with ChangeNotifier {
 
   Map<String, dynamic> toMap();
 
-  dynamic operator [](key) {
-    return toMap()[key];
+  dynamic operator [](String key) {
+    return asMap()[key];
   }
 
   void reset() {
@@ -139,6 +153,43 @@ abstract class ModelClass<T extends Model> {
     model.setFromJson(json, included: included);
     return model;
   }
+
+  Future<T?> find(Server server, dynamic id) async {
+    final path = initModel().path;
+    return server.get("$path/${id.toString()}").then((response) {
+      if (response.statusCode == 200) {
+        return fromJson(response.data['data'],
+            included: response.data['included'] ?? []);
+      }
+      return null;
+    }, onError: (error) {
+      debugPrint(error.toString());
+      return null;
+    });
+  }
+
+  Future<QueryResponse<T>> finds(
+      Server server, QueryRequest queryRequest) async {
+    final path = initModel().path;
+    final param = queryRequest.toQueryParam();
+    return server
+        .get(path, queryParam: param, cancelToken: queryRequest.cancelToken)
+        .then((response) {
+      if (response.statusCode != 200) {
+        throw 'error: ${response.data.toString()}';
+      }
+      final data = response.data;
+      return QueryResponse(
+          metadata: data['meta'],
+          models: data['data']
+              .map<T>(
+                  (json) => fromJson(json, included: data['included'] ?? []))
+              .toList());
+    }, onError: (error) {
+      debugPrint(error.toString());
+      return null;
+    });
+  }
 }
 
 mixin SaveNDestroyModel on Model {
@@ -186,45 +237,6 @@ mixin SaveNDestroyModel on Model {
     }, onError: (error) {
       _errors = [error.toString()];
       return false;
-    });
-  }
-}
-
-mixin FindModel<T extends Model> on ModelClass<T> {
-  Future<T?> find(Server server, dynamic id) async {
-    final path = initModel().path;
-    return server.get("$path/${id.toString()}").then((response) {
-      if (response.statusCode == 200) {
-        return fromJson(response.data['data'],
-            included: response.data['included'] ?? []);
-      }
-      return null;
-    }, onError: (error) {
-      debugPrint(error.toString());
-      return null;
-    });
-  }
-
-  Future<QueryResponse<T>> finds(
-      Server server, QueryRequest queryRequest) async {
-    final path = initModel().path;
-    final param = queryRequest.toQueryParam();
-    return server
-        .get(path, queryParam: param, cancelToken: queryRequest.cancelToken)
-        .then((response) {
-      if (response.statusCode != 200) {
-        throw 'error: ${response.data.toString()}';
-      }
-      final data = response.data;
-      return QueryResponse(
-          metadata: data['meta'],
-          models: data['data']
-              .map<T>(
-                  (json) => fromJson(json, included: data['included'] ?? []))
-              .toList());
-    }, onError: (error) {
-      debugPrint(error.toString());
-      return null;
     });
   }
 }

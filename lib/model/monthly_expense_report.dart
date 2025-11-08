@@ -40,8 +40,7 @@ class MonthlyExpenseReport extends Model {
   String get modelValue => datePk.format(pattern: 'MMMM yyyy');
 }
 
-class MonthlyExpenseReportClass extends ModelClass<MonthlyExpenseReport>
-    with FindModel {
+class MonthlyExpenseReportClass extends ModelClass<MonthlyExpenseReport> {
   @override
   MonthlyExpenseReport initModel() =>
       MonthlyExpenseReport(datePk: Date.today());

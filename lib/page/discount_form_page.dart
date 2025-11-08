@@ -53,7 +53,8 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final List<TableColumn> _columns = [];
   late FocusNode _focusNode;
   final _whitelistColumns = [
-    'item',
+    'item_code',
+    'item_name',
     'item_type_name',
     'brand_name',
     'supplier_code',
@@ -263,12 +264,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
 
     final param = request.toQueryParam();
 
-    return server.get('item_reports', queryParam: param).then((response) {
+    return server.get('item_reports.json', queryParam: param).then((response) {
       try {
         if (response.statusCode != 200) {
           flash.showBanner(
               messageType: ToastificationType.error,
               title: 'Gagal Refresh Tabel');
+          return DataTableResponse<ItemReport>(models: [], totalPage: 1);
         }
         var data = response.data;
 
@@ -554,7 +556,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
               Padding(
                 padding: const EdgeInsets.only(left: 20, right: 20),
                 child: SizedBox(
-                  height: 950,
+                  height: 1300,
                   child: TabBarView(
                       controller: _tabController,
                       physics: const NeverScrollableScrollPhysics(),
