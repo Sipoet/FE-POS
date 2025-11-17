@@ -63,7 +63,8 @@ class _NewPurchaseFormPageState extends State<NewPurchaseFormPage> {
   void addOtherCost() {}
 
   static const _widthInput = 250.0;
-
+  static const defaultInputDecoration =
+      InputDecoration(isDense: true, border: OutlineInputBorder());
   @override
   Widget build(BuildContext context) {
     final labelStyle = TextStyle(
@@ -74,50 +75,61 @@ class _NewPurchaseFormPageState extends State<NewPurchaseFormPage> {
         TableCell(
           child: Padding(
             padding: const EdgeInsets.all(10.0),
-            child: Column(
-              children: [
-                AllegraDropdown<Product>(
-                  dropdownConfig: ModelDropdownConfig(
-                      modelClass: ProductClass(), server: _server),
-                  allowClear: false,
-                  selected: purchaseItem.product,
-                  textOnSearch: (model) => model.name,
-                  onChanged: (model) => purchaseItem.product = model,
-                  isDense: true,
-                ),
-                Row(
-                  children: [
-                    Text('Tags: '),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Text(
-                          'UK XL',
-                          style: TextStyle(fontSize: 10),
-                        ),
-                      ),
-                    ),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Text(
-                          'Warna Hitam',
-                          style: TextStyle(fontSize: 10),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            child: AllegraDropdown<Product>(
+              dropdownConfig: ModelDropdownConfig(
+                  modelClass: ProductClass(), server: _server),
+              allowClear: false,
+              selected: purchaseItem.product,
+              textOnSearch: (model) => model.name,
+              onChanged: (model) => purchaseItem.product = model,
+              isDense: true,
             ),
           ),
         ),
         TableCell(
+          child: Table(
+            border: TableBorder.all(),
+            children: [
+              TableRow(children: [
+                TableCell(
+                    child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextFormField(
+                    decoration: defaultInputDecoration,
+                  ),
+                )),
+              ]),
+              TableRow(children: [
+                TableCell(
+                    child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextFormField(
+                    decoration: defaultInputDecoration,
+                  ),
+                )),
+              ]),
+              TableRow(children: [
+                TableCell(
+                    child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextFormField(
+                    decoration: defaultInputDecoration,
+                  ),
+                )),
+              ]),
+            ],
+          ),
+        ),
+        TableCell(
+          child: TextFormField(
+            decoration: defaultInputDecoration,
+          ),
+        ),
+        TableCell(
           child: Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(8.0),
             child: TextFormField(
-              decoration:
-                  InputDecoration(isDense: true, border: OutlineInputBorder()),
+              decoration: defaultInputDecoration,
             ),
           ),
         ),
@@ -125,8 +137,7 @@ class _NewPurchaseFormPageState extends State<NewPurchaseFormPage> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextFormField(
-              decoration:
-                  InputDecoration(isDense: true, border: OutlineInputBorder()),
+              decoration: defaultInputDecoration,
             ),
           ),
         ),
@@ -134,17 +145,7 @@ class _NewPurchaseFormPageState extends State<NewPurchaseFormPage> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextFormField(
-              decoration:
-                  InputDecoration(isDense: true, border: OutlineInputBorder()),
-            ),
-          ),
-        ),
-        TableCell(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextFormField(
-              decoration:
-                  InputDecoration(isDense: true, border: OutlineInputBorder()),
+              decoration: defaultInputDecoration,
             ),
           ),
         ),
@@ -269,13 +270,6 @@ class _NewPurchaseFormPageState extends State<NewPurchaseFormPage> {
               SizedBox(
                 height: 20,
               ),
-              IconButton.filled(
-                onPressed: addDetail,
-                icon: Icon(Icons.add),
-              ),
-              SizedBox(
-                height: 20,
-              ),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Table(
@@ -289,6 +283,12 @@ class _NewPurchaseFormPageState extends State<NewPurchaseFormPage> {
                             TableCell(
                               child: Text(
                                 'Produk',
+                                style: labelStyle,
+                              ),
+                            ),
+                            TableCell(
+                              child: Text(
+                                'Opsi',
                                 style: labelStyle,
                               ),
                             ),
@@ -314,6 +314,15 @@ class _NewPurchaseFormPageState extends State<NewPurchaseFormPage> {
                         ] +
                         tableBodies),
               ),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: IconButton.filled(
+                  onPressed: addDetail,
+                  tooltip: 'Tambah Baris',
+                  icon: Icon(Icons.add),
+                ),
+              ),
+              const Divider(),
               SizedBox(
                 height: 20,
               ),
