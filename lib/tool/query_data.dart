@@ -32,6 +32,60 @@ enum QueryOperator {
         return 'gte';
     }
   }
+
+  String humanize() {
+    switch (this) {
+      case contains:
+        return 'contain';
+      case equals:
+        return '=';
+      case not:
+        return 'not';
+      case lessThan:
+        return '<';
+      case lessThanOrEqualTo:
+        return '<=';
+      case greaterThan:
+        return '>';
+      case greaterThanOrEqualTo:
+        return '>=';
+    }
+  }
+
+  static QueryOperator fromString(text) {
+    switch (text) {
+      case 'like':
+        return contains;
+      case 'contains':
+        return contains;
+      case 'eq':
+        return equals;
+      case '=':
+        return equals;
+      case ':':
+        return equals;
+      case 'not':
+        return not;
+      case '<':
+        return lessThan;
+      case 'lt':
+        return lessThan;
+      case '<=':
+        return lessThanOrEqualTo;
+      case 'lte':
+        return lessThanOrEqualTo;
+      case '>':
+        return greaterThan;
+      case 'gt':
+        return greaterThan;
+      case '>=':
+        return greaterThanOrEqualTo;
+      case 'gte':
+        return greaterThanOrEqualTo;
+      default:
+        throw 'invalid query operator $text';
+    }
+  }
 }
 
 abstract class FilterData {
@@ -40,6 +94,7 @@ abstract class FilterData {
     required this.key,
   });
 
+  String get humanizeValue;
   MapEntry<String, String> toJson();
 
   String _convertValue(dynamic value) {
@@ -55,15 +110,16 @@ abstract class FilterData {
 
 class ComparisonFilterData extends FilterData {
   dynamic value;
-  QueryOperator operator;
+  QueryOperator queryOperator;
   ComparisonFilterData(
       {required super.key,
-      this.operator = QueryOperator.equals,
+      this.queryOperator = QueryOperator.equals,
       required this.value});
-
+  @override
+  String get humanizeValue => value.toString();
   @override
   MapEntry<String, String> toJson() {
-    final jsonKey = 'filter[$key][${operator.toString()}]';
+    final jsonKey = 'filter[$key][${queryOperator.toString()}]';
     final jsonValue = _convertValue(value);
     return MapEntry(jsonKey, jsonValue);
   }
@@ -73,6 +129,8 @@ class BetweenFilterData extends FilterData {
   List<dynamic> values;
 
   BetweenFilterData({required super.key, required this.values});
+  @override
+  String get humanizeValue => values.map<String>((e) => e.toString()).join('-');
   @override
   MapEntry<String, String> toJson() {
     final jsonValue =

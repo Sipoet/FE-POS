@@ -52,7 +52,8 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final List<TableColumn> _columns = [];
   late FocusNode _focusNode;
   final _whitelistColumns = [
-    'item',
+    'item_code',
+    'item_name',
     'item_type_name',
     'brand_name',
     'supplier_code',
@@ -1215,14 +1216,17 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                 const SizedBox(
                                   height: 10,
                                 ),
-                                SizedBox(
-                                  height: bodyScreenHeight,
-                                  child: CustomAsyncDataTable2<ItemReport>(
-                                    columns: _columns,
-                                    fetchData: (request) => fetchItem(request),
-                                    fixedLeftColumns: 2,
-                                    onLoaded: (stateManager) =>
-                                        _source = stateManager,
+                                Expanded(
+                                  child: SizedBox(
+                                    height: bodyScreenHeight,
+                                    child: CustomAsyncDataTable2<ItemReport>(
+                                      columns: _columns,
+                                      fetchData: (request) =>
+                                          fetchItem(request),
+                                      fixedLeftColumns: 2,
+                                      onLoaded: (stateManager) =>
+                                          _source = stateManager,
+                                    ),
                                   ),
                                 )
                               ],

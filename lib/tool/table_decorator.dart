@@ -1,4 +1,4 @@
-import 'package:fe_pos/model/model.dart';
+import 'package:fe_pos/model/all_model.dart';
 import 'package:fe_pos/tool/model_route.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/tab_manager.dart';

@@ -6,6 +6,7 @@ import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/table_filter_form.dart';
+import 'package:fe_pos/widget/table_filter_form2.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -27,7 +28,7 @@ class _ItemReportPageState extends State<ItemReportPage>
   late Flash flash;
   late final List<TableColumn> columns;
   List<ItemReport> _itemReports = [];
-  Map _filter = {};
+  List<FilterData> _filters = [];
   @override
   void initState() {
     server = context.read<Server>();
@@ -91,9 +92,15 @@ class _ItemReportPageState extends State<ItemReportPage>
       'include': 'item,supplier,brand,item_type',
       'sort': '${sortData?.isAscending == false ? '-' : ''}$orderKey',
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filter in _filters) {
+      final entry = filter.toJson();
+      if (filter.key == 'search_text') {
+        param['search_text'] = entry.value;
+      } else {
+        param[entry.key] = entry.value;
+      }
+    }
+
     return server.get('item_reports',
         queryParam: param, type: _reportType ?? 'json');
   }
@@ -128,17 +135,42 @@ class _ItemReportPageState extends State<ItemReportPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TableFilterForm(
-              showCanopy: false,
-              onSubmit: (filter) {
-                _filter = filter;
-                _displayReport();
-              },
-              onDownload: (filter) {
-                _filter = filter;
-                _downloadReport();
-              },
-              columns: columns),
+          // TableFilterForm(
+          //     showCanopy: false,
+          //     onSubmit: (filter) {
+          //       _filters = filter.entries.map<FilterData>((e) {
+          //         final key = e.key.toString();
+          //         return ComparisonFilterData(
+          //             operator: QueryOperator.fromString(key.substring(
+          //                 key.lastIndexOf('[') + 1, key.lastIndexOf(']'))),
+          //             key: key.substring(7, key.indexOf(']')),
+          //             value: e.value.toString());
+          //       }).toList();
+          //       _displayReport();
+          //     },
+          //     onDownload: (filter) {
+          //       _filters = filter.entries
+          //           .map<FilterData>((e) => ComparisonFilterData(
+          //               key: e.key
+          //                   .toString()
+          //                   .substring(7, e.key.toString().indexOf(']')),
+          //               value: e.value.toString()))
+          //           .toList();
+
+          //       _downloadReport();
+          //     },
+          //     columns: columns),
+          TableFilterForm2(
+            onSubmit: (filterData) {
+              _filters = filterData ?? [];
+              _displayReport();
+            },
+            onDownload: (filterData) {
+              _filters = filterData ?? [];
+              _downloadReport();
+            },
+            columns: columns,
+          ),
           const SizedBox(height: 5),
           const Divider(),
           const SizedBox(height: 10),

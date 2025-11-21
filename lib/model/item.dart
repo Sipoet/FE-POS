@@ -1,10 +1,10 @@
+import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/brand.dart';
 import 'package:fe_pos/model/item_type.dart';
 import 'package:fe_pos/model/supplier.dart';
 export 'package:fe_pos/model/brand.dart';
 export 'package:fe_pos/model/item_type.dart';
 export 'package:fe_pos/model/supplier.dart';
-import 'package:fe_pos/model/model.dart';
 
 export 'package:fe_pos/tool/custom_type.dart';
 
