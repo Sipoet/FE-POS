@@ -146,6 +146,15 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     pageFunct: () => const PurchaseReportPage(),
                     key: 'purchaseReport',
                   ),
+                  Menu(
+                    icon: Icons.history,
+                    isClosed: true,
+                    label: 'Riwayat Pembayaran Pembelian',
+                    isDisabled:
+                        !setting.isAuthorize('purchasePaymentHistory', 'index'),
+                    pageFunct: () => const PurchasePaymentHistoryPage(),
+                    key: 'purchaseReport',
+                  ),
                 ]),
             Menu(
                 icon: Icons.money,

@@ -33,6 +33,7 @@ class _PurchasePaymentHistoryPageState extends State<PurchasePaymentHistoryPage>
   Future<DataTableResponse<PurchasePaymentHistory>> fetchData(
       QueryRequest request) {
     request.filters = _filters;
+    request.include = ['supplier'];
     return PurchasePaymentHistoryClass().finds(_server, request).then(
         (value) => DataTableResponse<PurchasePaymentHistory>(
             models: value.models,
@@ -51,16 +52,22 @@ class _PurchasePaymentHistoryPageState extends State<PurchasePaymentHistoryPage>
           TableFilterForm(
             columns: columns,
             onSubmit: (value) {
-              _filters = value;
+              setState(() {
+                _filters = value;
+              });
               _source.refreshTable();
             },
           ),
           SizedBox(
             height: bodyScreenHeight,
             child: CustomAsyncDataTable<PurchasePaymentHistory>(
-              onLoaded: (stateManager) => _source = stateManager,
+              onLoaded: (stateManager) {
+                _source = stateManager;
+                _source.sortDescending(_source.columns[2]);
+              },
               fetchData: fetchData,
-              showSummary: true,
+              showSummary: _filters.isNotEmpty,
+              fixedLeftColumns: 1,
               columns: columns,
             ),
           )

@@ -1,5 +1,6 @@
-import 'package:fe_pos/model/account.dart';
 import 'package:fe_pos/model/model.dart';
+import 'package:fe_pos/model/purchase.dart';
+import 'package:fe_pos/model/purchase_order.dart';
 
 enum PurchaseType {
   payment,
@@ -44,32 +45,98 @@ enum PurchaseType {
 class PurchasePaymentHistory extends Model {
   DateTime transactionAt;
   String? description;
-  DateTime purchaseAt;
+  String? purchaseCode;
+  String? purchaseOrderCode;
+  DateTime? invoicedAt;
   DateTime stockArrivedAt;
-  PurchaseType purchaseType;
   String code;
   Money grandTotal;
   Money paymentAmount;
   Money discountAmount;
-  Account? account;
+  Money debtTotal;
+  Money debtLeft;
+  String paymentAccount;
+  PurchaseOrder? purchaseOrder;
+
+  Supplier supplier;
+  Purchase? purchase;
   PurchasePaymentHistory(
       {super.id,
       this.code = '',
+      Supplier? supplier,
+      String? supplierCode,
       this.description,
-      this.purchaseType = PurchaseType.payment,
+      this.paymentAccount = '',
+      this.purchaseCode,
+      this.purchase,
+      this.purchaseOrder,
+      this.purchaseOrderCode,
       this.grandTotal = const Money(0),
       this.paymentAmount = const Money(0),
       this.discountAmount = const Money(0),
-      DateTime? purchaseAt,
+      this.debtLeft = const Money(0),
+      this.debtTotal = const Money(0),
+      this.invoicedAt,
       DateTime? stockArrivedAt,
       DateTime? transactionAt})
       : transactionAt = transactionAt ?? DateTime.now(),
         stockArrivedAt = stockArrivedAt ?? DateTime.now(),
-        purchaseAt = purchaseAt ?? DateTime.now();
+        supplier = supplier ?? Supplier(code: supplierCode ?? '');
   @override
   Map<String, dynamic> toMap() => {
         'transaction_at': transactionAt,
+        'invoiced_at': invoicedAt,
+        'stock_arrived_at': stockArrivedAt,
+        'description': description,
+        'payment_account': paymentAccount,
+        'discount_ammount': discountAmount,
+        'grand_total': grandTotal,
+        'payment_amount': paymentAmount,
+        'purchase_code': purchaseCode,
+        'purchase_order_code': purchaseOrderCode,
+        'code': code,
+        'supplier_code': supplierCode,
+        'supplier': "${supplier.code} - ${supplier.name}",
+        'debt_left': debtLeft,
+        'debt_total': debtTotal,
       };
+
+  String get supplierCode => supplier.code;
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    var attributes = json['attributes'];
+
+    if (included.isNotEmpty) {
+      supplier = SupplierClass().findRelationData(
+            included: included,
+            relation: json['relationships']?['supplier'],
+          ) ??
+          Supplier(code: attributes['supplier_code'] ?? '');
+      purchase = PurchaseClass().findRelationData(
+        included: included,
+        relation: json['relationships']?['purchase'],
+      );
+      purchaseOrder = PurchaseOrderClass().findRelationData(
+        included: included,
+        relation: json['relationships']?['purchase_order'],
+      );
+    }
+    super.setFromJson(json, included: included);
+    transactionAt = DateTime.parse(attributes['transaction_at'] ?? '');
+    invoicedAt = DateTime.tryParse(attributes['invoiced_at'] ?? '');
+    stockArrivedAt = DateTime.parse(attributes['stock_arrived_at'] ?? '');
+    description = attributes['description'];
+    paymentAccount = attributes['payment_account'];
+    discountAmount = Money.parse(attributes['discount_amount'] ?? '0');
+    paymentAmount = Money.parse(attributes['payment_amount'] ?? '0');
+    grandTotal = Money.parse(attributes['grand_total'] ?? '0');
+    debtTotal = Money.parse(attributes['debt_total'] ?? '0');
+    debtLeft = Money.parse(attributes['debt_left'] ?? '0');
+    purchaseCode = attributes['purchase_code'];
+    purchaseOrderCode = attributes['purchase_order_code'];
+    code = attributes['code'];
+  }
 }
 
 class PurchasePaymentHistoryClass extends ModelClass<PurchasePaymentHistory> {
