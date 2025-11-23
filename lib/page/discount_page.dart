@@ -26,9 +26,10 @@ class _DiscountPageState extends State<DiscountPage>
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
-  Map _filter = {};
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
   final _controller = MenuController();
-  late final CustomAsyncDataTableSource<Discount> _source;
+  late final PlutoGridStateManager _source;
   @override
   bool get wantKeepAlive => true;
 
@@ -37,11 +38,7 @@ class _DiscountPageState extends State<DiscountPage>
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
-    final columns = setting.tableColumn('discount');
-    _source = CustomAsyncDataTableSource<Discount>(
-        columns: columns, fetchData: fetchDiscounts);
-    _source.sortColumn = columns[16];
-    _source.isAscending = false;
+    columns = setting.tableColumn('discount');
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
@@ -55,55 +52,19 @@ class _DiscountPageState extends State<DiscountPage>
 
   Future<void> refreshTable() async {
     // clear table row
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<Discount>> fetchDiscounts({
-    int page = 1,
-    int limit = 100,
-    TableColumn? sortColumn,
-    bool isAscending = true,
-  }) {
-    String orderKey = sortColumn?.name ?? 'code';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'include':
-          'discount_items,discount_suppliers,discount_item_types,discount_brands',
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-    };
-    _filter.forEach((key, value) {
-      param[key] = value;
+  Future<DataTableResponse<Discount>> fetchDiscounts(QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    return DiscountClass().finds(server, request).then(
+        (value) => DataTableResponse<Discount>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
     });
-    try {
-      return server
-          .get('discounts', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<Discount>((json) => DiscountClass().fromJson(json))
-            .toList();
-        int totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<Discount>(totalRows: totalRows, models: models);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-
-      return Future(() => ResponseResult<Discount>(models: []));
-    }
   }
 
   void addForm() {
@@ -292,32 +253,6 @@ class _DiscountPageState extends State<DiscountPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.actionButtons = ((discount, index) => [
-          IconButton(
-              onPressed: () {
-                editForm(discount);
-              },
-              tooltip: 'Edit diskon',
-              icon: const Icon(Icons.edit)),
-          IconButton(
-              onPressed: () {
-                refreshPromotion(discount);
-              },
-              tooltip: 'Refresh item promotion',
-              icon: const Icon(Icons.refresh)),
-          IconButton(
-              onPressed: () {
-                downloadDiscountItems(discount);
-              },
-              tooltip: 'Download diskon Item',
-              icon: const Icon(Icons.download)),
-          IconButton(
-              onPressed: () {
-                showConfirmDeleteDialog(discount);
-              },
-              tooltip: 'Hapus diskon',
-              icon: const Icon(Icons.delete)),
-        ]);
 
     return SingleChildScrollView(
       child: Padding(
@@ -325,13 +260,13 @@ class _DiscountPageState extends State<DiscountPage>
         child: Column(
           children: [
             TableFilterForm(
-              columns: _source.columns,
+              columns: columns,
               enums: const {
                 'calculation_type': DiscountCalculationType.values,
                 'discount_type': DiscountType.values
               },
               onSubmit: (value) {
-                _filter = value;
+                _filters = value;
                 refreshTable();
               },
             ),
@@ -407,8 +342,43 @@ class _DiscountPageState extends State<DiscountPage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable(
-                controller: _source,
+              child: CustomAsyncDataTable2<Discount>(
+                actionColumnWidth: 220,
+                renderAction: (discount) => Row(
+                  spacing: 10,
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          editForm(discount);
+                        },
+                        tooltip: 'Edit diskon',
+                        icon: const Icon(Icons.edit)),
+                    IconButton(
+                        onPressed: () {
+                          refreshPromotion(discount);
+                        },
+                        tooltip: 'Refresh item promotion',
+                        icon: const Icon(Icons.refresh)),
+                    IconButton(
+                        onPressed: () {
+                          downloadDiscountItems(discount);
+                        },
+                        tooltip: 'Download diskon Item',
+                        icon: const Icon(Icons.download)),
+                    IconButton(
+                        onPressed: () {
+                          showConfirmDeleteDialog(discount);
+                        },
+                        tooltip: 'Hapus diskon',
+                        icon: const Icon(Icons.delete)),
+                  ],
+                ),
+                columns: columns,
+                onLoaded: (stateManager) {
+                  _source = stateManager;
+                  _source.sortDescending(_source.columns[16]);
+                },
+                fetchData: fetchDiscounts,
                 fixedLeftColumns: 1,
               ),
             ),

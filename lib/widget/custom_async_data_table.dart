@@ -1,4 +1,3 @@
-import 'package:data_table_2/data_table_2.dart';
 import 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -12,257 +11,6 @@ export 'package:fe_pos/tool/query_data.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 import 'package:provider/provider.dart';
 export 'package:pluto_grid/pluto_grid.dart';
-
-class CustomAsyncDataTable extends StatefulWidget {
-  final CustomAsyncDataTableSource controller;
-  final int fixedLeftColumns;
-  final List<Widget>? actions;
-  final Widget? header;
-  final bool showCheckboxColumn;
-  final void Function(int)? onPageChanged;
-  const CustomAsyncDataTable({
-    super.key,
-    required this.controller,
-    this.onPageChanged,
-    this.actions,
-    this.header,
-    this.showCheckboxColumn = false,
-    this.fixedLeftColumns = 1,
-  });
-
-  @override
-  State<CustomAsyncDataTable> createState() => _CustomAsyncDataTableState();
-}
-
-class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
-  int _sortColumnIndex = 0;
-  int page = 1;
-  int limit = 10;
-  bool _sortAscending = true;
-  final minimumColumnWidth = 100.0;
-  CustomAsyncDataTableSource get _dataSource => widget.controller;
-  List<TableColumn> get columns => _dataSource.columns;
-  final _paginatorController = PaginatorController();
-
-  @override
-  void initState() {
-    _dataSource.paginatorController = _paginatorController;
-    _dataSource.tabManager = context.read<TabManager>();
-    if (_dataSource.sortColumn != null) {
-      _sortColumnIndex = _dataSource.columns.indexOf(_dataSource.sortColumn!);
-      _sortAscending = _dataSource.isAscending;
-    }
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _paginatorController.dispose();
-    super.dispose();
-  }
-
-  double calculateTableWidth() {
-    double width = 100;
-    for (TableColumn column in columns) {
-      width += column.clientWidth;
-    }
-    return width;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    double tableWidth = calculateTableWidth();
-    List<DataColumn2> actions = [];
-    if (_dataSource.hasActionButton) {
-      actions.add(const DataColumn2(label: Text(''), fixedWidth: 300.0));
-      tableWidth += 300;
-    }
-    return AsyncPaginatedDataTable2(
-      key: ObjectKey(widget.key),
-      sortArrowAlwaysVisible: true,
-      showFirstLastButtons: true,
-      source: _dataSource,
-      actions: widget.actions,
-      header: widget.header,
-      showCheckboxColumn: widget.showCheckboxColumn,
-      fixedLeftColumns: widget.fixedLeftColumns,
-      sortColumnIndex: _sortColumnIndex,
-      sortAscending: _sortAscending,
-      headingRowDecoration: BoxDecoration(
-          border: Border.all(width: 2, color: colorScheme.outline)),
-      controller: _paginatorController,
-      border: TableBorder.all(
-          width: 1, color: colorScheme.outline.withValues(alpha: 0.5)),
-      empty: const Text('Data tidak ditemukan'),
-      columns: (columns).map<DataColumn2>((tableColumn) {
-            return DataColumn2(
-              tooltip: tableColumn.humanizeName,
-              numeric: true,
-              onSort: tableColumn.canSort
-                  ? ((columnIndex, ascending) {
-                      setState(() {
-                        _sortColumnIndex = columnIndex;
-                        _sortAscending = ascending;
-                      });
-                      _dataSource.sortData(tableColumn, _sortAscending);
-                    })
-                  : null,
-              fixedWidth: tableColumn.clientWidth,
-              label: Stack(
-                alignment: AlignmentDirectional.centerStart,
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned(
-                      right: 0,
-                      top: 0,
-                      child: GestureDetector(
-                          onHorizontalDragStart: (details) {
-                            setState(() {
-                              tableColumn.initX = details.globalPosition.dx;
-                            });
-                          },
-                          onHorizontalDragUpdate: (details) {
-                            final increment =
-                                details.globalPosition.dx - tableColumn.initX;
-                            final newWidth =
-                                tableColumn.clientWidth + increment;
-                            setState(() {
-                              tableColumn.initX = details.globalPosition.dx;
-                              tableColumn.clientWidth =
-                                  newWidth > minimumColumnWidth
-                                      ? newWidth
-                                      : minimumColumnWidth;
-                            });
-                          },
-                          child: const Icon(
-                            Icons.switch_left,
-                            size: 20,
-                          ))),
-                  Positioned(
-                    left: 0,
-                    width: tableColumn.clientWidth - 50,
-                    child: Text(
-                      tableColumn.humanizeName,
-                      overflow: TextOverflow.ellipsis,
-                      softWrap: false,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList() +
-          actions,
-      minWidth: tableWidth,
-      onPageChanged: (int page) {
-        this.page = page;
-        if (widget.onPageChanged != null) {
-          widget.onPageChanged!(page);
-        }
-        // _dataSource.getRows((page - 1) * limit, limit);
-      },
-      onRowsPerPageChanged: (int? limit) {
-        this.limit = limit ?? 10;
-        _paginatorController.goToFirstPage();
-      },
-      pageSyncApproach: PageSyncApproach.goToLast,
-      availableRowsPerPage: const [10, 20, 50, 100],
-      headingRowColor:
-          WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        return colorScheme.secondaryContainer.withValues(alpha: 0.08);
-      }),
-    );
-  }
-}
-
-class CustomAsyncDataTableSource<T extends Model> extends AsyncDataTableSource
-    with TableDecorator<T>, TextFormatter, PlatformChecker {
-  final List<TableColumn> columns;
-  late List<T> sortedData = [];
-  TableColumn? sortColumn;
-  bool isAscending = true;
-  List<Widget> Function(T model, int index)? actionButtons;
-  Map<int, T> selectedMap = {};
-  PaginatorController? paginatorController;
-  bool isShowActions = false;
-  List<T> get selected => selectedMap.values.toList();
-  int totalRows = 0;
-
-  Future<ResponseResult<T>> Function(
-      {int page,
-      int limit,
-      TableColumn sortColumn,
-      bool isAscending}) fetchData;
-
-  CustomAsyncDataTableSource(
-      {required this.fetchData,
-      this.isShowActions = false,
-      this.isAscending = true,
-      this.sortColumn,
-      required this.columns,
-      this.actionButtons,
-      this.paginatorController});
-
-  void refreshDataFromFirstPage() {
-    if (paginatorController?.isAttached ?? false) {
-      paginatorController?.goToFirstPage();
-    }
-    refreshDatasource();
-  }
-
-  bool get hasActionButton => actionButtons is Function;
-
-  void sortData(TableColumn sortColumn, bool isAscending) {
-    this.sortColumn = sortColumn;
-    this.isAscending = isAscending;
-    refreshDatasource();
-  }
-
-  @override
-  int get rowCount => totalRows;
-
-  @override
-  Future<AsyncRowsResponse> getRows(int startIndex, int count) {
-    final page = startIndex ~/ count + 1;
-    return fetchData(
-            page: page,
-            limit: count,
-            isAscending: this.isAscending,
-            sortColumn: this.sortColumn ?? this.columns[0])
-        .then((responseResult) {
-      totalRows = responseResult.totalRows;
-      List<DataRow> rows = [];
-      for (T model in responseResult.models) {
-        rows.add(DataRow(
-          key: ValueKey<dynamic>(model.id),
-          onSelectChanged: (value) {
-            if (value == null) {
-              return;
-            }
-            if (value) {
-              selectedMap[model.id] = model;
-            } else {
-              selectedMap.remove(model);
-            }
-
-            setRowSelection(ValueKey<dynamic>(model.id), value);
-          },
-          cells: decorateModel(model,
-              columns: columns, actionButtons: actionButtons),
-        ));
-      }
-      return AsyncRowsResponse(totalRows, rows);
-    });
-  }
-
-  @override
-  bool get isRowCountApproximate => false;
-
-  @override
-  int get selectedRowCount => selectedMap.keys.length;
-}
 
 class ResponseResult<T> {
   int totalRows;
@@ -283,7 +31,7 @@ class CustomAsyncDataTable2<T extends Model> extends StatefulWidget {
   final bool showCheckboxColumn;
   final bool showSummary;
   final List<TableColumn> columns;
-  final Future<DataTableResponse<T>> Function(DataTableRequest) fetchData;
+  final Future<DataTableResponse<T>> Function(QueryRequest) fetchData;
   final Map<String, List<Enum>> enums;
   final OnLoadedCallBack? onLoaded;
   final OnRowCheckedCallback? onRowChecked;
@@ -291,6 +39,8 @@ class CustomAsyncDataTable2<T extends Model> extends StatefulWidget {
   final OnRowDoubleTapCallback? onRowDoubleTap;
   final bool showFilter;
   final String primaryKey;
+  final Widget Function(T model)? renderAction;
+  final double? actionColumnWidth;
 
   const CustomAsyncDataTable2({
     super.key,
@@ -298,17 +48,19 @@ class CustomAsyncDataTable2<T extends Model> extends StatefulWidget {
     this.actions,
     this.onLoaded,
     this.header,
+    this.actionColumnWidth,
     this.primaryKey = 'id',
     this.showFilter = true,
-    List<TableColumn>? columns,
+    required this.columns,
     this.enums = const {},
     this.onRowChecked,
+    this.renderAction,
     this.onRowDoubleTap,
     this.onSelected,
     this.showSummary = false,
     this.showCheckboxColumn = false,
     this.fixedLeftColumns = 0,
-  }) : columns = columns ?? const [];
+  });
 
   @override
   State<CustomAsyncDataTable2<T>> createState() =>
@@ -318,7 +70,7 @@ class CustomAsyncDataTable2<T extends Model> extends StatefulWidget {
 class _CustomAsyncDataTable2State<T extends Model>
     extends State<CustomAsyncDataTable2<T>>
     with PlutoTableDecorator, PlatformChecker, TextFormatter {
-  late List<PlutoColumn> columns;
+  late final List<PlutoColumn> columns;
   late final PlutoGridStateManager _source;
   List selectedValues = [];
 
@@ -337,7 +89,21 @@ class _CustomAsyncDataTable2State<T extends Model>
         showFilter: widget.showFilter,
         isFrozen: index < widget.fixedLeftColumns,
       );
-    }).toList();
+    }).toList()
+      ..add(PlutoColumn(
+          title: ' ',
+          field: 'model',
+          type: PlutoColumnType.text(defaultValue: null),
+          hide: widget.renderAction == null,
+          frozen: PlutoColumnFrozen.end,
+          renderer: widget.renderAction == null
+              ? null
+              : (PlutoColumnRendererContext rendererContext) =>
+                  widget.renderAction!(rendererContext.cell.value as T),
+          width: widget.renderAction == null
+              ? 0
+              : widget.actionColumnWidth ?? PlutoGridSettings.columnWidth,
+          minWidth: 0));
 
     super.initState();
   }
@@ -346,33 +112,34 @@ class _CustomAsyncDataTable2State<T extends Model>
     return selectedValues.contains(row[widget.primaryKey]);
   }
 
-  String filterTypeRemote(filterType) {
+  QueryOperator filterTypeRemote(filterType) {
     if (filterType is PlutoFilterTypeContains) {
-      return 'like';
+      return QueryOperator.contains;
     } else if (filterType is PlutoFilterTypeLessThanOrEqualTo) {
-      return 'lte';
+      return QueryOperator.lessThanOrEqualTo;
     } else if (filterType is PlutoFilterTypeNot) {
-      return 'not';
+      return QueryOperator.not;
     } else if (filterType is PlutoFilterTypeEquals) {
-      return 'eq';
+      return QueryOperator.equals;
     } else if (filterType is PlutoFilterTypeGreaterThan) {
-      return 'gt';
+      return QueryOperator.greaterThan;
     } else if (filterType is PlutoFilterTypeGreaterThanOrEqualTo) {
-      return 'gte';
+      return QueryOperator.greaterThanOrEqualTo;
     } else if (filterType is PlutoFilterTypeLessThan) {
-      return 'lt';
+      return QueryOperator.lessThan;
     } else {
-      return 'eq';
+      return QueryOperator.equals;
     }
   }
 
-  Map<String, String> remoteFilters() {
-    Map<String, String> filter = {};
+  List<FilterData> remoteFilters() {
+    List<FilterData> filter = [];
     for (final row in _source.filterRows) {
-      final columnName = row.cells['column']!.value;
-      final comparator = filterTypeRemote(row.cells['type']!.value);
-      final key = 'filter[$columnName][$comparator]';
-      filter[key] = row.cells['value']!.value.toString();
+      filter.add(ComparisonFilterData(
+        key: row.cells['column']!.value,
+        operator: filterTypeRemote(row.cells['type']!.value),
+        value: row.cells['value']!.value.toString(),
+      ));
     }
     return filter;
   }
@@ -438,6 +205,7 @@ class _CustomAsyncDataTable2State<T extends Model>
     return "${item.id.toString()} - ${item[key].toString()}";
   }
 
+  CancelToken? cancelToken;
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -453,8 +221,13 @@ class _CustomAsyncDataTable2State<T extends Model>
                 isAscending: event.column.sort.isAscending)
           ];
         }
-        var request =
-            DataTableRequest(page: 1, filter: remoteFilters(), sorts: sorts);
+        cancelToken?.cancel();
+        cancelToken = CancelToken();
+        var request = QueryRequest(
+            page: 1,
+            filters: remoteFilters(),
+            sorts: sorts,
+            cancelToken: cancelToken);
 
         widget.fetchData(request);
       },
@@ -516,7 +289,10 @@ class _CustomAsyncDataTable2State<T extends Model>
         if (!event.isRow) {
           return;
         }
-        final value = event.row!.cells[widget.primaryKey]!.value;
+        final value = event.row?.cells[widget.primaryKey]?.value;
+        if (value == null) {
+          return;
+        }
         if (event.isChecked == true) {
           selectedValues.add(value);
         } else {
@@ -529,7 +305,10 @@ class _CustomAsyncDataTable2State<T extends Model>
       createFooter: (stateManager) {
         return PlutoLazyPagination(
           fetch: (event) async {
-            var request = DataTableRequest(page: event.page);
+            cancelToken?.cancel();
+            cancelToken = CancelToken();
+            var request =
+                QueryRequest(page: event.page, cancelToken: cancelToken);
             final sortColumn = event.sortColumn;
 
             if (sortColumn != null) {
@@ -539,7 +318,7 @@ class _CustomAsyncDataTable2State<T extends Model>
                     isAscending: event.sortColumn!.sort.isAscending),
               ];
             }
-            request.filter = remoteFilters();
+            request.filters = remoteFilters();
             return widget.fetchData(request).then(
               (DataTableResponse<T> response) {
                 return PlutoLazyPaginationResponse(
@@ -590,21 +369,4 @@ class _CustomAsyncDataTable2State<T extends Model>
               evenRowColor: colorScheme.onPrimary)),
     );
   }
-}
-
-class DataTableRequest {
-  int page;
-  Map<String, dynamic> filter;
-  List<SortData> sorts;
-  DataTableRequest({
-    this.page = 1,
-    this.sorts = const [],
-    this.filter = const {},
-  });
-}
-
-class DataTableResponse<T extends Model> {
-  int totalPage;
-  List<T> models;
-  DataTableResponse({this.totalPage = 0, this.models = const []});
 }

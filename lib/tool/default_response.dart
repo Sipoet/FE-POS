@@ -7,8 +7,19 @@ import 'package:fe_pos/tool/flash.dart';
 
 mixin DefaultResponse<T extends StatefulWidget> on State<T> {
   dynamic defaultErrorResponse({required var error, var valueWhenError}) {
+    Flash flash = Flash();
     if (error.runtimeType.toString() == '_TypeError') throw error;
-    var response = error.response;
+    dynamic response;
+    try {
+      response = error.response;
+    } catch (e) {
+      flash.showBanner(
+          title: 'Gagal',
+          description: error.toString(),
+          messageType: ToastificationType.error);
+      return null;
+    }
+
     switch (error.type) {
       case DioExceptionType.badResponse:
         if (response?.statusCode == 401) {
@@ -27,7 +38,6 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
       case DioExceptionType.connectionError:
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
-        Flash flash = Flash();
         flash.showBanner(
             title: 'koneksi terputus',
             description:

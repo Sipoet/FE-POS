@@ -69,9 +69,6 @@ class Sale extends Model {
       };
 
   @override
-  String get modelName => 'sale_item';
-
-  @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];

@@ -52,7 +52,8 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final List<TableColumn> _columns = [];
   late FocusNode _focusNode;
   final _whitelistColumns = [
-    'item',
+    'item_code',
+    'item_name',
     'item_type_name',
     'brand_name',
     'supplier_code',
@@ -197,7 +198,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     });
   }
 
-  Future<DataTableResponse<ItemReport>> fetchItem(DataTableRequest request) {
+  Future<DataTableResponse<ItemReport>> fetchItem(QueryRequest request) {
     _source.setShowLoading(true);
     setState(() {
       discount1 = discount.discount1;
@@ -205,80 +206,68 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       discount3 = discount.discount3;
       discount4 = discount.discount4;
     });
-    var sortParams = request.sorts
-        .map<String>((sort) => sort.isAscending ? sort.key : "-${sort.key}")
-        .toList()
-        .join(',');
-    Map<String, dynamic> param = {
-      'page[page]': request.page.toString(),
-      'page[limit]': '50',
-      'report_type': 'json',
-      'sort': sortParams,
-    };
+
     if (discount.items.isNotEmpty) {
-      param['filter[item][eq]'] =
-          discount.items.map((line) => line.code).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'item',
+          value: discount.items.map((line) => line.code).toList().join(',')));
     }
     if (discount.suppliers.isNotEmpty) {
-      param['filter[supplier][eq]'] =
-          discount.suppliers.map((line) => line.code).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'supplier',
+          value:
+              discount.suppliers.map((line) => line.code).toList().join(',')));
     }
     if (discount.itemTypes.isNotEmpty) {
-      param['filter[item_type][eq]'] =
-          discount.itemTypes.map((line) => line.name).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'item_type',
+          value:
+              discount.itemTypes.map((line) => line.name).toList().join(',')));
     }
     if (discount.brands.isNotEmpty) {
-      param['filter[brand][eq]'] =
-          discount.brands.map((line) => line.name).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'brand',
+          value: discount.brands.map((line) => line.name).toList().join(',')));
     }
     if (discount.blacklistItems.isNotEmpty) {
-      param['filter[item][not]'] =
-          discount.blacklistItems.map((line) => line.code).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'item',
+          operator: QueryOperator.not,
+          value: discount.blacklistItems
+              .map((line) => line.code)
+              .toList()
+              .join(',')));
     }
     if (discount.blacklistSuppliers.isNotEmpty) {
-      param['filter[supplier][not]'] = discount.blacklistSuppliers
-          .map((line) => line.code)
-          .toList()
-          .join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'supplier',
+          operator: QueryOperator.not,
+          value: discount.blacklistSuppliers
+              .map((line) => line.code)
+              .toList()
+              .join(',')));
     }
     if (discount.blacklistItemTypes.isNotEmpty) {
-      param['filter[item_type][not]'] = discount.blacklistItemTypes
-          .map((line) => line.name)
-          .toList()
-          .join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'item_type',
+          operator: QueryOperator.not,
+          value: discount.blacklistItemTypes
+              .map((line) => line.name)
+              .toList()
+              .join(',')));
     }
     if (discount.blacklistBrands.isNotEmpty) {
-      param['filter[brand][not]'] =
-          discount.blacklistBrands.map((line) => line.name).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'brand',
+          operator: QueryOperator.not,
+          value: discount.blacklistItemTypes
+              .map((line) => line.name)
+              .toList()
+              .join(',')));
     }
-    request.filter.forEach((key, value) {
-      if (param[key] == null) {
-        param[key] = value;
-      } else {
-        param[key] = "${param[key]},$value";
-      }
-    });
-
-    return server.get('item_reports', queryParam: param).then((response) {
-      try {
-        if (response.statusCode != 200) {
-          flash.showBanner(
-              messageType: ToastificationType.error,
-              title: 'Gagal Refresh Tabel');
-        }
-        var data = response.data;
-
-        final models = data['data'].map<ItemReport>((row) {
-          return ItemReportClass()
-              .fromJson(row, included: data['included'] ?? []);
-        }).toList();
-        return DataTableResponse<ItemReport>(
-            models: models, totalPage: data['meta']['total_pages']);
-      } catch (error, stackTrace) {
-        debugPrint(error.toString());
-        debugPrint(stackTrace.toString());
-        return DataTableResponse<ItemReport>();
-      }
+    return ItemReportClass().finds(server, request).then((response) {
+      return DataTableResponse<ItemReport>(
+          models: response.models, totalPage: response.metadata['total_pages']);
     }, onError: (error) {
       defaultErrorResponse(error: error);
       return DataTableResponse<ItemReport>();
@@ -1215,14 +1204,17 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                 const SizedBox(
                                   height: 10,
                                 ),
-                                SizedBox(
-                                  height: bodyScreenHeight,
-                                  child: CustomAsyncDataTable2<ItemReport>(
-                                    columns: _columns,
-                                    fetchData: (request) => fetchItem(request),
-                                    fixedLeftColumns: 2,
-                                    onLoaded: (stateManager) =>
-                                        _source = stateManager,
+                                Expanded(
+                                  child: SizedBox(
+                                    height: bodyScreenHeight,
+                                    child: CustomAsyncDataTable2<ItemReport>(
+                                      columns: _columns,
+                                      fetchData: (request) =>
+                                          fetchItem(request),
+                                      fixedLeftColumns: 2,
+                                      onLoaded: (stateManager) =>
+                                          _source = stateManager,
+                                    ),
                                   ),
                                 )
                               ],

@@ -19,14 +19,15 @@ class TransferPage extends StatefulWidget {
 
 class _TransferPageState extends State<TransferPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final CustomAsyncDataTableSource<Transfer> _source;
+  late final PlutoGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<Transfer> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
-  Map _filter = {};
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -36,11 +37,9 @@ class _TransferPageState extends State<TransferPage>
     server = context.read<Server>();
     flash = Flash();
     setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<Transfer>(
-        columns: setting.tableColumn('ipos::Transfer'),
-        isAscending: false,
-        fetchData: fetchTransfers);
-    _source.sortColumn = _source.columns[1];
+
+    columns = setting.tableColumn('ipos::Transfer');
+
     Future.delayed(Duration.zero, refreshTable);
     super.initState();
   }
@@ -52,52 +51,19 @@ class _TransferPageState extends State<TransferPage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<Transfer>> fetchTransfers(
-      {int page = 1,
-      int limit = 50,
-      TableColumn? sortColumn,
-      bool isAscending = false}) {
-    String orderKey = sortColumn?.name ?? 'tanggal';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-    };
-    _filter.forEach((key, value) {
-      param[key] = value;
+  Future<DataTableResponse<Transfer>> fetchTransfers(QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    return TransferClass().finds(server, request).then(
+        (value) => DataTableResponse<Transfer>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
     });
-    try {
-      return server
-          .get('transfers', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<Transfer>((json) => TransferClass()
-                .fromJson(json, included: responseBody['included'] ?? []))
-            .toList();
-        final totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<Transfer>(totalRows: totalRows, models: models);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      throw 'error';
-    }
   }
 
   void searchChanged(value) {
@@ -125,22 +91,16 @@ class _TransferPageState extends State<TransferPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.actionButtons = (transfer, index) => [
-          IconButton.filled(
-              onPressed: () {
-                viewRecord(transfer);
-              },
-              icon: const Icon(Icons.search_rounded)),
-        ];
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
             TableFilterForm(
-              columns: _source.columns,
+              columns: columns,
               onSubmit: (value) {
-                _filter = value;
+                _filters = value;
                 refreshTable();
               },
             ),
@@ -173,8 +133,23 @@ class _TransferPageState extends State<TransferPage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable(
-                controller: _source,
+              child: CustomAsyncDataTable2<Transfer>(
+                renderAction: (transfer) => Row(
+                  spacing: 10,
+                  children: [
+                    IconButton.filled(
+                        onPressed: () {
+                          viewRecord(transfer);
+                        },
+                        icon: const Icon(Icons.search_rounded)),
+                  ],
+                ),
+                onLoaded: (stateManager) {
+                  _source = stateManager;
+                  _source.sortDescending(_source.columns[1]);
+                },
+                columns: columns,
+                fetchData: fetchTransfers,
                 fixedLeftColumns: 1,
               ),
             ),

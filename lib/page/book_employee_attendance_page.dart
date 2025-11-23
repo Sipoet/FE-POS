@@ -20,14 +20,14 @@ class BookEmployeeAttendancePage extends StatefulWidget {
 
 class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final CustomAsyncDataTableSource<BookEmployeeAttendance> _source;
+  late final PlutoGridStateManager _source;
   late final Server server;
 
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
-  Map _filter = {};
-
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
   @override
   bool get wantKeepAlive => true;
 
@@ -36,11 +36,8 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<BookEmployeeAttendance>(
-        columns: setting.tableColumn('bookEmployeeAttendance'),
-        fetchData: fetchData);
+    columns = setting.tableColumn('bookEmployeeAttendance');
     super.initState();
-    Future.delayed(Duration.zero, refreshTable);
   }
 
   @override
@@ -50,56 +47,18 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
     super.dispose();
   }
 
-  Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
-  }
-
-  Future<ResponseResult<BookEmployeeAttendance>> fetchData(
-      {int page = 1,
-      int limit = 100,
-      TableColumn? sortColumn,
-      bool isAscending = true}) {
-    String orderKey = sortColumn?.name ?? 'start_date';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-      'include': 'employee'
-    };
-    _filter.forEach((key, value) {
-      param[key] = value;
+  Future<DataTableResponse<BookEmployeeAttendance>> fetchData(
+      QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    request.include.add('employee');
+    return BookEmployeeAttendanceClass().finds(server, request).then(
+        (value) => DataTableResponse<BookEmployeeAttendance>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
     });
-    try {
-      return server
-          .get('book_employee_attendances',
-              queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<BookEmployeeAttendance>((json) => BookEmployeeAttendanceClass()
-                .fromJson(json, included: responseBody['included'] ?? []))
-            .toList();
-        int totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<BookEmployeeAttendance>(
-            models: models, totalRows: totalRows);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      return Future(() => ResponseResult<BookEmployeeAttendance>(models: []));
-    }
   }
 
   void addForm() {
@@ -139,7 +98,7 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
                   title: 'Sukses Hapus',
                   description:
                       'Sukses Hapus BookEmployeeAttendance ${bookEmployeeAttendance.id}');
-              refreshTable();
+              _source.refreshTable();
             }
           }, onError: (error) {
             defaultErrorResponse(error: error);
@@ -157,37 +116,24 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
       }
     });
     if (container != _searchText) {
-      refreshTable();
+      _source.refreshTable();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.actionButtons = ((bookEmployeeAttendance, index) => <Widget>[
-          IconButton(
-              onPressed: () {
-                editForm(bookEmployeeAttendance);
-              },
-              tooltip: 'Edit BookEmployeeAttendance',
-              icon: const Icon(Icons.edit)),
-          IconButton(
-              onPressed: () {
-                destroyRecord(bookEmployeeAttendance);
-              },
-              tooltip: 'Hapus BookEmployeeAttendance',
-              icon: const Icon(Icons.delete)),
-        ]);
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Column(
           children: [
             TableFilterForm(
-              columns: _source.columns,
+              columns: columns,
               onSubmit: (filter) {
-                _filter = filter;
-                refreshTable();
+                _filters = filter;
+                _source.refreshTable();
               },
               enums: {'group': PayrollGroup.values},
             ),
@@ -201,7 +147,7 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
                       setState(() {
                         _searchText = '';
                       });
-                      refreshTable();
+                      _source.refreshTable();
                     },
                     tooltip: 'Reset Table',
                     icon: const Icon(Icons.refresh),
@@ -229,8 +175,28 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable(
-                controller: _source,
+              child: CustomAsyncDataTable2<BookEmployeeAttendance>(
+                renderAction: (BookEmployeeAttendance bookEmployeeAttendance) {
+                  return Row(
+                    children: [
+                      IconButton(
+                          onPressed: () {
+                            editForm(bookEmployeeAttendance);
+                          },
+                          tooltip: 'Edit BookEmployeeAttendance',
+                          icon: const Icon(Icons.edit)),
+                      IconButton(
+                          onPressed: () {
+                            destroyRecord(bookEmployeeAttendance);
+                          },
+                          tooltip: 'Hapus BookEmployeeAttendance',
+                          icon: const Icon(Icons.delete)),
+                    ],
+                  );
+                },
+                onLoaded: (stateManager) => _source = stateManager,
+                columns: columns,
+                fetchData: fetchData,
                 fixedLeftColumns: 2,
               ),
             ),

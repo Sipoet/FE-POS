@@ -219,7 +219,7 @@ mixin TableDecorator<T extends Model>
     return rows;
   }
 }
-
+const modelKey = 'model';
 mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
   late final TabManager tabManager;
   final String _formatNumber = '#,###.#';
@@ -245,9 +245,9 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
             decimalDigits: 2);
       case TableColumnType.model:
         return PlutoColumnTypeModelSelect(
-            path: tableColumn.inputOptions['path'],
-            modelName: tableColumn.inputOptions['model_name'],
-            attributeKey: tableColumn.inputOptions['attribute_key']);
+            path: tableColumn.inputOptions['path'] ?? '',
+            modelName: tableColumn.inputOptions['model_name'] ?? '',
+            attributeKey: tableColumn.inputOptions['attribute_key'] ?? '');
       case TableColumnType.enums:
         return PlutoColumnType.select(
             listEnumValues ?? tableColumn.inputOptions['enums'] ?? []);
@@ -275,6 +275,8 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
       }
       cells[tableColumn.name] = PlutoCell(value: value);
     }
+    cells['id'] = PlutoCell(value: model.id);
+    cells[modelKey] = PlutoCell(value: model, key: ObjectKey(model));
     return PlutoRow(
         cells: cells, checked: isChecked, type: PlutoRowType.normal());
   }
@@ -306,7 +308,9 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
         _parseColumnType(tableColumn, listEnumValues: listEnumValues);
     bool showFooter = tableColumn.isNumeric();
     final format = _formatNumber;
-
+    final renderer = tableColumn.renderBody ??
+        (PlutoColumnRendererContext rendererContext) =>
+            defaultRenderBody(rendererContext, tableColumn);
     return PlutoColumn(
       readOnly: true,
       enableSorting: tableColumn.canSort,
@@ -322,50 +326,7 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
       enableRowChecked: showCheckboxColumn,
       enableFilterMenuItem: showFilter,
       enableContextMenu: !tableColumn.type.isAction(),
-      renderer: tableColumn.renderBody ??
-          (rendererContext) {
-            var value = rendererContext.cell.value ?? '';
-            if (tableColumn.type.isModel() && value is Model) {
-              return InkWell(
-                onTap: () => _openModelDetailPage(
-                  tableColumn: tableColumn,
-                  value: value,
-                ),
-                child: Text(
-                  value.modelValue,
-                  textAlign: TextAlign.left,
-                ),
-              );
-            }
-
-            if (value is Money || value is Percentage) {
-              return SelectableText(
-                value.format(),
-                textAlign: TextAlign.right,
-              );
-            } else if (value is double && tableColumn.type.isMoney()) {
-              return SelectableText(
-                moneyFormat(value),
-                textAlign: TextAlign.right,
-              );
-            } else if (value is num) {
-              return SelectableText(
-                numberFormat(value),
-                textAlign: TextAlign.right,
-              );
-            } else if (value is TimeOfDay) {
-              return SelectableText(value.format24Hour(),
-                  textAlign: TextAlign.left);
-            } else if (value is Date) {
-              return SelectableText(value.format(), textAlign: TextAlign.left);
-            } else if (value is DateTime) {
-              return SelectableText(value.format(), textAlign: TextAlign.left);
-            }
-            return SelectableText(
-              value.toString(),
-              textAlign: TextAlign.left,
-            );
-          },
+      renderer: renderer,
       footerRenderer: showFooter
           ? (rendererContext) {
               return Column(
@@ -486,12 +447,59 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
           : null,
     );
   }
+
+  Widget defaultRenderBody(
+      PlutoColumnRendererContext rendererContext, TableColumn tableColumn) {
+    var value = rendererContext.cell.value ?? '';
+    if (tableColumn.type.isModel() && value is Model) {
+      return InkWell(
+        onTap: () => _openModelDetailPage(
+          tableColumn: tableColumn,
+          value: value,
+        ),
+        child: Text(
+          value.modelValue,
+          textAlign: TextAlign.left,
+        ),
+      );
+    }
+
+    if (value is Money || value is Percentage) {
+      return SelectableText(
+        value.format(),
+        textAlign: TextAlign.right,
+      );
+    } else if (value is double && tableColumn.type.isMoney()) {
+      return SelectableText(
+        moneyFormat(value),
+        textAlign: TextAlign.right,
+      );
+    } else if (value is num) {
+      return SelectableText(
+        numberFormat(value),
+        textAlign: TextAlign.right,
+      );
+    } else if (value is TimeOfDay) {
+      return SelectableText(value.format24Hour(), textAlign: TextAlign.left);
+    } else if (value is Date) {
+      return SelectableText(value.format(), textAlign: TextAlign.left);
+    } else if (value is DateTime) {
+      return SelectableText(value.format(), textAlign: TextAlign.left);
+    }
+    return SelectableText(
+      value.toString(),
+      textAlign: TextAlign.left,
+    );
+  }
 }
 
 class PlutoDeco with PlutoTableDecorator, PlatformChecker, TextFormatter {}
 
 extension TableStateMananger on PlutoGridStateManager {
   PlutoDeco get decorator => PlutoDeco();
+
+  T? modelFromCheckEvent<T extends Model>(PlutoGridOnRowCheckedEvent event) =>
+      event.row?.cells[modelKey]?.value as T;
 
   void appendModel(model, List<TableColumn> tableColumns) {
     appendRows(
@@ -636,5 +644,15 @@ class PlutoColumnTypePercentage implements PlutoColumnType {
     }
 
     return resolve();
+  }
+}
+
+class DataTableResponse<T extends Model> {
+  int totalPage;
+  List<T> models;
+  DataTableResponse({this.totalPage = 0, this.models = const []});
+
+  factory DataTableResponse.empty() {
+    return DataTableResponse<T>(totalPage: 1, models: []);
   }
 }

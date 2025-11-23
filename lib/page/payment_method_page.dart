@@ -19,13 +19,14 @@ class PaymentMethodPage extends StatefulWidget {
 
 class _PaymentMethodPageState extends State<PaymentMethodPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final CustomAsyncDataTableSource<PaymentMethod> _source;
+  late final PlutoGridStateManager _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
   final _menuController = MenuController();
-  Map _filter = {};
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -35,10 +36,8 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<PaymentMethod>(
-        actionButtons: actionButtons,
-        columns: setting.tableColumn('paymentMethod'),
-        fetchData: fetchPaymentMethods);
+    columns = setting.tableColumn('paymentMethod');
+
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
@@ -51,58 +50,20 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<PaymentMethod>> fetchPaymentMethods(
-      {int page = 1,
-      int limit = 50,
-      TableColumn? sortColumn,
-      bool isAscending = true}) {
-    String orderKey = sortColumn?.name ?? 'name';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'fields[bank]': 'kodebank,namabank',
-      'include': 'bank',
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-    };
-    _filter.forEach((key, value) {
-      param[key] = value;
+  Future<DataTableResponse<PaymentMethod>> fetchPaymentMethods(
+      QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    return PaymentMethodClass().finds(server, request).then(
+        (value) => DataTableResponse<PaymentMethod>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
     });
-    try {
-      return server
-          .get('payment_methods', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final responsedModels = responseBody['data']
-            .map<PaymentMethod>((json) => PaymentMethodClass()
-                .fromJson(json, included: responseBody['included']))
-            .toList();
-        setState(() {
-          // _source.setData(employees);
-        });
-        int totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<PaymentMethod>(
-            totalRows: totalRows, models: responsedModels);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      return Future(() => ResponseResult<PaymentMethod>(models: []));
-    }
   }
 
   void addForm() {
@@ -148,19 +109,6 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
           },
           tooltip: 'Edit Metode Pembayaran',
           icon: const Icon(Icons.edit)),
-      // IconButton(
-      //   onPressed: () {
-      //     setState(() {
-      //       toggleStatus(employee);
-      //     });
-      //   },
-      //   tooltip: 'Aktivasi/deaktivasi karyawan',
-      //   icon: Icon(
-      //     Icons.lightbulb,
-      //     color:
-      //         employee.status == EmployeeStatus.active ? Colors.yellow : null,
-      //   ),
-      // )
     ];
   }
 
@@ -173,12 +121,12 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
         child: Column(
           children: [
             TableFilterForm(
-              columns: _source.columns,
+              columns: columns,
               enums: const {
                 'payment_type': PaymentType.values,
               },
               onSubmit: (filter) {
-                _filter = filter;
+                _filters = filter;
                 refreshTable();
               },
             ),
@@ -226,8 +174,16 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable(
-                controller: _source,
+              child: CustomAsyncDataTable2<PaymentMethod>(
+                renderAction: (paymentMethod) => IconButton(
+                    onPressed: () {
+                      editForm(paymentMethod);
+                    },
+                    tooltip: 'Edit Metode Pembayaran',
+                    icon: const Icon(Icons.edit)),
+                onLoaded: (stateManager) => _source = stateManager,
+                columns: columns,
+                fetchData: fetchPaymentMethods,
                 showCheckboxColumn: true,
               ),
             ),

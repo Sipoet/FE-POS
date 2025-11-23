@@ -1,4 +1,5 @@
 import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/payment_provider.dart';
 import 'package:fe_pos/page/payment_provider_form_page.dart';
@@ -19,13 +20,14 @@ class PaymentProviderPage extends StatefulWidget {
 
 class _PaymentProviderPageState extends State<PaymentProviderPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final CustomAsyncDataTableSource<PaymentProvider> _source;
+  late final PlutoGridStateManager _source;
   late final Server server;
 
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
-  Map _filter = {};
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -35,9 +37,7 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<PaymentProvider>(
-        columns: setting.tableColumn('paymentProvider'),
-        fetchData: fetchPaymentProviders);
+    columns = setting.tableColumn('paymentProvider');
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
@@ -50,54 +50,20 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<PaymentProvider>> fetchPaymentProviders(
-      {int page = 1,
-      int limit = 100,
-      TableColumn? sortColumn,
-      bool isAscending = true}) {
-    String orderKey = sortColumn?.name ?? 'name';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-    };
-    _filter.forEach((key, value) {
-      param[key] = value;
+  Future<DataTableResponse<PaymentProvider>> fetchPaymentProviders(
+      QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    return PaymentProviderClass().finds(server, request).then(
+        (value) => DataTableResponse<PaymentProvider>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
     });
-
-    return server
-        .get('payment_providers', queryParam: param, cancelToken: cancelToken)
-        .then((response) {
-      try {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data provider ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<PaymentProvider>((json) => PaymentProviderClass()
-                .fromJson(json, included: responseBody['included'] ?? []))
-            .toList();
-        int totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<PaymentProvider>(
-            models: models, totalRows: totalRows);
-      } catch (e, trace) {
-        flash.showBanner(
-            title: e.toString(),
-            description: trace.toString(),
-            messageType: ToastificationType.error);
-        return Future(() => ResponseResult<PaymentProvider>(models: []));
-      }
-    },
-            onError: (error, stackTrace) =>
-                defaultErrorResponse(error: error, valueWhenError: []));
   }
 
   void addForm() {
@@ -161,82 +127,82 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.actionButtons = ((paymentProvider, index) => <Widget>[
-          IconButton(
-              onPressed: () {
-                editForm(paymentProvider);
-              },
-              tooltip: 'Edit Payment Provider',
-              icon: const Icon(Icons.edit)),
-          IconButton(
-              onPressed: () {
-                destroyRecord(paymentProvider);
-              },
-              tooltip: 'Hapus Payment Provider',
-              icon: const Icon(Icons.delete)),
-        ]);
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-        child: Column(
-          children: [
-            TableFilterForm(
-              columns: _source.columns,
-              enums: const {
-                'status': PaymentProviderStatus.values,
-              },
-              onSubmit: (filter) {
-                _filter = filter;
-                refreshTable();
-              },
+
+    return VerticalBodyScroll(
+      child: Column(
+        children: [
+          TableFilterForm(
+            columns: columns,
+            enums: const {
+              'status': PaymentProviderStatus.values,
+            },
+            onSubmit: (filter) {
+              _filters = filter;
+              refreshTable();
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 10, bottom: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _searchText = '';
+                    });
+                    refreshTable();
+                  },
+                  tooltip: 'Reset Table',
+                  icon: const Icon(Icons.refresh),
+                ),
+                SizedBox(
+                  width: 150,
+                  child: TextField(
+                    decoration: const InputDecoration(hintText: 'Search Text'),
+                    onChanged: searchChanged,
+                    onSubmitted: searchChanged,
+                  ),
+                ),
+                SizedBox(
+                  width: 50,
+                  child: SubmenuButton(menuChildren: [
+                    MenuItemButton(
+                      child: const Text('Tambah Payment Provider'),
+                      onPressed: () => addForm(),
+                    ),
+                  ], child: const Icon(Icons.table_rows_rounded)),
+                )
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10, bottom: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+          ),
+          SizedBox(
+            height: bodyScreenHeight,
+            child: CustomAsyncDataTable2<PaymentProvider>(
+              renderAction: (paymentProvider) => Row(
+                spacing: 10,
                 children: [
                   IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                  SizedBox(
-                    width: 50,
-                    child: SubmenuButton(menuChildren: [
-                      MenuItemButton(
-                        child: const Text('Tambah Payment Provider'),
-                        onPressed: () => addForm(),
-                      ),
-                    ], child: const Icon(Icons.table_rows_rounded)),
-                  )
+                      onPressed: () {
+                        editForm(paymentProvider);
+                      },
+                      tooltip: 'Edit Payment Provider',
+                      icon: const Icon(Icons.edit)),
+                  IconButton(
+                      onPressed: () {
+                        destroyRecord(paymentProvider);
+                      },
+                      tooltip: 'Hapus Payment Provider',
+                      icon: const Icon(Icons.delete)),
                 ],
               ),
+              onLoaded: (stateManager) => _source = stateManager,
+              columns: columns,
+              fetchData: fetchPaymentProviders,
+              fixedLeftColumns: 2,
             ),
-            SizedBox(
-              height: bodyScreenHeight,
-              width: 825,
-              child: CustomAsyncDataTable(
-                controller: _source,
-                fixedLeftColumns: 2,
-                showCheckboxColumn: true,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

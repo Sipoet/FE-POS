@@ -71,52 +71,14 @@ class _SystemSettingPageState extends State<SystemSettingPage>
   }
 
   Future<DataTableResponse<SystemSetting>> fetchSystemSettings(
-      {int page = 1,
-      int limit = 100,
-      List<SortData> sorts = const [],
-      Map filter = const {}}) {
-    var sort = sorts.isEmpty ? null : sorts.first;
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'sort': sort == null
-          ? ''
-          : sort.isAscending
-              ? sort.key
-              : "-${sort.key}",
-    };
-    filter.forEach((key, value) {
-      param[key] = value;
+      QueryRequest request) {
+    return SystemSettingClass().finds(server, request).then(
+        (value) => DataTableResponse<SystemSetting>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
     });
-    try {
-      return server
-          .get('system_settings', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        records = responseBody['data']
-            .map<SystemSetting>((json) => SystemSettingClass()
-                .fromJson(json, included: responseBody['included'] ?? []))
-            .toList();
-        final totalPage = responseBody['meta']?['total_pages'] ?? 1;
-        return DataTableResponse<SystemSetting>(
-            models: records, totalPage: totalPage);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      return Future(() => DataTableResponse<SystemSetting>(models: []));
-    }
   }
 
   void searchChanged(value) {
@@ -172,11 +134,7 @@ class _SystemSettingPageState extends State<SystemSettingPage>
               child: CustomAsyncDataTable2<SystemSetting>(
                 onLoaded: (stateManager) => _source = stateManager,
                 fixedLeftColumns: 0,
-                fetchData: (request) => fetchSystemSettings(
-                  page: request.page,
-                  sorts: request.sorts,
-                  filter: request.filter,
-                ),
+                fetchData: fetchSystemSettings,
                 columns: columns,
               ),
             ),

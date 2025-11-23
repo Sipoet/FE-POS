@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 extension StringExt on String {
-  String toSnakeCase() => toLowerCase().replaceAll(' ', '_');
+  String toSnakeCase() => unclassify().toLowerCase().replaceAll(' ', '_');
+
+  String unclassify() => replaceAllMapped(
+      RegExp(r'\s*([A-Z])'), (Match match) => " ${match.group(1)}").trimLeft();
 }
 
 extension DateTimeExt on DateTime {

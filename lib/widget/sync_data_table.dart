@@ -26,13 +26,17 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
   final OnRowCheckedCallback? onRowChecked;
   final OnSelectedCallback? onSelected;
   final OnRowDoubleTapCallback? onRowDoubleTap;
+  final double? actionColumnWidth;
   final bool showFilter;
   final bool isPaginated;
+  final Widget Function(T model)? renderAction;
 
   const SyncDataTable({
     super.key,
     this.actions,
     this.onLoaded,
+    this.renderAction,
+    this.actionColumnWidth,
     this.showFilter = true,
     List<TableColumn>? columns,
     List<T>? rows,
@@ -69,7 +73,21 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
           showFilter: widget.showFilter,
           isFrozen: index < widget.fixedLeftColumns,
         );
-      }).toList();
+      }).toList()
+        ..add(PlutoColumn(
+            title: ' ',
+            field: 'model',
+            type: PlutoColumnType.text(defaultValue: null),
+            hide: widget.renderAction == null,
+            frozen: PlutoColumnFrozen.end,
+            renderer: widget.renderAction == null
+                ? null
+                : (PlutoColumnRendererContext rendererContext) =>
+                    widget.renderAction!(rendererContext.cell.value as T),
+            width: widget.renderAction == null
+                ? 0
+                : widget.actionColumnWidth ?? PlutoGridSettings.columnWidth,
+            minWidth: 0));
 
   @override
   void initState() {
