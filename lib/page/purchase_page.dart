@@ -130,7 +130,7 @@ class _PurchasePageState extends State<PurchasePage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<Purchase>(
+              child: CustomAsyncDataTable<Purchase>(
                 renderAction: (purchase) => Row(
                   spacing: 10,
                   children: [

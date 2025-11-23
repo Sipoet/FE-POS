@@ -127,7 +127,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
           ),
           SizedBox(
             height: bodyScreenHeight,
-            child: CustomAsyncDataTable2<Item>(
+            child: CustomAsyncDataTable<Item>(
               onLoaded: (stateManager) => _source = stateManager,
               fixedLeftColumns: 1,
               fetchData: fetchItems,

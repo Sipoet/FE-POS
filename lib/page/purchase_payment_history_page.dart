@@ -57,7 +57,7 @@ class _PurchasePaymentHistoryPageState extends State<PurchasePaymentHistoryPage>
           ),
           SizedBox(
             height: bodyScreenHeight,
-            child: CustomAsyncDataTable2<PurchasePaymentHistory>(
+            child: CustomAsyncDataTable<PurchasePaymentHistory>(
               onLoaded: (stateManager) => _source = stateManager,
               fetchData: fetchData,
               showSummary: true,

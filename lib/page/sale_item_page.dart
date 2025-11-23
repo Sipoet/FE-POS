@@ -201,7 +201,7 @@ class _SaleItemPageState extends State<SaleItemPage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<SaleItem>(
+              child: CustomAsyncDataTable<SaleItem>(
                 key: const ObjectKey('saleItemTable'),
                 renderAction: (saleItem) => Row(
                   spacing: 10,

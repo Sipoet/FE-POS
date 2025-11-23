@@ -206,7 +206,7 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
             SizedBox(
               height: bodyScreenHeight,
               width: 900,
-              child: CustomAsyncDataTable2<CustomerGroupDiscount>(
+              child: CustomAsyncDataTable<CustomerGroupDiscount>(
                 renderAction: (customerGroupDiscount) => Row(
                   spacing: 10,
                   children: [

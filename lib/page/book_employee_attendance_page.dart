@@ -175,7 +175,7 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<BookEmployeeAttendance>(
+              child: CustomAsyncDataTable<BookEmployeeAttendance>(
                 renderAction: (BookEmployeeAttendance bookEmployeeAttendance) {
                   return Row(
                     children: [

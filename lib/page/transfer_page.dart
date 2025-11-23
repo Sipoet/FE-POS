@@ -133,7 +133,7 @@ class _TransferPageState extends State<TransferPage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<Transfer>(
+              child: CustomAsyncDataTable<Transfer>(
                 renderAction: (transfer) => Row(
                   spacing: 10,
                   children: [

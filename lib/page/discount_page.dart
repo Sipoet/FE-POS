@@ -342,7 +342,7 @@ class _DiscountPageState extends State<DiscountPage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<Discount>(
+              child: CustomAsyncDataTable<Discount>(
                 actionColumnWidth: 220,
                 renderAction: (discount) => Row(
                   spacing: 10,

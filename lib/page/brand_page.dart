@@ -103,7 +103,7 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<Brand>(
+              child: CustomAsyncDataTable<Brand>(
                 onLoaded: (stateManager) => _source = stateManager,
                 columns: setting.tableColumn('ipos::Brand'),
                 fetchData: fetchBrands,

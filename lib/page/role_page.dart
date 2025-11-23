@@ -170,7 +170,7 @@ class _RolePageState extends State<RolePage>
             SizedBox(
               height: bodyScreenHeight,
               width: 900,
-              child: CustomAsyncDataTable2<Role>(
+              child: CustomAsyncDataTable<Role>(
                 renderAction: (role) => Row(
                   spacing: 10,
                   children: [

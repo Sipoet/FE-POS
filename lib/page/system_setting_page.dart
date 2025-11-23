@@ -131,7 +131,7 @@ class _SystemSettingPageState extends State<SystemSettingPage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<SystemSetting>(
+              child: CustomAsyncDataTable<SystemSetting>(
                 onLoaded: (stateManager) => _source = stateManager,
                 fixedLeftColumns: 0,
                 fetchData: fetchSystemSettings,

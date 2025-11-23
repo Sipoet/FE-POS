@@ -1207,7 +1207,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                 Expanded(
                                   child: SizedBox(
                                     height: bodyScreenHeight,
-                                    child: CustomAsyncDataTable2<ItemReport>(
+                                    child: CustomAsyncDataTable<ItemReport>(
                                       columns: _columns,
                                       fetchData: (request) =>
                                           fetchItem(request),

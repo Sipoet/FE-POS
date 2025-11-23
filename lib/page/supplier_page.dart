@@ -101,7 +101,7 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<Supplier>(
+              child: CustomAsyncDataTable<Supplier>(
                 onLoaded: (stateManager) => _source = stateManager,
                 fixedLeftColumns: 0,
                 fetchData: fetchSuppliers,

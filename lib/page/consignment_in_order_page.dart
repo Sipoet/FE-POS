@@ -134,7 +134,7 @@ class _ConsignmentInOrderPageState extends State<ConsignmentInOrderPage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<ConsignmentInOrder>(
+              child: CustomAsyncDataTable<ConsignmentInOrder>(
                 renderAction: (consignmentInOrder) => Row(
                   spacing: 10,
                   children: [

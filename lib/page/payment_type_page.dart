@@ -175,7 +175,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<PaymentType>(
+              child: CustomAsyncDataTable<PaymentType>(
                 renderAction: (paymentType) => Row(
                   spacing: 10,
                   children: [

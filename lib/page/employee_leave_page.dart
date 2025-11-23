@@ -193,7 +193,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<EmployeeLeave>(
+              child: CustomAsyncDataTable<EmployeeLeave>(
                 renderAction: (employeeLeave) => Row(
                   spacing: 10,
                   children: [

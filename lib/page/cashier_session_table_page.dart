@@ -133,7 +133,7 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
             ),
             SizedBox(
               height: bodyScreenHeight - 150,
-              child: CustomAsyncDataTable2<CashierSession>(
+              child: CustomAsyncDataTable<CashierSession>(
                 columns: columns,
                 onLoaded: (stateManager) => _source = stateManager,
                 renderAction: (cashierSession) => Row(spacing: 10, children: [

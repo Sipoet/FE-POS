@@ -298,7 +298,7 @@ class _PayslipPageState extends State<PayslipPage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<Payslip>(
+              child: CustomAsyncDataTable<Payslip>(
                 actionColumnWidth: 220,
                 renderAction: (payslip) => Row(
                   spacing: 10,

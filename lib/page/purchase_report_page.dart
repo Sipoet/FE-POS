@@ -139,7 +139,7 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
           Visibility(visible: _isDisplayTable, child: const Divider()),
           SizedBox(
             height: bodyScreenHeight,
-            child: CustomAsyncDataTable2<PurchaseReport>(
+            child: CustomAsyncDataTable<PurchaseReport>(
               onLoaded: (stateManager) => _source = stateManager,
               fixedLeftColumns: 1,
               columns: columns,

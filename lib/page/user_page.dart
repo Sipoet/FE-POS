@@ -188,7 +188,7 @@ class _UserPageState extends State<UserPage>
             SizedBox(
               height: bodyScreenHeight,
               width: 825,
-              child: CustomAsyncDataTable2<User>(
+              child: CustomAsyncDataTable<User>(
                 renderAction: (user) => Row(
                   spacing: 10,
                   children: [

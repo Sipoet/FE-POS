@@ -12,19 +12,13 @@ import 'package:pluto_grid/pluto_grid.dart';
 import 'package:provider/provider.dart';
 export 'package:pluto_grid/pluto_grid.dart';
 
-class ResponseResult<T> {
-  int totalRows;
-  List<T> models;
-  ResponseResult({this.totalRows = 0, required this.models});
-}
-
 typedef OnLoadedCallBack = void Function(PlutoGridStateManager stateManager);
 typedef OnRowCheckedCallback = void Function(PlutoGridOnRowCheckedEvent event);
 typedef OnSelectedCallback = void Function(PlutoGridOnSelectedEvent event);
 typedef OnRowDoubleTapCallback = void Function(
     PlutoGridOnRowDoubleTapEvent event);
 
-class CustomAsyncDataTable2<T extends Model> extends StatefulWidget {
+class CustomAsyncDataTable<T extends Model> extends StatefulWidget {
   final int fixedLeftColumns;
   final List<Widget>? actions;
   final Widget? header;
@@ -42,7 +36,7 @@ class CustomAsyncDataTable2<T extends Model> extends StatefulWidget {
   final Widget Function(T model)? renderAction;
   final double? actionColumnWidth;
 
-  const CustomAsyncDataTable2({
+  const CustomAsyncDataTable({
     super.key,
     required this.fetchData,
     this.actions,
@@ -63,12 +57,12 @@ class CustomAsyncDataTable2<T extends Model> extends StatefulWidget {
   });
 
   @override
-  State<CustomAsyncDataTable2<T>> createState() =>
-      _CustomAsyncDataTable2State<T>();
+  State<CustomAsyncDataTable<T>> createState() =>
+      _CustomAsyncDataTableState<T>();
 }
 
-class _CustomAsyncDataTable2State<T extends Model>
-    extends State<CustomAsyncDataTable2<T>>
+class _CustomAsyncDataTableState<T extends Model>
+    extends State<CustomAsyncDataTable<T>>
     with PlutoTableDecorator, PlatformChecker, TextFormatter {
   late final List<PlutoColumn> columns;
   late final PlutoGridStateManager _source;
