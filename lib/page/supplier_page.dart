@@ -105,6 +105,7 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
                 onLoaded: (stateManager) => _source = stateManager,
                 fixedLeftColumns: 0,
                 fetchData: fetchSuppliers,
+                showFilter: true,
                 columns: setting.tableColumn('ipos::Supplier'),
               ),
             ),

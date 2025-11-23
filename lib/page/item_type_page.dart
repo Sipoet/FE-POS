@@ -107,6 +107,7 @@ class _ItemTypePageState extends State<ItemTypePage> with DefaultResponse {
                 onLoaded: (stateManager) => _source = stateManager,
                 columns: setting.tableColumn('ipos::ItemType'),
                 fetchData: fetchItemTypes,
+                showFilter: true,
                 fixedLeftColumns: 0,
               ),
             ),

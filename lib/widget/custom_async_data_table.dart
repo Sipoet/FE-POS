@@ -44,7 +44,7 @@ class CustomAsyncDataTable<T extends Model> extends StatefulWidget {
     this.header,
     this.actionColumnWidth,
     this.primaryKey = 'id',
-    this.showFilter = true,
+    this.showFilter = false,
     required this.columns,
     this.enums = const {},
     this.onRowChecked,

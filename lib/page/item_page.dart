@@ -132,6 +132,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
               fixedLeftColumns: 1,
               fetchData: fetchItems,
               columns: columns,
+              showFilter: true,
             ),
           ),
         ],

@@ -107,6 +107,7 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
                 onLoaded: (stateManager) => _source = stateManager,
                 columns: setting.tableColumn('ipos::Brand'),
                 fetchData: fetchBrands,
+                showFilter: true,
                 fixedLeftColumns: 0,
               ),
             ),
