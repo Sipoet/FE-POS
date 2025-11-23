@@ -164,6 +164,9 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
       helpText: widget.helpText,
     )
         .then((date) {
+      if (date == null) {
+        return;
+      }
       setState(() {
         _datetime = date;
         writeToTextField();

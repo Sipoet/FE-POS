@@ -96,7 +96,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Edit Absensi Karyawan',
+          'Edit Absensi Karyawan ${employeeAttendance.id}',
           EmployeeAttendanceFormPage(
             employeeAttendance: employeeAttendance,
             key: const ObjectKey('EmployeeAttendanceFormPage'),
@@ -231,9 +231,9 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
                   _source.sortDescending(_source.columns[1]);
                 },
                 columns: columns,
+                showFilter: false,
                 fetchData: fetchEmployeeAttendances,
                 fixedLeftColumns: 1,
-                showCheckboxColumn: true,
               ),
             ),
           ],
