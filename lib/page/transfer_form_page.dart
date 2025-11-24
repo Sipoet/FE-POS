@@ -166,7 +166,7 @@ class _TransferFormPageState extends State<TransferFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: dateTimeFormat(transfer.datetime),
+                        initialValue: dateTimeLocalFormat(transfer.datetime),
                       ),
                     ),
                   ),

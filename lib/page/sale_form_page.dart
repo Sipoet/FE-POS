@@ -141,7 +141,7 @@ class _SaleFormPageState extends State<SaleFormPage>
                                   labelStyle: labelStyle,
                                   border: const OutlineInputBorder()),
                               readOnly: true,
-                              initialValue: dateTimeFormat(sale.datetime),
+                              initialValue: dateTimeLocalFormat(sale.datetime),
                             ),
                           ),
                         ),

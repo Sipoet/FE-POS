@@ -340,7 +340,7 @@ class _ConsignmentInFormPageState extends State<ConsignmentInFormPage>
                             readOnly: true,
                             initialValue: consignmentIn.noteDate == null
                                 ? null
-                                : dateTimeFormat(
+                                : dateTimeLocalFormat(
                                     consignmentIn.noteDate as DateTime),
                           ),
                         ),
@@ -358,7 +358,7 @@ class _ConsignmentInFormPageState extends State<ConsignmentInFormPage>
                                 border: const OutlineInputBorder()),
                             readOnly: true,
                             initialValue:
-                                dateTimeFormat(consignmentIn.datetime),
+                                dateTimeLocalFormat(consignmentIn.datetime),
                           ),
                         ),
                       ),

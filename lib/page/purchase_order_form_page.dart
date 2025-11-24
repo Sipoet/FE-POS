@@ -319,7 +319,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                     border: const OutlineInputBorder()),
                                 readOnly: true,
                                 initialValue:
-                                    dateTimeFormat(purchaseOrder.datetime),
+                                    dateTimeLocalFormat(purchaseOrder.datetime),
                               ),
                             ),
                           ),
@@ -335,8 +335,8 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                     labelStyle: labelStyle,
                                     border: const OutlineInputBorder()),
                                 readOnly: true,
-                                initialValue:
-                                    dateTimeFormat(purchaseOrder.deliveredDate),
+                                initialValue: dateTimeLocalFormat(
+                                    purchaseOrder.deliveredDate),
                               ),
                             ),
                           ),

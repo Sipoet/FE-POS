@@ -331,7 +331,8 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                             readOnly: true,
                             initialValue: purchase.noteDate == null
                                 ? null
-                                : dateTimeFormat(purchase.noteDate as DateTime),
+                                : dateTimeLocalFormat(
+                                    purchase.noteDate as DateTime),
                           ),
                         ),
                       ),
@@ -346,7 +347,8 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                                 labelStyle: labelStyle,
                                 border: const OutlineInputBorder()),
                             readOnly: true,
-                            initialValue: dateTimeFormat(purchase.datetime),
+                            initialValue:
+                                dateTimeLocalFormat(purchase.datetime),
                           ),
                         ),
                       ),

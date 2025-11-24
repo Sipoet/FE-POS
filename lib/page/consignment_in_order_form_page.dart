@@ -325,8 +325,8 @@ class _ConsignmentInOrderFormPageState extends State<ConsignmentInOrderFormPage>
                                     labelStyle: labelStyle,
                                     border: const OutlineInputBorder()),
                                 readOnly: true,
-                                initialValue:
-                                    dateTimeFormat(consignmentInOrder.datetime),
+                                initialValue: dateTimeLocalFormat(
+                                    consignmentInOrder.datetime),
                               ),
                             ),
                           ),
@@ -342,7 +342,7 @@ class _ConsignmentInOrderFormPageState extends State<ConsignmentInOrderFormPage>
                                     labelStyle: labelStyle,
                                     border: const OutlineInputBorder()),
                                 readOnly: true,
-                                initialValue: dateTimeFormat(
+                                initialValue: dateTimeLocalFormat(
                                     consignmentInOrder.deliveredDate),
                               ),
                             ),
