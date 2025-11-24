@@ -189,7 +189,7 @@ abstract class ModelClass<T extends Model> {
               .toList());
     }, onError: (error) {
       debugPrint(error.toString());
-      return null;
+      return QueryResponse();
     });
   }
 }

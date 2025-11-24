@@ -23,6 +23,7 @@ class SaleItem extends Model {
   String promoItemCode;
   Item? promoItem;
   String promoUom;
+  String saleType;
   Money cogs;
   String? saleCode;
   String? brandName;
@@ -38,6 +39,7 @@ class SaleItem extends Model {
       this.quantity = 0,
       this.price = const Money(0),
       this.uom = '',
+      this.saleType = '',
       this.itemName,
       super.createdAt,
       super.updatedAt,
@@ -83,6 +85,7 @@ class SaleItem extends Model {
         'itempromo': promoItemCode,
         'satuanpromo': promoUom,
         'hppdasar': cogs,
+        'sale_type': saleType,
         'item_type_name': itemTypeName,
         'supplier_code': supplierCode,
         'brand_name': brandName,
@@ -122,15 +125,16 @@ class SaleItem extends Model {
     discountPercentage4 = Percentage.parse(attributes['potongan4']);
     taxAmount = Money.parse(attributes['pajak']);
     total = Money.parse(attributes['total']);
-    systemSellPrice = attributes['sistemhargajual'];
-    promoType = attributes['tipepromo'];
-    promoItemCode = attributes['itempromo'];
-    promoUom = attributes['satuanpromo'];
-    saleCode = attributes['notransaksi'];
-    itemTypeName = attributes['item_type_name'];
-    supplierCode = attributes['supplier_code'];
-    brandName = attributes['brand_name'];
-    itemName = attributes['item_name'];
+    saleType = attributes['sale_type'] ?? '';
+    systemSellPrice = attributes['sistemhargajual'] ?? '';
+    promoType = attributes['tipepromo'] ?? '';
+    promoItemCode = attributes['itempromo'] ?? '';
+    promoUom = attributes['satuanpromo'] ?? '';
+    saleCode = attributes['notransaksi'] ?? '';
+    itemTypeName = attributes['item_type_name'] ?? '';
+    supplierCode = attributes['supplier_code'] ?? '';
+    brandName = attributes['brand_name'] ?? '';
+    itemName = attributes['item_name'] ?? '';
     freeQuantity = double.tryParse(attributes['jmlgratis']) ?? 0;
     cogs = Money.parse(attributes['hppdasar']);
     transactionDate = DateTime.parse(attributes['transaction_date']);

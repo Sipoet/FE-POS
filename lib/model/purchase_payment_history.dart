@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/account.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/purchase.dart';
 import 'package:fe_pos/model/purchase_order.dart';
@@ -27,7 +28,7 @@ enum PurchaseType {
     } else if (value == 'down_payment') {
       return dp;
     }
-    throw '$value is not valid discount calculation type';
+    throw '$value is not valid purchase type';
   }
 
   String humanize() {
@@ -55,7 +56,7 @@ class PurchasePaymentHistory extends Model {
   Money discountAmount;
   Money debtTotal;
   Money debtLeft;
-  String paymentAccount;
+  Account paymentAccount;
   PurchaseOrder? purchaseOrder;
 
   Supplier supplier;
@@ -66,7 +67,8 @@ class PurchasePaymentHistory extends Model {
       Supplier? supplier,
       String? supplierCode,
       this.description,
-      this.paymentAccount = '',
+      Account? paymentAccount,
+      String? paymentAccountCode,
       this.purchaseCode,
       this.purchase,
       this.purchaseOrder,
@@ -81,15 +83,18 @@ class PurchasePaymentHistory extends Model {
       DateTime? transactionAt})
       : transactionAt = transactionAt ?? DateTime.now(),
         stockArrivedAt = stockArrivedAt ?? DateTime.now(),
-        supplier = supplier ?? Supplier(code: supplierCode ?? '');
+        supplier = supplier ?? Supplier(code: supplierCode ?? ''),
+        paymentAccount =
+            paymentAccount ?? Account(code: paymentAccountCode ?? '');
   @override
   Map<String, dynamic> toMap() => {
         'transaction_at': transactionAt,
         'invoiced_at': invoicedAt,
         'stock_arrived_at': stockArrivedAt,
         'description': description,
-        'payment_account': paymentAccount,
-        'discount_ammount': discountAmount,
+        'payment_account_code': paymentAccountCode,
+        'payment_account': "${paymentAccount.code} - ${paymentAccount.name}",
+        'discount_amount': discountAmount,
         'grand_total': grandTotal,
         'payment_amount': paymentAmount,
         'purchase_code': purchaseCode,
@@ -102,6 +107,7 @@ class PurchasePaymentHistory extends Model {
       };
 
   String get supplierCode => supplier.code;
+  String get paymentAccountCode => paymentAccount.code;
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -113,6 +119,11 @@ class PurchasePaymentHistory extends Model {
             relation: json['relationships']?['supplier'],
           ) ??
           Supplier(code: attributes['supplier_code'] ?? '');
+      paymentAccount = AccountClass().findRelationData(
+            included: included,
+            relation: json['relationships']?['payment_account'],
+          ) ??
+          Account(code: attributes['payment_account_code'] ?? '');
       purchase = PurchaseClass().findRelationData(
         included: included,
         relation: json['relationships']?['purchase'],
@@ -127,7 +138,6 @@ class PurchasePaymentHistory extends Model {
     invoicedAt = DateTime.tryParse(attributes['invoiced_at'] ?? '');
     stockArrivedAt = DateTime.parse(attributes['stock_arrived_at'] ?? '');
     description = attributes['description'];
-    paymentAccount = attributes['payment_account'];
     discountAmount = Money.parse(attributes['discount_amount'] ?? '0');
     paymentAmount = Money.parse(attributes['payment_amount'] ?? '0');
     grandTotal = Money.parse(attributes['grand_total'] ?? '0');

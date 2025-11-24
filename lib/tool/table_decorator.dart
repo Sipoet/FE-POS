@@ -183,7 +183,7 @@ mixin TableDecorator<T extends Model>
   }
 
   DataCell decorateValue(T model, TableColumn column) {
-    final jsonData = model.toMap();
+    final jsonData = model.asMap();
     final cell = jsonData[column.name];
     if (column.type.isModel() && cell is Model) {
       return DataCell(
@@ -481,10 +481,10 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
       );
     } else if (value is TimeOfDay) {
       return SelectableText(value.format24Hour(), textAlign: TextAlign.left);
-    } else if (value is Date) {
+    } else if (value is Date || value is DateTime) {
       return SelectableText(value.format(), textAlign: TextAlign.left);
-    } else if (value is DateTime) {
-      return SelectableText(value.format(), textAlign: TextAlign.left);
+    } else if (value is EnumTranslation) {
+      return SelectableText(value.humanize(), textAlign: TextAlign.left);
     }
     return SelectableText(
       value.toString(),

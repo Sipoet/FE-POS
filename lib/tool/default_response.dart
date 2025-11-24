@@ -6,9 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/flash.dart';
 
 mixin DefaultResponse<T extends StatefulWidget> on State<T> {
-  dynamic defaultErrorResponse({required var error, var valueWhenError}) {
+  dynamic defaultErrorResponse({required var error, final valueWhenError}) {
     Flash flash = Flash();
-    if (error.runtimeType.toString() == '_TypeError') throw error;
+    if (error.runtimeType.toString() == '_TypeError' ||
+        error is ArgumentError) {
+      throw error;
+    }
+
     dynamic response;
     try {
       response = error.response;
@@ -17,7 +21,7 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
           title: 'Gagal',
           description: error.toString(),
           messageType: ToastificationType.error);
-      return null;
+      return valueWhenError;
     }
 
     switch (error.type) {

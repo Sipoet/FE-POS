@@ -8,6 +8,10 @@ extension StringExt on String {
       RegExp(r'\s*([A-Z])'), (Match match) => " ${match.group(1)}").trimLeft();
 }
 
+abstract class EnumTranslation {
+  String humanize();
+}
+
 extension DateTimeExt on DateTime {
   DateTime beginningOfDay() {
     return copyWith(

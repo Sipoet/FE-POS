@@ -3,7 +3,7 @@ import 'package:fe_pos/model/payroll_type.dart';
 export 'package:fe_pos/model/payroll_type.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-enum PayrollGroup {
+enum PayrollGroup implements EnumTranslation {
   earning,
   deduction;
 
@@ -28,6 +28,7 @@ enum PayrollGroup {
     throw 'invalid Payroll group $value';
   }
 
+  @override
   String humanize() {
     if (this == earning) {
       return 'penghasilan';
@@ -38,7 +39,7 @@ enum PayrollGroup {
   }
 }
 
-enum PayrollFormula {
+enum PayrollFormula implements EnumTranslation {
   basic,
   fulltimeSchedule,
   overtimeHour,
@@ -83,6 +84,7 @@ enum PayrollFormula {
     return super.toString().split('.').last;
   }
 
+  @override
   String humanize() {
     switch (this) {
       case basic:
