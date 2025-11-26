@@ -481,7 +481,13 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
       );
     } else if (value is TimeOfDay) {
       return SelectableText(value.format24Hour(), textAlign: TextAlign.left);
-    } else if (value is Date || value is DateTime) {
+    } else if (value is Date) {
+      return SelectableText(value.format(), textAlign: TextAlign.left);
+    } else if (value is DateTime) {
+      if (tableColumn.type == TableColumnType.timeOnly) {
+        return SelectableText(TimeOfDay.fromDateTime(value).format24Hour(),
+            textAlign: TextAlign.left);
+      }
       return SelectableText(value.format(), textAlign: TextAlign.left);
     } else if (value is EnumTranslation) {
       return SelectableText(value.humanize(), textAlign: TextAlign.left);

@@ -60,7 +60,7 @@ enum LeaveType {
   }
 }
 
-class EmployeeLeave extends Model {
+class EmployeeLeave extends Model with SaveNDestroyModel {
   Date date;
   LeaveType leaveType;
   Employee employee;

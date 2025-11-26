@@ -79,7 +79,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
               role: Role(name: ''),
               startWorkingDate: Date.today()));
       tabManager.addTab(
-          'Tambah Cuti Karyawan',
+          'Buat Cuti Karyawan',
           EmployeeLeaveFormPage(
               key: ObjectKey(employeeLeave), employeeLeave: employeeLeave));
     });
