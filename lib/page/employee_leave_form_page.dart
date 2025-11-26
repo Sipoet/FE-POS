@@ -57,10 +57,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
               setState(() {
                 empLeave = newEmpLeave;
               });
-
-              _tabManager.changeTabHeader(
-                  widget, 'Edit Cuti Karyawan ${employeeLeave.id}');
-            } else {}
+            }
           });
         }
       } else {
@@ -157,21 +154,24 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
         });
   }
 
+  static const labelStyle =
+      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    const labelStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Center(
           child: Column(
+            spacing: 10,
             children: [
               Form(
                 key: _formKey,
                 child: Container(
-                  constraints: BoxConstraints.loose(const Size.fromWidth(600)),
+                  constraints: BoxConstraints(maxWidth: 600),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -186,32 +186,30 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                             icon: const Icon(Icons.history)),
                       ),
                       const Divider(),
-                      Flexible(
-                        child: AsyncDropdown<Employee>(
-                          key: const ValueKey('employeeSelect'),
-                          path: '/employees',
-                          attributeKey: 'name',
-                          textOnSearch: (employee) =>
-                              "${employee.code} - ${employee.name}",
-                          modelClass: EmployeeClass(),
-                          label: const Text(
-                            'Nama Karyawan :',
-                            style: labelStyle,
-                          ),
-                          onChanged: (employee) {
-                            employeeLeave.employee =
-                                employee ?? employeeLeave.employee;
-                          },
-                          selected: employeeLeave.employee.isNewRecord
-                              ? null
-                              : employeeLeave.employee,
-                          validator: (value) {
-                            if (employeeLeave.employee.id == null) {
-                              return 'harus diisi';
-                            }
-                            return null;
-                          },
+                      AsyncDropdown<Employee>(
+                        key: const ValueKey('employeeSelect'),
+                        path: '/employees',
+                        attributeKey: 'name',
+                        textOnSearch: (employee) =>
+                            "${employee.code} - ${employee.name}",
+                        modelClass: EmployeeClass(),
+                        label: const Text(
+                          'Nama Karyawan :',
+                          style: labelStyle,
                         ),
+                        onChanged: (employee) {
+                          employeeLeave.employee =
+                              employee ?? employeeLeave.employee;
+                        },
+                        selected: employeeLeave.employee.isNewRecord
+                            ? null
+                            : employeeLeave.employee,
+                        validator: (value) {
+                          if (employeeLeave.employee.id == null) {
+                            return 'harus diisi';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(
                         height: 10,
@@ -240,9 +238,11 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                       const SizedBox(
                         height: 10,
                       ),
-                      if (employeeLeave.leaveType != LeaveType.changeDay &&
-                          employeeLeave.isNewRecord)
-                        DateRangeFormField(
+                      Visibility(
+                        visible:
+                            employeeLeave.leaveType != LeaveType.changeDay &&
+                                employeeLeave.isNewRecord,
+                        child: DateRangeFormField(
                           initialDateRange: _dateRange,
                           enabled: !_isMultipleUpdateForm,
                           rangeType: DateRangeType(),
@@ -255,9 +255,11 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                             style: labelStyle,
                           ),
                         ),
-                      if (!employeeLeave.isNewRecord ||
-                          employeeLeave.leaveType == LeaveType.changeDay)
-                        DateFormField(
+                      ),
+                      Visibility(
+                        visible: !employeeLeave.isNewRecord ||
+                            employeeLeave.leaveType == LeaveType.changeDay,
+                        child: DateFormField(
                             dateType: DateType(),
                             helpText: 'Tanggal Cuti',
                             label: const Text(
@@ -288,6 +290,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                             lastDate:
                                 DateTime.now().add(const Duration(days: 31)),
                             initialValue: employeeLeave.date),
+                      ),
                       const SizedBox(
                         height: 10,
                       ),
@@ -415,7 +418,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                                 child: const Text('Buat Baru')),
                           ],
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -423,58 +426,59 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
               Visibility(
                 visible: _employeeLeaves.isNotEmpty,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.all(10),
                   child: Table(
                     columnWidths: {3: FixedColumnWidth(120)},
                     border: TableBorder.all(),
                     children: [
                       TableRow(children: [
-                        Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: TableCell(
-                              child: Text(
+                        TableCell(
+                            child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Text(
                             'Tanggal',
                             style: labelStyle,
-                          )),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: TableCell(
-                              child: Text(
+                          ),
+                        )),
+                        TableCell(
+                            child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Text(
                             'Keterangan',
                             style: labelStyle,
-                          )),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: TableCell(
-                              child: Text(
+                          ),
+                        )),
+                        TableCell(
+                            child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Text(
                             'Tipe Cuti',
                             style: labelStyle,
-                          )),
-                        ),
+                          ),
+                        )),
                         TableCell(child: SizedBox()),
                       ]),
                       ..._employeeLeaves.map<TableRow>((row) =>
                           TableRow(children: [
-                            Padding(
+                            TableCell(
+                                child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Text(row.date.format()),
+                            )),
+                            TableCell(
+                                child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Text(row.description ?? ''),
+                            )),
+                            TableCell(
+                                child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Text(row.leaveType.humanize()),
+                            )),
+                            TableCell(
+                                child: Padding(
                               padding: const EdgeInsets.all(10.0),
-                              child: TableCell(child: Text(row.date.format())),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child:
-                                  TableCell(child: Text(row.description ?? '')),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: TableCell(
-                                  child: Text(row.leaveType.humanize())),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: TableCell(
-                                  child: Row(
+                              child: Row(
                                 spacing: 15,
                                 children: [
                                   IconButton(
@@ -492,8 +496,8 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                                           _removeEmployeeLeave(row),
                                       icon: Icon(Icons.delete)),
                                 ],
-                              )),
-                            ),
+                              ),
+                            )),
                           ])),
                     ],
                   ),
