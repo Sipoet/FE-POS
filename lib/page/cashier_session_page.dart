@@ -67,7 +67,7 @@ class _CashierSessionPageState extends State<CashierSessionPage>
       'data': {'type': 'cashier_session', 'attributes': cashierSession.toJson()}
     };
     server.post('cashier_sessions', body: bodyParams).then((response) {
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         final json = response.data;
         setState(() {
           cashierSession = CashierSessionClass()
@@ -105,13 +105,14 @@ class _CashierSessionPageState extends State<CashierSessionPage>
                 child: SubmenuButton(
                     controller: _menuController,
                     menuChildren: [
-                      MenuItemButton(
-                        onPressed: () {
-                          _menuController.close();
-                          if (_isTodayCashierFetched) openTodayEdcSettlement();
-                        },
-                        child: const Text('EDC Settlement Hari ini'),
-                      ),
+                      if (_isTodayCashierFetched)
+                        MenuItemButton(
+                          onPressed: () {
+                            _menuController.close();
+                            openTodayEdcSettlement();
+                          },
+                          child: const Text('EDC Settlement Hari ini'),
+                        ),
                       MenuItemButton(
                         onPressed: () {
                           _menuController.close();

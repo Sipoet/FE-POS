@@ -662,3 +662,9 @@ class DataTableResponse<T extends Model> {
     return DataTableResponse<T>(totalPage: 1, models: []);
   }
 }
+
+extension PlutoRowExt on PlutoRow {
+  T modelOf<T extends Model>() {
+    return cells[modelKey]?.value as T;
+  }
+}
