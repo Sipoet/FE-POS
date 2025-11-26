@@ -9,6 +9,7 @@ import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
+import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -30,20 +31,82 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
   List<String> _employeeIds = [];
   late final Server _server;
   late final Flash flash;
-  late Setting _setting;
   final _focusNode = FocusNode();
-  late final GeneratePayslipDatatableSource _source;
+  late final PlutoGridStateManager _source;
+  late final List<TableColumn> _columns;
   @override
   bool get wantKeepAlive => true;
 
   @override
   void initState() {
     _server = context.read<Server>();
-    _setting = context.read<Setting>();
     final tabManager = context.read<TabManager>();
+    _columns = [
+      TableColumn(
+        name: 'employee_name',
+        humanizeName: 'Nama Karyawan',
+        clientWidth: 180,
+        frozen: PlutoColumnFrozen.start,
+      ),
+      TableColumn(
+          name: 'start_date',
+          humanizeName: 'Periode Mulai',
+          clientWidth: 150,
+          type: TableColumnType.date),
+      TableColumn(
+          name: 'end_date',
+          humanizeName: 'Periode Akhir',
+          clientWidth: 150,
+          type: TableColumnType.date),
+      TableColumn(
+          name: 'gross_salary',
+          humanizeName: 'Gaji Kotor',
+          clientWidth: 180,
+          type: TableColumnType.money),
+      TableColumn(
+          name: 'nett_salary',
+          humanizeName: 'Gaji Bersih',
+          clientWidth: 180,
+          type: TableColumnType.money),
+      TableColumn(
+          name: 'work_days',
+          humanizeName: 'Hari Kerja',
+          clientWidth: 180,
+          type: TableColumnType.number),
+      TableColumn(
+          name: 'known_absence',
+          humanizeName: 'Jumlah Sakit(Hari)',
+          clientWidth: 180,
+          type: TableColumnType.number),
+      TableColumn(
+          name: 'sick_leave',
+          humanizeName: 'Jumlah Izin(Hari)',
+          clientWidth: 180,
+          type: TableColumnType.number),
+      TableColumn(
+          name: 'unknown_absence',
+          humanizeName: 'Jumlah Alpha/Tanpa kabar(Hari)',
+          clientWidth: 180,
+          type: TableColumnType.number),
+      TableColumn(
+          name: 'detail',
+          humanizeName: 'Detail',
+          frozen: PlutoColumnFrozen.end,
+          clientWidth: 180,
+          renderBody: (rendererContext) => Row(
+                children: [
+                  IconButton(
+                      onPressed: () => tabManager.setSafeAreaContent(
+                          'Edit Slip Gaji ${rendererContext.row.modelOf<Payslip>().id}',
+                          PayslipFormPage(
+                              payslip: rendererContext.row.modelOf<Payslip>())),
+                      icon: Icon(Icons.edit))
+                ],
+              ),
+          type: TableColumnType.text),
+    ];
+
     flash = Flash();
-    _source = GeneratePayslipDatatableSource(
-        tabManager: tabManager, setting: _setting);
     super.initState();
     Future.delayed(Duration.zero, () => _focusNode.requestFocus());
   }
@@ -60,11 +123,13 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
             child: Form(
               key: formKey,
               child: Column(
+                spacing: 10,
                 children: [
                   Container(
                       constraints:
                           BoxConstraints.loose(const Size.fromWidth(600)),
                       child: Column(
+                        spacing: 10,
                         children: [
                           DateRangeFormField(
                             focusNode: _focusNode,
@@ -80,9 +145,6 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                             },
                             initialDateRange:
                                 DateTimeRange(start: startDate, end: endDate),
-                          ),
-                          const SizedBox(
-                            height: 10,
                           ),
                           AsyncDropdownMultiple<Employee>(
                             key: const ValueKey('generate_payslip-karyawan'),
@@ -114,9 +176,6 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                                   cancelToken: cancelToken);
                             },
                           ),
-                          const SizedBox(
-                            height: 10,
-                          ),
                           ElevatedButton(
                               onPressed: () {
                                 if (formKey.currentState!.validate()) {
@@ -126,103 +185,19 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                               child: const Text('generate')),
                         ],
                       )),
-                  Visibility(
-                    visible: _source.rows.isNotEmpty,
-                    child: Column(
-                      children: [
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const Text(
-                          'Hasil :',
-                          style: labelStyle,
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        PaginatedDataTable(
-                          showFirstLastButtons: true,
-                          rowsPerPage: 30,
-                          showCheckboxColumn: false,
-                          sortAscending: _source.isAscending,
-                          sortColumnIndex: _source.sortColumn,
-                          columns: [
-                            DataColumn(
-                              label: const Text('Nama Karyawan',
-                                  style: labelStyle),
-                              onSort: (columnIndex, isAscending) {
-                                final num = isAscending ? 1 : -1;
-                                _source.rows.sort((a, b) =>
-                                    a.employee.name.compareTo(b.employee.name) *
-                                    num);
-                                setState(() {
-                                  _source.sortColumn = columnIndex;
-                                  _source.isAscending = isAscending;
-                                  _source.setData(_source.rows);
-                                });
-                              },
-                            ),
-                            DataColumn(
-                              label: const Text('Periode mulai',
-                                  style: labelStyle),
-                              onSort: (columnIndex, isAscending) {
-                                final num = isAscending ? 1 : -1;
-                                _source.rows.sort((a, b) =>
-                                    a.startDate.compareTo(b.startDate) * num);
-                                setState(() {
-                                  _source.sortColumn = columnIndex;
-                                  _source.isAscending = isAscending;
-                                  _source.setData(_source.rows);
-                                });
-                              },
-                            ),
-                            DataColumn(
-                              label: const Text('Periode Sampai',
-                                  style: labelStyle),
-                              onSort: (columnIndex, isAscending) {
-                                final num = isAscending ? 1 : -1;
-                                _source.rows.sort((a, b) =>
-                                    a.endDate.compareTo(b.endDate) * num);
-                                setState(() {
-                                  _source.sortColumn = columnIndex;
-                                  _source.isAscending = isAscending;
-                                  _source.setData(_source.rows);
-                                });
-                              },
-                            ),
-                            DataColumn(
-                              label:
-                                  const Text('Gaji Kotor', style: labelStyle),
-                              onSort: (columnIndex, isAscending) {
-                                final num = isAscending ? 1 : -1;
-                                _source.rows.sort((a, b) =>
-                                    a.grossSalary.compareTo(b.grossSalary) *
-                                    num);
-                                setState(() {
-                                  _source.sortColumn = columnIndex;
-                                  _source.isAscending = isAscending;
-                                  _source.setData(_source.rows);
-                                });
-                              },
-                            ),
-                            DataColumn(
-                              label:
-                                  const Text('Gaji Bersih', style: labelStyle),
-                              onSort: (columnIndex, isAscending) {
-                                final num = isAscending ? 1 : -1;
-                                _source.rows.sort((a, b) =>
-                                    a.nettSalary.compareTo(b.nettSalary) * num);
-                                setState(() {
-                                  _source.sortColumn = columnIndex;
-                                  _source.isAscending = isAscending;
-                                  _source.setData(_source.rows);
-                                });
-                              },
-                            ),
-                          ],
-                          source: _source,
-                        ),
-                      ],
+                  const Text(
+                    'Hasil :',
+                    style: labelStyle,
+                  ),
+                  Container(
+                    constraints: BoxConstraints(maxHeight: bodyScreenHeight),
+                    child: SyncDataTable<Payslip>(
+                      showFilter: true,
+                      onLoaded: (stateManager) {
+                        _source = stateManager;
+                        _source.sortAscending(_source.columns[0]);
+                      },
+                      columns: _columns,
                     ),
                   ),
                 ],
@@ -233,7 +208,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
   }
 
   void _generatePayslip() async {
-    showLoadingPopup();
+    _source.setShowLoading(true);
     _server.post('payslips/generate_payslip', body: {
       'employee_ids': _employeeIds,
       'start_date': startDate.toIso8601String(),
@@ -242,11 +217,11 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
       if (response.statusCode == 201) {
         final responseBody = response.data['data'] as List;
         setState(() {
-          final payslip = responseBody
-              .map<Payslip>((json) => PayslipClass()
-                  .fromJson(json, included: response.data['included']))
-              .toList();
-          _source.setData(payslip);
+          for (final row in responseBody) {
+            final payslip = PayslipClass()
+                .fromJson(row, included: response.data['included']);
+            _source.appendModel(payslip, _columns);
+          }
         });
       } else {
         flash.showBanner(
@@ -256,7 +231,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
       }
       response.data['data'];
     }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => hideLoadingPopup());
+        () => _source.setShowLoading(false));
   }
 }
 
