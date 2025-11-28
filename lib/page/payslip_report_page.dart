@@ -62,7 +62,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                 type: TableColumnType.fromString(row['type']),
                 inputOptions: row['input_options'],
                 name: row['name'],
-                canFilter: row['can_filter'] ?? false,
+                canFilter: true,
                 canSort: row['can_sort'] ?? false,
                 humanizeName: row['humanize_name']);
           }).toList();

@@ -4,9 +4,7 @@ import 'package:fe_pos/page/payslip_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
-import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
-import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
@@ -42,11 +40,16 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
     _server = context.read<Server>();
     final tabManager = context.read<TabManager>();
     _columns = [
-      TableColumn(
+      TableColumn<Payslip>(
         name: 'employee_name',
         humanizeName: 'Nama Karyawan',
         clientWidth: 180,
         frozen: PlutoColumnFrozen.start,
+        type: TableColumnType.text,
+        getValue: (Model model) {
+          Payslip payslip = model as Payslip;
+          return payslip.employee.name.toTitleCase();
+        },
       ),
       TableColumn(
           name: 'start_date',
@@ -74,12 +77,12 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
           clientWidth: 180,
           type: TableColumnType.number),
       TableColumn(
-          name: 'known_absence',
+          name: 'sick_leave',
           humanizeName: 'Jumlah Sakit(Hari)',
           clientWidth: 180,
           type: TableColumnType.number),
       TableColumn(
-          name: 'sick_leave',
+          name: 'known_absence',
           humanizeName: 'Jumlah Izin(Hari)',
           clientWidth: 180,
           type: TableColumnType.number),
@@ -193,10 +196,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                     constraints: BoxConstraints(maxHeight: bodyScreenHeight),
                     child: SyncDataTable<Payslip>(
                       showFilter: true,
-                      onLoaded: (stateManager) {
-                        _source = stateManager;
-                        _source.sortAscending(_source.columns[0]);
-                      },
+                      onLoaded: (stateManager) => _source = stateManager,
                       columns: _columns,
                     ),
                   ),
@@ -209,6 +209,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
 
   void _generatePayslip() async {
     _source.setShowLoading(true);
+    _source.removeAllRows();
     _server.post('payslips/generate_payslip', body: {
       'employee_ids': _employeeIds,
       'start_date': startDate.toIso8601String(),
@@ -233,70 +234,4 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
     }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
         () => _source.setShowLoading(false));
   }
-}
-
-class GeneratePayslipDatatableSource extends DataTableSource
-    with TextFormatter {
-  List<Payslip> rows = [];
-  List selected = [];
-  List status = [];
-  TabManager tabManager;
-  final Setting setting;
-  bool isAscending = true;
-  int sortColumn = 0;
-
-  GeneratePayslipDatatableSource(
-      {required this.setting, required this.tabManager});
-
-  void setData(data) {
-    rows = data;
-    selected = List.generate(rows.length, (index) => true);
-    status = List.generate(rows.length, (index) => 'Draft');
-    notifyListeners();
-  }
-
-  void setStatus(index, newStatus) {
-    status[index] = newStatus;
-    notifyListeners();
-  }
-
-  @override
-  int get rowCount => rows.length;
-
-  @override
-  DataRow? getRow(int index) {
-    return DataRow(
-      key: ObjectKey(rows[index]),
-      cells: decoratePayslip(index),
-      selected: selected[index],
-      onSelectChanged: (bool? value) {
-        selected[index] = value!;
-        notifyListeners();
-      },
-    );
-  }
-
-  List<DataCell> decoratePayslip(int index) {
-    final payslip = rows[index];
-    return <DataCell>[
-      DataCell(
-          onTap: () => _openPayslipForm(payslip),
-          SelectableText(payslip.employee.name)),
-      DataCell(SelectableText(dateFormat(payslip.startDate))),
-      DataCell(SelectableText(dateFormat(payslip.endDate))),
-      DataCell(SelectableText(numberFormat(payslip.grossSalary))),
-      DataCell(SelectableText(numberFormat(payslip.nettSalary))),
-    ];
-  }
-
-  void _openPayslipForm(Payslip payslip) {
-    tabManager.addTab('Edit SLip Gaji ${payslip.id}',
-        PayslipFormPage(key: ObjectKey(payslip), payslip: payslip));
-  }
-
-  @override
-  bool get isRowCountApproximate => false;
-
-  @override
-  int get selectedRowCount => 0;
 }

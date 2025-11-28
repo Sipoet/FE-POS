@@ -66,7 +66,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   };
   static const Map<String, String> fieldKeyLocales = {
     'sales_total': 'Total Penjualan(Rp)',
-    'sales_quantity': 'Jumlah Penjualan',
+    'sales_quantity': 'Total Transaksi',
     'sales_discount_amount': 'Total Diskon(Rp)',
     'gross_profit': 'Gross Profit(Rp)',
     'sales_through_rate': 'Kecepatan Penjualan(%)',

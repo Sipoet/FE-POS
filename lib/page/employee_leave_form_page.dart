@@ -411,6 +411,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                                     _descriptionController.text =
                                         employeeLeave.description ?? '';
                                     _employeeLeaves.clear();
+                                    _isMultipleUpdateForm = false;
                                     _tabManager.changeTabHeader(
                                         widget, 'Buat Cuti Karyawan');
                                   });
