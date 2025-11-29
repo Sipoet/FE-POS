@@ -19,7 +19,7 @@ class SalePage extends StatefulWidget {
 
 class _SalePageState extends State<SalePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<Sale> items = [];

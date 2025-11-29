@@ -23,7 +23,7 @@ class _ItemReportPageState extends State<ItemReportPage>
   late Server server;
   String? _reportType;
   double minimumColumnWidth = 150;
-  PlutoGridStateManager? _source;
+  TrinaGridStateManager? _source;
   late Flash flash;
   late final List<TableColumn> columns;
   List<ItemReport> _itemReports = [];

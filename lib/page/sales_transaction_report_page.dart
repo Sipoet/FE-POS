@@ -24,7 +24,7 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
   late Flash flash;
   late List<TableColumn> columns;
   List<SalesTransactionReport> salesTransactionReports = [];
-  late final PlutoGridStateManager stateManager;
+  late final TrinaGridStateManager stateManager;
 
   @override
   bool get wantKeepAlive => true;

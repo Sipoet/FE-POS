@@ -15,7 +15,7 @@ class BrandPage extends StatefulWidget {
 }
 
 class _BrandPageState extends State<BrandPage> with DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<Brand> brands = [];

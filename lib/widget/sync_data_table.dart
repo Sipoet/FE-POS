@@ -3,16 +3,16 @@ import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
+export 'package:trina_grid/trina_grid.dart';
 export 'package:fe_pos/tool/table_decorator.dart';
-import 'package:pluto_grid/pluto_grid.dart';
+import 'package:trina_grid/trina_grid.dart';
 import 'package:provider/provider.dart';
-export 'package:pluto_grid/pluto_grid.dart';
 
-typedef OnLoadedCallBack = void Function(PlutoGridStateManager stateManager);
-typedef OnRowCheckedCallback = void Function(PlutoGridOnRowCheckedEvent event);
-typedef OnSelectedCallback = void Function(PlutoGridOnSelectedEvent event);
+typedef OnLoadedCallBack = void Function(TrinaGridStateManager stateManager);
+typedef OnRowCheckedCallback = void Function(TrinaGridOnRowCheckedEvent event);
+typedef OnSelectedCallback = void Function(TrinaGridOnSelectedEvent event);
 typedef OnRowDoubleTapCallback = void Function(
-    PlutoGridOnRowDoubleTapEvent event);
+    TrinaGridOnRowDoubleTapEvent event);
 
 class SyncDataTable<T extends Model> extends StatefulWidget {
   final int fixedLeftColumns;
@@ -56,14 +56,14 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
 }
 
 class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
-    with PlutoTableDecorator, PlatformChecker, TextFormatter {
-  List<PlutoRow> get rows => widget.rows
-      .map<PlutoRow>(
+    with TrinaTableDecorator, PlatformChecker, TextFormatter {
+  List<TrinaRow> get rows => widget.rows
+      .map<TrinaRow>(
           (row) => decorateRow(model: row, tableColumns: widget.columns))
       .toList();
 
-  List<PlutoColumn> get columns =>
-      widget.columns.asMap().entries.map<PlutoColumn>((entry) {
+  List<TrinaColumn> get columns =>
+      widget.columns.asMap().entries.map<TrinaColumn>((entry) {
         int index = entry.key;
         TableColumn tableColumn = entry.value;
         return decorateColumn(
@@ -74,19 +74,19 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
           isFrozen: index < widget.fixedLeftColumns,
         );
       }).toList()
-        ..add(PlutoColumn(
+        ..add(TrinaColumn(
             title: ' ',
             field: 'model',
-            type: PlutoColumnType.text(defaultValue: null),
+            type: TrinaColumnType.text(defaultValue: null),
             hide: widget.renderAction == null,
-            frozen: PlutoColumnFrozen.end,
+            frozen: TrinaColumnFrozen.end,
             renderer: widget.renderAction == null
                 ? null
-                : (PlutoColumnRendererContext rendererContext) =>
+                : (TrinaColumnRendererContext rendererContext) =>
                     widget.renderAction!(rendererContext.cell.value as T),
             width: widget.renderAction == null
                 ? 0
-                : widget.actionColumnWidth ?? PlutoGridSettings.columnWidth,
+                : widget.actionColumnWidth ?? TrinaGridSettings.columnWidth,
             minWidth: 0));
 
   @override
@@ -98,10 +98,10 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return PlutoGrid(
+    return TrinaGrid(
       columns: columns,
       rows: rows,
-      onLoaded: (PlutoGridOnLoadedEvent event) {
+      onLoaded: (TrinaGridOnLoadedEvent event) {
         final stateManager = event.stateManager;
         stateManager.setShowColumnFilter(widget.showFilter);
         stateManager.setShowColumnFooter(widget.showSummary);
@@ -113,25 +113,24 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
         }
       },
       noRowsWidget: const Text('Data tidak ditemukan'),
-      onChanged: (PlutoGridOnChangedEvent event) {
+      onChanged: (TrinaGridOnChangedEvent event) {
         debugPrint(event.toString());
       },
-      mode: PlutoGridMode.selectWithOneTap,
+      mode: TrinaGridMode.selectWithOneTap,
       onSelected: widget.onSelected,
       onRowDoubleTap: widget.onRowDoubleTap,
       onRowChecked: widget.onRowChecked,
       createFooter: (stateManager) {
-        return PlutoPagination(
+        return TrinaPagination(
           stateManager,
           pageSizeToMove: 1,
         );
       },
-      configuration: PlutoGridConfiguration(
-          scrollbar: const PlutoGridScrollbarConfig(
+      configuration: TrinaGridConfiguration(
+          scrollbar: const TrinaGridScrollbarConfig(
             isAlwaysShown: true,
-            scrollbarThickness: 10,
           ),
-          style: PlutoGridStyleConfig(
+          style: TrinaGridStyleConfig(
               borderColor: colorScheme.outline,
               rowColor: colorScheme.secondaryContainer,
               evenRowColor: colorScheme.onPrimary)),

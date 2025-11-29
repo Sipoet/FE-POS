@@ -30,7 +30,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
   late final Server _server;
   late final Flash flash;
   final _focusNode = FocusNode();
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final List<TableColumn> _columns;
   @override
   bool get wantKeepAlive => true;
@@ -44,7 +44,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
         name: 'employee_name',
         humanizeName: 'Nama Karyawan',
         clientWidth: 180,
-        frozen: PlutoColumnFrozen.start,
+        frozen: TrinaColumnFrozen.start,
         type: TableColumnType.text,
         getValue: (Model model) {
           Payslip payslip = model as Payslip;
@@ -94,7 +94,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
       TableColumn(
           name: 'detail',
           humanizeName: 'Detail',
-          frozen: PlutoColumnFrozen.end,
+          frozen: TrinaColumnFrozen.end,
           clientWidth: 180,
           renderBody: (rendererContext) => Row(
                 children: [

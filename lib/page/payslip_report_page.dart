@@ -22,7 +22,7 @@ class PayslipReportPage extends StatefulWidget {
 class _PayslipReportPageState extends State<PayslipReportPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse, LoadingPopup {
   final formKey = GlobalKey<FormState>();
-  PlutoGridStateManager? tableStateManager;
+  TrinaGridStateManager? tableStateManager;
   List<PayrollType> payrollTypes = [];
   List<TableColumn> tableColumns = [];
   PayslipStatus? _payslipStatus;

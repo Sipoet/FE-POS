@@ -28,7 +28,7 @@ class _SalesGroupBySupplierReportPageState
       TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
   late Server server;
   String? _reportType;
-  late PlutoGridStateManager _source;
+  late TrinaGridStateManager _source;
   late Flash flash;
   List _brands = [];
   List _suppliers = [];

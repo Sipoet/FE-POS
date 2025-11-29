@@ -20,7 +20,7 @@ class PaymentProviderPage extends StatefulWidget {
 
 class _PaymentProviderPageState extends State<PaymentProviderPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
 
   String _searchText = '';

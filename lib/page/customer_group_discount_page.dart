@@ -20,7 +20,7 @@ class CustomerGroupDiscountPage extends StatefulWidget {
 
 class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   final _menuController = MenuController();
   String _searchText = '';

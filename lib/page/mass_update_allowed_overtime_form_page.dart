@@ -29,7 +29,7 @@ class _MassUpdateAllowedOvertimeFormPageState
   DateTime _dateTime = DateTime.now();
   bool _allowOvertime = true;
   int? _shift;
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Flash flash;
   late final Setting setting;
 

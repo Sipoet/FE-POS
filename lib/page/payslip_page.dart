@@ -22,7 +22,7 @@ class PayslipPage extends StatefulWidget {
 
 class _PayslipPageState extends State<PayslipPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<Payslip> payslips = [];

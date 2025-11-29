@@ -195,24 +195,27 @@ class _PaymentProviderFormPageState extends State<PaymentProviderFormPage>
                           'Status',
                           style: labelStyle,
                         ),
-                        RadioListTile<PaymentProviderStatus>(
-                            value: PaymentProviderStatus.inactive,
+                        RadioGroup(
                             groupValue: paymentProvider.status,
-                            title:
-                                Text(PaymentProviderStatus.inactive.humanize()),
                             onChanged: (value) => setState(() {
                                   paymentProvider.status =
                                       value ?? paymentProvider.status;
-                                })),
-                        RadioListTile<PaymentProviderStatus>(
-                            value: PaymentProviderStatus.active,
-                            groupValue: paymentProvider.status,
-                            title:
-                                Text(PaymentProviderStatus.active.humanize()),
-                            onChanged: (value) => setState(() {
-                                  paymentProvider.status =
-                                      value ?? paymentProvider.status;
-                                })),
+                                }),
+                            child: Wrap(
+                              spacing: 10,
+                              children: [
+                                RadioListTile<PaymentProviderStatus>(
+                                  title: Text(PaymentProviderStatus.inactive
+                                      .humanize()),
+                                  value: PaymentProviderStatus.inactive,
+                                ),
+                                RadioListTile<PaymentProviderStatus>(
+                                  value: PaymentProviderStatus.active,
+                                  title: Text(
+                                      PaymentProviderStatus.active.humanize()),
+                                ),
+                              ],
+                            )),
                         const SizedBox(
                           height: 10,
                         ),

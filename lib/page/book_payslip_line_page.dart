@@ -20,7 +20,7 @@ class BookPayslipLinePage extends StatefulWidget {
 
 class _BookPayslipLinePageState extends State<BookPayslipLinePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
 
   String _searchText = '';

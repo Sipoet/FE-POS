@@ -21,7 +21,7 @@ class CashierSessionTablePage extends StatefulWidget {
 
 class _CashierSessionTablePageState extends State<CashierSessionTablePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse, TextFormatter {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();

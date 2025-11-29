@@ -19,7 +19,7 @@ class EmployeePage extends StatefulWidget {
 
 class _EmployeePageState extends State<EmployeePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();

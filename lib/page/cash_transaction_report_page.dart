@@ -20,7 +20,7 @@ class _CashTransactionReportPageState extends State<CashTransactionReportPage>
     with DefaultResponse {
   late final List<TableColumn> columns;
   late final Server _server;
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   List<FilterData> _filters = [];
   String _searchText = '';
   @override

@@ -1,6 +1,5 @@
 import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/payroll_report.dart';
-import 'package:fe_pos/model/payroll_type.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/file_saver.dart';
 import 'package:fe_pos/tool/flash.dart';
@@ -21,7 +20,7 @@ class PayrollReportPage extends StatefulWidget {
 
 class _PayrollReportPageState extends State<PayrollReportPage>
     with LoadingPopup, DefaultResponse {
-  PlutoGridStateManager? tableStateManager;
+  TrinaGridStateManager? tableStateManager;
   List<PayrollType> payrollTypes = [];
   List<Employee> employees = [];
   List<TableColumn> tableColumns = [];

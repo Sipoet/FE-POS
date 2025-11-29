@@ -20,7 +20,7 @@ class HolidayPage extends StatefulWidget {
 
 class _HolidayPageState extends State<HolidayPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   final _menuController = MenuController();
   String _searchText = '';

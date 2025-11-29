@@ -19,7 +19,7 @@ class PurchasePage extends StatefulWidget {
 
 class _PurchasePageState extends State<PurchasePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<Purchase> items = [];

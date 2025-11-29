@@ -19,7 +19,7 @@ class ItemPage extends StatefulWidget {
 }
 
 class _ItemPageState extends State<ItemPage> with DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<Item> items = [];
@@ -38,7 +38,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
       name: 'action',
       type: TableColumnType.action,
       humanizeName: 'Action',
-      frozen: PlutoColumnFrozen.end,
+      frozen: TrinaColumnFrozen.end,
       renderBody: (rendererContext) {
         return Row(
           children: [

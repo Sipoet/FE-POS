@@ -42,7 +42,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final TextEditingController _discount4Controller;
   late final TextEditingController _codeController;
   late final TabController _tabController;
-  late PlutoGridStateManager _source;
+  late TrinaGridStateManager _source;
   late final Server server;
   dynamic discount1;
   Percentage? discount2;
@@ -812,31 +812,26 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                   'Aturan Aktif Diskon',
                                   style: labelStyle,
                                 ),
-                                Wrap(
-                                  children: [
-                                    Radio<DiscountType>(
-                                      value: DiscountType.period,
-                                      groupValue: discount.discountType,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          discount.discountType =
-                                              value ?? DiscountType.period;
-                                        });
-                                      },
-                                    ),
-                                    Text(DiscountType.period.humanize()),
-                                    Radio<DiscountType>(
-                                      value: DiscountType.dayOfWeek,
-                                      groupValue: discount.discountType,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          discount.discountType =
-                                              value ?? DiscountType.dayOfWeek;
-                                        });
-                                      },
-                                    ),
-                                    Text(DiscountType.dayOfWeek.humanize()),
-                                  ],
+                                RadioGroup(
+                                  groupValue: discount.discountType,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      discount.discountType =
+                                          value ?? DiscountType.period;
+                                    });
+                                  },
+                                  child: Wrap(
+                                    children: [
+                                      Radio<DiscountType>(
+                                        value: DiscountType.period,
+                                      ),
+                                      Text(DiscountType.period.humanize()),
+                                      Radio<DiscountType>(
+                                        value: DiscountType.dayOfWeek,
+                                      ),
+                                      Text(DiscountType.dayOfWeek.humanize()),
+                                    ],
+                                  ),
                                 ),
                                 Visibility(
                                   visible: discount.discountType ==
@@ -943,114 +938,65 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                         'Tipe Kalkulasi:',
                                         style: labelStyle,
                                       ),
-                                      Wrap(
-                                        children: [
-                                          Radio<DiscountCalculationType>(
-                                            value: DiscountCalculationType
-                                                .percentage,
-                                            groupValue:
-                                                discount.calculationType,
-                                            onChanged: (value) {
-                                              setState(() {
-                                                discount.calculationType =
-                                                    value ??
-                                                        DiscountCalculationType
-                                                            .percentage;
-                                                if (discount.discount1
-                                                    is Money) {
-                                                  discount.discount1 = discount
-                                                      .discount1Percentage;
-                                                }
-                                                _discount2Controller.text =
-                                                    discount.discount2
-                                                        .toString();
-                                                _discount3Controller.text =
-                                                    discount.discount3
-                                                        .toString();
-                                                _discount4Controller.text =
-                                                    discount.discount4
-                                                        .toString();
-                                              });
-                                            },
-                                          ),
-                                          Text(DiscountCalculationType
-                                              .percentage
-                                              .humanize()),
-                                          Radio<DiscountCalculationType>(
-                                            value:
-                                                DiscountCalculationType.nominal,
-                                            groupValue:
-                                                discount.calculationType,
-                                            onChanged: (value) {
-                                              setState(() {
-                                                discount.calculationType =
-                                                    value ??
-                                                        DiscountCalculationType
-                                                            .nominal;
-                                                if (discount.discount1
-                                                    is Percentage) {
-                                                  discount.discount1 =
-                                                      discount.discount1Nominal;
-                                                }
-                                                discount.discount2 =
-                                                    const Percentage(0);
-                                                discount.discount3 =
-                                                    discount.discount2;
-                                                discount.discount4 =
-                                                    discount.discount2;
-                                                _discount2Controller.text =
-                                                    discount.discount2
-                                                        .toString();
-                                                _discount3Controller.text =
-                                                    discount.discount3
-                                                        .toString();
-                                                _discount4Controller.text =
-                                                    discount.discount4
-                                                        .toString();
-                                              });
-                                            },
-                                          ),
-                                          Text(DiscountCalculationType.nominal
-                                              .humanize()),
-                                          Radio<DiscountCalculationType>(
-                                            value: DiscountCalculationType
-                                                .specialPrice,
-                                            groupValue:
-                                                discount.calculationType,
-                                            onChanged: (value) {
-                                              setState(() {
-                                                discount.calculationType =
-                                                    value ??
-                                                        DiscountCalculationType
-                                                            .specialPrice;
-                                                if (discount.discount1
-                                                    is Percentage) {
-                                                  discount.discount1 =
-                                                      discount.discount1Nominal;
-                                                }
-                                                discount.discount2 =
-                                                    const Percentage(0);
-
-                                                discount.discount3 =
-                                                    discount.discount2;
-                                                discount.discount4 =
-                                                    discount.discount2;
-                                                _discount2Controller.text =
-                                                    discount.discount2
-                                                        .toString();
-                                                _discount3Controller.text =
-                                                    discount.discount3
-                                                        .toString();
-                                                _discount4Controller.text =
-                                                    discount.discount4
-                                                        .toString();
-                                              });
-                                            },
-                                          ),
-                                          Text(DiscountCalculationType
-                                              .specialPrice
-                                              .humanize()),
-                                        ],
+                                      RadioGroup(
+                                        groupValue: discount.calculationType,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            discount.calculationType = value ??
+                                                DiscountCalculationType
+                                                    .percentage;
+                                            if (discount.discount1 is Money) {
+                                              discount.discount1 =
+                                                  discount.discount1Percentage;
+                                              _discount2Controller.text =
+                                                  discount.discount2.toString();
+                                              _discount3Controller.text =
+                                                  discount.discount3.toString();
+                                              _discount4Controller.text =
+                                                  discount.discount4.toString();
+                                            } else if (discount.discount1
+                                                is Percentage) {
+                                              discount.discount1 =
+                                                  discount.discount1Nominal;
+                                              discount.discount2 =
+                                                  const Percentage(0);
+                                              discount.discount3 =
+                                                  discount.discount2;
+                                              discount.discount4 =
+                                                  discount.discount2;
+                                              _discount2Controller.text =
+                                                  discount.discount2.toString();
+                                              _discount3Controller.text =
+                                                  discount.discount3.toString();
+                                              _discount4Controller.text =
+                                                  discount.discount4.toString();
+                                            }
+                                          });
+                                        },
+                                        child: Wrap(
+                                          children: [
+                                            Radio<DiscountCalculationType>(
+                                              value: DiscountCalculationType
+                                                  .percentage,
+                                            ),
+                                            Text(DiscountCalculationType
+                                                .percentage
+                                                .humanize()),
+                                            Radio<DiscountCalculationType>(
+                                              value: DiscountCalculationType
+                                                  .nominal,
+                                            ),
+                                            Text(DiscountCalculationType.nominal
+                                                .humanize()),
+                                            Radio<DiscountCalculationType>(
+                                              value: DiscountCalculationType
+                                                  .specialPrice,
+                                            ),
+                                            Text(DiscountCalculationType
+                                                .specialPrice
+                                                .humanize()),
+                                          ],
+                                        ),
                                       ),
                                       if (discount.calculationType ==
                                           DiscountCalculationType.percentage)

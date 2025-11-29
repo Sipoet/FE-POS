@@ -5,9 +5,10 @@ import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 export 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
-import 'package:pluto_grid/pluto_grid.dart';
+import 'package:trina_grid/trina_grid.dart';
 
 enum TableColumnType {
   number,
@@ -78,12 +79,12 @@ class TableColumn<T extends Model> {
   double? excelWidth;
   String name;
   TableColumnType type;
-  Widget Function(PlutoColumnRendererContext rendererContext)? renderBody;
+  Widget Function(TrinaColumnRendererContext rendererContext)? renderBody;
   dynamic Function(T model)? getValue;
   String humanizeName;
   bool canSort;
   bool canFilter;
-  PlutoColumnFrozen frozen;
+  TrinaColumnFrozen frozen;
   Map<String, dynamic> inputOptions = {};
 
   TableColumn(
@@ -92,7 +93,7 @@ class TableColumn<T extends Model> {
       this.excelWidth,
       this.renderBody,
       this.getValue,
-      this.frozen = PlutoColumnFrozen.none,
+      this.frozen = TrinaColumnFrozen.none,
       Map<String, dynamic>? inputOptions,
       this.type = TableColumnType.text,
       this.canSort = true,
@@ -220,65 +221,65 @@ mixin TableDecorator<T extends Model>
   }
 }
 const modelKey = 'model';
-mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
+mixin TrinaTableDecorator implements PlatformChecker, TextFormatter {
   late final TabManager tabManager;
   final String _formatNumber = '#,###.#';
   final String _locale = 'id_ID';
   late final Server server;
   final route = ModelRoute();
-  PlutoColumnType _parseColumnType(TableColumn tableColumn,
+  TrinaColumnType _parseColumnType(TableColumn tableColumn,
       {List<Enum>? listEnumValues}) {
     switch (tableColumn.type) {
       case TableColumnType.text:
-        return PlutoColumnType.text();
+        return TrinaColumnType.text();
       case TableColumnType.date:
-        return PlutoColumnType.date(format: 'dd/MM/yyyy');
+        return TrinaColumnType.date(format: 'dd/MM/yyyy');
       case TableColumnType.datetime:
-        return PlutoColumnType.date(format: 'dd/MM/yyyy HH:mm');
+        return TrinaColumnType.date(format: 'dd/MM/yyyy HH:mm');
       case TableColumnType.timeOnly:
-        return PlutoColumnType.time();
+        return TrinaColumnType.time();
       case TableColumnType.money:
-        return PlutoColumnType.currency(
+        return TrinaColumnType.currency(
             locale: _locale,
             // format: _formatNumber,
             symbol: 'Rp',
             decimalDigits: 2);
       case TableColumnType.model:
-        return PlutoColumnTypeModelSelect(
+        return TrinaColumnTypeModelSelect(
             path: tableColumn.inputOptions['path'] ?? '',
             modelName: tableColumn.inputOptions['model_name'] ?? '',
             attributeKey: tableColumn.inputOptions['attribute_key'] ?? '');
       case TableColumnType.enums:
-        return PlutoColumnType.select(
+        return TrinaColumnType.select(
             listEnumValues ?? tableColumn.inputOptions['enums'] ?? []);
       case TableColumnType.percentage:
-        return PlutoColumnTypePercentage();
+        return TrinaColumnTypePercentage2();
       case TableColumnType.number:
-        return PlutoColumnType.number(locale: _locale, format: _formatNumber);
+        return TrinaColumnType.number(locale: _locale, format: _formatNumber);
       case TableColumnType.boolean:
-        return PlutoColumnType.select([true, false]);
+        return TrinaColumnType.select([true, false]);
       default:
-        return PlutoColumnType.text();
+        return TrinaColumnType.text();
     }
   }
 
-  PlutoRow decorateRow(
+  TrinaRow decorateRow(
       {required Model model,
       required List<TableColumn> tableColumns,
       bool isChecked = false}) {
     final rowMap = model.asMap();
-    Map<String, PlutoCell> cells = {};
+    Map<String, TrinaCell> cells = {};
     for (final tableColumn in tableColumns) {
       var value = rowMap[tableColumn.name];
       if (tableColumn.getValue != null) {
         value = tableColumn.getValue!(model);
       }
-      cells[tableColumn.name] = PlutoCell(value: value);
+      cells[tableColumn.name] = TrinaCell(value: value);
     }
-    cells['id'] = PlutoCell(value: model.id);
-    cells[modelKey] = PlutoCell(value: model, key: ObjectKey(model));
-    return PlutoRow(
-        cells: cells, checked: isChecked, type: PlutoRowType.normal());
+    cells['id'] = TrinaCell(value: model.id);
+    cells[modelKey] = TrinaCell(value: model, key: ObjectKey(model));
+    return TrinaRow(
+        cells: cells, checked: isChecked, type: TrinaRowType.normal());
   }
 
   void _openModelDetailPage(
@@ -298,7 +299,7 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
       color: Color.fromRGBO(56, 142, 60, 1));
   static const _footerStyle = TextStyle(fontWeight: FontWeight.bold);
 
-  PlutoColumn decorateColumn(TableColumn tableColumn,
+  TrinaColumn decorateColumn(TableColumn tableColumn,
       {List<Enum>? listEnumValues,
       bool showFilter = false,
       required TabManager tabManager,
@@ -309,20 +310,20 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
     bool showFooter = tableColumn.isNumeric();
     final format = _formatNumber;
     final renderer = tableColumn.renderBody ??
-        (PlutoColumnRendererContext rendererContext) =>
+        (TrinaColumnRendererContext rendererContext) =>
             defaultRenderBody(rendererContext, tableColumn);
-    return PlutoColumn(
+    return TrinaColumn(
       readOnly: true,
       enableSorting: tableColumn.canSort,
       enableEditingMode: false,
       textAlign:
-          showFooter ? PlutoColumnTextAlign.right : PlutoColumnTextAlign.left,
+          showFooter ? TrinaColumnTextAlign.right : TrinaColumnTextAlign.left,
       title: tableColumn.humanizeName,
       field: tableColumn.name,
       minWidth: 50 < tableColumn.clientWidth ? 50 : tableColumn.clientWidth,
       width: tableColumn.clientWidth,
       type: columnType,
-      frozen: isFrozen ? PlutoColumnFrozen.start : tableColumn.frozen,
+      frozen: isFrozen ? TrinaColumnFrozen.start : tableColumn.frozen,
       enableRowChecked: showCheckboxColumn,
       enableFilterMenuItem: showFilter,
       enableContextMenu: !tableColumn.type.isAction(),
@@ -335,15 +336,13 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
                 children: [
                   Offstage(
                     offstage: tableColumn.type.isPercentage(),
-                    child: PlutoAggregateColumnFooter(
+                    child: TrinaAggregateColumnFooter(
                       iterateRowType:
-                          PlutoAggregateColumnIterateRowType.filtered,
+                          TrinaAggregateColumnIterateRowType.filtered,
                       padding: const EdgeInsets.only(top: 5.0),
                       rendererContext: rendererContext,
-                      formatAsCurrency: tableColumn.type.isMoney(),
-                      type: PlutoAggregateColumnType.sum,
-                      format: format,
-                      locale: _locale,
+                      type: TrinaAggregateColumnType.sum,
+                      numberFormat: NumberFormat(format, _locale),
                       alignment: Alignment.topLeft,
                       titleSpanBuilder: (text) {
                         return [
@@ -363,14 +362,12 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
                       },
                     ),
                   ),
-                  PlutoAggregateColumnFooter(
-                    iterateRowType: PlutoAggregateColumnIterateRowType.filtered,
+                  TrinaAggregateColumnFooter(
+                    iterateRowType: TrinaAggregateColumnIterateRowType.filtered,
                     padding: const EdgeInsets.only(top: 5.0),
                     rendererContext: rendererContext,
-                    formatAsCurrency: tableColumn.type.isMoney(),
-                    type: PlutoAggregateColumnType.min,
-                    format: format,
-                    locale: _locale,
+                    numberFormat: NumberFormat(format, _locale),
+                    type: TrinaAggregateColumnType.min,
                     alignment: Alignment.topLeft,
                     titleSpanBuilder: (text) {
                       return [
@@ -389,14 +386,12 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
                       ];
                     },
                   ),
-                  PlutoAggregateColumnFooter(
-                    iterateRowType: PlutoAggregateColumnIterateRowType.filtered,
+                  TrinaAggregateColumnFooter(
+                    iterateRowType: TrinaAggregateColumnIterateRowType.filtered,
                     padding: const EdgeInsets.only(top: 5.0),
                     rendererContext: rendererContext,
-                    formatAsCurrency: tableColumn.type.isMoney(),
-                    type: PlutoAggregateColumnType.average,
-                    format: format,
-                    locale: _locale,
+                    numberFormat: NumberFormat(format, _locale),
+                    type: TrinaAggregateColumnType.average,
                     alignment: Alignment.topLeft,
                     titleSpanBuilder: (text) {
                       return [
@@ -415,14 +410,12 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
                       ];
                     },
                   ),
-                  PlutoAggregateColumnFooter(
-                    iterateRowType: PlutoAggregateColumnIterateRowType.filtered,
+                  TrinaAggregateColumnFooter(
+                    iterateRowType: TrinaAggregateColumnIterateRowType.filtered,
                     padding: const EdgeInsets.only(top: 5.0),
                     rendererContext: rendererContext,
-                    formatAsCurrency: tableColumn.type.isMoney(),
-                    type: PlutoAggregateColumnType.max,
-                    format: format,
-                    locale: _locale,
+                    numberFormat: NumberFormat(format, _locale),
+                    type: TrinaAggregateColumnType.max,
                     alignment: Alignment.topLeft,
                     titleSpanBuilder: (text) {
                       return [
@@ -449,7 +442,7 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
   }
 
   Widget defaultRenderBody(
-      PlutoColumnRendererContext rendererContext, TableColumn tableColumn) {
+      TrinaColumnRendererContext rendererContext, TableColumn tableColumn) {
     var value = rendererContext.cell.value ?? '';
     if (tableColumn.type.isModel() && value is Model) {
       return InkWell(
@@ -499,12 +492,12 @@ mixin PlutoTableDecorator implements PlatformChecker, TextFormatter {
   }
 }
 
-class PlutoDeco with PlutoTableDecorator, PlatformChecker, TextFormatter {}
+class TrinaDeco with TrinaTableDecorator, PlatformChecker, TextFormatter {}
 
-extension TableStateMananger on PlutoGridStateManager {
-  PlutoDeco get decorator => PlutoDeco();
+extension TableStateMananger on TrinaGridStateManager {
+  TrinaDeco get decorator => TrinaDeco();
 
-  T? modelFromCheckEvent<T extends Model>(PlutoGridOnRowCheckedEvent event) =>
+  T? modelFromCheckEvent<T extends Model>(TrinaGridOnRowCheckedEvent event) =>
       event.row?.cells[modelKey]?.value as T;
 
   void appendModel(model, List<TableColumn> tableColumns) {
@@ -518,7 +511,7 @@ extension TableStateMananger on PlutoGridStateManager {
       removeAllRows();
     }
     final rowsTemp = models
-        .map<PlutoRow>((model) =>
+        .map<TrinaRow>((model) =>
             decorator.decorateRow(model: model, tableColumns: tableColumns))
         .toList();
     appendRows(rowsTemp);
@@ -530,7 +523,7 @@ extension TableStateMananger on PlutoGridStateManager {
       bool showFilter = false,
       required TabManager tabManager}) {
     removeColumns(columns);
-    final newColumns = tableColumns.asMap().entries.map<PlutoColumn>((entry) {
+    final newColumns = tableColumns.asMap().entries.map<TrinaColumn>((entry) {
       int index = entry.key;
       TableColumn tableColumn = entry.value;
       return decorator.decorateColumn(
@@ -544,12 +537,12 @@ extension TableStateMananger on PlutoGridStateManager {
   }
 
   void refreshTable() {
-    eventManager!.addEvent(PlutoGridChangeColumnSortEvent(
-        column: columns.first, oldSort: PlutoColumnSort.none));
+    eventManager!.addEvent(TrinaGridChangeColumnSortEvent(
+        column: columns.first, oldSort: TrinaColumnSort.none));
   }
 }
 
-class PlutoFilterTypeNot implements PlutoFilterType {
+class TrinaFilterTypeNot implements TrinaFilterType {
   @override
   String get title => 'Not equal';
 
@@ -557,17 +550,17 @@ class PlutoFilterTypeNot implements PlutoFilterType {
   get compare => ({
         required String? base,
         required String? search,
-        required PlutoColumn? column,
+        required TrinaColumn? column,
       }) {
         var keys = search!.split(',').map((e) => e.toLowerCase()).toList();
 
         return !keys.contains(base!.trim().toLowerCase());
       };
 
-  const PlutoFilterTypeNot();
+  const TrinaFilterTypeNot();
 }
 
-class PlutoColumnTypeModelSelect implements PlutoColumnType {
+class TrinaColumnTypeModelSelect implements TrinaColumnType {
   @override
   final dynamic defaultValue;
 
@@ -576,7 +569,18 @@ class PlutoColumnTypeModelSelect implements PlutoColumnType {
   final String attributeKey;
   final String path;
 
-  const PlutoColumnTypeModelSelect({
+  @override
+  Widget buildCell(TrinaGridStateManager controller, TrinaCell cell,
+      TrinaColumn column, TrinaRow<dynamic> row) {
+    return Text(cell.value.toString());
+  }
+
+  @override
+  (bool, dynamic) filteredValue({newValue, oldValue}) {
+    return (newValue == oldValue, newValue);
+  }
+
+  const TrinaColumnTypeModelSelect({
     this.defaultValue,
     required this.modelName,
     required this.attributeKey,
@@ -615,11 +619,22 @@ class PlutoColumnTypeModelSelect implements PlutoColumnType {
   }
 }
 
-class PlutoColumnTypePercentage implements PlutoColumnType {
+class TrinaColumnTypePercentage2 implements TrinaColumnType {
   @override
   final Percentage? defaultValue;
 
-  const PlutoColumnTypePercentage({this.defaultValue});
+  const TrinaColumnTypePercentage2({this.defaultValue});
+
+  @override
+  Widget buildCell(TrinaGridStateManager controller, TrinaCell cell,
+      TrinaColumn column, TrinaRow<dynamic> row) {
+    return Text(cell.value.toString());
+  }
+
+  @override
+  (bool, dynamic) filteredValue({newValue, oldValue}) {
+    return (newValue == oldValue, newValue);
+  }
 
   @override
   int compare(dynamic a, dynamic b) {
@@ -663,7 +678,7 @@ class DataTableResponse<T extends Model> {
   }
 }
 
-extension PlutoRowExt on PlutoRow {
+extension TrinaRowExt on TrinaRow {
   T modelOf<T extends Model>() {
     return cells[modelKey]?.value as T;
   }

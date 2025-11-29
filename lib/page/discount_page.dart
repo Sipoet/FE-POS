@@ -29,7 +29,7 @@ class _DiscountPageState extends State<DiscountPage>
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
   final _controller = MenuController();
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   @override
   bool get wantKeepAlive => true;
 

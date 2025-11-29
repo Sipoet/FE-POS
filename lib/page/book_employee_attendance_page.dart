@@ -20,7 +20,7 @@ class BookEmployeeAttendancePage extends StatefulWidget {
 
 class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
 
   String _searchText = '';

@@ -22,7 +22,7 @@ class EmployeeAttendancePage extends StatefulWidget {
 
 class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
     with AutomaticKeepAliveClientMixin, TextFormatter, DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<EmployeeAttendance> employeeAttendances = [];

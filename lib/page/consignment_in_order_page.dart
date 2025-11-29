@@ -19,7 +19,7 @@ class ConsignmentInOrderPage extends StatefulWidget {
 
 class _ConsignmentInOrderPageState extends State<ConsignmentInOrderPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<ConsignmentInOrder> items = [];

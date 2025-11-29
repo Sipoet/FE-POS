@@ -16,7 +16,7 @@ class ItemTypePage extends StatefulWidget {
 }
 
 class _ItemTypePageState extends State<ItemTypePage> with DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();

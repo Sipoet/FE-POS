@@ -19,7 +19,7 @@ class RolePage extends StatefulWidget {
 
 class _RolePageState extends State<RolePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
 
   String _searchText = '';

@@ -18,7 +18,7 @@ class SystemSettingPage extends StatefulWidget {
 
 class _SystemSettingPageState extends State<SystemSettingPage>
     with DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();
@@ -36,7 +36,7 @@ class _SystemSettingPageState extends State<SystemSettingPage>
       name: 'action',
       type: TableColumnType.action,
       humanizeName: 'Action',
-      frozen: PlutoColumnFrozen.end,
+      frozen: TrinaColumnFrozen.end,
       renderBody: (rendererContext) {
         return Row(
           children: [

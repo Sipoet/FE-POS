@@ -35,7 +35,7 @@ class _ConsignmentInOrderFormPageState extends State<ConsignmentInOrderFormPage>
   ConsignmentInOrder get consignmentInOrder => widget.consignmentInOrder;
   late final Server _server;
   late final Setting setting;
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final List<TableColumn> _columns;
   double margin = 1;
   String roundType = 'mark';

@@ -8,15 +8,15 @@ import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/tool/query_data.dart';
-import 'package:pluto_grid/pluto_grid.dart';
+import 'package:trina_grid/trina_grid.dart';
 import 'package:provider/provider.dart';
-export 'package:pluto_grid/pluto_grid.dart';
+export 'package:trina_grid/trina_grid.dart';
 
-typedef OnLoadedCallBack = void Function(PlutoGridStateManager stateManager);
-typedef OnRowCheckedCallback = void Function(PlutoGridOnRowCheckedEvent event);
-typedef OnSelectedCallback = void Function(PlutoGridOnSelectedEvent event);
+typedef OnLoadedCallBack = void Function(TrinaGridStateManager stateManager);
+typedef OnRowCheckedCallback = void Function(TrinaGridOnRowCheckedEvent event);
+typedef OnSelectedCallback = void Function(TrinaGridOnSelectedEvent event);
 typedef OnRowDoubleTapCallback = void Function(
-    PlutoGridOnRowDoubleTapEvent event);
+    TrinaGridOnRowDoubleTapEvent event);
 
 class CustomAsyncDataTable<T extends Model> extends StatefulWidget {
   final int fixedLeftColumns;
@@ -63,16 +63,16 @@ class CustomAsyncDataTable<T extends Model> extends StatefulWidget {
 
 class _CustomAsyncDataTableState<T extends Model>
     extends State<CustomAsyncDataTable<T>>
-    with PlutoTableDecorator, PlatformChecker, TextFormatter {
-  late final List<PlutoColumn> columns;
-  late final PlutoGridStateManager _source;
+    with TrinaTableDecorator, PlatformChecker, TextFormatter {
+  late final List<TrinaColumn> columns;
+  late final TrinaGridStateManager _source;
   List selectedValues = [];
 
   @override
   void initState() {
     server = context.read<Server>();
     tabManager = context.read<TabManager>();
-    columns = widget.columns.asMap().entries.map<PlutoColumn>((entry) {
+    columns = widget.columns.asMap().entries.map<TrinaColumn>((entry) {
       int index = entry.key;
       TableColumn tableColumn = entry.value;
       return decorateColumn(
@@ -84,19 +84,19 @@ class _CustomAsyncDataTableState<T extends Model>
         isFrozen: index < widget.fixedLeftColumns,
       );
     }).toList()
-      ..add(PlutoColumn(
+      ..add(TrinaColumn(
           title: ' ',
           field: 'model',
-          type: PlutoColumnType.text(defaultValue: null),
+          type: TrinaColumnType.text(defaultValue: null),
           hide: widget.renderAction == null,
-          frozen: PlutoColumnFrozen.end,
+          frozen: TrinaColumnFrozen.end,
           renderer: widget.renderAction == null
               ? null
-              : (PlutoColumnRendererContext rendererContext) =>
+              : (TrinaColumnRendererContext rendererContext) =>
                   widget.renderAction!(rendererContext.cell.value as T),
           width: widget.renderAction == null
               ? 0
-              : widget.actionColumnWidth ?? PlutoGridSettings.columnWidth,
+              : widget.actionColumnWidth ?? TrinaGridSettings.columnWidth,
           minWidth: 0));
 
     super.initState();
@@ -107,19 +107,19 @@ class _CustomAsyncDataTableState<T extends Model>
   }
 
   QueryOperator filterTypeRemote(filterType) {
-    if (filterType is PlutoFilterTypeContains) {
+    if (filterType is TrinaFilterTypeContains) {
       return QueryOperator.contains;
-    } else if (filterType is PlutoFilterTypeLessThanOrEqualTo) {
+    } else if (filterType is TrinaFilterTypeLessThanOrEqualTo) {
       return QueryOperator.lessThanOrEqualTo;
-    } else if (filterType is PlutoFilterTypeNot) {
+    } else if (filterType is TrinaFilterTypeNot) {
       return QueryOperator.not;
-    } else if (filterType is PlutoFilterTypeEquals) {
+    } else if (filterType is TrinaFilterTypeEquals) {
       return QueryOperator.equals;
-    } else if (filterType is PlutoFilterTypeGreaterThan) {
+    } else if (filterType is TrinaFilterTypeGreaterThan) {
       return QueryOperator.greaterThan;
-    } else if (filterType is PlutoFilterTypeGreaterThanOrEqualTo) {
+    } else if (filterType is TrinaFilterTypeGreaterThanOrEqualTo) {
       return QueryOperator.greaterThanOrEqualTo;
-    } else if (filterType is PlutoFilterTypeLessThan) {
+    } else if (filterType is TrinaFilterTypeLessThan) {
       return QueryOperator.lessThan;
     } else {
       return QueryOperator.equals;
@@ -203,9 +203,9 @@ class _CustomAsyncDataTableState<T extends Model>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return PlutoGrid(
+    return TrinaGrid(
       columns: columns,
-      rows: <PlutoRow>[],
+      rows: <TrinaRow>[],
       onSorted: (event) {
         var sorts = <SortData>[];
         if (!event.column.sort.isNone) {
@@ -225,15 +225,15 @@ class _CustomAsyncDataTableState<T extends Model>
 
         widget.fetchData(request);
       },
-      onLoaded: (PlutoGridOnLoadedEvent event) {
+      onLoaded: (TrinaGridOnLoadedEvent event) {
         _source = event.stateManager;
         _source.setShowColumnFilter(widget.showFilter);
         _source.setShowColumnFooter(widget.showSummary);
         _source.columnFooterHeight = 130.0;
         _source.eventManager!.listener((event) {
-          if (event is PlutoGridChangeColumnFilterEvent) {
+          if (event is TrinaGridChangeColumnFilterEvent) {
             final columType = event.column.type;
-            if (columType is PlutoColumnTypeModelSelect) {
+            if (columType is TrinaColumnTypeModelSelect) {
               showRemoteOptions(
                       searchText: event.filterValue,
                       title: event.column.title,
@@ -245,21 +245,21 @@ class _CustomAsyncDataTableState<T extends Model>
                     .map<String>((item) => item.id.toString())
                     .toList()
                     .join(',');
-                List<PlutoRow> filterRows = _source.filterRows
+                List<TrinaRow> filterRows = _source.filterRows
                     .where((filterRow) =>
                         filterRow.cells['column']!.value ==
                             event.column.field &&
-                        filterRow.cells['type']!.value is PlutoFilterTypeEquals)
+                        filterRow.cells['type']!.value is TrinaFilterTypeEquals)
                     .toList();
                 if (filterRows.isEmpty) {
                   _source.filterRows.add(FilterHelper.createFilterRow(
-                    filterType: PlutoFilterTypeEquals(),
+                    filterType: TrinaFilterTypeEquals(),
                     filterValue: filterValue,
                     columnField: event.column.field,
                   ));
                 } else {
                   filterRows.first.cells['value'] =
-                      PlutoCell(value: filterValue);
+                      TrinaCell(value: filterValue);
                 }
                 _source.setFilterRows(_source.filterRows);
                 _source.refreshTable();
@@ -273,13 +273,13 @@ class _CustomAsyncDataTableState<T extends Model>
         }
       },
       noRowsWidget: const Text('Data tidak ditemukan'),
-      onChanged: (PlutoGridOnChangedEvent event) {
+      onChanged: (TrinaGridOnChangedEvent event) {
         debugPrint("onchanged ${event.toString()}");
       },
-      mode: PlutoGridMode.selectWithOneTap,
+      mode: TrinaGridMode.selectWithOneTap,
       onSelected: widget.onSelected,
       onRowDoubleTap: widget.onRowDoubleTap,
-      onRowChecked: (PlutoGridOnRowCheckedEvent event) {
+      onRowChecked: (TrinaGridOnRowCheckedEvent event) {
         if (!event.isRow) {
           return;
         }
@@ -297,7 +297,7 @@ class _CustomAsyncDataTableState<T extends Model>
         }
       },
       createFooter: (stateManager) {
-        return PlutoLazyPagination(
+        return TrinaLazyPagination(
           fetch: (event) async {
             cancelToken?.cancel();
             cancelToken = CancelToken();
@@ -315,9 +315,9 @@ class _CustomAsyncDataTableState<T extends Model>
             request.filters = remoteFilters();
             return widget.fetchData(request).then(
               (DataTableResponse<T> response) {
-                return PlutoLazyPaginationResponse(
+                return TrinaLazyPaginationResponse(
                     rows: response.models
-                        .map<PlutoRow>(
+                        .map<TrinaRow>(
                           (model) => decorateRow(
                               isChecked: _containsCheckedValue(model.toMap()),
                               model: model,
@@ -331,33 +331,33 @@ class _CustomAsyncDataTableState<T extends Model>
           stateManager: stateManager,
         );
       },
-      configuration: PlutoGridConfiguration(
-          columnFilter: PlutoGridColumnFilterConfig(
+      configuration: TrinaGridConfiguration(
+          columnFilter: TrinaGridColumnFilterConfig(
             filters: [
-              PlutoFilterTypeContains(),
-              PlutoFilterTypeEquals(),
-              PlutoFilterTypeNot(),
-              PlutoFilterTypeLessThan(),
-              PlutoFilterTypeLessThanOrEqualTo(),
-              PlutoFilterTypeGreaterThan(),
-              PlutoFilterTypeGreaterThanOrEqualTo(),
+              TrinaFilterTypeContains(),
+              TrinaFilterTypeEquals(),
+              TrinaFilterTypeNot(),
+              TrinaFilterTypeLessThan(),
+              TrinaFilterTypeLessThanOrEqualTo(),
+              TrinaFilterTypeGreaterThan(),
+              TrinaFilterTypeGreaterThanOrEqualTo(),
             ],
             debounceMilliseconds: 500,
             resolveDefaultColumnFilter: (column, resolver) {
-              if (column.type is PlutoColumnTypeModelSelect ||
-                  column.type is PlutoColumnTypeNumber ||
-                  column.type is PlutoColumnTypeCurrency) {
-                return resolver<PlutoFilterTypeEquals>();
+              if (column.type is TrinaColumnTypeModelSelect ||
+                  column.type is TrinaColumnTypeNumber ||
+                  column.type is TrinaColumnTypeCurrency) {
+                return resolver<TrinaFilterTypeEquals>();
               } else {
-                return resolver<PlutoFilterTypeContains>();
+                return resolver<TrinaFilterTypeContains>();
               }
             },
           ),
-          scrollbar: const PlutoGridScrollbarConfig(
+          scrollbar: const TrinaGridScrollbarConfig(
             isAlwaysShown: true,
-            scrollbarThickness: 10,
+            // scrollbarThickness: 10,
           ),
-          style: PlutoGridStyleConfig(
+          style: TrinaGridStyleConfig(
               borderColor: colorScheme.outline,
               rowColor: colorScheme.secondaryContainer,
               evenRowColor: colorScheme.onPrimary)),

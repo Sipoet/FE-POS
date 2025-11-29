@@ -19,7 +19,7 @@ class TransferPage extends StatefulWidget {
 
 class _TransferPageState extends State<TransferPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<Transfer> items = [];

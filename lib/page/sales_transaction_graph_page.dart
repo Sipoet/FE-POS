@@ -34,7 +34,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   late Flash flash;
   String _groupPeriod = 'daily';
   String _generatedGroupPeriod = 'daily';
-  PlutoGridStateManager? _source;
+  TrinaGridStateManager? _source;
 
   String fieldKey = 'sales_total';
   static const TextStyle _filterLabelStyle =
