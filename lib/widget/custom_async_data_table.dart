@@ -90,6 +90,13 @@ class _CustomAsyncDataTableState<T extends Model>
           type: TrinaColumnType.text(defaultValue: null),
           hide: widget.renderAction == null,
           frozen: TrinaColumnFrozen.end,
+          enableFilterMenuItem: false,
+          enableAutoEditing: false,
+          enableColumnDrag: false,
+          enableSorting: false,
+          enableHideColumnMenuItem: false,
+          enableContextMenu: false,
+          enableEditingMode: false,
           renderer: widget.renderAction == null
               ? null
               : (TrinaColumnRendererContext rendererContext) =>
@@ -199,7 +206,12 @@ class _CustomAsyncDataTableState<T extends Model>
     return "${item.id.toString()} - ${item[key].toString()}";
   }
 
+  void displayShowHideColumn(TrinaGridStateManager stateManager) {
+    stateManager.showSetColumnsPopup(context);
+  }
+
   CancelToken? cancelToken;
+  final _menuController = MenuController();
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -296,6 +308,25 @@ class _CustomAsyncDataTableState<T extends Model>
           widget.onRowChecked!(event);
         }
       },
+      createHeader: (stateManager) => Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          SizedBox(
+              width: 50,
+              child: SubmenuButton(
+                  controller: _menuController,
+                  menuChildren: [
+                    MenuItemButton(
+                      child: const Text('hide/show column'),
+                      onPressed: () {
+                        _menuController.close();
+                        displayShowHideColumn(stateManager);
+                      },
+                    ),
+                  ],
+                  child: const Icon(Icons.more_vert)))
+        ],
+      ),
       createFooter: (stateManager) {
         return TrinaLazyPagination(
           fetch: (event) async {

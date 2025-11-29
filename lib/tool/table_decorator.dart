@@ -235,7 +235,7 @@ mixin TrinaTableDecorator implements PlatformChecker, TextFormatter {
       case TableColumnType.date:
         return TrinaColumnType.date(format: 'dd/MM/yyyy');
       case TableColumnType.datetime:
-        return TrinaColumnType.date(format: 'dd/MM/yyyy HH:mm');
+        return TrinaColumnType.dateTime(format: 'dd/MM/yyyy HH:mm');
       case TableColumnType.timeOnly:
         return TrinaColumnType.time();
       case TableColumnType.money:
@@ -572,7 +572,7 @@ class TrinaColumnTypeModelSelect implements TrinaColumnType {
   @override
   Widget buildCell(TrinaGridStateManager controller, TrinaCell cell,
       TrinaColumn column, TrinaRow<dynamic> row) {
-    return Text(cell.value.toString());
+    return Text(cell.value.modelValue.toString());
   }
 
   @override

@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:fe_pos/model/employee_leave.dart';
 import 'package:fe_pos/page/employee_leave_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
@@ -192,7 +193,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
               ),
             ),
             SizedBox(
-              height: bodyScreenHeight,
+              height: <double>[bodyScreenHeight, 570].min,
               child: CustomAsyncDataTable<EmployeeLeave>(
                 renderAction: (employeeLeave) => Row(
                   spacing: 10,

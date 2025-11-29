@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/page/employee_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
@@ -276,7 +277,7 @@ class _EmployeePageState extends State<EmployeePage>
               ),
             ),
             SizedBox(
-              height: bodyScreenHeight,
+              height: <double>[bodyScreenHeight, 570].min,
               child: CustomAsyncDataTable<Employee>(
                 renderAction: (employee) => Row(
                   spacing: 10,

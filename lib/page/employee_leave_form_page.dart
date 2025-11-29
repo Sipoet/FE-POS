@@ -402,7 +402,8 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                                 child: const Text('submit')),
                             ElevatedButton(
                                 onPressed: () {
-                                  if (employeeLeave.isNewRecord) {
+                                  if (employeeLeave.isNewRecord &&
+                                      _employeeLeaves.isEmpty) {
                                     return;
                                   }
                                   setState(() {

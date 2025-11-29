@@ -77,6 +77,13 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
         ..add(TrinaColumn(
             title: ' ',
             field: 'model',
+            enableFilterMenuItem: false,
+            enableAutoEditing: false,
+            enableColumnDrag: false,
+            enableSorting: false,
+            enableHideColumnMenuItem: false,
+            enableContextMenu: false,
+            enableEditingMode: false,
             type: TrinaColumnType.text(defaultValue: null),
             hide: widget.renderAction == null,
             frozen: TrinaColumnFrozen.end,
@@ -95,6 +102,11 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
     super.initState();
   }
 
+  void displayShowHideColumn(TrinaGridStateManager stateManager) {
+    stateManager.showSetColumnsPopup(context);
+  }
+
+  final _menuController = MenuController();
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -120,6 +132,25 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
       onSelected: widget.onSelected,
       onRowDoubleTap: widget.onRowDoubleTap,
       onRowChecked: widget.onRowChecked,
+      createHeader: (stateManager) => Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          SizedBox(
+              width: 50,
+              child: SubmenuButton(
+                  controller: _menuController,
+                  menuChildren: [
+                    MenuItemButton(
+                      child: const Text('hide/show column'),
+                      onPressed: () {
+                        _menuController.close();
+                        displayShowHideColumn(stateManager);
+                      },
+                    ),
+                  ],
+                  child: const Icon(Icons.more_vert)))
+        ],
+      ),
       createFooter: (stateManager) {
         return TrinaPagination(
           stateManager,

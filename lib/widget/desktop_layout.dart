@@ -111,11 +111,8 @@ class _DesktopLayoutState extends State<DesktopLayout>
       body: Column(
         spacing: 10,
         children: [
-          SizedBox(
-            height: 100,
-            child: TopMenuBar(
-              menuTree: widget.menuTree,
-            ),
+          TopMenuBar(
+            menuTree: widget.menuTree,
           ),
           Expanded(
             child: ResizableContainer(
