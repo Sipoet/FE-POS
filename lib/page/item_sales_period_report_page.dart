@@ -113,7 +113,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
       var rawData = data['data'].map<ItemSalesPeriodReport>((row) {
         return ItemSalesPeriodReportClass().fromJson(row);
       }).toList();
-      _source.setModels(rawData, _setting.tableColumn('itemSalesPeriodReport'));
+      _source.setModels(rawData);
     });
   }
 

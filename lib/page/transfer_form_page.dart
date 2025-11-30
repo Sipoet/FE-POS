@@ -61,7 +61,7 @@ class _TransferFormPageState extends State<TransferFormPage>
         setState(() {
           transfer.setFromJson(response.data['data'],
               included: response.data['included'] ?? []);
-          _source.setModels(transfer.transferItems, _columns);
+          _source.setModels(transfer.transferItems);
         });
       }
     }, onError: (error) {

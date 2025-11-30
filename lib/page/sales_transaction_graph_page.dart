@@ -201,7 +201,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
 
       if (_source != null) {
         _source?.setTableColumns(_columns, tabManager: tabManager);
-        _source?.setModels(groupModels, _columns);
+        _source?.setModels(groupModels);
         _source?.sortAscending(_source!.columns.first);
       }
 

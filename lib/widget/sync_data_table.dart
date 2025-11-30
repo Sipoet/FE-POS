@@ -58,8 +58,7 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
 class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
     with TrinaTableDecorator, PlatformChecker, TextFormatter {
   List<TrinaRow> get rows => widget.rows
-      .map<TrinaRow>(
-          (row) => decorateRow(model: row, tableColumns: widget.columns))
+      .map<TrinaRow>((row) => decorateRow(model: row, tableColumns: columns))
       .toList();
 
   List<TrinaColumn> get columns =>

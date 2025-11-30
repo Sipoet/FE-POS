@@ -60,7 +60,7 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
         setState(() {
           purchaseReturn.setFromJson(response.data['data'],
               included: response.data['included']);
-          _source.setModels(purchaseReturn.purchaseItems, _columns);
+          _source.setModels(purchaseReturn.purchaseItems);
         });
       }
     }, onError: (error) {

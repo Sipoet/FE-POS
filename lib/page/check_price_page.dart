@@ -326,7 +326,7 @@ class _CheckPricePageState extends State<CheckPricePage>
               .toList();
         });
 
-        _source?.setModels(models, _columns);
+        _source?.setModels(models);
       }
     }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(() {
       _source?.setShowLoading(false);

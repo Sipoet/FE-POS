@@ -352,7 +352,7 @@ class _CustomAsyncDataTableState<T extends Model>
                           (model) => decorateRow(
                               isChecked: _containsCheckedValue(model.toMap()),
                               model: model,
-                              tableColumns: widget.columns),
+                              tableColumns: columns),
                         )
                         .toList(),
                     totalPage: response.totalPage);

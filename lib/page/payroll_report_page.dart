@@ -61,7 +61,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
           for (final row in json['data']) {
             final model =
                 PayrollReportClass().fromJson(row, included: included ?? []);
-            tableStateManager?.appendModel(model, tableColumns);
+            tableStateManager?.appendModel(model);
           }
         });
       }

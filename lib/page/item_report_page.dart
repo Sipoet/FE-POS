@@ -50,7 +50,7 @@ class _ItemReportPageState extends State<ItemReportPage>
         if (response.statusCode != 200) {
           setState(() {
             _itemReports = [];
-            _source?.setModels(_itemReports, columns);
+            _source?.setModels(_itemReports);
           });
           return;
         }
@@ -60,7 +60,7 @@ class _ItemReportPageState extends State<ItemReportPage>
           _itemReports = data['data'].map<ItemReport>((row) {
             return initClass.fromJson(row);
           }).toList();
-          _source?.setModels(_itemReports, columns);
+          _source?.setModels(_itemReports);
         });
       } catch (error, stackTrace) {
         debugPrint(error.toString());

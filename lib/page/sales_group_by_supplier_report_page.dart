@@ -125,7 +125,7 @@ class _SalesGroupBySupplierReportPageState
 
       _source.setTableColumns(whitelistColumns,
           fixedLeftColumns: _groupKeys.length, tabManager: tabManager);
-      _source.setModels(rawData, whitelistColumns);
+      _source.setModels(rawData);
     });
   }
 

@@ -145,7 +145,7 @@ class _BackgroundJobPageState extends State<BackgroundJobPage>
                 .fromJson(json, included: data['included'] ?? []))
             .toList();
 
-        stateManager?.setModels(records, _columns);
+        stateManager?.setModels(records);
       }
     }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
         () => stateManager?.setShowLoading(false));

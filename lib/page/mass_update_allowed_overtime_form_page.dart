@@ -171,8 +171,7 @@ class _MassUpdateAllowedOvertimeFormPageState
                 .fromJson(rawData, included: json['included'] ?? []))
             .toList();
         setState(() {
-          _source.setModels(
-              employeeAttendances, setting.tableColumn('employeeAttendance'));
+          _source.setModels(employeeAttendances);
         });
       } else {
         final flash = Flash();

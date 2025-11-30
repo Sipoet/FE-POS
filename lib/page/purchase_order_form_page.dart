@@ -67,7 +67,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
         setState(() {
           purchaseOrder.setFromJson(response.data['data'],
               included: response.data['included'] ?? []);
-          _source.setModels(purchaseOrder.purchaseItems, _columns);
+          _source.setModels(purchaseOrder.purchaseItems);
         });
       }
     }, onError: (error) {

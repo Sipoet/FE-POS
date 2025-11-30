@@ -51,7 +51,7 @@ dependencies:
   open_file: ^3.3.2
   yaml: ^3.1.2
   collection: ^1.18.0
-  trina_grid: ^2.1.1
+  trina_grid: ^1.6.12
   board_datetime_picker: ^2.5.0
   toastification: ^2.3.0
   pluto_menu_bar: ^3.0.1

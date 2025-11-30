@@ -108,118 +108,6 @@ class TableColumn<T extends Model> {
   }
 }
 
-mixin TableDecorator<T extends Model>
-    implements TextFormatter, PlatformChecker {
-  late final TabManager tabManager;
-
-  void _openModelDetailPage(
-      {required TableColumn tableColumn, required Model value}) {
-    final route = ModelRoute();
-    if (isDesktop()) {
-      tabManager.setSafeAreaContent(
-          "${tableColumn.humanizeName} ${value.id}", route.detailPageOf(value));
-    } else {
-      tabManager.addTab(
-          "${tableColumn.humanizeName} ${value.id}", route.detailPageOf(value));
-    }
-  }
-
-  Widget _decorateCell(String val, TableColumnType columnType) {
-    switch (columnType) {
-      // case 'image':
-      // return Image.network('assets/${val}')
-      case TableColumnType.text:
-      case TableColumnType.date:
-      case TableColumnType.datetime:
-        return Align(
-          alignment: Alignment.topLeft,
-          child: Text(
-            val,
-            textAlign: TextAlign.left,
-            overflow: TextOverflow.ellipsis,
-          ),
-        );
-      case TableColumnType.money:
-      case TableColumnType.number:
-        return Text(
-          val,
-          textAlign: TextAlign.right,
-          overflow: TextOverflow.ellipsis,
-        );
-      default:
-        return Text(
-          val,
-          textAlign: TextAlign.left,
-        );
-    }
-  }
-
-  String _formatData(cell) {
-    if (cell == null) {
-      return '-';
-    }
-    switch (cell.runtimeType) {
-      case const (Date):
-        return dateFormat(cell);
-      case const (DateTime):
-        return dateTimeLocalFormat(cell);
-      case const (TimeOfDay):
-        return timeFormat(cell);
-      case const (Money):
-        return moneyFormat(cell);
-      case const (double):
-      case const (int):
-        return numberFormat(cell);
-      case const (Percentage):
-        return cell.format();
-      case const (String):
-        return cell;
-      default:
-        try {
-          return cell.humanize();
-        } catch (error) {
-          return cell.toString();
-        }
-    }
-  }
-
-  DataCell decorateValue(T model, TableColumn column) {
-    final jsonData = model.asMap();
-    final cell = jsonData[column.name];
-    if (column.type.isModel() && cell is Model) {
-      return DataCell(
-          Text(
-            cell.modelValue,
-            textAlign: TextAlign.left,
-            overflow: TextOverflow.ellipsis,
-          ),
-          onTap: () => _openModelDetailPage(tableColumn: column, value: cell));
-    }
-    final val = _formatData(cell);
-    return DataCell(Tooltip(
-      message: val,
-      triggerMode: TooltipTriggerMode.longPress,
-      child: _decorateCell(val, column.type),
-    ));
-  }
-
-  List<DataCell> decorateModel(T model,
-      {List<TableColumn> columns = const [],
-      int index = 0,
-      List<Widget> Function(T model, int index)? actionButtons}) {
-    var rows = columns
-        .map<DataCell>((column) => decorateValue(model, column))
-        .toList();
-    if (actionButtons != null) {
-      rows.add(DataCell(Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: actionButtons(model, index),
-      )));
-    }
-    return rows;
-  }
-}
 const modelKey = 'model';
 mixin TrinaTableDecorator implements PlatformChecker, TextFormatter {
   late final TabManager tabManager;
@@ -265,16 +153,12 @@ mixin TrinaTableDecorator implements PlatformChecker, TextFormatter {
 
   TrinaRow decorateRow(
       {required Model model,
-      required List<TableColumn> tableColumns,
+      required List<TrinaColumn> tableColumns,
       bool isChecked = false}) {
     final rowMap = model.asMap();
     Map<String, TrinaCell> cells = {};
     for (final tableColumn in tableColumns) {
-      var value = rowMap[tableColumn.name];
-      if (tableColumn.getValue != null) {
-        value = tableColumn.getValue!(model);
-      }
-      cells[tableColumn.name] = TrinaCell(value: value);
+      cells[tableColumn.field] = TrinaCell(value: rowMap[tableColumn.field]);
     }
     cells['id'] = TrinaCell(value: model.id);
     cells[modelKey] = TrinaCell(value: model, key: ObjectKey(model));
@@ -313,6 +197,7 @@ mixin TrinaTableDecorator implements PlatformChecker, TextFormatter {
         (TrinaColumnRendererContext rendererContext) =>
             defaultRenderBody(rendererContext, tableColumn);
     return TrinaColumn(
+      titleTextAlign: TrinaColumnTextAlign.center,
       readOnly: true,
       enableSorting: tableColumn.canSort,
       enableEditingMode: false,
@@ -330,9 +215,7 @@ mixin TrinaTableDecorator implements PlatformChecker, TextFormatter {
       renderer: renderer,
       footerRenderer: showFooter
           ? (rendererContext) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              return ListView(
                 children: [
                   Offstage(
                     offstage: tableColumn.type.isPercentage(),
@@ -500,19 +383,18 @@ extension TableStateMananger on TrinaGridStateManager {
   T? modelFromCheckEvent<T extends Model>(TrinaGridOnRowCheckedEvent event) =>
       event.row?.cells[modelKey]?.value as T;
 
-  void appendModel(model, List<TableColumn> tableColumns) {
-    appendRows(
-        [decorator.decorateRow(model: model, tableColumns: tableColumns)]);
+  void appendModel(model) {
+    appendRows([decorator.decorateRow(model: model, tableColumns: columns)]);
     notifyListeners();
   }
 
-  void setModels(List models, List<TableColumn> tableColumns) {
+  void setModels(List models) {
     if (rows.isNotEmpty) {
       removeAllRows();
     }
     final rowsTemp = models
         .map<TrinaRow>((model) =>
-            decorator.decorateRow(model: model, tableColumns: tableColumns))
+            decorator.decorateRow(model: model, tableColumns: columns))
         .toList();
     appendRows(rowsTemp);
     notifyListeners();
@@ -570,12 +452,6 @@ class TrinaColumnTypeModelSelect implements TrinaColumnType {
   final String path;
 
   @override
-  Widget buildCell(TrinaGridStateManager controller, TrinaCell cell,
-      TrinaColumn column, TrinaRow<dynamic> row) {
-    return Text(cell.value.modelValue.toString());
-  }
-
-  @override
   (bool, dynamic) filteredValue({newValue, oldValue}) {
     return (newValue == oldValue, newValue);
   }
@@ -624,12 +500,6 @@ class TrinaColumnTypePercentage2 implements TrinaColumnType {
   final Percentage? defaultValue;
 
   const TrinaColumnTypePercentage2({this.defaultValue});
-
-  @override
-  Widget buildCell(TrinaGridStateManager controller, TrinaCell cell,
-      TrinaColumn column, TrinaRow<dynamic> row) {
-    return Text(cell.value.toString());
-  }
 
   @override
   (bool, dynamic) filteredValue({newValue, oldValue}) {

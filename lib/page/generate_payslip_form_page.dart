@@ -209,7 +209,6 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
 
   void _generatePayslip() async {
     _source.setShowLoading(true);
-    _source.removeAllRows();
     _server.post('payslips/generate_payslip', body: {
       'employee_ids': _employeeIds,
       'start_date': startDate.toIso8601String(),
@@ -218,11 +217,12 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
       if (response.statusCode == 201) {
         final responseBody = response.data['data'] as List;
         setState(() {
-          for (final row in responseBody) {
-            final payslip = PayslipClass()
-                .fromJson(row, included: response.data['included']);
-            _source.appendModel(payslip, _columns);
-          }
+          final payslips = responseBody
+              .map<Payslip>((row) => PayslipClass()
+                  .fromJson(row, included: response.data['included'] ?? []))
+              .toList();
+
+          _source.setModels(payslips);
         });
       } else {
         flash.showBanner(

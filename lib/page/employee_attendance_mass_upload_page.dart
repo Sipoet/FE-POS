@@ -161,7 +161,7 @@ class _EmployeeAttendanceMassUploadPageState
               .map<EmployeeAttendance>((json) => EmployeeAttendanceClass()
                   .fromJson(json, included: response.data['included']))
               .toList();
-          _source?.setModels(employeeAttendances, _columns);
+          _source?.setModels(employeeAttendances);
         });
       } else {
         final flash = Flash();

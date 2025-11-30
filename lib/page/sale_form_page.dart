@@ -62,7 +62,7 @@ class _SaleFormPageState extends State<SaleFormPage>
         setState(() {
           sale.setFromJson(response.data['data'],
               included: response.data['included'] ?? []);
-          _source.setModels(sale.saleItems, _columns);
+          _source.setModels(sale.saleItems);
         });
       }
     }, onError: (error) {

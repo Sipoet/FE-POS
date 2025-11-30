@@ -71,7 +71,7 @@ class _ConsignmentInOrderFormPageState extends State<ConsignmentInOrderFormPage>
             response.data['data'],
             included: response.data['included'] ?? [],
           );
-          _source.setModels(consignmentInOrder.purchaseOrderItems, _columns);
+          _source.setModels(consignmentInOrder.purchaseOrderItems);
         });
       }
     }, onError: (error) {
