@@ -46,7 +46,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
         clientWidth: 180,
         frozen: TrinaColumnFrozen.start,
         type: TableColumnType.text,
-        getValue: (Model model) {
+        getValue: (model) {
           Payslip payslip = model as Payslip;
           return payslip.employee.name.toTitleCase();
         },

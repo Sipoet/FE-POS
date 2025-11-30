@@ -80,7 +80,7 @@ class TableColumn<T extends Model> {
   String name;
   TableColumnType type;
   Widget Function(TrinaColumnRendererContext rendererContext)? renderBody;
-  dynamic Function(T model)? getValue;
+  dynamic Function(dynamic model)? getValue;
   String humanizeName;
   bool canSort;
   bool canFilter;
@@ -158,7 +158,9 @@ mixin TrinaTableDecorator implements PlatformChecker, TextFormatter {
     final rowMap = model.asMap();
     Map<String, TrinaCell> cells = {};
     for (final tableColumn in tableColumns) {
-      cells[tableColumn.field] = TrinaCell(value: rowMap[tableColumn.field]);
+      cells[tableColumn.field] = tableColumn.formatter == null
+          ? TrinaCell(value: rowMap[tableColumn.field])
+          : TrinaCell(value: tableColumn.formatter!(model));
     }
     cells['id'] = TrinaCell(value: model.id);
     cells[modelKey] = TrinaCell(value: model, key: ObjectKey(model));
@@ -197,10 +199,11 @@ mixin TrinaTableDecorator implements PlatformChecker, TextFormatter {
         (TrinaColumnRendererContext rendererContext) =>
             defaultRenderBody(rendererContext, tableColumn);
     return TrinaColumn(
-      titleTextAlign: TrinaColumnTextAlign.center,
       readOnly: true,
       enableSorting: tableColumn.canSort,
       enableEditingMode: false,
+      titleTextAlign:
+          showFooter ? TrinaColumnTextAlign.right : TrinaColumnTextAlign.center,
       textAlign:
           showFooter ? TrinaColumnTextAlign.right : TrinaColumnTextAlign.left,
       title: tableColumn.humanizeName,
@@ -213,6 +216,9 @@ mixin TrinaTableDecorator implements PlatformChecker, TextFormatter {
       enableFilterMenuItem: showFilter,
       enableContextMenu: !tableColumn.type.isAction(),
       renderer: renderer,
+      formatter: tableColumn.getValue == null
+          ? null
+          : (value) => tableColumn.getValue!(value).toString(),
       footerRenderer: showFooter
           ? (rendererContext) {
               return ListView(
@@ -515,7 +521,13 @@ class TrinaColumnTypePercentage2 implements TrinaColumnType {
 
   @override
   dynamic makeCompareValue(dynamic v) {
-    return v?.value;
+    if (v is Percentage) {
+      return v.value;
+    } else if (v is String) {
+      return double.tryParse(v);
+    } else {
+      return v;
+    }
   }
 
   @override

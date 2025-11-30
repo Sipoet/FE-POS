@@ -42,7 +42,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final TextEditingController _discount4Controller;
   late final TextEditingController _codeController;
   late final TabController _tabController;
-  late TrinaGridStateManager _source;
+  TrinaGridStateManager? _source;
   late final Server server;
   dynamic discount1;
   Percentage? discount2;
@@ -90,17 +90,19 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         type: TableColumnType.money,
         name: 'discount_amount',
         humanizeName: 'Jumlah Diskon',
-        getValue: (Model model) {
-          model = model as ItemReport;
-          Money sellPrice = model.sellPrice;
-          if (discount.calculationType == DiscountCalculationType.nominal) {
-            return discount.discount1Nominal;
-          } else if (discount.calculationType ==
-              DiscountCalculationType.percentage) {
-            return _calculateChanellingDiscount(sellPrice, discount);
-          } else if (discount.calculationType ==
-              DiscountCalculationType.specialPrice) {
-            return (sellPrice - discount.discount1Nominal);
+        getValue: (model) {
+          if (model is ItemReport) {
+            Money sellPrice = model.sellPrice;
+            if (discount.calculationType == DiscountCalculationType.nominal) {
+              return discount.discount1Nominal;
+            } else if (discount.calculationType ==
+                DiscountCalculationType.percentage) {
+              return _calculateChanellingDiscount(sellPrice, discount);
+            } else if (discount.calculationType ==
+                DiscountCalculationType.specialPrice) {
+              return (sellPrice - discount.discount1Nominal);
+            }
+            return null;
           }
           return null;
         },
@@ -110,18 +112,20 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         type: TableColumnType.money,
         name: 'sell_price_after_discount',
         humanizeName: 'Harga Setelah Diskon',
-        getValue: (Model model) {
-          model = model as ItemReport;
-          Money sellPrice = model.sellPrice;
-          if (discount.calculationType == DiscountCalculationType.nominal) {
-            return sellPrice - discount.discount1Nominal;
-          } else if (discount.calculationType ==
-              DiscountCalculationType.percentage) {
-            return sellPrice -
-                _calculateChanellingDiscount(sellPrice, discount);
-          } else if (discount.calculationType ==
-              DiscountCalculationType.specialPrice) {
-            return discount.discount1Nominal;
+        getValue: (model) {
+          if (model is ItemReport) {
+            Money sellPrice = model.sellPrice;
+            if (discount.calculationType == DiscountCalculationType.nominal) {
+              return sellPrice - discount.discount1Nominal;
+            } else if (discount.calculationType ==
+                DiscountCalculationType.percentage) {
+              return sellPrice -
+                  _calculateChanellingDiscount(sellPrice, discount);
+            } else if (discount.calculationType ==
+                DiscountCalculationType.specialPrice) {
+              return discount.discount1Nominal;
+            }
+            return null;
           }
           return null;
         },
@@ -131,22 +135,24 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         name: 'profit_after_discount',
         type: TableColumnType.money,
         humanizeName: 'Jumlah Profit Setelah Diskon',
-        getValue: (Model model) {
-          model = model as ItemReport;
-          Money sellPrice = model.sellPrice;
-          Money cogs = model.cogs;
-          Money newPrice = sellPrice;
-          if (discount.calculationType == DiscountCalculationType.nominal) {
-            newPrice = sellPrice - discount.discount1Nominal;
-          } else if (discount.calculationType ==
-              DiscountCalculationType.percentage) {
-            newPrice =
-                sellPrice - _calculateChanellingDiscount(sellPrice, discount);
-          } else if (discount.calculationType ==
-              DiscountCalculationType.specialPrice) {
-            newPrice = discount.discount1Nominal;
+        getValue: (model) {
+          if (model is ItemReport) {
+            Money sellPrice = model.sellPrice;
+            Money cogs = model.cogs;
+            Money newPrice = sellPrice;
+            if (discount.calculationType == DiscountCalculationType.nominal) {
+              newPrice = sellPrice - discount.discount1Nominal;
+            } else if (discount.calculationType ==
+                DiscountCalculationType.percentage) {
+              newPrice =
+                  sellPrice - _calculateChanellingDiscount(sellPrice, discount);
+            } else if (discount.calculationType ==
+                DiscountCalculationType.specialPrice) {
+              newPrice = discount.discount1Nominal;
+            }
+            return newPrice - cogs;
           }
-          return newPrice - cogs;
+          return null;
         },
       ),
       TableColumn(
@@ -154,25 +160,27 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         name: 'profit_margin_after_discount',
         type: TableColumnType.percentage,
         humanizeName: 'Profit Setelah Diskon(%)',
-        getValue: (Model model) {
-          model = model as ItemReport;
-          Money sellPrice = model.sellPrice;
-          Money cogs = model.cogs;
-          Money newPrice = sellPrice;
-          if (discount.calculationType == DiscountCalculationType.nominal) {
-            newPrice = sellPrice - discount.discount1Nominal;
-          } else if (discount.calculationType ==
-              DiscountCalculationType.percentage) {
-            newPrice =
-                sellPrice - _calculateChanellingDiscount(sellPrice, discount);
-          } else if (discount.calculationType ==
-              DiscountCalculationType.specialPrice) {
-            newPrice = discount.discount1Nominal;
+        getValue: (model) {
+          if (model is ItemReport) {
+            Money sellPrice = model.sellPrice;
+            Money cogs = model.cogs;
+            Money newPrice = sellPrice;
+            if (discount.calculationType == DiscountCalculationType.nominal) {
+              newPrice = sellPrice - discount.discount1Nominal;
+            } else if (discount.calculationType ==
+                DiscountCalculationType.percentage) {
+              newPrice =
+                  sellPrice - _calculateChanellingDiscount(sellPrice, discount);
+            } else if (discount.calculationType ==
+                DiscountCalculationType.specialPrice) {
+              newPrice = discount.discount1Nominal;
+            }
+            if (cogs == Money(0)) {
+              return Percentage(0);
+            }
+            return _marginOf(newPrice, cogs);
           }
-          if (cogs == Money(0)) {
-            return Percentage(0);
-          }
-          return _marginOf(newPrice, cogs);
+          return null;
         },
       ),
     ]);
@@ -199,7 +207,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   }
 
   Future<DataTableResponse<ItemReport>> fetchItem(QueryRequest request) {
-    _source.setShowLoading(true);
+    _source?.setShowLoading(true);
     setState(() {
       discount1 = discount.discount1;
       discount2 = discount.discount2;
@@ -271,11 +279,11 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     }, onError: (error) {
       defaultErrorResponse(error: error);
       return DataTableResponse<ItemReport>();
-    }).whenComplete(() => _source.setShowLoading(false));
+    }).whenComplete(() => _source?.setShowLoading(false));
   }
 
   void refreshTable() {
-    _source.refreshTable();
+    _source?.refreshTable();
   }
 
   Percentage _marginOf(Money sellPrice, Money buyPrice) {
