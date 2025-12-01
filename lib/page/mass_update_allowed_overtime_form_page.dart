@@ -29,7 +29,7 @@ class _MassUpdateAllowedOvertimeFormPageState
   DateTime _dateTime = DateTime.now();
   bool _allowOvertime = true;
   int? _shift;
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Flash flash;
   late final Setting setting;
 
@@ -171,8 +171,7 @@ class _MassUpdateAllowedOvertimeFormPageState
                 .fromJson(rawData, included: json['included'] ?? []))
             .toList();
         setState(() {
-          _source.setModels(
-              employeeAttendances, setting.tableColumn('employeeAttendance'));
+          _source.setModels(employeeAttendances);
         });
       } else {
         final flash = Flash();

@@ -19,7 +19,7 @@ class ItemPage extends StatefulWidget {
 }
 
 class _ItemPageState extends State<ItemPage> with DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<Item> items = [];
@@ -38,7 +38,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
       name: 'action',
       type: TableColumnType.action,
       humanizeName: 'Action',
-      frozen: PlutoColumnFrozen.end,
+      frozen: TrinaColumnFrozen.end,
       renderBody: (rendererContext) {
         return Row(
           children: [
@@ -66,20 +66,14 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
     super.dispose();
   }
 
-  Future<DataTableResponse<Item>> fetchItems(request) {
-    _source.setShowLoading(true);
-    request.searchText = _searchText;
-    request.cancelToken = cancelToken;
-    request.include = ['supplier', 'brand', 'item_type'];
-
-    return ItemClass().finds(server, request).then((response) {
-      return DataTableResponse<Item>(
-          totalPage: response.metadata['total_pages'] ?? 1,
-          models: response.models);
-    }, onError: (error, stackTrace) {
-      defaultErrorResponse(error: error, valueWhenError: []);
-      return DataTableResponse<Item>(models: [], totalPage: 1);
-    }).whenComplete(() => _source.setShowLoading(false));
+  Future<DataTableResponse<Item>> fetchItems(QueryRequest request) {
+    return ItemClass().finds(server, request).then(
+        (value) => DataTableResponse<Item>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
+    });
   }
 
   void searchChanged(value) {
@@ -136,11 +130,12 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
           ),
           SizedBox(
             height: bodyScreenHeight,
-            child: CustomAsyncDataTable2<Item>(
+            child: CustomAsyncDataTable<Item>(
               onLoaded: (stateManager) => _source = stateManager,
               fixedLeftColumns: 1,
-              fetchData: (request) => fetchItems(request),
+              fetchData: fetchItems,
               columns: columns,
+              showFilter: true,
             ),
           ),
         ],

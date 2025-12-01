@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pluto_layout/pluto_layout.dart';
 import 'package:tabbed_view/tabbed_view.dart';
 
 class TabManager extends ChangeNotifier {
@@ -58,7 +57,6 @@ class TabManager extends ChangeNotifier {
   Widget? get activeTab => controller.getTabByIndex(selectedIndex).content;
 
   void removeRightContent() {
-    PlutoLayoutActions.hideAllTabView();
     debugPrint('click close');
     _safeAreaContent = null;
     notifyListeners();

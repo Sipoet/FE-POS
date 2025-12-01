@@ -15,7 +15,7 @@ class BrandPage extends StatefulWidget {
 }
 
 class _BrandPageState extends State<BrandPage> with DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<Brand> brands = [];
@@ -44,20 +44,13 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
   }
 
   Future<DataTableResponse<Brand>> fetchBrands(QueryRequest request) {
-    _source.setShowLoading(true);
-    request.searchText = _searchText;
-    request.cancelToken = cancelToken;
-
-    return BrandClass().finds(server, request).then((response) {
-      return DataTableResponse<Brand>(
-          totalPage: response.metadata['total_pages'], models: response.models);
-    }, onError: (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      return DataTableResponse<Brand>(totalPage: 0, models: []);
-    }).whenComplete(() => _source.setShowLoading(false));
+    return BrandClass().finds(server, request).then(
+        (value) => DataTableResponse<Brand>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
+    });
   }
 
   void searchChanged(value) {
@@ -110,10 +103,11 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<Brand>(
+              child: CustomAsyncDataTable<Brand>(
                 onLoaded: (stateManager) => _source = stateManager,
                 columns: setting.tableColumn('ipos::Brand'),
-                fetchData: (request) => fetchBrands(request),
+                fetchData: fetchBrands,
+                showFilter: true,
                 fixedLeftColumns: 0,
               ),
             ),

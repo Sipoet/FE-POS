@@ -19,13 +19,14 @@ class UserPage extends StatefulWidget {
 
 class _UserPageState extends State<UserPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final CustomAsyncDataTableSource<User> _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
   final _menuController = MenuController();
-  List<FilterData> _filter = [];
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -35,8 +36,7 @@ class _UserPageState extends State<UserPage>
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<User>(
-        columns: setting.tableColumn('user'), fetchData: fetchUsers);
+    columns = setting.tableColumn('user');
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
@@ -48,55 +48,19 @@ class _UserPageState extends State<UserPage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<User>> fetchUsers(
-      {int page = 1,
-      int limit = 100,
-      TableColumn? sortColumn,
-      bool isAscending = true}) {
-    String orderKey = sortColumn?.name ?? 'username';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'include': 'role',
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-    };
-    for (final filterData in _filter) {
-      final data = filterData.toEntryJson();
-      param[data.key] = data.value;
-    }
-    try {
-      return server
-          .get('users', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<User>((json) =>
-                UserClass().fromJson(json, included: responseBody['included']))
-            .toList();
-
-        int totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<User>(models: models, totalRows: totalRows);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      return Future(() => ResponseResult<User>(models: []));
-    }
+  Future<DataTableResponse<User>> fetchUsers(QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    return UserClass().finds(server, request).then(
+        (value) => DataTableResponse<User>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
+    });
   }
 
   void addForm() {
@@ -165,35 +129,17 @@ class _UserPageState extends State<UserPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.actionButtons = ((user, int? index) => <Widget>[
-          IconButton(
-              onPressed: () {
-                editForm(user);
-              },
-              tooltip: 'Edit User',
-              icon: const Icon(Icons.edit)),
-          IconButton(
-            tooltip: 'unlock Akses User',
-            icon: const Icon(Icons.lock_open),
-            onPressed: () => _unlockAccess(user),
-          ),
-          IconButton(
-              onPressed: () {
-                destroyRecord(user);
-              },
-              tooltip: 'Hapus User',
-              icon: const Icon(Icons.delete)),
-        ]);
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Column(
           children: [
             TableFilterForm(
-              columns: _source.columns,
+              columns: columns,
               enums: const {'status': UserStatus.values},
               onSubmit: (filter) {
-                _filter = filter;
+                _filters = filter;
                 refreshTable();
               },
             ),
@@ -242,10 +188,33 @@ class _UserPageState extends State<UserPage>
             SizedBox(
               height: bodyScreenHeight,
               width: 825,
-              child: CustomAsyncDataTable(
-                controller: _source,
-                fixedLeftColumns: 2,
-                showCheckboxColumn: true,
+              child: CustomAsyncDataTable<User>(
+                renderAction: (user) => Row(
+                  spacing: 10,
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          editForm(user);
+                        },
+                        tooltip: 'Edit User',
+                        icon: const Icon(Icons.edit)),
+                    IconButton(
+                      tooltip: 'unlock Akses User',
+                      icon: const Icon(Icons.lock_open),
+                      onPressed: () => _unlockAccess(user),
+                    ),
+                    IconButton(
+                        onPressed: () {
+                          destroyRecord(user);
+                        },
+                        tooltip: 'Hapus User',
+                        icon: const Icon(Icons.delete)),
+                  ],
+                ),
+                onLoaded: (stateManager) => _source = stateManager,
+                fixedLeftColumns: 1,
+                columns: columns,
+                fetchData: fetchUsers,
               ),
             ),
           ],

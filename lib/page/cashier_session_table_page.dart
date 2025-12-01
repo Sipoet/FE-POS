@@ -21,44 +21,26 @@ class CashierSessionTablePage extends StatefulWidget {
 
 class _CashierSessionTablePageState extends State<CashierSessionTablePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse, TextFormatter {
-  late final CustomAsyncDataTableSource<CashierSession> _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
   late final TabManager tabManager;
-  List<FilterData> _filter = [];
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
 
   @override
   bool get wantKeepAlive => true;
-
-  List<Widget> actionButtons(CashierSession cashierSession, int index) {
-    return [
-      IconButton.filled(
-          onPressed: () {
-            openEdcSettlement(cashierSession);
-          },
-          icon: const Icon(Icons.search))
-    ];
-  }
 
   @override
   void initState() {
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
-    final tableColumns = setting.tableColumn('cashierSession');
+    columns = setting.tableColumn('cashierSession');
     tabManager = context.read<TabManager>();
-    _source = CustomAsyncDataTableSource<CashierSession>(
-        actionButtons: actionButtons,
-        columns: tableColumns,
-        fetchData: fetchCashierSessions);
-    _source.isAscending = false;
-    _source.sortColumn = tableColumns.firstWhere(
-        (tableColumn) => tableColumn.name == 'date',
-        orElse: () => tableColumns.first);
     super.initState();
-    Future.delayed(Duration.zero, refreshTable);
   }
 
   @override
@@ -69,61 +51,19 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<CashierSession>> fetchCashierSessions(
-      {int page = 1,
-      int limit = 50,
-      TableColumn? sortColumn,
-      bool isAscending = true}) {
-    try {
-      String orderKey = sortColumn?.name ?? 'date';
-      Map<String, dynamic> param = {
-        'search_text': _searchText,
-        'page[page]': page.toString(),
-        'page[limit]': limit.toString(),
-        'sort': '${isAscending ? '' : '-'}$orderKey',
-      };
-      for (final filterData in _filter) {
-        final data = filterData.toEntryJson();
-        param[data.key] = data.value;
-      }
-
-      return server
-          .get('cashier_sessions', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        try {
-          final responsedModels = responseBody['data']
-              .map<CashierSession>((json) => CashierSessionClass()
-                  .fromJson(json, included: responseBody['included'] ?? []))
-              .toList();
-          int totalRows = responseBody['meta']?['total_rows'] ??
-              responseBody['data'].length;
-          return ResponseResult<CashierSession>(
-              totalRows: totalRows, models: responsedModels);
-        } catch (error, stackTrace) {
-          debugPrint(error.toString());
-          debugPrint(stackTrace.toString());
-          return ResponseResult<CashierSession>(totalRows: 0, models: []);
-        }
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      return Future(() => ResponseResult<CashierSession>(models: []));
-    }
+  Future<DataTableResponse<CashierSession>> fetchData(QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    return CashierSessionClass().finds(server, request).then(
+        (value) => DataTableResponse<CashierSession>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse<CashierSession>.empty();
+    });
   }
 
   void searchChanged(value) {
@@ -158,9 +98,9 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
         child: Column(
           children: [
             TableFilterForm(
-              columns: _source.columns,
+              columns: columns,
               onSubmit: (filter) {
-                _filter = filter;
+                _filters = filter;
                 refreshTable();
               },
             ),
@@ -192,9 +132,18 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
               ),
             ),
             SizedBox(
-              height: bodyScreenHeight,
-              child: CustomAsyncDataTable(
-                controller: _source,
+              height: bodyScreenHeight - 150,
+              child: CustomAsyncDataTable<CashierSession>(
+                columns: columns,
+                onLoaded: (stateManager) => _source = stateManager,
+                renderAction: (cashierSession) => Row(spacing: 10, children: [
+                  IconButton.filled(
+                      onPressed: () {
+                        openEdcSettlement(cashierSession);
+                      },
+                      icon: const Icon(Icons.search)),
+                ]),
+                fetchData: fetchData,
                 fixedLeftColumns: 1,
               ),
             ),

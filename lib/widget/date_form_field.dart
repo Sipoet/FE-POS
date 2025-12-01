@@ -162,14 +162,14 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
         .showDialog(
       context: context,
       colorScheme: Theme.of(context).colorScheme,
-      initialDate: _datetime,
+      initialDate: _datetime?.toLocal(),
       helpText: widget.helpText,
     )
         .then((date) {
+      if (date == null && !widget.allowClear) {
+        return;
+      }
       setState(() {
-        if (date == null && !widget.allowClear) {
-          return;
-        }
         _datetime = date;
         writeToTextField();
         if (widget.onChanged != null) {

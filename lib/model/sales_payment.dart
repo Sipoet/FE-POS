@@ -28,14 +28,14 @@ class SalesPayment extends Model {
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
-    var attributes = json['attributes'];
     super.setFromJson(json, included: included);
+    var attributes = json['attributes'];
+
     amount = Money.parse(attributes['amount']);
     if (included.isNotEmpty) {
       paymentType = PaymentTypeClass().findRelationData(
-            included: included,
-            relation: json['relationships']['payment_type'],
-          ) ??
+              included: included,
+              relation: json['relationships']['payment_type']) ??
           paymentType;
       paymentProvider = PaymentProviderClass().findRelationData(
             included: included,

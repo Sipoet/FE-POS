@@ -33,7 +33,7 @@ class _SaleFormPageState extends State<SaleFormPage>
   Sale get sale => widget.sale;
   late final Server _server;
   late final Setting setting;
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final List<TableColumn> _columns;
   @override
   bool get wantKeepAlive => true;
@@ -62,7 +62,7 @@ class _SaleFormPageState extends State<SaleFormPage>
         setState(() {
           sale.setFromJson(response.data['data'],
               included: response.data['included'] ?? []);
-          _source.setModels(sale.saleItems, _columns);
+          _source.setModels(sale.saleItems);
         });
       }
     }, onError: (error) {
@@ -141,7 +141,7 @@ class _SaleFormPageState extends State<SaleFormPage>
                                   labelStyle: labelStyle,
                                   border: const OutlineInputBorder()),
                               readOnly: true,
-                              initialValue: dateTimeFormat(sale.datetime),
+                              initialValue: dateTimeLocalFormat(sale.datetime),
                             ),
                           ),
                         ),

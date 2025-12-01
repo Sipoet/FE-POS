@@ -104,12 +104,9 @@ class SalesCashier extends Model {
       .fold(const Money(0), (a, b) => a + b);
 
   @override
-  String get modelName => 'sales_cashier';
-
-  @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
-    var attributes = json['attributes'];
     super.setFromJson(json, included: included);
+    var attributes = json['attributes'];
 
     code = attributes['code'];
     description = attributes['description'];

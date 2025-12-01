@@ -23,11 +23,11 @@ class _ItemReportPageState extends State<ItemReportPage>
     with AutomaticKeepAliveClientMixin, LoadingPopup, DefaultResponse {
   late Server server;
   double minimumColumnWidth = 150;
-  PlutoGridStateManager? _source;
+  TrinaGridStateManager? _source;
   late Flash flash;
   late final List<TableColumn> columns;
   List<ItemReport> _itemReports = [];
-  List<FilterData> _filter = [];
+  List<FilterData> _filters = [];
   String _searchText = '';
   @override
   void initState() {
@@ -50,7 +50,7 @@ class _ItemReportPageState extends State<ItemReportPage>
         if (response.statusCode != 200) {
           setState(() {
             _itemReports = [];
-            _source?.setModels(_itemReports, columns);
+            _source?.setModels(_itemReports);
           });
           return;
         }
@@ -60,7 +60,7 @@ class _ItemReportPageState extends State<ItemReportPage>
           _itemReports = data['data'].map<ItemReport>((row) {
             return initClass.fromJson(row);
           }).toList();
-          _source?.setModels(_itemReports, columns);
+          _source?.setModels(_itemReports);
         });
       } catch (error, stackTrace) {
         debugPrint(error.toString());
@@ -95,9 +95,9 @@ class _ItemReportPageState extends State<ItemReportPage>
       'include': 'item,supplier,brand,item_type',
       'sort': '${sortData?.isAscending == false ? '-' : ''}$orderKey',
     };
-    for (final filterData in _filter) {
-      final data = filterData.toEntryJson();
-      param[data.key] = data.value;
+    for (final filterData in _filters) {
+      final entry = filterData.toEntryJson();
+      param[entry.key] = entry.value;
     }
     return server.get('item_reports',
         queryParam: param, type: reportType, cancelToken: cancelToken);
@@ -151,44 +151,20 @@ class _ItemReportPageState extends State<ItemReportPage>
     return VerticalBodyScroll(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 10,
         children: [
           TableFilterForm(
               showCanopy: false,
               onSubmit: (filter) {
-                _filter = filter;
+                _filters = filter;
                 _displayReport();
               },
               onDownload: (filter) {
-                _filter = filter;
+                _filters = filter;
                 _downloadReport();
               },
               columns: columns),
-          const SizedBox(height: 5),
           const Divider(),
-          const SizedBox(height: 10),
-          Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            SizedBox(
-              width: 150,
-              child: TextField(
-                decoration: const InputDecoration(hintText: 'Search Text'),
-                onChanged: searchChanged,
-                onSubmitted: searchChanged,
-              ),
-            ),
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  _searchText = '';
-                });
-                _displayReport();
-              },
-              tooltip: 'Reset Table',
-              icon: const Icon(Icons.refresh),
-            ),
-          ]),
-          const SizedBox(
-            height: 5,
-          ),
           SizedBox(
             height: bodyScreenHeight,
             child: SyncDataTable<ItemReport>(

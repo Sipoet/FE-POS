@@ -62,12 +62,9 @@ class SalesCashierItem extends Model {
   Money get total => subtotal - discountAmount;
 
   @override
-  String get modelName => 'sales_cashier_item';
-
-  @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
-    var attributes = json['attributes'];
     super.setFromJson(json, included: included);
+    var attributes = json['attributes'];
 
     itemBarcode = attributes['item_barcode'];
     if (included.isNotEmpty) {

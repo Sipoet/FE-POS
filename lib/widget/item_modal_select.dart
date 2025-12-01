@@ -21,7 +21,7 @@ class _ItemModalSelectState extends State<ItemModalSelect>
   List<ItemReport> models = [];
   late final Server _server;
   late final List<TableColumn> _columns;
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
 
   @override
   void initState() {
@@ -33,24 +33,11 @@ class _ItemModalSelectState extends State<ItemModalSelect>
     super.initState();
   }
 
-  Future<DataTableResponse<ItemReport>> fetchItem(QueryRequest queryData) {
+  Future<DataTableResponse<ItemReport>> fetchItem(QueryRequest request) {
     _source.setShowLoading(true);
-    Map<String, dynamic> param = queryData.toQueryParam();
-    param['include'] = 'item';
-    param['report_type'] = 'json';
-    return _server.get('item_reports/', queryParam: param).then((response) {
-      if (response.statusCode != 200) {
-        return DataTableResponse<ItemReport>(models: [], totalPage: 0);
-      }
-      var data = response.data;
-
-      models = data['data']
-          .map<ItemReport>((row) =>
-              ItemReportClass().fromJson(row, included: data['include'] ?? []))
-          .toList();
-
+    return ItemReportClass().finds(_server, request).then((result) {
       return DataTableResponse<ItemReport>(
-          models: models.toList(), totalPage: data['meta']['total_pages']);
+          models: result.models, totalPage: result.metadata['total_pages']);
     }, onError: ((error, stackTrace) {
       defaultErrorResponse(error: error);
       return DataTableResponse<ItemReport>(models: [], totalPage: 0);
@@ -62,7 +49,7 @@ class _ItemModalSelectState extends State<ItemModalSelect>
     return Column(
       children: [
         Flexible(
-          child: CustomAsyncDataTable2<ItemReport>(
+          child: CustomAsyncDataTable<ItemReport>(
             showSummary: false,
             onRowChecked: (event) {
               if (event.isRow && event.isChecked == true) {
@@ -70,16 +57,13 @@ class _ItemModalSelectState extends State<ItemModalSelect>
                 selectedItems.add(model.item);
               }
             },
-            fetchData: (request) {
-              return fetchItem(request);
-            },
+            fetchData: fetchItem,
             primaryKey: 'item_code',
             showCheckboxColumn: true,
             columns: _columns,
             showFilter: true,
             onLoaded: (stateManager) {
               _source = stateManager;
-              fetchItem(QueryRequest());
             },
             fixedLeftColumns: 2,
           ),

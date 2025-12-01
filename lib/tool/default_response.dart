@@ -9,23 +9,25 @@ import 'package:fe_pos/tool/flash.dart';
 mixin DefaultResponse<T extends StatefulWidget> on State<T> {
   static const labelStyle =
       TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
-  dynamic defaultErrorResponse(
-      {required var error, List trace = const [], var valueWhenError}) {
-    if (error.runtimeType.toString() == '_TypeError') {
-      log(error.toString());
-      log(trace.toString());
-      final flash = Flash();
-      flash.showBanner(
-          title: error.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
+
+  dynamic defaultErrorResponse({required var error, final valueWhenError}) {
+    Flash flash = Flash();
+    if (error.runtimeType.toString() == '_TypeError' ||
+        error is ArgumentError) {
       throw error;
     }
-    if (error is ArgumentError) {
-      debugPrint('error: ${error.toString()}');
-      return;
+
+    dynamic response;
+    try {
+      response = error.response;
+    } catch (e) {
+      flash.showBanner(
+          title: 'Gagal',
+          description: error.toString(),
+          messageType: ToastificationType.error);
+      return valueWhenError;
     }
-    var response = error.response;
+
     switch (error.type) {
       case DioExceptionType.badResponse:
         if (response?.statusCode == 401) {
@@ -44,7 +46,6 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
       case DioExceptionType.connectionError:
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
-        Flash flash = Flash();
         flash.showBanner(
             title: 'koneksi terputus',
             description:

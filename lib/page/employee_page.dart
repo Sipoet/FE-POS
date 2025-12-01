@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/page/employee_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
@@ -19,14 +20,15 @@ class EmployeePage extends StatefulWidget {
 
 class _EmployeePageState extends State<EmployeePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final CustomAsyncDataTableSource<Employee> _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
   final _menuController = MenuController();
-  List<FilterData> _filter = [];
-
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
+  Map<int, Employee> _selected = {};
   @override
   bool get wantKeepAlive => true;
 
@@ -35,12 +37,8 @@ class _EmployeePageState extends State<EmployeePage>
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<Employee>(
-        actionButtons: actionButtons,
-        columns: setting.tableColumn('employee'),
-        fetchData: fetchEmployees);
+    columns = setting.tableColumn('employee');
     super.initState();
-    Future.delayed(Duration.zero, refreshTable);
   }
 
   @override
@@ -51,64 +49,21 @@ class _EmployeePageState extends State<EmployeePage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
+    _selected.clear();
   }
 
-  Future<ResponseResult<Employee>> fetchEmployees(
-      {int page = 1,
-      int limit = 50,
-      TableColumn? sortColumn,
-      bool isAscending = true}) {
-    try {
-      String orderKey = sortColumn?.name ?? 'code';
-      Map<String, dynamic> param = {
-        'search_text': _searchText,
-        'page[page]': page.toString(),
-        'page[limit]': limit.toString(),
-        'fields[role]': 'name',
-        'fields[payroll]': 'name',
-        'include': 'role,payroll',
-        'sort': '${isAscending ? '' : '-'}$orderKey',
-      };
-      for (final filterData in _filter) {
-        final data = filterData.toEntryJson();
-        param[data.key] = data.value;
-      }
-
-      return server
-          .get('employees', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        try {
-          final responsedModels = responseBody['data']
-              .map<Employee>((json) => EmployeeClass()
-                  .fromJson(json, included: responseBody['included']))
-              .toList();
-          int totalRows = responseBody['meta']?['total_rows'] ??
-              responseBody['data'].length;
-          return ResponseResult<Employee>(
-              totalRows: totalRows, models: responsedModels);
-        } catch (error, stackTrace) {
-          debugPrint(error.toString());
-          debugPrint(stackTrace.toString());
-          return ResponseResult<Employee>(totalRows: 0, models: []);
-        }
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      return Future(() => ResponseResult<Employee>(models: []));
-    }
+  Future<DataTableResponse<Employee>> fetchEmployees(QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    request.include = ['payroll', 'role'];
+    return EmployeeClass().finds(server, request).then(
+        (value) => DataTableResponse<Employee>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
+    });
   }
 
   void addForm() {
@@ -146,7 +101,7 @@ class _EmployeePageState extends State<EmployeePage>
                   ? EmployeeStatus.inactive
                   : EmployeeStatus.active;
             });
-            _source.refreshDatasource();
+            _source.refreshTable();
             flash.showBanner(
                 title: 'Sukses',
                 description: 'karyawan ${employee.code} sukses $statusName',
@@ -159,45 +114,51 @@ class _EmployeePageState extends State<EmployeePage>
   }
 
   void activateSelected() {
-    if (_source.selected.isEmpty) {
+    if (_selected.values.isEmpty) {
       return;
     }
     showConfirmDialog(
-        message: 'Apakah yakin aktifkan ${_source.selected.length} karyawan?',
-        onSubmit: () {
-          _source.selectedMap.forEach((int index, Employee employee) async {
-            await server.post('employees/${employee.id}/activate').then(
-                (response) {
-              setState(() {
-                employee.setFromJson(response.data['data']);
-                _source.refreshDatasource();
-              });
-            }, onError: (error, stack) {
-              defaultErrorResponse(error: error);
-            });
-          });
+        message: 'Apakah yakin aktifkan ${_selected.values.length} karyawan?',
+        onSubmit: () async {
+          try {
+            for (final employee in _selected.values) {
+              var response =
+                  await server.post('employees/${employee.id}/activate');
+              if (response.statusCode == 200) {
+                setState(() {
+                  employee.setFromJson(response.data['data']);
+                });
+              }
+            }
+            _source.refreshTable();
+          } catch (e) {
+            defaultErrorResponse(error: e);
+          }
         });
   }
 
   void deactivateSelected() {
-    if (_source.selected.isEmpty) {
+    if (_selected.values.isEmpty) {
       return;
     }
     showConfirmDialog(
         message:
-            'Apakah yakin nonaktifkan ${_source.selected.length} karyawan?',
-        onSubmit: () {
-          _source.selectedMap.forEach((int index, Employee employee) async {
-            await server.post('employees/${employee.id}/deactivate').then(
-                (response) {
-              setState(() {
-                employee.setFromJson(response.data['data']);
-              });
-              _source.refreshDatasource();
-            }, onError: (error, stack) {
-              defaultErrorResponse(error: error);
-            });
-          });
+            'Apakah yakin nonaktifkan ${_selected.values.length} karyawan?',
+        onSubmit: () async {
+          try {
+            for (final employee in _selected.values) {
+              var response =
+                  await server.post('employees/${employee.id}/deactivate');
+              if (response.statusCode == 200) {
+                setState(() {
+                  employee.setFromJson(response.data['data']);
+                });
+              }
+            }
+            _source.refreshTable();
+          } catch (e) {
+            defaultErrorResponse(error: e);
+          }
         });
   }
 
@@ -248,14 +209,14 @@ class _EmployeePageState extends State<EmployeePage>
         child: Column(
           children: [
             TableFilterForm(
-              columns: _source.columns,
+              columns: columns,
               enums: const {
                 'status': EmployeeStatus.values,
                 'marital_status': EmployeeMaritalStatus.values,
                 'religion': Religion.values,
               },
               onSubmit: (filter) {
-                _filter = filter;
+                _filters = filter;
                 refreshTable();
               },
             ),
@@ -316,10 +277,49 @@ class _EmployeePageState extends State<EmployeePage>
               ),
             ),
             SizedBox(
-              height: bodyScreenHeight,
-              child: CustomAsyncDataTable(
-                controller: _source,
+              height: <double>[bodyScreenHeight, 570].min,
+              child: CustomAsyncDataTable<Employee>(
+                renderAction: (employee) => Row(
+                  spacing: 10,
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          editForm(employee);
+                        },
+                        tooltip: 'Edit karyawan',
+                        icon: const Icon(Icons.edit)),
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          toggleStatus(employee);
+                        });
+                      },
+                      tooltip: 'Aktivasi/deaktivasi karyawan',
+                      icon: Icon(
+                        Icons.lightbulb,
+                        color: employee.status == EmployeeStatus.active
+                            ? Colors.yellow
+                            : null,
+                      ),
+                    )
+                  ],
+                ),
+                onRowChecked: (event) {
+                  final employee = _source.modelFromCheckEvent<Employee>(event);
+                  if (event.isChecked == null || employee == null) {
+                    return;
+                  }
+
+                  if (event.isChecked == true) {
+                    _selected[event.rowIdx ?? -1] = employee;
+                  } else {
+                    _selected.remove(event.rowIdx);
+                  }
+                },
+                onLoaded: (stateManager) => _source = stateManager,
                 fixedLeftColumns: 2,
+                columns: columns,
+                fetchData: fetchEmployees,
                 showCheckboxColumn: true,
               ),
             ),

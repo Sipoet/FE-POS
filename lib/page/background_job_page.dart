@@ -18,7 +18,7 @@ class _BackgroundJobPageState extends State<BackgroundJobPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late List<TableColumn> _columns;
   List<BackgroundJob> records = [];
-  PlutoGridStateManager? stateManager;
+  TrinaGridStateManager? stateManager;
   late final Server _server;
   final flash = Flash();
   @override
@@ -145,7 +145,7 @@ class _BackgroundJobPageState extends State<BackgroundJobPage>
                 .fromJson(json, included: data['included'] ?? []))
             .toList();
 
-        stateManager?.setModels(records, _columns);
+        stateManager?.setModels(records);
       }
     }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
         () => stateManager?.setShowLoading(false));

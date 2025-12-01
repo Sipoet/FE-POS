@@ -18,7 +18,7 @@ class SystemSettingPage extends StatefulWidget {
 
 class _SystemSettingPageState extends State<SystemSettingPage>
     with DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();
@@ -36,7 +36,7 @@ class _SystemSettingPageState extends State<SystemSettingPage>
       name: 'action',
       type: TableColumnType.action,
       humanizeName: 'Action',
-      frozen: PlutoColumnFrozen.end,
+      frozen: TrinaColumnFrozen.end,
       renderBody: (rendererContext) {
         return Row(
           children: [
@@ -72,36 +72,13 @@ class _SystemSettingPageState extends State<SystemSettingPage>
 
   Future<DataTableResponse<SystemSetting>> fetchSystemSettings(
       QueryRequest request) {
-    request.searchText = _searchText;
-    try {
-      return server
-          .get('system_settings',
-              queryParam: request.toQueryParam(), cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        records = responseBody['data']
-            .map<SystemSetting>((json) => SystemSettingClass()
-                .fromJson(json, included: responseBody['included'] ?? []))
-            .toList();
-        final totalPage = responseBody['meta']?['total_pages'] ?? 1;
-        return DataTableResponse<SystemSetting>(
-            models: records, totalPage: totalPage);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      return Future(() => DataTableResponse<SystemSetting>(models: []));
-    }
+    return SystemSettingClass().finds(server, request).then(
+        (value) => DataTableResponse<SystemSetting>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
+    });
   }
 
   void searchChanged(value) {
@@ -154,10 +131,10 @@ class _SystemSettingPageState extends State<SystemSettingPage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<SystemSetting>(
+              child: CustomAsyncDataTable<SystemSetting>(
                 onLoaded: (stateManager) => _source = stateManager,
                 fixedLeftColumns: 0,
-                fetchData: (request) => fetchSystemSettings(request),
+                fetchData: fetchSystemSettings,
                 columns: columns,
               ),
             ),

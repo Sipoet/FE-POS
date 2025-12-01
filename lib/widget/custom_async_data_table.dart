@@ -1,4 +1,3 @@
-import 'package:data_table_2/data_table_2.dart';
 import 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -9,274 +8,17 @@ import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/tool/query_data.dart';
-import 'package:pluto_grid/pluto_grid.dart';
+import 'package:trina_grid/trina_grid.dart';
 import 'package:provider/provider.dart';
-export 'package:pluto_grid/pluto_grid.dart';
+export 'package:trina_grid/trina_grid.dart';
 
-class CustomAsyncDataTable extends StatefulWidget {
-  final CustomAsyncDataTableSource controller;
-  final int fixedLeftColumns;
-  final List<Widget>? actions;
-  final Widget? header;
-  final bool showCheckboxColumn;
-  final void Function(int)? onPageChanged;
-  const CustomAsyncDataTable({
-    super.key,
-    required this.controller,
-    this.onPageChanged,
-    this.actions,
-    this.header,
-    this.showCheckboxColumn = false,
-    this.fixedLeftColumns = 1,
-  });
-
-  @override
-  State<CustomAsyncDataTable> createState() => _CustomAsyncDataTableState();
-}
-
-class _CustomAsyncDataTableState extends State<CustomAsyncDataTable> {
-  int _sortColumnIndex = 0;
-  int page = 1;
-  int limit = 10;
-  bool _sortAscending = true;
-  final minimumColumnWidth = 100.0;
-  CustomAsyncDataTableSource get _dataSource => widget.controller;
-  List<TableColumn> get columns => _dataSource.columns;
-  final _paginatorController = PaginatorController();
-
-  @override
-  void initState() {
-    _dataSource.paginatorController = _paginatorController;
-    _dataSource.tabManager = context.read<TabManager>();
-    if (_dataSource.sortColumn != null) {
-      _sortColumnIndex = _dataSource.columns.indexOf(_dataSource.sortColumn!);
-      _sortAscending = _dataSource.isAscending;
-    }
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _paginatorController.dispose();
-    super.dispose();
-  }
-
-  double calculateTableWidth() {
-    double width = 100;
-    for (TableColumn column in columns) {
-      width += column.clientWidth;
-    }
-    return width;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    double tableWidth = calculateTableWidth();
-    List<DataColumn2> actions = [];
-    if (_dataSource.hasActionButton) {
-      actions.add(const DataColumn2(label: Text(''), fixedWidth: 300.0));
-      tableWidth += 300;
-    }
-    return AsyncPaginatedDataTable2(
-      key: ObjectKey(widget.key),
-      sortArrowAlwaysVisible: true,
-      showFirstLastButtons: true,
-      source: _dataSource,
-      actions: widget.actions,
-      header: widget.header,
-      showCheckboxColumn: widget.showCheckboxColumn,
-      fixedLeftColumns: widget.fixedLeftColumns,
-      sortColumnIndex: _sortColumnIndex,
-      sortAscending: _sortAscending,
-      headingRowDecoration: BoxDecoration(
-          border: Border.all(width: 2, color: colorScheme.outline)),
-      controller: _paginatorController,
-      border: TableBorder.all(
-          width: 1, color: colorScheme.outline.withValues(alpha: 0.5)),
-      empty: const Text('Data tidak ditemukan'),
-      columns: (columns).map<DataColumn2>((tableColumn) {
-            return DataColumn2(
-              tooltip: tableColumn.humanizeName,
-              numeric: true,
-              onSort: tableColumn.canSort
-                  ? ((columnIndex, ascending) {
-                      setState(() {
-                        _sortColumnIndex = columnIndex;
-                        _sortAscending = ascending;
-                      });
-                      _dataSource.sortData(tableColumn, _sortAscending);
-                    })
-                  : null,
-              fixedWidth: tableColumn.clientWidth,
-              label: Stack(
-                alignment: AlignmentDirectional.centerStart,
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned(
-                      right: 0,
-                      top: 0,
-                      child: GestureDetector(
-                          onHorizontalDragStart: (details) {
-                            setState(() {
-                              tableColumn.initX = details.globalPosition.dx;
-                            });
-                          },
-                          onHorizontalDragUpdate: (details) {
-                            final increment =
-                                details.globalPosition.dx - tableColumn.initX;
-                            final newWidth =
-                                tableColumn.clientWidth + increment;
-                            setState(() {
-                              tableColumn.initX = details.globalPosition.dx;
-                              tableColumn.clientWidth =
-                                  newWidth > minimumColumnWidth
-                                      ? newWidth
-                                      : minimumColumnWidth;
-                            });
-                          },
-                          child: const Icon(
-                            Icons.switch_left,
-                            size: 20,
-                          ))),
-                  Positioned(
-                    left: 0,
-                    width: tableColumn.clientWidth - 50,
-                    child: Text(
-                      tableColumn.humanizeName,
-                      overflow: TextOverflow.ellipsis,
-                      softWrap: false,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList() +
-          actions,
-      minWidth: tableWidth,
-      onPageChanged: (int page) {
-        this.page = page;
-        if (widget.onPageChanged != null) {
-          widget.onPageChanged!(page);
-        }
-        // _dataSource.getRows((page - 1) * limit, limit);
-      },
-      onRowsPerPageChanged: (int? limit) {
-        this.limit = limit ?? 10;
-        _paginatorController.goToFirstPage();
-      },
-      pageSyncApproach: PageSyncApproach.goToLast,
-      availableRowsPerPage: const [10, 20, 50, 100],
-      headingRowColor:
-          WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        return colorScheme.secondaryContainer.withValues(alpha: 0.08);
-      }),
-    );
-  }
-}
-
-class CustomAsyncDataTableSource<T extends Model> extends AsyncDataTableSource
-    with TableDecorator<T>, TextFormatter, PlatformChecker {
-  final List<TableColumn> columns;
-  late List<T> sortedData = [];
-  TableColumn? sortColumn;
-  bool isAscending = true;
-  List<Widget> Function(T model, int index)? actionButtons;
-  Map<int, T> selectedMap = {};
-  PaginatorController? paginatorController;
-  bool isShowActions = false;
-  List<T> get selected => selectedMap.values.toList();
-  int totalRows = 0;
-
-  Future<ResponseResult<T>> Function(
-      {int page,
-      int limit,
-      TableColumn sortColumn,
-      bool isAscending}) fetchData;
-
-  CustomAsyncDataTableSource(
-      {required this.fetchData,
-      this.isShowActions = false,
-      this.isAscending = true,
-      this.sortColumn,
-      required this.columns,
-      this.actionButtons,
-      this.paginatorController});
-
-  void refreshDataFromFirstPage() {
-    if (paginatorController?.isAttached ?? false) {
-      paginatorController?.goToFirstPage();
-    }
-    refreshDatasource();
-  }
-
-  bool get hasActionButton => actionButtons is Function;
-
-  void sortData(TableColumn sortColumn, bool isAscending) {
-    this.sortColumn = sortColumn;
-    this.isAscending = isAscending;
-    refreshDatasource();
-  }
-
-  @override
-  int get rowCount => totalRows;
-
-  @override
-  Future<AsyncRowsResponse> getRows(int startIndex, int count) {
-    final page = startIndex ~/ count + 1;
-    return fetchData(
-            page: page,
-            limit: count,
-            isAscending: this.isAscending,
-            sortColumn: this.sortColumn ?? this.columns[0])
-        .then((responseResult) {
-      totalRows = responseResult.totalRows;
-      List<DataRow> rows = [];
-      for (T model in responseResult.models) {
-        rows.add(DataRow(
-          key: ValueKey<dynamic>(model.id),
-          onSelectChanged: (value) {
-            if (value == null) {
-              return;
-            }
-            if (value) {
-              selectedMap[model.id] = model;
-            } else {
-              selectedMap.remove(model);
-            }
-
-            setRowSelection(ValueKey<dynamic>(model.id), value);
-          },
-          cells: decorateModel(model,
-              columns: columns, actionButtons: actionButtons),
-        ));
-      }
-      return AsyncRowsResponse(totalRows, rows);
-    });
-  }
-
-  @override
-  bool get isRowCountApproximate => false;
-
-  @override
-  int get selectedRowCount => selectedMap.keys.length;
-}
-
-class ResponseResult<T> {
-  int totalRows;
-  List<T> models;
-  ResponseResult({this.totalRows = 0, required this.models});
-}
-
-typedef OnLoadedCallBack = void Function(PlutoGridStateManager stateManager);
-typedef OnRowCheckedCallback = void Function(PlutoGridOnRowCheckedEvent event);
-typedef OnSelectedCallback = void Function(PlutoGridOnSelectedEvent event);
+typedef OnLoadedCallBack = void Function(TrinaGridStateManager stateManager);
+typedef OnRowCheckedCallback = void Function(TrinaGridOnRowCheckedEvent event);
+typedef OnSelectedCallback = void Function(TrinaGridOnSelectedEvent event);
 typedef OnRowDoubleTapCallback = void Function(
-    PlutoGridOnRowDoubleTapEvent event);
+    TrinaGridOnRowDoubleTapEvent event);
 
-class CustomAsyncDataTable2<T extends Model> extends StatefulWidget {
+class CustomAsyncDataTable<T extends Model> extends StatefulWidget {
   final int fixedLeftColumns;
   final List<Widget>? actions;
   final Widget? header;
@@ -291,42 +33,46 @@ class CustomAsyncDataTable2<T extends Model> extends StatefulWidget {
   final OnRowDoubleTapCallback? onRowDoubleTap;
   final bool showFilter;
   final String primaryKey;
+  final Widget Function(T model)? renderAction;
+  final double? actionColumnWidth;
 
-  const CustomAsyncDataTable2({
+  const CustomAsyncDataTable({
     super.key,
     required this.fetchData,
     this.actions,
     this.onLoaded,
     this.header,
+    this.actionColumnWidth,
     this.primaryKey = 'id',
-    this.showFilter = true,
-    List<TableColumn>? columns,
+    this.showFilter = false,
+    required this.columns,
     this.enums = const {},
     this.onRowChecked,
+    this.renderAction,
     this.onRowDoubleTap,
     this.onSelected,
     this.showSummary = false,
     this.showCheckboxColumn = false,
     this.fixedLeftColumns = 0,
-  }) : columns = columns ?? const [];
+  });
 
   @override
-  State<CustomAsyncDataTable2<T>> createState() =>
-      _CustomAsyncDataTable2State<T>();
+  State<CustomAsyncDataTable<T>> createState() =>
+      _CustomAsyncDataTableState<T>();
 }
 
-class _CustomAsyncDataTable2State<T extends Model>
-    extends State<CustomAsyncDataTable2<T>>
-    with PlutoTableDecorator, PlatformChecker, TextFormatter {
-  late List<PlutoColumn> columns;
-  late final PlutoGridStateManager _source;
+class _CustomAsyncDataTableState<T extends Model>
+    extends State<CustomAsyncDataTable<T>>
+    with TrinaTableDecorator, PlatformChecker, TextFormatter {
+  late final List<TrinaColumn> columns;
+  late final TrinaGridStateManager _source;
   List selectedValues = [];
 
   @override
   void initState() {
     server = context.read<Server>();
     tabManager = context.read<TabManager>();
-    columns = widget.columns.asMap().entries.map<PlutoColumn>((entry) {
+    columns = widget.columns.asMap().entries.map<TrinaColumn>((entry) {
       int index = entry.key;
       TableColumn tableColumn = entry.value;
       return decorateColumn(
@@ -337,7 +83,28 @@ class _CustomAsyncDataTable2State<T extends Model>
         showFilter: widget.showFilter,
         isFrozen: index < widget.fixedLeftColumns,
       );
-    }).toList();
+    }).toList()
+      ..add(TrinaColumn(
+          title: ' ',
+          field: 'model',
+          type: TrinaColumnType.text(defaultValue: null),
+          hide: widget.renderAction == null,
+          frozen: TrinaColumnFrozen.end,
+          enableFilterMenuItem: false,
+          enableAutoEditing: false,
+          enableColumnDrag: false,
+          enableSorting: false,
+          enableHideColumnMenuItem: false,
+          enableContextMenu: false,
+          enableEditingMode: false,
+          renderer: widget.renderAction == null
+              ? null
+              : (TrinaColumnRendererContext rendererContext) =>
+                  widget.renderAction!(rendererContext.cell.value as T),
+          width: widget.renderAction == null
+              ? 0
+              : widget.actionColumnWidth ?? TrinaGridSettings.columnWidth,
+          minWidth: 0));
 
     super.initState();
   }
@@ -347,19 +114,19 @@ class _CustomAsyncDataTable2State<T extends Model>
   }
 
   QueryOperator filterTypeRemote(filterType) {
-    if (filterType is PlutoFilterTypeContains) {
+    if (filterType is TrinaFilterTypeContains) {
       return QueryOperator.contains;
-    } else if (filterType is PlutoFilterTypeLessThanOrEqualTo) {
+    } else if (filterType is TrinaFilterTypeLessThanOrEqualTo) {
       return QueryOperator.lessThanOrEqualTo;
-    } else if (filterType is PlutoFilterTypeNot) {
+    } else if (filterType is TrinaFilterTypeNot) {
       return QueryOperator.not;
-    } else if (filterType is PlutoFilterTypeEquals) {
+    } else if (filterType is TrinaFilterTypeEquals) {
       return QueryOperator.equals;
-    } else if (filterType is PlutoFilterTypeGreaterThan) {
+    } else if (filterType is TrinaFilterTypeGreaterThan) {
       return QueryOperator.greaterThan;
-    } else if (filterType is PlutoFilterTypeGreaterThanOrEqualTo) {
+    } else if (filterType is TrinaFilterTypeGreaterThanOrEqualTo) {
       return QueryOperator.greaterThanOrEqualTo;
-    } else if (filterType is PlutoFilterTypeLessThan) {
+    } else if (filterType is TrinaFilterTypeLessThan) {
       return QueryOperator.lessThan;
     } else {
       return QueryOperator.equals;
@@ -439,13 +206,18 @@ class _CustomAsyncDataTable2State<T extends Model>
     return "${item.id.toString()} - ${item[key].toString()}";
   }
 
+  void displayShowHideColumn(TrinaGridStateManager stateManager) {
+    stateManager.showSetColumnsPopup(context);
+  }
+
   CancelToken? cancelToken;
+  final _menuController = MenuController();
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return PlutoGrid(
+    return TrinaGrid(
       columns: columns,
-      rows: <PlutoRow>[],
+      rows: <TrinaRow>[],
       onSorted: (event) {
         var sorts = <SortData>[];
         if (!event.column.sort.isNone) {
@@ -465,15 +237,15 @@ class _CustomAsyncDataTable2State<T extends Model>
 
         widget.fetchData(request);
       },
-      onLoaded: (PlutoGridOnLoadedEvent event) {
+      onLoaded: (TrinaGridOnLoadedEvent event) {
         _source = event.stateManager;
         _source.setShowColumnFilter(widget.showFilter);
         _source.setShowColumnFooter(widget.showSummary);
         _source.columnFooterHeight = 130.0;
         _source.eventManager!.listener((event) {
-          if (event is PlutoGridChangeColumnFilterEvent) {
+          if (event is TrinaGridChangeColumnFilterEvent) {
             final columType = event.column.type;
-            if (columType is PlutoColumnTypeModelSelect) {
+            if (columType is TrinaColumnTypeModelSelect) {
               showRemoteOptions(
                       searchText: event.filterValue,
                       title: event.column.title,
@@ -485,21 +257,21 @@ class _CustomAsyncDataTable2State<T extends Model>
                     .map<String>((item) => item.id.toString())
                     .toList()
                     .join(',');
-                List<PlutoRow> filterRows = _source.filterRows
+                List<TrinaRow> filterRows = _source.filterRows
                     .where((filterRow) =>
                         filterRow.cells['column']!.value ==
                             event.column.field &&
-                        filterRow.cells['type']!.value is PlutoFilterTypeEquals)
+                        filterRow.cells['type']!.value is TrinaFilterTypeEquals)
                     .toList();
                 if (filterRows.isEmpty) {
                   _source.filterRows.add(FilterHelper.createFilterRow(
-                    filterType: PlutoFilterTypeEquals(),
+                    filterType: TrinaFilterTypeEquals(),
                     filterValue: filterValue,
                     columnField: event.column.field,
                   ));
                 } else {
                   filterRows.first.cells['value'] =
-                      PlutoCell(value: filterValue);
+                      TrinaCell(value: filterValue);
                 }
                 _source.setFilterRows(_source.filterRows);
                 _source.refreshTable();
@@ -513,17 +285,20 @@ class _CustomAsyncDataTable2State<T extends Model>
         }
       },
       noRowsWidget: const Text('Data tidak ditemukan'),
-      onChanged: (PlutoGridOnChangedEvent event) {
+      onChanged: (TrinaGridOnChangedEvent event) {
         debugPrint("onchanged ${event.toString()}");
       },
-      mode: PlutoGridMode.selectWithOneTap,
+      mode: TrinaGridMode.selectWithOneTap,
       onSelected: widget.onSelected,
       onRowDoubleTap: widget.onRowDoubleTap,
-      onRowChecked: (PlutoGridOnRowCheckedEvent event) {
+      onRowChecked: (TrinaGridOnRowCheckedEvent event) {
         if (!event.isRow) {
           return;
         }
-        final value = event.row!.cells[widget.primaryKey]!.value;
+        final value = event.row?.cells[widget.primaryKey]?.value;
+        if (value == null) {
+          return;
+        }
         if (event.isChecked == true) {
           selectedValues.add(value);
         } else {
@@ -533,8 +308,27 @@ class _CustomAsyncDataTable2State<T extends Model>
           widget.onRowChecked!(event);
         }
       },
+      createHeader: (stateManager) => Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          SizedBox(
+              width: 50,
+              child: SubmenuButton(
+                  controller: _menuController,
+                  menuChildren: [
+                    MenuItemButton(
+                      child: const Text('hide/show column'),
+                      onPressed: () {
+                        _menuController.close();
+                        displayShowHideColumn(stateManager);
+                      },
+                    ),
+                  ],
+                  child: const Icon(Icons.more_vert)))
+        ],
+      ),
       createFooter: (stateManager) {
-        return PlutoLazyPagination(
+        return TrinaLazyPagination(
           fetch: (event) async {
             cancelToken?.cancel();
             cancelToken = CancelToken();
@@ -552,13 +346,13 @@ class _CustomAsyncDataTable2State<T extends Model>
             request.filters = remoteFilters();
             return widget.fetchData(request).then(
               (DataTableResponse<T> response) {
-                return PlutoLazyPaginationResponse(
+                return TrinaLazyPaginationResponse(
                     rows: response.models
-                        .map<PlutoRow>(
+                        .map<TrinaRow>(
                           (model) => decorateRow(
                               isChecked: _containsCheckedValue(model.toMap()),
                               model: model,
-                              tableColumns: widget.columns),
+                              tableColumns: columns),
                         )
                         .toList(),
                     totalPage: response.totalPage);
@@ -568,42 +362,36 @@ class _CustomAsyncDataTable2State<T extends Model>
           stateManager: stateManager,
         );
       },
-      configuration: PlutoGridConfiguration(
-          columnFilter: PlutoGridColumnFilterConfig(
+      configuration: TrinaGridConfiguration(
+          columnFilter: TrinaGridColumnFilterConfig(
             filters: [
-              PlutoFilterTypeContains(),
-              PlutoFilterTypeEquals(),
-              PlutoFilterTypeNot(),
-              PlutoFilterTypeLessThan(),
-              PlutoFilterTypeLessThanOrEqualTo(),
-              PlutoFilterTypeGreaterThan(),
-              PlutoFilterTypeGreaterThanOrEqualTo(),
+              TrinaFilterTypeContains(),
+              TrinaFilterTypeEquals(),
+              TrinaFilterTypeNot(),
+              TrinaFilterTypeLessThan(),
+              TrinaFilterTypeLessThanOrEqualTo(),
+              TrinaFilterTypeGreaterThan(),
+              TrinaFilterTypeGreaterThanOrEqualTo(),
             ],
             debounceMilliseconds: 500,
             resolveDefaultColumnFilter: (column, resolver) {
-              if (column.type is PlutoColumnTypeModelSelect ||
-                  column.type is PlutoColumnTypeNumber ||
-                  column.type is PlutoColumnTypeCurrency) {
-                return resolver<PlutoFilterTypeEquals>();
+              if (column.type is TrinaColumnTypeModelSelect ||
+                  column.type is TrinaColumnTypeNumber ||
+                  column.type is TrinaColumnTypeCurrency) {
+                return resolver<TrinaFilterTypeEquals>();
               } else {
-                return resolver<PlutoFilterTypeContains>();
+                return resolver<TrinaFilterTypeContains>();
               }
             },
           ),
-          scrollbar: const PlutoGridScrollbarConfig(
+          scrollbar: const TrinaGridScrollbarConfig(
             isAlwaysShown: true,
-            scrollbarThickness: 10,
+            // scrollbarThickness: 10,
           ),
-          style: PlutoGridStyleConfig(
+          style: TrinaGridStyleConfig(
               borderColor: colorScheme.outline,
               rowColor: colorScheme.secondaryContainer,
               evenRowColor: colorScheme.onPrimary)),
     );
   }
-}
-
-class DataTableResponse<T extends Model> {
-  int totalPage;
-  List<T> models;
-  DataTableResponse({this.totalPage = 0, this.models = const []});
 }

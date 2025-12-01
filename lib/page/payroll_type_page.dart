@@ -19,13 +19,14 @@ class PayrollTypePage extends StatefulWidget {
 
 class _PayrollTypePageState extends State<PayrollTypePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final CustomAsyncDataTableSource<PayrollType> _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
 
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
-  List<FilterData> _filter = [];
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -35,9 +36,9 @@ class _PayrollTypePageState extends State<PayrollTypePage>
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<PayrollType>(
-        columns: setting.tableColumn('payrollType'),
-        fetchData: fetchPayrollTypes);
+
+    columns = setting.tableColumn('payrollType');
+
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
@@ -50,53 +51,20 @@ class _PayrollTypePageState extends State<PayrollTypePage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<PayrollType>> fetchPayrollTypes(
-      {int page = 1,
-      int limit = 100,
-      TableColumn? sortColumn,
-      bool isAscending = true}) {
-    String orderKey = sortColumn?.name ?? 'name';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-    };
-    for (final filterData in _filter) {
-      final data = filterData.toEntryJson();
-      param[data.key] = data.value;
-    }
-    try {
-      return server
-          .get('payroll_types', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<PayrollType>((json) => PayrollTypeClass().fromJson(json))
-            .toList();
-        int totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<PayrollType>(
-            models: models, totalRows: totalRows);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      return Future(() => ResponseResult<PayrollType>(models: []));
-    }
+  Future<DataTableResponse<PayrollType>> fetchPayrollTypes(
+      QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    return PayrollTypeClass().finds(server, request).then(
+        (value) => DataTableResponse<PayrollType>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
+    });
   }
 
   void addForm() {
@@ -156,29 +124,16 @@ class _PayrollTypePageState extends State<PayrollTypePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.actionButtons = ((payrollType, index) => <Widget>[
-          IconButton(
-              onPressed: () {
-                editForm(payrollType);
-              },
-              tooltip: 'Edit Tipe Payroll',
-              icon: const Icon(Icons.edit)),
-          IconButton(
-              onPressed: () {
-                destroyRecord(payrollType);
-              },
-              tooltip: 'Hapus Tipe Payroll',
-              icon: const Icon(Icons.delete)),
-        ]);
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Column(
           children: [
             TableFilterForm(
-              columns: _source.columns,
+              columns: columns,
               onSubmit: (filter) {
-                _filter = filter;
+                _filters = filter;
                 refreshTable();
               },
             ),
@@ -220,10 +175,27 @@ class _PayrollTypePageState extends State<PayrollTypePage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              width: 900,
-              child: CustomAsyncDataTable(
-                controller: _source,
+              child: CustomAsyncDataTable<PayrollType>(
+                renderAction: (payrollType) => Row(
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          editForm(payrollType);
+                        },
+                        tooltip: 'Edit Tipe Payroll',
+                        icon: const Icon(Icons.edit)),
+                    IconButton(
+                        onPressed: () {
+                          destroyRecord(payrollType);
+                        },
+                        tooltip: 'Hapus Tipe Payroll',
+                        icon: const Icon(Icons.delete)),
+                  ],
+                ),
+                onLoaded: (stateManager) => _source = stateManager,
                 fixedLeftColumns: 2,
+                columns: columns,
+                fetchData: fetchPayrollTypes,
                 showCheckboxColumn: true,
               ),
             ),

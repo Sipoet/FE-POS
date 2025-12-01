@@ -1,5 +1,5 @@
+import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/payroll_report.dart';
-import 'package:fe_pos/model/payroll_type.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/file_saver.dart';
 import 'package:fe_pos/tool/flash.dart';
@@ -20,8 +20,9 @@ class PayrollReportPage extends StatefulWidget {
 
 class _PayrollReportPageState extends State<PayrollReportPage>
     with LoadingPopup, DefaultResponse {
-  PlutoGridStateManager? tableStateManager;
+  TrinaGridStateManager? tableStateManager;
   List<PayrollType> payrollTypes = [];
+  List<Employee> employees = [];
   List<TableColumn> tableColumns = [];
   late final Server server;
   late final Flash flash;
@@ -60,7 +61,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
           for (final row in json['data']) {
             final model =
                 PayrollReportClass().fromJson(row, included: included ?? []);
-            tableStateManager?.appendModel(model, tableColumns);
+            tableStateManager?.appendModel(model);
           }
         });
       }
@@ -103,7 +104,9 @@ class _PayrollReportPageState extends State<PayrollReportPage>
       'date': _date.toIso8601String(),
       'report_type': reportType,
       'payroll_type_ids[]':
-          payrollTypes.map((payrollType) => payrollType.id.toString()).toList()
+          payrollTypes.map((payrollType) => payrollType.id.toString()).toList(),
+      'employee_ids[]':
+          employees.map((employee) => employee.id.toString()).toList()
     };
     return server.get('payrolls/report',
         responseType: reportType, queryParam: params);
@@ -120,27 +123,36 @@ class _PayrollReportPageState extends State<PayrollReportPage>
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                SizedBox(
-                  width: 350,
-                  child: DateFormField(
-                    focusNode: _focusNode,
-                    label: const Text('Tanggal'),
-                    initialValue: _date,
-                    dateType: DateType(),
-                    onChanged: (date) => _date = date ?? _date,
+                Wrap(spacing: 10, runSpacing: 10, children: [
+                  SizedBox(
+                    width: 350,
+                    child: DateFormField(
+                      focusNode: _focusNode,
+                      label: const Text('Tanggal'),
+                      initialValue: _date,
+                      dateType: DateType(),
+                      onChanged: (date) => _date = date ?? _date,
+                    ),
                   ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                SizedBox(
-                  width: 350,
-                  child: AsyncDropdownMultiple<PayrollType>(
-                      textOnSearch: (payrollType) => payrollType.name,
-                      path: 'payroll_types',
-                      onChanged: (payrollTypes) => payrollTypes = payrollTypes,
-                      modelClass: PayrollTypeClass()),
-                ),
+                  SizedBox(
+                    width: 350,
+                    child: AsyncDropdownMultiple<Employee>(
+                        textOnSearch: (employee) => employee.name,
+                        path: 'employees',
+                        onChanged: (newEmployees) => employees = newEmployees,
+                        modelClass: PayrollTypeClass()),
+                  ),
+                  SizedBox(
+                    width: 350,
+                    child: AsyncDropdownMultiple<PayrollType>(
+                        textOnSearch: (payrollType) => payrollType.name,
+                        path: 'payroll_types',
+                        label: Text('Tipe Payroll'),
+                        onChanged: (newPayrollTypes) =>
+                            payrollTypes = newPayrollTypes,
+                        modelClass: PayrollTypeClass()),
+                  ),
+                ]),
                 Row(children: [
                   Padding(
                     padding: const EdgeInsets.all(10.0),
@@ -158,7 +170,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
                 ]),
                 const Divider(),
                 SizedBox(
-                  height: 500,
+                  height: bodyScreenHeight,
                   child: SyncDataTable(
                     columns: tableColumns,
                     showSummary: true,

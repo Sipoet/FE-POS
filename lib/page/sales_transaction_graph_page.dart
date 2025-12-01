@@ -34,7 +34,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   late Flash flash;
   String _groupPeriod = 'daily';
   String _generatedGroupPeriod = 'daily';
-  PlutoGridStateManager? _source;
+  TrinaGridStateManager? _source;
 
   String fieldKey = 'sales_total';
   static const TextStyle _filterLabelStyle =
@@ -66,7 +66,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   };
   static const Map<String, String> fieldKeyLocales = {
     'sales_total': 'Total Penjualan(Rp)',
-    'sales_quantity': 'Jumlah Penjualan',
+    'sales_quantity': 'Total Transaksi',
     'sales_discount_amount': 'Total Diskon(Rp)',
     'gross_profit': 'Gross Profit(Rp)',
     'sales_through_rate': 'Kecepatan Penjualan(%)',
@@ -201,7 +201,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
 
       if (_source != null) {
         _source?.setTableColumns(_columns, tabManager: tabManager);
-        _source?.setModels(groupModels, _columns);
+        _source?.setModels(groupModels);
         _source?.sortAscending(_source!.columns.first);
       }
 

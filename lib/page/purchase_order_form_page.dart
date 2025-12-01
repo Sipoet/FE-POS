@@ -33,7 +33,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
   PurchaseOrder get purchaseOrder => widget.purchaseOrder;
   late final Server _server;
   late final Setting setting;
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final List<TableColumn> _columns;
   double margin = 1;
   String roundType = 'mark';
@@ -67,7 +67,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
         setState(() {
           purchaseOrder.setFromJson(response.data['data'],
               included: response.data['included'] ?? []);
-          _source.setModels(purchaseOrder.purchaseItems, _columns);
+          _source.setModels(purchaseOrder.purchaseItems);
         });
       }
     }, onError: (error) {
@@ -319,7 +319,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                     border: const OutlineInputBorder()),
                                 readOnly: true,
                                 initialValue:
-                                    dateTimeFormat(purchaseOrder.datetime),
+                                    dateTimeLocalFormat(purchaseOrder.datetime),
                               ),
                             ),
                           ),
@@ -335,8 +335,8 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                     labelStyle: labelStyle,
                                     border: const OutlineInputBorder()),
                                 readOnly: true,
-                                initialValue:
-                                    dateTimeFormat(purchaseOrder.deliveredDate),
+                                initialValue: dateTimeLocalFormat(
+                                    purchaseOrder.deliveredDate),
                               ),
                             ),
                           ),

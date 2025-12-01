@@ -62,8 +62,8 @@ class EmployeeAttendance extends Model {
           ) ??
           employee;
     }
-    startTime = DateTime.parse(attributes['start_time']);
-    endTime = DateTime.parse(attributes['end_time']);
+    startTime = DateTime.parse(attributes['start_time']).toLocal();
+    endTime = DateTime.parse(attributes['end_time']).toLocal();
     date = Date.parse(attributes['date']);
     employee = employee;
     isLate = attributes['is_late'] ?? false;

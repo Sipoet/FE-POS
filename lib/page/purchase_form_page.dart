@@ -33,7 +33,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
   IposPurchaseHeader get purchase => widget.purchase;
   late final Server _server;
   late final Setting setting;
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final List<TableColumn> _columns;
   double margin = 1;
   String roundType = 'mark';
@@ -67,7 +67,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
         setState(() {
           purchase.setFromJson(response.data['data'],
               included: response.data['included']);
-          _source.setModels(purchase.purchaseItems, _columns);
+          _source.setModels(purchase.purchaseItems);
         });
       }
     }, onError: (error) {
@@ -331,7 +331,8 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                             readOnly: true,
                             initialValue: purchase.noteDate == null
                                 ? null
-                                : dateTimeFormat(purchase.noteDate as DateTime),
+                                : dateTimeLocalFormat(
+                                    purchase.noteDate as DateTime),
                           ),
                         ),
                       ),
@@ -346,7 +347,8 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                                 labelStyle: labelStyle,
                                 border: const OutlineInputBorder()),
                             readOnly: true,
-                            initialValue: dateTimeFormat(purchase.datetime),
+                            initialValue:
+                                dateTimeLocalFormat(purchase.datetime),
                           ),
                         ),
                       ),

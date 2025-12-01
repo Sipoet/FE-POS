@@ -22,12 +22,12 @@ class _CheckPricePageState extends State<CheckPricePage>
   late final Server _server;
   bool _isLoading = false;
   final _controller = TextEditingController();
-  PlutoGridStateManager? _source;
+  TrinaGridStateManager? _source;
   List<ItemWithDiscount> models = [];
   final List<TableColumn> _columns = [
     TableColumn(
         clientWidth: 120,
-        frozen: PlutoColumnFrozen.start,
+        frozen: TrinaColumnFrozen.start,
         name: 'item_code',
         humanizeName: 'Kode Item'),
     TableColumn(clientWidth: 200, name: 'item_name', humanizeName: 'Nama Item'),
@@ -59,7 +59,7 @@ class _CheckPricePageState extends State<CheckPricePage>
         type: TableColumnType.money,
         name: 'sell_price_after_discount',
         humanizeName: 'Harga Setelah Diskon',
-        frozen: PlutoColumnFrozen.end),
+        frozen: TrinaColumnFrozen.end),
   ];
 
   @override
@@ -326,7 +326,7 @@ class _CheckPricePageState extends State<CheckPricePage>
               .toList();
         });
 
-        _source?.setModels(models, _columns);
+        _source?.setModels(models);
       }
     }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(() {
       _source?.setShowLoading(false);

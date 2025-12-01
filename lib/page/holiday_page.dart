@@ -20,13 +20,14 @@ class HolidayPage extends StatefulWidget {
 
 class _HolidayPageState extends State<HolidayPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final CustomAsyncDataTableSource<Holiday> _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   final _menuController = MenuController();
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
-  List<FilterData> _filter = [];
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -36,8 +37,7 @@ class _HolidayPageState extends State<HolidayPage>
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<Holiday>(
-        columns: setting.tableColumn('holiday'), fetchData: fetchHolidays);
+    columns = setting.tableColumn('holiday');
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
@@ -50,53 +50,19 @@ class _HolidayPageState extends State<HolidayPage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<Holiday>> fetchHolidays(
-      {int page = 1,
-      int limit = 100,
-      TableColumn? sortColumn,
-      bool isAscending = false}) {
-    String orderKey = sortColumn?.name ?? 'date';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-    };
-    for (final filterData in _filter) {
-      final data = filterData.toEntryJson();
-      param[data.key] = data.value;
-    }
-
-    return server.get('holidays', queryParam: param, cancelToken: cancelToken).then(
-        (response) {
-      if (response.statusCode != 200) {
-        throw 'error: ${response.data.toString()}';
-      }
-      try {
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<Holiday>((json) => HolidayClass()
-                .fromJson(json, included: responseBody['included'] ?? []))
-            .toList();
-        int totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<Holiday>(models: models, totalRows: totalRows);
-      } catch (e, trace) {
-        flash.showBanner(
-            title: e.toString(),
-            description: trace.toString(),
-            messageType: ToastificationType.error);
-        return Future(() => ResponseResult<Holiday>(models: []));
-      }
-    },
-        onError: (error, stackTrace) =>
-            defaultErrorResponse(error: error, valueWhenError: []));
+  Future<DataTableResponse<Holiday>> fetchHolidays(QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    return HolidayClass().finds(server, request).then(
+        (value) => DataTableResponse<Holiday>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
+    });
   }
 
   void addForm() {
@@ -152,30 +118,17 @@ class _HolidayPageState extends State<HolidayPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.actionButtons = ((holiday, index) => <Widget>[
-          IconButton(
-              onPressed: () {
-                editForm(holiday);
-              },
-              tooltip: 'Edit Holiday',
-              icon: const Icon(Icons.edit)),
-          IconButton(
-              onPressed: () {
-                destroyRecord(holiday);
-              },
-              tooltip: 'Hapus Holiday',
-              icon: const Icon(Icons.delete)),
-        ]);
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Column(
           children: [
             TableFilterForm(
-              columns: _source.columns,
+              columns: columns,
               enums: {'religion': Religion.values},
               onSubmit: (filter) {
-                _filter = filter;
+                _filters = filter;
                 refreshTable();
               },
             ),
@@ -223,11 +176,28 @@ class _HolidayPageState extends State<HolidayPage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              width: 900,
-              child: CustomAsyncDataTable(
-                controller: _source,
-                fixedLeftColumns: 2,
-                showCheckboxColumn: true,
+              child: CustomAsyncDataTable<Holiday>(
+                renderAction: (holiday) => Row(
+                  spacing: 10,
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          editForm(holiday);
+                        },
+                        tooltip: 'Edit Holiday',
+                        icon: const Icon(Icons.edit)),
+                    IconButton(
+                        onPressed: () {
+                          destroyRecord(holiday);
+                        },
+                        tooltip: 'Hapus Holiday',
+                        icon: const Icon(Icons.delete)),
+                  ],
+                ),
+                columns: columns,
+                fetchData: fetchHolidays,
+                onLoaded: (stateManager) => _source = stateManager,
+                fixedLeftColumns: 1,
               ),
             ),
           ],

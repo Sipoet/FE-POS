@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:fe_pos/model/employee_leave.dart';
 import 'package:fe_pos/page/employee_leave_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
@@ -20,13 +21,14 @@ class EmployeeLeavePage extends StatefulWidget {
 
 class _EmployeeLeavePageState extends State<EmployeeLeavePage>
     with AutomaticKeepAliveClientMixin, TextFormatter, DefaultResponse {
-  late final CustomAsyncDataTableSource<EmployeeLeave> _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
-  List<FilterData> _filter = [];
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -36,11 +38,8 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
     server = context.read<Server>();
     flash = Flash();
     setting = context.read<Setting>();
-    final columns = setting.tableColumn('employeeLeave');
-    _source = CustomAsyncDataTableSource<EmployeeLeave>(
-        columns: columns, fetchData: fetchEmployeeLeaves);
-    _source.sortColumn = columns[1];
-    _source.isAscending = false;
+    columns = setting.tableColumn('employeeLeave');
+
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
@@ -52,58 +51,21 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<EmployeeLeave>> fetchEmployeeLeaves(
-      {int page = 1,
-      int limit = 100,
-      TableColumn? sortColumn,
-      bool isAscending = true}) {
-    String orderKey = sortColumn?.name ?? 'employees.name';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'include': 'employee',
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-    };
-    for (final filterData in _filter) {
-      final data = filterData.toEntryJson();
-      param[data.key] = data.value;
-    }
-    try {
-      return server
-          .get('employee_leaves', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<EmployeeLeave>((json) => EmployeeLeaveClass()
-                .fromJson(json, included: responseBody['included']))
-            .toList();
-
-        flash.hide();
-        final totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<EmployeeLeave>(
-            totalRows: totalRows, models: models);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      return Future(
-          () => ResponseResult<EmployeeLeave>(models: [], totalRows: 0));
-    }
+  Future<DataTableResponse<EmployeeLeave>> fetchEmployeeLeaves(
+      QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    request.include.add('employee');
+    return EmployeeLeaveClass().finds(server, request).then(
+        (value) => DataTableResponse<EmployeeLeave>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
+    });
   }
 
   void addForm() {
@@ -118,7 +80,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
               role: Role(name: ''),
               startWorkingDate: Date.today()));
       tabManager.addTab(
-          'Tambah Cuti Karyawan',
+          'Buat Cuti Karyawan',
           EmployeeLeaveFormPage(
               key: ObjectKey(employeeLeave), employeeLeave: employeeLeave));
     });
@@ -174,30 +136,17 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.actionButtons = ((employeeLeave, index) => <Widget>[
-          IconButton(
-              onPressed: () {
-                editForm(employeeLeave);
-              },
-              tooltip: 'Edit Cuti Karyawan',
-              icon: const Icon(Icons.edit)),
-          IconButton(
-              onPressed: () {
-                destroyRecord(employeeLeave);
-              },
-              tooltip: 'Hapus Cuti Karyawan',
-              icon: const Icon(Icons.delete)),
-        ]);
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Column(
           children: [
             TableFilterForm(
-              columns: _source.columns,
+              columns: columns,
               enums: const {'leave_type': LeaveType.values},
               onSubmit: (filter) {
-                _filter = filter;
+                _filters = filter;
                 refreshTable();
               },
             ),
@@ -244,11 +193,32 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
               ),
             ),
             SizedBox(
-              height: bodyScreenHeight,
-              child: CustomAsyncDataTable(
-                controller: _source,
+              height: <double>[bodyScreenHeight, 570].min,
+              child: CustomAsyncDataTable<EmployeeLeave>(
+                renderAction: (employeeLeave) => Row(
+                  spacing: 10,
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          editForm(employeeLeave);
+                        },
+                        tooltip: 'Edit Cuti Karyawan',
+                        icon: const Icon(Icons.edit)),
+                    IconButton(
+                        onPressed: () {
+                          destroyRecord(employeeLeave);
+                        },
+                        tooltip: 'Hapus Cuti Karyawan',
+                        icon: const Icon(Icons.delete)),
+                  ],
+                ),
+                onLoaded: (stateManager) {
+                  _source = stateManager;
+                  _source.sortDescending(_source.columns[1]);
+                },
+                fetchData: fetchEmployeeLeaves,
+                columns: columns,
                 fixedLeftColumns: 2,
-                showCheckboxColumn: true,
               ),
             ),
           ],

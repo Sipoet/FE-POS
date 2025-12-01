@@ -333,29 +333,25 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   ),
                   Visibility(
                     visible: setting.canShow('employee', 'status'),
-                    child: RadioListTile<EmployeeStatus>(
-                      title: const Text('Inactive'),
-                      value: EmployeeStatus.inactive,
-                      groupValue: employee.status,
-                      onChanged: (value) {
-                        setState(() {
-                          employee.status = value ?? EmployeeStatus.inactive;
-                        });
-                      },
-                    ),
-                  ),
-                  Visibility(
-                    visible: setting.canShow('employee', 'status'),
-                    child: RadioListTile<EmployeeStatus>(
-                      title: const Text('Active'),
-                      value: EmployeeStatus.active,
-                      groupValue: employee.status,
-                      onChanged: (value) {
-                        setState(() {
-                          employee.status = value ?? EmployeeStatus.inactive;
-                        });
-                      },
-                    ),
+                    child: RadioGroup(
+                        groupValue: employee.status,
+                        onChanged: (value) {
+                          setState(() {
+                            employee.status = value ?? EmployeeStatus.inactive;
+                          });
+                        },
+                        child: Wrap(
+                          children: [
+                            RadioListTile<EmployeeStatus>(
+                              title: const Text('Inactive'),
+                              value: EmployeeStatus.inactive,
+                            ),
+                            RadioListTile<EmployeeStatus>(
+                              title: const Text('Active'),
+                              value: EmployeeStatus.active,
+                            ),
+                          ],
+                        )),
                   ),
                   const SizedBox(
                     height: 10,

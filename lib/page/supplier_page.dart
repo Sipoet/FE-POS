@@ -15,7 +15,7 @@ class SupplierPage extends StatefulWidget {
 }
 
 class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();
@@ -42,18 +42,13 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
   }
 
   Future<DataTableResponse<Supplier>> fetchSuppliers(QueryRequest request) {
-    _source.setShowLoading(true);
-    request.searchText = _searchText;
-    request.cancelToken = cancelToken;
-
-    return SupplierClass().finds(server, request).then((response) {
-      return DataTableResponse<Supplier>(
-          models: response.models,
-          totalPage: response.metadata['total_pages'] ?? 1);
-    }, onError: (error, stackTrace) {
-      defaultErrorResponse(error: error, valueWhenError: []);
-      return DataTableResponse<Supplier>(models: []);
-    }).whenComplete(() => _source.setShowLoading(false));
+    return SupplierClass().finds(server, request).then(
+        (value) => DataTableResponse<Supplier>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
+    });
   }
 
   void searchChanged(value) {
@@ -106,10 +101,11 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<Supplier>(
+              child: CustomAsyncDataTable<Supplier>(
                 onLoaded: (stateManager) => _source = stateManager,
                 fixedLeftColumns: 0,
-                fetchData: (request) => fetchSuppliers(request),
+                fetchData: fetchSuppliers,
+                showFilter: true,
                 columns: setting.tableColumn('ipos::Supplier'),
               ),
             ),

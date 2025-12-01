@@ -175,6 +175,8 @@ class PurchaseReport extends Model {
       };
   @override
   String get modelValue => code;
+  @override
+  String get path => '/purchases/report';
 }
 
 class PurchaseReportClass extends ModelClass<PurchaseReport> {

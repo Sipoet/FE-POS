@@ -31,7 +31,7 @@ abstract class Model with ChangeNotifier {
   List<String> get errors => _errors;
 
   String get path => plural.plural(modelName);
-  String get modelName => 'model';
+  String get modelName => runtimeType.toString().toSnakeCase();
 
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     final attributes = json['attributes'] ?? {};
@@ -77,8 +77,10 @@ abstract class Model with ChangeNotifier {
         json[key] = object.value;
       } else if (object is Percentage) {
         json[key] = object.value * 100;
-      } else if (object is Date || object is DateTime) {
+      } else if (object is Date) {
         json[key] = object.toIso8601String();
+      } else if (object is DateTime) {
+        json[key] = object.toUtc().toIso8601String();
       } else if (object is Enum) {
         json[key] = object.toString();
       } else if (object is String) {
@@ -187,7 +189,7 @@ abstract class ModelClass<T extends Model> {
               .toList());
     }, onError: (error) {
       debugPrint(error.toString());
-      return null;
+      return QueryResponse();
     });
   }
 }

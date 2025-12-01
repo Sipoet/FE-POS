@@ -222,33 +222,30 @@ class _UserFormPageState extends State<UserFormPage>
                   ),
                   Visibility(
                       visible: setting.canShow('user', 'status'),
-                      child: Column(
-                        children: [
-                          const Text(
-                            'Status:',
-                            style: labelStyle,
-                          ),
-                          RadioListTile<UserStatus>(
-                            title: const Text('Inactive'),
-                            value: UserStatus.inactive,
-                            groupValue: user.status,
-                            onChanged: (value) {
-                              setState(() {
-                                user.status = value ?? UserStatus.inactive;
-                              });
-                            },
-                          ),
-                          RadioListTile<UserStatus>(
-                            title: const Text('Active'),
-                            value: UserStatus.active,
-                            groupValue: user.status,
-                            onChanged: (value) {
-                              setState(() {
-                                user.status = value ?? UserStatus.inactive;
-                              });
-                            },
-                          ),
-                        ],
+                      child: RadioGroup(
+                        groupValue: user.status,
+                        onChanged: (value) {
+                          setState(() {
+                            user.status = value ?? UserStatus.inactive;
+                          });
+                        },
+                        child: Column(
+                          spacing: 10,
+                          children: [
+                            const Text(
+                              'Status:',
+                              style: labelStyle,
+                            ),
+                            RadioListTile<UserStatus>(
+                              title: const Text('Inactive'),
+                              value: UserStatus.inactive,
+                            ),
+                            RadioListTile<UserStatus>(
+                              title: const Text('Active'),
+                              value: UserStatus.active,
+                            ),
+                          ],
+                        ),
                       )),
                   const SizedBox(
                     height: 10,

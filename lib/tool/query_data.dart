@@ -128,6 +128,7 @@ class QueryRequest {
   int limit;
   List<FilterData> filters;
   List<SortData> sorts;
+  List<String> fields;
   CancelToken? cancelToken;
   String? searchText;
   List<String> include;
@@ -137,15 +138,21 @@ class QueryRequest {
       this.limit = 10,
       this.cancelToken,
       this.searchText,
-      this.include = const [],
-      this.filters = const [],
-      this.sorts = const []});
+      List<String>? fields,
+      List<String>? include,
+      List<FilterData>? filters,
+      List<SortData>? sorts})
+      : include = include ?? [],
+        filters = filters ?? [],
+        sorts = sorts ?? [],
+        fields = fields ?? [];
 
   Map<String, String?> toQueryParam() {
     Map<String, String?> result = {
       'page[page]': page.toString(),
       'page[limit]': limit.toString(),
       'search_text': searchText,
+      'field': fields.join(','),
       'include': include.join(','),
     };
     for (final filter in filters) {

@@ -45,7 +45,6 @@ class Customer extends Model {
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
     super.setFromJson(json, included: included);
-
     code = attributes['kode'];
     name = attributes['nama'];
     bank = attributes['bank'];

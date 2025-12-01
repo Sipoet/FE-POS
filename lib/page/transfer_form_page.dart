@@ -33,7 +33,7 @@ class _TransferFormPageState extends State<TransferFormPage>
   Transfer get transfer => widget.transfer;
   late final Server _server;
   late final Setting setting;
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final List<TableColumn> _columns;
   @override
   bool get wantKeepAlive => true;
@@ -61,7 +61,7 @@ class _TransferFormPageState extends State<TransferFormPage>
         setState(() {
           transfer.setFromJson(response.data['data'],
               included: response.data['included'] ?? []);
-          _source.setModels(transfer.transferItems, _columns);
+          _source.setModels(transfer.transferItems);
         });
       }
     }, onError: (error) {
@@ -166,7 +166,7 @@ class _TransferFormPageState extends State<TransferFormPage>
                             labelStyle: labelStyle,
                             border: const OutlineInputBorder()),
                         readOnly: true,
-                        initialValue: dateTimeFormat(transfer.datetime),
+                        initialValue: dateTimeLocalFormat(transfer.datetime),
                       ),
                     ),
                   ),
