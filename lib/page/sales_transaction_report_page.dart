@@ -24,7 +24,7 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
   late Flash flash;
   late List<TableColumn> columns;
   List<SalesTransactionReport> salesTransactionReports = [];
-  late final PlutoGridStateManager stateManager;
+  late final TrinaGridStateManager stateManager;
 
   @override
   bool get wantKeepAlive => true;
@@ -64,7 +64,7 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
             .map<SalesTransactionReport>(
                 (line) => SalesTransactionReportClass().fromJson(line))
             .toList();
-        stateManager.setModels(salesTransactionReports, columns);
+        stateManager.setModels(salesTransactionReports);
       });
     },
         onError: (error, trace) =>

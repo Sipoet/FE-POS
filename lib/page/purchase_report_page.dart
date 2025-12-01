@@ -24,61 +24,52 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
   String? _reportType;
   bool _isDisplayTable = false;
   double minimumColumnWidth = 150;
-  late final CustomAsyncDataTableSource<PurchaseReport> _source;
+  late final TrinaGridStateManager _source;
   late Flash flash;
-  Map _filter = {};
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
   @override
   void initState() {
     server = context.read<Server>();
     final setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<PurchaseReport>(
-      columns: setting.tableColumn('purchaseReport'),
-      fetchData: (
-          {bool isAscending = true,
-          int limit = 10,
-          int page = 1,
-          TableColumn? sortColumn}) {
-        _reportType = 'json';
-        return _requestReport(
-                page: page,
-                limit: limit,
-                sortColumn: sortColumn,
-                isAscending: isAscending)
-            .then((response) {
-          try {
-            if (response.statusCode != 200) {
-              return ResponseResult<PurchaseReport>(totalRows: 0, models: []);
-            }
-            var data = response.data;
-            setState(() {
-              _isDisplayTable = true;
-            });
-            final models = data['data'].map<PurchaseReport>((row) {
-              return PurchaseReportClass()
-                  .fromJson(row, included: data['included'] ?? []);
-            }).toList();
-            return ResponseResult<PurchaseReport>(
-                models: models, totalRows: data['meta']['total_rows']);
-          } catch (error, stackTrace) {
-            debugPrint(error.toString());
-            debugPrint(stackTrace.toString());
-            return ResponseResult<PurchaseReport>(totalRows: 0, models: []);
-          }
-        }, onError: ((error, stackTrace) {
-          defaultErrorResponse(error: error);
-          return Future(() => ResponseResult<PurchaseReport>(models: []));
-        }));
-      },
-    );
+    columns = setting.tableColumn('purchaseReport');
     flash = Flash();
     super.initState();
+  }
+
+  Future<DataTableResponse<PurchaseReport>> fetchData(QueryRequest request) {
+    _reportType = 'json';
+    return _requestReport(request).then((response) {
+      try {
+        if (response.statusCode != 200) {
+          return DataTableResponse<PurchaseReport>(totalPage: 0, models: []);
+        }
+        var data = response.data;
+        setState(() {
+          _isDisplayTable = true;
+        });
+        final models = data['data'].map<PurchaseReport>((row) {
+          return PurchaseReportClass()
+              .fromJson(row, included: data['included'] ?? []);
+        }).toList();
+        return DataTableResponse<PurchaseReport>(
+            models: models, totalPage: data['meta']['total_pages']);
+      } catch (error, stackTrace) {
+        debugPrint(error.toString());
+        debugPrint(stackTrace.toString());
+        return DataTableResponse<PurchaseReport>(totalPage: 0, models: []);
+      }
+    }, onError: ((error, stackTrace) {
+      defaultErrorResponse(error: error);
+      return Future(() => DataTableResponse<PurchaseReport>(models: []));
+    }));
   }
 
   @override
   bool get wantKeepAlive => true;
 
   void _displayReport() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
   void _downloadReport() async {
@@ -87,28 +78,17 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
       ToastificationType.info,
     );
     _reportType = 'xlsx';
-    _requestReport().then(_downloadResponse,
+    _requestReport(QueryRequest(limit: 99999)).then(_downloadResponse,
         onError: ((error, stackTrace) => defaultErrorResponse(error: error)));
   }
 
-  Future _requestReport(
-      {int page = 1,
-      int limit = 10,
-      TableColumn? sortColumn,
-      bool isAscending = true}) async {
-    String orderKey = sortColumn?.name ?? 'purchase_date';
-    Map<String, dynamic> param = {
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'report_type': _reportType ?? 'json',
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-      'include': 'supplier',
-    };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+  Future _requestReport(QueryRequest request) async {
+    request.filters = _filters;
+    request.include = ['supplier'];
     return server.get('purchases/report',
-        queryParam: param, type: _reportType ?? 'json');
+        queryParam: request.toQueryParam()
+          ..addEntries([MapEntry('report_type', _reportType)]),
+        type: _reportType ?? 'json');
   }
 
   void _downloadResponse(response) async {
@@ -144,24 +124,27 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
           TableFilterForm(
               showCanopy: true,
               onSubmit: (filter) {
-                _filter = filter;
+                _filters = filter;
                 _displayReport();
               },
               enums: const {
                 'status': PurchaseReportStatus.values,
               },
               onDownload: (filter) {
-                _filter = filter;
+                _filters = filter;
                 _downloadReport();
               },
-              columns: _source.columns),
+              columns: columns),
           const SizedBox(height: 10),
           Visibility(visible: _isDisplayTable, child: const Divider()),
           SizedBox(
             height: bodyScreenHeight,
-            child: CustomAsyncDataTable(
-              controller: _source,
+            child: CustomAsyncDataTable<PurchaseReport>(
+              onLoaded: (stateManager) => _source = stateManager,
               fixedLeftColumns: 1,
+              columns: columns,
+              fetchData: fetchData,
+              showFilter: false,
             ),
           ),
         ],

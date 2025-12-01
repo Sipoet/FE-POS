@@ -5,13 +5,16 @@ import 'package:fe_pos/widget/date_range_form_field.dart';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+export 'package:fe_pos/tool/query_data.dart';
+
+typedef FilterProcess = void Function(List<FilterData>);
 
 class TableFilterForm extends StatefulWidget {
   final List<TableColumn> columns;
   final Map<String, List<dynamic>> enums;
   final TableFilterFormController? controller;
-  final void Function(Map) onSubmit;
-  final void Function(Map)? onDownload;
+  final FilterProcess onSubmit;
+  final FilterProcess? onDownload;
   final bool showCanopy;
   const TableFilterForm(
       {super.key,
@@ -35,7 +38,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
   bool isShowFilter = false;
 
   final Map _textController = {};
-  final Map _numComparison = {};
+  final Map<String, QueryOperator?> _numComparison = {};
   Map<String, dynamic> val = {};
 
   @override
@@ -185,18 +188,6 @@ class _TableFilterFormState extends State<TableFilterForm> {
     }
   }
 
-  String decorateTimeRange(DateTimeRange range, TableColumnType type) {
-    if (type.isDate()) {
-      return [
-        Date.parsingDateTime(range.start).toIso8601String(),
-        Date.parsingDateTime(range.end).toIso8601String()
-      ].join(',');
-    } else {
-      return [range.start.toIso8601String(), range.end.toIso8601String()]
-          .join(',');
-    }
-  }
-
   Widget boolFilter(TableColumn column) {
     return SizedBox(
       width: 300,
@@ -212,7 +203,8 @@ class _TableFilterFormState extends State<TableFilterForm> {
             if (value == null) {
               controller.removeFilter(column.name);
             } else {
-              controller.setFilter(column.name, 'eq', value.toString());
+              controller.setFilter(ComparisonFilterData(
+                  key: column.name, value: value.toString()));
             }
           }),
     );
@@ -234,8 +226,8 @@ class _TableFilterFormState extends State<TableFilterForm> {
           if (value == null) {
             controller.removeFilter(column.name);
           } else {
-            controller.setFilter(
-                column.name, 'btw', decorateTimeRange(value, column.type));
+            controller.setFilter(BetweenFilterData(
+                key: column.name, values: [value.start, value.end]));
           }
         },
       ),
@@ -260,7 +252,8 @@ class _TableFilterFormState extends State<TableFilterForm> {
             controller.removeFilter(column.name);
             return;
           }
-          controller.setFilter(column.name, 'eq', value);
+          controller
+              .setFilter(ComparisonFilterData(key: column.name, value: value));
         },
         dropdownMenuEntries: const [
               DropdownMenuEntry<String>(value: '', label: '')
@@ -283,14 +276,20 @@ class _TableFilterFormState extends State<TableFilterForm> {
             controller.removeFilter(column.name);
             return;
           }
-          controller.setFilter(column.name, 'like', newValue);
+          controller.setFilter(ComparisonFilterData(
+              key: column.name,
+              operator: QueryOperator.contains,
+              value: newValue));
         },
         onChanged: (newValue) {
           if (newValue.isEmpty) {
             controller.removeFilter(column.name);
             return;
           }
-          controller.setFilter(column.name, 'like', newValue);
+          controller.setFilter(ComparisonFilterData(
+              key: column.name,
+              operator: QueryOperator.contains,
+              value: newValue));
         },
         controller: _textController[column.name],
         decoration: InputDecoration(
@@ -336,9 +335,8 @@ class _TableFilterFormState extends State<TableFilterForm> {
             val[column.name] = value;
           });
           if (value != null && value.isNotEmpty) {
-            final decoratedValue =
-                value.map<String>((e) => e.id.toString()).join(',');
-            controller.setFilter(column.name, 'eq', decoratedValue);
+            controller.setFilter(
+                ComparisonFilterData(key: column.name, value: value));
           } else {
             controller.removeFilter(column.name);
           }
@@ -356,10 +354,14 @@ class _TableFilterFormState extends State<TableFilterForm> {
         controller.removeFilter(column.name);
         return;
       }
-      if (comparison == 'btw' && value1.isNotEmpty && value2.isNotEmpty) {
-        controller.setFilter(column.name, comparison, '$value1,$value2');
-      } else if (comparison != 'btw' && value1.isNotEmpty) {
-        controller.setFilter(column.name, comparison, value1);
+      if (comparison == QueryOperator.between &&
+          value1.isNotEmpty &&
+          value2.isNotEmpty) {
+        controller.setFilter(
+            BetweenFilterData(key: column.name, values: [value1, value2]));
+      } else if (comparison != QueryOperator.between && value1.isNotEmpty) {
+        controller.setFilter(ComparisonFilterData(
+            key: column.name, operator: comparison, value: value1));
       }
     });
   }
@@ -375,7 +377,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          DropdownMenu<String>(
+          DropdownMenu<QueryOperator>(
               width: 170,
               onSelected: (value) {
                 setState(() {
@@ -389,16 +391,11 @@ class _TableFilterFormState extends State<TableFilterForm> {
               requestFocusOnTap: false,
               controller: _textController['${column.name}-cmpr'],
               label: Text(column.humanizeName, style: _labelStyle),
-              dropdownMenuEntries: const [
-                DropdownMenuEntry(value: 'eq', label: '='),
-                DropdownMenuEntry(value: 'not', label: 'bukan'),
-                DropdownMenuEntry(value: 'gt', label: '>'),
-                DropdownMenuEntry(value: 'gte', label: '>='),
-                DropdownMenuEntry(value: 'lt', label: '<'),
-                DropdownMenuEntry(value: 'lte', label: '<='),
-                DropdownMenuEntry(value: 'btw', label: 'antara'),
-                DropdownMenuEntry(value: '', label: ''),
-              ]),
+              dropdownMenuEntries: QueryOperator.values
+                  .map<DropdownMenuEntry<QueryOperator>>((data) =>
+                      DropdownMenuEntry<QueryOperator>(
+                          value: data, label: data.humanize()))
+                  .toList()),
           SizedBox(
             width: 130,
             child: TextFormField(
@@ -414,7 +411,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
             ),
           ),
           Visibility(
-            visible: _numComparison[column.name] == 'btw',
+            visible: _numComparison[column.name] == QueryOperator.between,
             child: SizedBox(
               width: 130,
               child: TextFormField(
@@ -447,37 +444,24 @@ class _TableFilterFormState extends State<TableFilterForm> {
 }
 
 class TableFilterFormController extends ChangeNotifier {
-  Map<String, Map<String, dynamic>> _filter = {};
+  final List<FilterData> _filter = [];
 
-  void setFilter(String key, String comparison, dynamic value) {
-    if (_filter[key] == null) {
-      _filter[key] = {};
-    }
-    _filter[key]![comparison] = value;
+  void setFilter(FilterData filterData) {
+    _filter.add(filterData);
     notifyListeners();
   }
 
   void removeFilter(String key) {
-    _filter.remove(key);
+    _filter.removeWhere((filterData) => filterData.key == key);
     notifyListeners();
   }
 
   void removeAllFilter() {
-    _filter = {};
+    _filter.clear();
     notifyListeners();
   }
 
-  Map get decoratedFilter => _decoratedFilter();
-
-  Map _decoratedFilter() {
-    Map newFilter = {};
-    _filter.forEach((key, Map values) {
-      values.forEach((comparison, value) {
-        newFilter['filter[$key][$comparison]'] = value;
-      });
-    });
-    return newFilter;
-  }
+  List<FilterData> get decoratedFilter => _filter;
 }
 
 extension FilterText on TextEditingController {

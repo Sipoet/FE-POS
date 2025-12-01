@@ -91,6 +91,7 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
                         dateType: DateType(),
                         onSaved: (value) {
                           if (value != null) {
+                            employeeAttendance.date = value.toDate();
                             employeeAttendance.startTime =
                                 employeeAttendance.startTime.copyWith(
                                     year: value.year,

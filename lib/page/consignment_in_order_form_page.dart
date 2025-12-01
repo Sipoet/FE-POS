@@ -35,7 +35,7 @@ class _ConsignmentInOrderFormPageState extends State<ConsignmentInOrderFormPage>
   ConsignmentInOrder get consignmentInOrder => widget.consignmentInOrder;
   late final Server _server;
   late final Setting setting;
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final List<TableColumn> _columns;
   double margin = 1;
   String roundType = 'mark';
@@ -71,7 +71,7 @@ class _ConsignmentInOrderFormPageState extends State<ConsignmentInOrderFormPage>
             response.data['data'],
             included: response.data['included'] ?? [],
           );
-          _source.setModels(consignmentInOrder.purchaseOrderItems, _columns);
+          _source.setModels(consignmentInOrder.purchaseOrderItems);
         });
       }
     }, onError: (error) {
@@ -325,8 +325,8 @@ class _ConsignmentInOrderFormPageState extends State<ConsignmentInOrderFormPage>
                                     labelStyle: labelStyle,
                                     border: const OutlineInputBorder()),
                                 readOnly: true,
-                                initialValue:
-                                    dateTimeFormat(consignmentInOrder.datetime),
+                                initialValue: dateTimeLocalFormat(
+                                    consignmentInOrder.datetime),
                               ),
                             ),
                           ),
@@ -342,7 +342,7 @@ class _ConsignmentInOrderFormPageState extends State<ConsignmentInOrderFormPage>
                                     labelStyle: labelStyle,
                                     border: const OutlineInputBorder()),
                                 readOnly: true,
-                                initialValue: dateTimeFormat(
+                                initialValue: dateTimeLocalFormat(
                                     consignmentInOrder.deliveredDate),
                               ),
                             ),

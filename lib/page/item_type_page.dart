@@ -16,7 +16,7 @@ class ItemTypePage extends StatefulWidget {
 }
 
 class _ItemTypePageState extends State<ItemTypePage> with DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   final cancelToken = CancelToken();
@@ -43,55 +43,14 @@ class _ItemTypePageState extends State<ItemTypePage> with DefaultResponse {
     _source.refreshTable();
   }
 
-  Future<DataTableResponse<ItemType>> fetchItemTypes(
-      {int page = 1,
-      int limit = 20,
-      List<SortData> sorts = const [],
-      Map filter = const {}}) {
-    var sort = sorts.isEmpty ? null : sorts.first;
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'sort': sort == null
-          ? ''
-          : sort.isAscending
-              ? sort.key
-              : "-${sort.key}",
-    };
-    filter.forEach((key, value) {
-      param[key] = value;
+  Future<DataTableResponse<ItemType>> fetchItemTypes(QueryRequest request) {
+    return ItemTypeClass().finds(server, request).then(
+        (value) => DataTableResponse<ItemType>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
     });
-    try {
-      return server
-          .get('item_types', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<ItemType>((json) => ItemTypeClass()
-                .fromJson(json, included: responseBody['included'] ?? []))
-            .toList();
-
-        flash.hide();
-        final totalPage = responseBody['meta']?['total_pages'] ?? 1;
-        return DataTableResponse<ItemType>(
-            models: models, totalPage: totalPage);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      return Future(() => DataTableResponse<ItemType>(models: []));
-    }
   }
 
   void searchChanged(value) {
@@ -144,13 +103,11 @@ class _ItemTypePageState extends State<ItemTypePage> with DefaultResponse {
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable2<ItemType>(
+              child: CustomAsyncDataTable<ItemType>(
                 onLoaded: (stateManager) => _source = stateManager,
                 columns: setting.tableColumn('ipos::ItemType'),
-                fetchData: (request) => fetchItemTypes(
-                    page: request.page,
-                    filter: request.filter,
-                    sorts: request.sorts),
+                fetchData: fetchItemTypes,
+                showFilter: true,
                 fixedLeftColumns: 0,
               ),
             ),

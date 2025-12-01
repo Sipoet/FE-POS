@@ -22,14 +22,15 @@ class PayslipPage extends StatefulWidget {
 
 class _PayslipPageState extends State<PayslipPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final CustomAsyncDataTableSource<Payslip> _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<Payslip> payslips = [];
   final cancelToken = CancelToken();
   late Flash flash;
-  Map _filter = {};
-
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
+  Map<int, Payslip> _selecteds = {};
   @override
   bool get wantKeepAlive => true;
 
@@ -38,11 +39,8 @@ class _PayslipPageState extends State<PayslipPage>
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
-    final columns = setting.tableColumn('payslip');
-    _source = CustomAsyncDataTableSource<Payslip>(
-        columns: columns, fetchData: fetchPayslips);
-    _source.sortColumn = columns[3];
-    _source.isAscending = false;
+    columns = setting.tableColumn('payslip');
+
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
@@ -55,54 +53,21 @@ class _PayslipPageState extends State<PayslipPage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
+    _selecteds = {};
   }
 
-  Future<ResponseResult<Payslip>> fetchPayslips(
-      {int page = 1,
-      int limit = 100,
-      TableColumn? sortColumn,
-      bool isAscending = true}) {
-    String orderKey = sortColumn?.name ?? 'start_date';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'include': 'payroll,employee',
-      'sort': "${isAscending ? '' : '-'}$orderKey",
-    };
-    _filter.forEach((key, value) {
-      param[key] = value;
+  Future<DataTableResponse<Payslip>> fetchPayslips(QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    request.include = ['payroll', 'employee'];
+    return PayslipClass().finds(server, request).then(
+        (value) => DataTableResponse<Payslip>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
     });
-    try {
-      return server
-          .get('payslips', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<Payslip>((json) => PayslipClass()
-                .fromJson(json, included: responseBody['included']))
-            .toList();
-
-        int totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<Payslip>(models: models, totalRows: totalRows);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      return Future(() => ResponseResult<Payslip>(models: []));
-    }
   }
 
   void generatePayslip() {
@@ -158,7 +123,7 @@ class _PayslipPageState extends State<PayslipPage>
       if (response.statusCode == 200) {
         flash.show(
             Text('Berhasil Cancel slip gaji'), ToastificationType.success);
-        _source.refreshDatasource();
+        _source.refreshTable();
         return;
       }
       flash.show(Text('Gagal Cancel slip gaji'), ToastificationType.error);
@@ -172,7 +137,7 @@ class _PayslipPageState extends State<PayslipPage>
       if (response.statusCode == 200) {
         flash.show(
             Text('Berhasil Confirm slip gaji'), ToastificationType.success);
-        _source.refreshDatasource();
+        _source.refreshTable();
         return;
       }
       flash.show(Text('Gagal Confirm slip gaji'), ToastificationType.error);
@@ -205,7 +170,7 @@ class _PayslipPageState extends State<PayslipPage>
   }
 
   void actionSelected(void Function(Payslip) action) {
-    for (Payslip payslip in _source.selected) {
+    for (Payslip payslip in _selecteds.values) {
       action(payslip);
     }
   }
@@ -250,42 +215,16 @@ class _PayslipPageState extends State<PayslipPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.actionButtons = ((payslip, index) => <Widget>[
-          IconButton(
-              onPressed: () {
-                editForm(payslip);
-              },
-              tooltip: 'Edit Slip Gaji',
-              icon: const Icon(Icons.edit)),
-          IconButton(
-              onPressed: () {
-                download(payslip);
-              },
-              tooltip: 'Download Slip Gaji',
-              icon: const Icon(Icons.download)),
-          IconButton(
-              onPressed: () {
-                sendEmail(payslip);
-              },
-              tooltip: 'Kirim email Slip Gaji',
-              icon: const Icon(Icons.send)),
-          IconButton(
-              onPressed: () {
-                destroyRecord(payslip);
-              },
-              tooltip: 'Hapus Slip Gaji',
-              icon: const Icon(Icons.delete)),
-        ]);
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Column(
           children: [
             TableFilterForm(
-              columns: _source.columns,
+              columns: columns,
               enums: const {'status': PayslipStatus.values},
               onSubmit: (filter) {
-                _filter = filter;
+                _filters = filter;
                 refreshTable();
               },
             ),
@@ -359,8 +298,56 @@ class _PayslipPageState extends State<PayslipPage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable(
-                controller: _source,
+              child: CustomAsyncDataTable<Payslip>(
+                actionColumnWidth: 220,
+                renderAction: (payslip) => Row(
+                  spacing: 10,
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          editForm(payslip);
+                        },
+                        tooltip: 'Edit Slip Gaji',
+                        icon: const Icon(Icons.edit)),
+                    IconButton(
+                        onPressed: () {
+                          download(payslip);
+                        },
+                        tooltip: 'Download Slip Gaji',
+                        icon: const Icon(Icons.download)),
+                    IconButton(
+                        onPressed: () {
+                          sendEmail(payslip);
+                        },
+                        tooltip: 'Kirim email Slip Gaji',
+                        icon: const Icon(Icons.send)),
+                    IconButton(
+                        onPressed: () {
+                          destroyRecord(payslip);
+                        },
+                        tooltip: 'Hapus Slip Gaji',
+                        icon: const Icon(Icons.delete)),
+                  ],
+                ),
+                onRowChecked: (event) {
+                  final payslip = _source.modelFromCheckEvent<Payslip>(event);
+                  if (event.isChecked == null || payslip == null) {
+                    return;
+                  }
+
+                  if (event.isChecked == true) {
+                    _selecteds[event.rowIdx ?? -1] = payslip;
+                  } else {
+                    _selecteds.remove(event.rowIdx);
+                  }
+                },
+                onLoaded: (stateManager) {
+                  _source = stateManager;
+                  _source.sortDescending(_source.columns[3]);
+                },
+                showCheckboxColumn: true,
+                fetchData: fetchPayslips,
+                columns: columns,
                 fixedLeftColumns: 1,
               ),
             ),

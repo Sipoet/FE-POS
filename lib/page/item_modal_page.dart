@@ -32,7 +32,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
   late final Server _server;
   List<ItemReport> itemReports = [];
   Item? selectedItem;
-  PlutoGridStateManager? _source;
+  TrinaGridStateManager? _source;
   final _whiteListColumnNames = [
     'item_code',
     'item_name',
@@ -216,7 +216,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
               .map<ItemReport>((data) => ItemReportClass()
                   .fromJson(data, included: response.data['included'] ?? []))
               .toList();
-          _source?.setModels(itemReports, tableColumns);
+          _source?.setModels(itemReports);
         });
         _source?.setShowLoading(false);
       }

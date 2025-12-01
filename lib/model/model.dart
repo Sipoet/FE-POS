@@ -8,10 +8,10 @@ export 'package:fe_pos/tool/query_data.dart';
 
 final plural = Pluralize();
 
-abstract class Model {
+abstract class Model with ChangeNotifier {
   DateTime? createdAt;
   DateTime? updatedAt;
-  Map rawData;
+  Map<String, dynamic> rawData;
   dynamic id;
 
   List<String> _errors = [];
@@ -31,7 +31,7 @@ abstract class Model {
   List<String> get errors => _errors;
 
   String get path => plural.plural(modelName);
-  String get modelName => 'model';
+  String get modelName => runtimeType.toString().toSnakeCase();
 
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     final attributes = json['attributes'] ?? {};
@@ -39,6 +39,20 @@ abstract class Model {
     createdAt = DateTime.tryParse(attributes?['created_at'] ?? '');
     updatedAt = DateTime.tryParse(attributes?['updated_at'] ?? '');
     rawData = {'data': json, 'included': included};
+  }
+
+  Future<bool> refresh(Server server) {
+    return server.get("$path/${id.toString()}").then((response) {
+      if (response.statusCode == 200) {
+        setFromJson(response.data['data'],
+            included: response.data['included'] ?? []);
+        return true;
+      }
+      return false;
+    }, onError: (error) {
+      debugPrint(error.toString());
+      return false;
+    });
   }
 
   Map<String, dynamic> asMap() {
@@ -63,8 +77,10 @@ abstract class Model {
         json[key] = object.value;
       } else if (object is Percentage) {
         json[key] = object.value * 100;
-      } else if (object is Date || object is DateTime) {
+      } else if (object is Date) {
         json[key] = object.toIso8601String();
+      } else if (object is DateTime) {
+        json[key] = object.toUtc().toIso8601String();
       } else if (object is Enum) {
         json[key] = object.toString();
       } else if (object is String) {
@@ -78,12 +94,13 @@ abstract class Model {
 
   Map<String, dynamic> toMap();
 
-  dynamic operator [](key) {
-    return toMap()[key];
+  dynamic operator [](String key) {
+    return asMap()[key];
   }
 
   void reset() {
-    setFromJson(rawData['data'], included: rawData['included']);
+    setFromJson(rawData['data'] ?? {}, included: rawData['included'] ?? []);
+    notifyListeners();
   }
 
   String get modelValue => id.toString();
@@ -138,6 +155,43 @@ abstract class ModelClass<T extends Model> {
     model.setFromJson(json, included: included);
     return model;
   }
+
+  Future<T?> find(Server server, dynamic id) async {
+    final path = initModel().path;
+    return server.get("$path/${id.toString()}").then((response) {
+      if (response.statusCode == 200) {
+        return fromJson(response.data['data'],
+            included: response.data['included'] ?? []);
+      }
+      return null;
+    }, onError: (error) {
+      debugPrint(error.toString());
+      return null;
+    });
+  }
+
+  Future<QueryResponse<T>> finds(
+      Server server, QueryRequest queryRequest) async {
+    final path = initModel().path;
+    final param = queryRequest.toQueryParam();
+    return server
+        .get(path, queryParam: param, cancelToken: queryRequest.cancelToken)
+        .then((response) {
+      if (response.statusCode != 200) {
+        throw 'error: ${response.data.toString()}';
+      }
+      final data = response.data;
+      return QueryResponse(
+          metadata: data['meta'],
+          models: data['data']
+              .map<T>(
+                  (json) => fromJson(json, included: data['included'] ?? []))
+              .toList());
+    }, onError: (error) {
+      debugPrint(error.toString());
+      return QueryResponse();
+    });
+  }
 }
 
 mixin SaveNDestroyModel on Model {
@@ -158,9 +212,11 @@ mixin SaveNDestroyModel on Model {
             included: response.data['included'] ?? []);
         return true;
       } else if (response.statusCode == 409) {
-        _errors = response.data['errors'];
+        _errors = response.data['errors']
+            .map<String>((e) => e.toString())
+            .toList() as List<String>;
       } else {
-        _errors = [response.data.toString()];
+        _errors = <String>[response.data.toString()];
       }
       return false;
     }, onError: (error) {
@@ -183,61 +239,6 @@ mixin SaveNDestroyModel on Model {
     }, onError: (error) {
       _errors = [error.toString()];
       return false;
-    });
-  }
-}
-
-mixin FindModel<T extends Model> on ModelClass<T> {
-  Future<T?> find(Server server, dynamic id) async {
-    final path = initModel().path;
-    return server.get("$path/${id.toString()}").then((response) {
-      if (response.statusCode == 200) {
-        return fromJson(response.data['data'],
-            included: response.data['included'] ?? []);
-      }
-      return null;
-    }, onError: (error) {
-      debugPrint(error.toString());
-      return null;
-    });
-  }
-
-  Map<String, dynamic> _encodeQuery(QueryData queryData) {
-    Map<String, dynamic> result = {
-      'sort': _encodeSorts(queryData.sorts),
-      'page[page]': queryData.page.toString(),
-      'page[limit]': queryData.limit.toString(),
-    };
-    for (final filter in queryData.filters) {
-      final entry = filter.toJson();
-      result[entry.key] = entry.value;
-    }
-
-    return result;
-  }
-
-  String _encodeSorts(List<SortData> sorts) {
-    List result = [];
-    for (final sort in sorts) {
-      result.add("'${sort.isAscending ? '' : '-'}${sort.key}'");
-    }
-    return result.join(',');
-  }
-
-  Future<List<T>?> finds(Server server, QueryData queryData) async {
-    final path = initModel().path;
-    final param = _encodeQuery(queryData);
-    return server.get(path, queryParam: param).then((response) {
-      if (response.statusCode == 200) {
-        return response.data['data']
-            .map<T>((json) =>
-                fromJson(json, included: response.data['included'] ?? []))
-            .toList();
-      }
-      return null;
-    }, onError: (error) {
-      debugPrint(error.toString());
-      return null;
     });
   }
 }

@@ -19,13 +19,14 @@ class RolePage extends StatefulWidget {
 
 class _RolePageState extends State<RolePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final CustomAsyncDataTableSource<Role> _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
 
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
-  Map _filter = {};
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -35,8 +36,8 @@ class _RolePageState extends State<RolePage>
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<Role>(
-        columns: setting.tableColumn('role'), fetchData: fetchRoles);
+
+    columns = setting.tableColumn('role');
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
@@ -49,51 +50,19 @@ class _RolePageState extends State<RolePage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<Role>> fetchRoles(
-      {int page = 1,
-      int limit = 100,
-      TableColumn? sortColumn,
-      bool isAscending = true}) {
-    String orderKey = sortColumn?.name ?? 'name';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-    };
-    _filter.forEach((key, value) {
-      param[key] = value;
+  Future<DataTableResponse<Role>> fetchRoles(QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    return RoleClass().finds(server, request).then(
+        (value) => DataTableResponse<Role>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
     });
-    try {
-      return server
-          .get('roles', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<Role>((json) => RoleClass().fromJson(json))
-            .toList();
-        int totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<Role>(models: models, totalRows: totalRows);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      return Future(() => ResponseResult<Role>(models: []));
-    }
   }
 
   void addForm() {
@@ -149,29 +118,16 @@ class _RolePageState extends State<RolePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.actionButtons = ((role, index) => <Widget>[
-          IconButton(
-              onPressed: () {
-                editForm(role);
-              },
-              tooltip: 'Edit Role',
-              icon: const Icon(Icons.edit)),
-          IconButton(
-              onPressed: () {
-                destroyRecord(role);
-              },
-              tooltip: 'Hapus Role',
-              icon: const Icon(Icons.delete)),
-        ]);
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Column(
           children: [
             TableFilterForm(
-              columns: _source.columns,
+              columns: columns,
               onSubmit: (filter) {
-                _filter = filter;
+                _filters = filter;
                 refreshTable();
               },
             ),
@@ -214,10 +170,27 @@ class _RolePageState extends State<RolePage>
             SizedBox(
               height: bodyScreenHeight,
               width: 900,
-              child: CustomAsyncDataTable(
-                controller: _source,
-                fixedLeftColumns: 2,
-                showCheckboxColumn: true,
+              child: CustomAsyncDataTable<Role>(
+                renderAction: (role) => Row(
+                  spacing: 10,
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          editForm(role);
+                        },
+                        tooltip: 'Edit Role',
+                        icon: const Icon(Icons.edit)),
+                    IconButton(
+                        onPressed: () {
+                          destroyRecord(role);
+                        },
+                        tooltip: 'Hapus Role',
+                        icon: const Icon(Icons.delete)),
+                  ],
+                ),
+                columns: columns,
+                fetchData: fetchRoles,
+                onLoaded: (stateManager) => _source = stateManager,
               ),
             ),
           ],

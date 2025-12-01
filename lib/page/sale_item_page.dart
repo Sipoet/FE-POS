@@ -20,14 +20,15 @@ class SaleItemPage extends StatefulWidget {
 
 class _SaleItemPageState extends State<SaleItemPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final CustomAsyncDataTableSource<SaleItem> _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<SaleItem> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
-  Map _filter = {};
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
   final _menuController = MenuController();
 
   @override
@@ -38,11 +39,8 @@ class _SaleItemPageState extends State<SaleItemPage>
     server = context.read<Server>();
     flash = Flash();
     setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<SaleItem>(
-        columns: setting.tableColumn('ipos::SaleItem'),
-        fetchData: fetchSaleItems);
-    _source.sortColumn = _source.columns[0];
-    _source.isAscending = false;
+    columns = setting.tableColumn('ipos::SaleItem');
+
     super.initState();
   }
 
@@ -53,53 +51,19 @@ class _SaleItemPageState extends State<SaleItemPage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<SaleItem>> fetchSaleItems(
-      {int page = 1,
-      int limit = 50,
-      TableColumn? sortColumn,
-      bool isAscending = false}) {
-    String orderKey = sortColumn?.name ?? 'kodeitem';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'include': 'item,sale',
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-    };
-    _filter.forEach((key, value) {
-      param[key] = value;
+  Future<DataTableResponse<SaleItem>> fetchSaleItems(QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    return SaleItemClass().finds(server, request).then(
+        (value) => DataTableResponse<SaleItem>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
     });
-    try {
-      return server
-          .get('sale_items', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<SaleItem>((json) => SaleItemClass()
-                .fromJson(json, included: responseBody['included'] ?? []))
-            .toList();
-        final totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<SaleItem>(totalRows: totalRows, models: models);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      throw 'error';
-    }
   }
 
   void searchChanged(value) {
@@ -135,9 +99,11 @@ class _SaleItemPageState extends State<SaleItemPage>
       'sort': 'kodeitem',
       'report_type': 'xlsx',
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filterData in _filters) {
+      final entry = filterData.toEntryJson();
+      param[entry.key] = entry.value;
+    }
+
     try {
       server
           .get('sale_items',
@@ -177,22 +143,16 @@ class _SaleItemPageState extends State<SaleItemPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.actionButtons = (saleItem, index) => [
-          IconButton.filled(
-              onPressed: () {
-                viewRecord(saleItem);
-              },
-              icon: const Icon(Icons.search_rounded)),
-        ];
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
             TableFilterForm(
-              columns: _source.columns,
+              columns: columns,
               onSubmit: (value) {
-                _filter = value;
+                _filters = value;
                 refreshTable();
               },
             ),
@@ -241,9 +201,24 @@ class _SaleItemPageState extends State<SaleItemPage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable(
+              child: CustomAsyncDataTable<SaleItem>(
                 key: const ObjectKey('saleItemTable'),
-                controller: _source,
+                renderAction: (saleItem) => Row(
+                  spacing: 10,
+                  children: [
+                    IconButton.filled(
+                        onPressed: () {
+                          viewRecord(saleItem);
+                        },
+                        icon: const Icon(Icons.search_rounded)),
+                  ],
+                ),
+                onLoaded: (stateManager) {
+                  _source = stateManager;
+                  _source.sortDescending(_source.columns[0]);
+                },
+                fetchData: fetchSaleItems,
+                columns: columns,
                 fixedLeftColumns: 1,
               ),
             ),

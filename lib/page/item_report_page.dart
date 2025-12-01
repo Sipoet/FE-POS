@@ -23,11 +23,11 @@ class _ItemReportPageState extends State<ItemReportPage>
   late Server server;
   String? _reportType;
   double minimumColumnWidth = 150;
-  PlutoGridStateManager? _source;
+  TrinaGridStateManager? _source;
   late Flash flash;
   late final List<TableColumn> columns;
   List<ItemReport> _itemReports = [];
-  Map _filter = {};
+  List<FilterData> _filters = [];
   @override
   void initState() {
     server = context.read<Server>();
@@ -50,7 +50,7 @@ class _ItemReportPageState extends State<ItemReportPage>
         if (response.statusCode != 200) {
           setState(() {
             _itemReports = [];
-            _source?.setModels(_itemReports, columns);
+            _source?.setModels(_itemReports);
           });
           return;
         }
@@ -60,7 +60,7 @@ class _ItemReportPageState extends State<ItemReportPage>
           _itemReports = data['data'].map<ItemReport>((row) {
             return initClass.fromJson(row);
           }).toList();
-          _source?.setModels(_itemReports, columns);
+          _source?.setModels(_itemReports);
         });
       } catch (error, stackTrace) {
         debugPrint(error.toString());
@@ -91,9 +91,10 @@ class _ItemReportPageState extends State<ItemReportPage>
       'include': 'item,supplier,brand,item_type',
       'sort': '${sortData?.isAscending == false ? '-' : ''}$orderKey',
     };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+    for (final filterData in _filters) {
+      final entry = filterData.toEntryJson();
+      param[entry.key] = entry.value;
+    }
     return server.get('item_reports',
         queryParam: param, type: _reportType ?? 'json');
   }
@@ -127,21 +128,20 @@ class _ItemReportPageState extends State<ItemReportPage>
     return VerticalBodyScroll(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 10,
         children: [
           TableFilterForm(
               showCanopy: false,
               onSubmit: (filter) {
-                _filter = filter;
+                _filters = filter;
                 _displayReport();
               },
               onDownload: (filter) {
-                _filter = filter;
+                _filters = filter;
                 _downloadReport();
               },
               columns: columns),
-          const SizedBox(height: 5),
           const Divider(),
-          const SizedBox(height: 10),
           SizedBox(
             height: bodyScreenHeight,
             child: SyncDataTable<ItemReport>(

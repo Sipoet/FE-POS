@@ -30,7 +30,7 @@ class _EmployeeAttendanceMassUploadPageState
         TextFormatter,
         DefaultResponse {
   late Server _server;
-  PlutoGridStateManager? _source;
+  TrinaGridStateManager? _source;
   late final List<TableColumn> _columns;
   final _focusNode = FocusNode();
 
@@ -161,7 +161,7 @@ class _EmployeeAttendanceMassUploadPageState
               .map<EmployeeAttendance>((json) => EmployeeAttendanceClass()
                   .fromJson(json, included: response.data['included']))
               .toList();
-          _source?.setModels(employeeAttendances, _columns);
+          _source?.setModels(employeeAttendances);
         });
       } else {
         final flash = Flash();

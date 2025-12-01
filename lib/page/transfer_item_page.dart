@@ -6,6 +6,7 @@ import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:fe_pos/widget/table_filter_form.dart';
+import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
@@ -19,14 +20,15 @@ class TransferItemPage extends StatefulWidget {
 
 class _TransferItemPageState extends State<TransferItemPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final CustomAsyncDataTableSource<TransferItem> _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<TransferItem> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
-  Map _filter = {};
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -36,11 +38,9 @@ class _TransferItemPageState extends State<TransferItemPage>
     server = context.read<Server>();
     flash = Flash();
     setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<TransferItem>(
-        columns: setting.tableColumn('ipos::TransferItem'),
-        fetchData: fetchTransferItems);
-    _source.sortColumn = _source.columns[0];
-    _source.isAscending = false;
+
+    columns = setting.tableColumn('ipos::TransferItem');
+
     super.initState();
   }
 
@@ -51,54 +51,20 @@ class _TransferItemPageState extends State<TransferItemPage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<TransferItem>> fetchTransferItems(
-      {int page = 1,
-      int limit = 50,
-      TableColumn? sortColumn,
-      bool isAscending = false}) {
-    String orderKey = sortColumn?.name ?? 'kodeitem';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'include': 'item',
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-    };
-    _filter.forEach((key, value) {
-      param[key] = value;
+  Future<DataTableResponse<TransferItem>> fetchTransferItems(
+      QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    return TransferItemClass().finds(server, request).then(
+        (value) => DataTableResponse<TransferItem>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
     });
-    try {
-      return server
-          .get('transfer_items', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<TransferItem>((json) => TransferItemClass()
-                .fromJson(json, included: responseBody['included'] ?? []))
-            .toList();
-        final totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<TransferItem>(
-            totalRows: totalRows, models: models);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      throw 'error';
-    }
   }
 
   void searchChanged(value) {
@@ -128,61 +94,66 @@ class _TransferItemPageState extends State<TransferItemPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.actionButtons = (transferItem, index) => [
-          IconButton.filled(
-              onPressed: () {
-                viewRecord(transferItem);
-              },
-              icon: const Icon(Icons.search_rounded)),
-        ];
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          children: [
-            TableFilterForm(
-              columns: _source.columns,
-              onSubmit: (value) {
-                _filter = value;
-                refreshTable();
-              },
+
+    return VerticalBodyScroll(
+      child: Column(
+        children: [
+          TableFilterForm(
+            columns: columns,
+            onSubmit: (value) {
+              _filters = value;
+              refreshTable();
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 10, bottom: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _searchText = '';
+                    });
+                    refreshTable();
+                  },
+                  tooltip: 'Reset Table',
+                  icon: const Icon(Icons.refresh),
+                ),
+                SizedBox(
+                  width: 150,
+                  child: TextField(
+                    decoration: const InputDecoration(hintText: 'Search Text'),
+                    onChanged: searchChanged,
+                    onSubmitted: searchChanged,
+                  ),
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10, bottom: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+          ),
+          SizedBox(
+            height: bodyScreenHeight,
+            child: CustomAsyncDataTable<TransferItem>(
+              renderAction: (transferItem) => Row(
+                spacing: 10,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
+                  IconButton.filled(
+                      onPressed: () {
+                        viewRecord(transferItem);
+                      },
+                      icon: const Icon(Icons.search_rounded)),
                 ],
               ),
+              onLoaded: (stateManager) {
+                _source = stateManager;
+                _source.sortDescending(_source.columns[0]);
+              },
+              columns: columns,
+              fetchData: fetchTransferItems,
+              fixedLeftColumns: 1,
             ),
-            SizedBox(
-              height: bodyScreenHeight,
-              child: CustomAsyncDataTable(
-                controller: _source,
-                fixedLeftColumns: 1,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

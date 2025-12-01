@@ -25,7 +25,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
       TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
   late Server server;
   String? _reportType;
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   DateTimeRange _dateRange = DateTimeRange(
       start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
       end: DateTime.now().copyWith(hour: 23, minute: 59, second: 59));
@@ -113,7 +113,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
       var rawData = data['data'].map<ItemSalesPeriodReport>((row) {
         return ItemSalesPeriodReportClass().fromJson(row);
       }).toList();
-      _source.setModels(rawData, _setting.tableColumn('itemSalesPeriodReport'));
+      _source.setModels(rawData);
     });
   }
 

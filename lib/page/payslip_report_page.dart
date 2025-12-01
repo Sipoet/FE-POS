@@ -22,7 +22,7 @@ class PayslipReportPage extends StatefulWidget {
 class _PayslipReportPageState extends State<PayslipReportPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse, LoadingPopup {
   final formKey = GlobalKey<FormState>();
-  PlutoGridStateManager? tableStateManager;
+  TrinaGridStateManager? tableStateManager;
   List<PayrollType> payrollTypes = [];
   List<TableColumn> tableColumns = [];
   PayslipStatus? _payslipStatus;
@@ -62,7 +62,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                 type: TableColumnType.fromString(row['type']),
                 inputOptions: row['input_options'],
                 name: row['name'],
-                canFilter: row['can_filter'] ?? false,
+                canFilter: true,
                 canSort: row['can_sort'] ?? false,
                 humanizeName: row['humanize_name']);
           }).toList();
@@ -71,7 +71,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
           for (final row in json['data']) {
             final model =
                 PayslipReportClass().fromJson(row, included: included ?? []);
-            tableStateManager?.appendModel(model, tableColumns);
+            tableStateManager?.appendModel(model);
           }
         });
       }

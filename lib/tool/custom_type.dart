@@ -2,7 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 extension StringExt on String {
-  String toSnakeCase() => toLowerCase().replaceAll(' ', '_');
+  String toSnakeCase() => unclassify().toLowerCase().replaceAll(' ', '_');
+
+  String unclassify() => replaceAllMapped(
+      RegExp(r'\s*([A-Z])'), (Match match) => " ${match.group(1)}").trimLeft();
+  String toCapitalized() =>
+      length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
+  String toTitleCase() => replaceAll(RegExp(' +'), ' ')
+      .split(' ')
+      .map<String>((str) => str.toCapitalized())
+      .join(' ');
+}
+
+abstract class EnumTranslation {
+  String humanize();
 }
 
 extension DateTimeExt on DateTime {
@@ -168,7 +181,7 @@ class Money {
   }
 
   static Money parse(value) {
-    return Money(double.parse(value));
+    return Money(double.parse(value.toString()));
   }
 
   static Money? tryParse(value) {

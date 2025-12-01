@@ -141,10 +141,19 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                   Menu(
                     icon: Icons.pages,
                     isClosed: true,
-                    label: 'Laporan Pembelian',
+                    label: 'Pembelian',
                     isDisabled: !setting.isAuthorize('purchase', 'report'),
                     pageFunct: () => const PurchaseReportPage(),
                     key: 'purchaseReport',
+                  ),
+                  Menu(
+                    icon: Icons.history,
+                    isClosed: true,
+                    label: 'Riwayat Pembayaran Pembelian',
+                    isDisabled:
+                        !setting.isAuthorize('purchasePaymentHistory', 'index'),
+                    pageFunct: () => const PurchasePaymentHistoryPage(),
+                    key: 'purchasePaymentHistory',
                   ),
                 ]),
             Menu(
@@ -218,13 +227,28 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                   ),
                 ]),
             Menu(
-                icon: Icons.show_chart,
+                icon: Icons.balance,
                 isClosed: true,
-                label: 'Laporan Pengeluaran',
-                key: 'monthlyExpenseReport',
-                isDisabled:
-                    !setting.isAuthorize('monthlyExpenseReport', 'index'),
-                pageFunct: () => const MonthlyExpenseReportPage()),
+                label: 'Laporan Kas',
+                key: 'cashReport',
+                children: [
+                  Menu(
+                      icon: Icons.show_chart,
+                      isClosed: true,
+                      label: 'Pengeluaran Periode',
+                      key: 'monthlyExpenseReport',
+                      isDisabled:
+                          !setting.isAuthorize('monthlyExpenseReport', 'index'),
+                      pageFunct: () => const MonthlyExpenseReportPage()),
+                  Menu(
+                      icon: Icons.table_chart,
+                      isClosed: true,
+                      label: 'Kas masuk/keluar',
+                      key: 'cashTransactionReport',
+                      isDisabled: !setting.isAuthorize(
+                          'cashTransactionReport', 'index'),
+                      pageFunct: () => const CashTransactionReportPage()),
+                ]),
             Menu(
                 key: 'humanResourceGroup',
                 icon: Icons.people,

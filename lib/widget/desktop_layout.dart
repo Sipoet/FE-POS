@@ -6,7 +6,6 @@ import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/menu.dart';
-import 'package:pluto_layout/pluto_layout.dart';
 import 'package:pluto_menu_bar/pluto_menu_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_resizable_container/flutter_resizable_container.dart';
@@ -53,70 +52,69 @@ class _DesktopLayoutState extends State<DesktopLayout>
     final message =
         'SERVER: ${widget.host} | USER: ${widget.userName} | Allegra POS';
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            message,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          actions: [
-            PopupMenuButton(
-              itemBuilder: (BuildContext context) {
-                List<PopupMenuEntry> result = [];
-                if (!isWeb()) {
-                  result.add(PopupMenuItem(
-                    onTap: () => openAboutDialog(version),
-                    child: Text('About'),
-                  ));
-                  result.add(PopupMenuItem(
-                    onTap: () => checkUpdate(server, isManual: true),
-                    child: Text('Cek Update App'),
-                  ));
-                }
-                result.add(PopupMenuItem(
-                  onTap: () {
-                    final server = context.read<Server>();
-                    var user = User(username: server.userName);
-                    tabManager.addTab('Profilku', UserFormPage(user: user));
-                  },
-                  child: Row(
-                    children: [
-                      Text('Profile'),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Icon(Icons.person_2),
-                    ],
-                  ),
-                ));
-                result.add(PopupMenuItem(
-                  onTap: () {
-                    final server = context.read<Server>();
-                    logout(server);
-                  },
-                  child: Row(
-                    children: [
-                      Text('Logout'),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Icon(Icons.logout)
-                    ],
-                  ),
-                ));
-                return result;
-              },
-              icon: Icon(Icons.menu),
-            ),
-          ],
+      appBar: AppBar(
+        title: Text(
+          message,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
-        body: PlutoLayout(
-          top: PlutoLayoutContainer(
-            child: TopMenuBar(
-              menuTree: widget.menuTree,
-            ),
+        actions: [
+          PopupMenuButton(
+            itemBuilder: (BuildContext context) {
+              List<PopupMenuEntry> result = [];
+              if (!isWeb()) {
+                result.add(PopupMenuItem(
+                  onTap: () => openAboutDialog(version),
+                  child: Text('About'),
+                ));
+                result.add(PopupMenuItem(
+                  onTap: () => checkUpdate(server, isManual: true),
+                  child: Text('Cek Update App'),
+                ));
+              }
+              result.add(PopupMenuItem(
+                onTap: () {
+                  final server = context.read<Server>();
+                  var user = User(username: server.userName);
+                  tabManager.addTab('Profilku', UserFormPage(user: user));
+                },
+                child: Row(
+                  children: [
+                    Text('Profile'),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Icon(Icons.person_2),
+                  ],
+                ),
+              ));
+              result.add(PopupMenuItem(
+                onTap: () {
+                  final server = context.read<Server>();
+                  logout(server);
+                },
+                child: Row(
+                  children: [
+                    Text('Logout'),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Icon(Icons.logout)
+                  ],
+                ),
+              ));
+              return result;
+            },
+            icon: Icon(Icons.menu),
           ),
-          body: PlutoLayoutContainer(
-            backgroundColor: Theme.of(context).colorScheme.surface,
+        ],
+      ),
+      body: Column(
+        spacing: 10,
+        children: [
+          TopMenuBar(
+            menuTree: widget.menuTree,
+          ),
+          Expanded(
             child: ResizableContainer(
               direction: Axis.horizontal,
               divider: ResizableDivider(
@@ -131,7 +129,9 @@ class _DesktopLayoutState extends State<DesktopLayout>
               ],
             ),
           ),
-        ));
+        ],
+      ),
+    );
   }
 
   Widget tabViewWidget(TabManager tabManager) => Padding(

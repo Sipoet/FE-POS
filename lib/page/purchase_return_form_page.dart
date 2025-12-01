@@ -33,7 +33,7 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
   PurchaseReturn get purchaseReturn => widget.purchaseReturn;
   late final Server _server;
   late final Setting setting;
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final List<TableColumn> _columns;
   @override
   bool get wantKeepAlive => true;
@@ -60,7 +60,7 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
         setState(() {
           purchaseReturn.setFromJson(response.data['data'],
               included: response.data['included']);
-          _source.setModels(purchaseReturn.purchaseItems, _columns);
+          _source.setModels(purchaseReturn.purchaseItems);
         });
       }
     }, onError: (error) {

@@ -19,7 +19,7 @@ class SalesCashierPage extends StatefulWidget {
 
 class _SalesCashierPageState extends State<SalesCashierPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final CustomAsyncDataTableSource<SalesCashier> _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<SalesCashier> items = [];
@@ -27,7 +27,8 @@ class _SalesCashierPageState extends State<SalesCashierPage>
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
-  Map _filter = {};
+  late final List<TableColumn> _columns;
+  List<FilterData> _filters = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -37,14 +38,8 @@ class _SalesCashierPageState extends State<SalesCashierPage>
     server = context.read<Server>();
     flash = Flash();
     setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<SalesCashier>(
-        columns: setting.tableColumn('salesCashier'),
-        fetchData: fetchSalesCashiers);
-    if (_source.columns.isNotEmpty) {
-      _source.sortColumn = _source.columns[1];
-    }
-    _source.isAscending = false;
-    Future.delayed(Duration.zero, refreshTable);
+    _columns = setting.tableColumn('salesCashier');
+
     super.initState();
   }
 
@@ -55,46 +50,21 @@ class _SalesCashierPageState extends State<SalesCashierPage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<SalesCashier>> fetchSalesCashiers(
-      {int page = 1,
-      int limit = 50,
-      TableColumn? sortColumn,
-      bool isAscending = false}) {
-    String orderKey = sortColumn?.name ?? 'tanggal';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-    };
-    _filter.forEach((key, value) {
-      param[key] = value;
-    });
+  Future<DataTableResponse<SalesCashier>> fetchSalesCashiers(
+      QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
     try {
-      return server
-          .get('sales', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<SalesCashier>((json) => SalesCashierClass()
-                .fromJson(json, included: responseBody['included'] ?? []))
-            .toList();
-        final totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<SalesCashier>(
-            totalRows: totalRows, models: models);
+      return SalesCashierClass().finds(server, request).then((result) {
+        return DataTableResponse<SalesCashier>(
+            totalPage: result.metadata['total_pages'] ?? 1,
+            models: result.models);
       },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
+          onError: (error, stackTrace) =>
+              defaultErrorResponse(error: error, valueWhenError: []));
     } catch (e, trace) {
       flash.showBanner(
           title: e.toString(),
@@ -140,22 +110,16 @@ class _SalesCashierPageState extends State<SalesCashierPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.actionButtons = (sale, index) => [
-          IconButton.filled(
-              onPressed: () {
-                viewRecord(sale);
-              },
-              icon: const Icon(Icons.search_rounded)),
-        ];
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
             TableFilterForm(
-              columns: _source.columns,
+              columns: _columns,
               onSubmit: (value) {
-                _filter = value;
+                _filters = value;
                 refreshTable();
               },
             ),
@@ -203,8 +167,23 @@ class _SalesCashierPageState extends State<SalesCashierPage>
             ),
             SizedBox(
               height: 600,
-              child: CustomAsyncDataTable(
-                controller: _source,
+              child: CustomAsyncDataTable<SalesCashier>(
+                renderAction: (sale) => Row(
+                  children: [
+                    IconButton.filled(
+                        onPressed: () {
+                          viewRecord(sale);
+                        },
+                        icon: const Icon(Icons.search_rounded)),
+                  ],
+                ),
+                onLoaded: (stateManager) {
+                  _source = stateManager;
+
+                  _source.sortDescending(_source.columns[1]);
+                },
+                columns: _columns,
+                fetchData: fetchSalesCashiers,
                 fixedLeftColumns: 1,
               ),
             ),

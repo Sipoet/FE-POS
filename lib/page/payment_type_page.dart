@@ -19,13 +19,14 @@ class PaymentTypePage extends StatefulWidget {
 
 class _PaymentTypePageState extends State<PaymentTypePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final CustomAsyncDataTableSource<PaymentType> _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
 
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
-  Map _filter = {};
+  List<FilterData> _filters = [];
+  List<TableColumn> columns = [];
 
   @override
   bool get wantKeepAlive => true;
@@ -35,9 +36,9 @@ class _PaymentTypePageState extends State<PaymentTypePage>
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
-    _source = CustomAsyncDataTableSource<PaymentType>(
-        columns: setting.tableColumn('paymentType'),
-        fetchData: fetchPaymentTypes);
+
+    columns = setting.tableColumn('paymentType');
+
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
@@ -50,52 +51,20 @@ class _PaymentTypePageState extends State<PaymentTypePage>
   }
 
   Future<void> refreshTable() async {
-    _source.refreshDataFromFirstPage();
+    _source.refreshTable();
   }
 
-  Future<ResponseResult<PaymentType>> fetchPaymentTypes(
-      {int page = 1,
-      int limit = 100,
-      TableColumn? sortColumn,
-      bool isAscending = true}) {
-    String orderKey = sortColumn?.name ?? 'name';
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
-      'sort': '${isAscending ? '' : '-'}$orderKey',
-    };
-    _filter.forEach((key, value) {
-      param[key] = value;
+  Future<DataTableResponse<PaymentType>> fetchPaymentTypes(
+      QueryRequest request) {
+    request.filters = _filters;
+    request.searchText = _searchText;
+    return PaymentTypeClass().finds(server, request).then(
+        (value) => DataTableResponse<PaymentType>(
+            models: value.models,
+            totalPage: value.metadata['total_pages']), onError: (error) {
+      defaultErrorResponse(error: error);
+      return DataTableResponse.empty();
     });
-    try {
-      return server
-          .get('payment_types', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<PaymentType>((json) => PaymentTypeClass().fromJson(json))
-            .toList();
-        int totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<PaymentType>(
-            models: models, totalRows: totalRows);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
-    } catch (e, trace) {
-      flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
-      return Future(() => ResponseResult<PaymentType>(models: []));
-    }
   }
 
   void addForm() {
@@ -155,29 +124,16 @@ class _PaymentTypePageState extends State<PaymentTypePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _source.actionButtons = ((paymentType, index) => <Widget>[
-          IconButton(
-              onPressed: () {
-                editForm(paymentType);
-              },
-              tooltip: 'Edit PaymentType',
-              icon: const Icon(Icons.edit)),
-          IconButton(
-              onPressed: () {
-                destroyRecord(paymentType);
-              },
-              tooltip: 'Hapus PaymentType',
-              icon: const Icon(Icons.delete)),
-        ]);
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Column(
           children: [
             TableFilterForm(
-              columns: _source.columns,
+              columns: columns,
               onSubmit: (filter) {
-                _filter = filter;
+                _filters = filter;
                 refreshTable();
               },
             ),
@@ -219,11 +175,28 @@ class _PaymentTypePageState extends State<PaymentTypePage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              width: 825,
-              child: CustomAsyncDataTable(
-                controller: _source,
+              child: CustomAsyncDataTable<PaymentType>(
+                renderAction: (paymentType) => Row(
+                  spacing: 10,
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          editForm(paymentType);
+                        },
+                        tooltip: 'Edit PaymentType',
+                        icon: const Icon(Icons.edit)),
+                    IconButton(
+                        onPressed: () {
+                          destroyRecord(paymentType);
+                        },
+                        tooltip: 'Hapus PaymentType',
+                        icon: const Icon(Icons.delete)),
+                  ],
+                ),
+                onLoaded: (stateManager) => _source = stateManager,
+                columns: columns,
+                fetchData: fetchPaymentTypes,
                 fixedLeftColumns: 2,
-                showCheckboxColumn: true,
               ),
             ),
           ],

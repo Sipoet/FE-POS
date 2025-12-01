@@ -42,7 +42,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final TextEditingController _discount4Controller;
   late final TextEditingController _codeController;
   late final TabController _tabController;
-  late PlutoGridStateManager _source;
+  TrinaGridStateManager? _source;
   late final Server server;
   dynamic discount1;
   Percentage? discount2;
@@ -53,7 +53,8 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final List<TableColumn> _columns = [];
   late FocusNode _focusNode;
   final _whitelistColumns = [
-    'item',
+    'item_code',
+    'item_name',
     'item_type_name',
     'brand_name',
     'supplier_code',
@@ -90,17 +91,19 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         type: TableColumnType.money,
         name: 'discount_amount',
         humanizeName: 'Jumlah Diskon',
-        getValue: (Model model) {
-          model = model as ItemReport;
-          Money sellPrice = model.sellPrice;
-          if (discount.calculationType == DiscountCalculationType.nominal) {
-            return discount.discount1Nominal;
-          } else if (discount.calculationType ==
-              DiscountCalculationType.percentage) {
-            return _calculateChanellingDiscount(sellPrice, discount);
-          } else if (discount.calculationType ==
-              DiscountCalculationType.specialPrice) {
-            return (sellPrice - discount.discount1Nominal);
+        getValue: (model) {
+          if (model is ItemReport) {
+            Money sellPrice = model.sellPrice;
+            if (discount.calculationType == DiscountCalculationType.nominal) {
+              return discount.discount1Nominal;
+            } else if (discount.calculationType ==
+                DiscountCalculationType.percentage) {
+              return _calculateChanellingDiscount(sellPrice, discount);
+            } else if (discount.calculationType ==
+                DiscountCalculationType.specialPrice) {
+              return (sellPrice - discount.discount1Nominal);
+            }
+            return null;
           }
           return null;
         },
@@ -110,18 +113,20 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         type: TableColumnType.money,
         name: 'sell_price_after_discount',
         humanizeName: 'Harga Setelah Diskon',
-        getValue: (Model model) {
-          model = model as ItemReport;
-          Money sellPrice = model.sellPrice;
-          if (discount.calculationType == DiscountCalculationType.nominal) {
-            return sellPrice - discount.discount1Nominal;
-          } else if (discount.calculationType ==
-              DiscountCalculationType.percentage) {
-            return sellPrice -
-                _calculateChanellingDiscount(sellPrice, discount);
-          } else if (discount.calculationType ==
-              DiscountCalculationType.specialPrice) {
-            return discount.discount1Nominal;
+        getValue: (model) {
+          if (model is ItemReport) {
+            Money sellPrice = model.sellPrice;
+            if (discount.calculationType == DiscountCalculationType.nominal) {
+              return sellPrice - discount.discount1Nominal;
+            } else if (discount.calculationType ==
+                DiscountCalculationType.percentage) {
+              return sellPrice -
+                  _calculateChanellingDiscount(sellPrice, discount);
+            } else if (discount.calculationType ==
+                DiscountCalculationType.specialPrice) {
+              return discount.discount1Nominal;
+            }
+            return null;
           }
           return null;
         },
@@ -131,23 +136,24 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         name: 'profit_after_discount',
         type: TableColumnType.money,
         humanizeName: 'Jumlah Profit Setelah Diskon',
-        getValue: (Model model) {
-          model = model as ItemReport;
-          Money sellPrice = model.sellPrice;
-          Money cogs = model.cogs;
-          Money newPrice = sellPrice;
-
-          if (discount.calculationType == DiscountCalculationType.nominal) {
-            newPrice = sellPrice - discount.discount1Nominal;
-          } else if (discount.calculationType ==
-              DiscountCalculationType.percentage) {
-            newPrice =
-                sellPrice - _calculateChanellingDiscount(sellPrice, discount);
-          } else if (discount.calculationType ==
-              DiscountCalculationType.specialPrice) {
-            newPrice = discount.discount1Nominal;
+        getValue: (model) {
+          if (model is ItemReport) {
+            Money sellPrice = model.sellPrice;
+            Money cogs = model.cogs;
+            Money newPrice = sellPrice;
+            if (discount.calculationType == DiscountCalculationType.nominal) {
+              newPrice = sellPrice - discount.discount1Nominal;
+            } else if (discount.calculationType ==
+                DiscountCalculationType.percentage) {
+              newPrice =
+                  sellPrice - _calculateChanellingDiscount(sellPrice, discount);
+            } else if (discount.calculationType ==
+                DiscountCalculationType.specialPrice) {
+              newPrice = discount.discount1Nominal;
+            }
+            return newPrice - cogs;
           }
-          return newPrice - cogs;
+          return null;
         },
       ),
       TableColumn(
@@ -155,25 +161,27 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         name: 'profit_margin_after_discount',
         type: TableColumnType.percentage,
         humanizeName: 'Profit Setelah Diskon(%)',
-        getValue: (Model model) {
-          model = model as ItemReport;
-          Money sellPrice = model.sellPrice;
-          Money cogs = model.cogs;
-          Money newPrice = sellPrice;
-          if (discount.calculationType == DiscountCalculationType.nominal) {
-            newPrice = sellPrice - discount.discount1Nominal;
-          } else if (discount.calculationType ==
-              DiscountCalculationType.percentage) {
-            newPrice =
-                sellPrice - _calculateChanellingDiscount(sellPrice, discount);
-          } else if (discount.calculationType ==
-              DiscountCalculationType.specialPrice) {
-            newPrice = discount.discount1Nominal;
+        getValue: (model) {
+          if (model is ItemReport) {
+            Money sellPrice = model.sellPrice;
+            Money cogs = model.cogs;
+            Money newPrice = sellPrice;
+            if (discount.calculationType == DiscountCalculationType.nominal) {
+              newPrice = sellPrice - discount.discount1Nominal;
+            } else if (discount.calculationType ==
+                DiscountCalculationType.percentage) {
+              newPrice =
+                  sellPrice - _calculateChanellingDiscount(sellPrice, discount);
+            } else if (discount.calculationType ==
+                DiscountCalculationType.specialPrice) {
+              newPrice = discount.discount1Nominal;
+            }
+            if (cogs == Money(0)) {
+              return Percentage(0);
+            }
+            return _marginOf(newPrice, cogs);
           }
-          if (cogs == Money(0)) {
-            return Percentage(0);
-          }
-          return marginOf(newPrice, cogs);
+          return null;
         },
       ),
     ]);
@@ -199,96 +207,89 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     });
   }
 
-  Future<DataTableResponse<ItemReport>> fetchItem(DataTableRequest request) {
-    _source.setShowLoading(true);
+  Percentage _marginOf(Money sellPrice, Money buyPrice) {
+    var margin = (sellPrice.value / buyPrice.value) - 1;
+    return Percentage(margin);
+  }
+
+  Future<DataTableResponse<ItemReport>> fetchItem(QueryRequest request) {
+    _source?.setShowLoading(true);
     setState(() {
       discount1 = discount.discount1;
       discount2 = discount.discount2;
       discount3 = discount.discount3;
       discount4 = discount.discount4;
     });
-    var sortParams = request.sorts
-        .map<String>((sort) => sort.isAscending ? sort.key : "-${sort.key}")
-        .toList()
-        .join(',');
-    Map<String, dynamic> param = {
-      'page[page]': request.page.toString(),
-      'page[limit]': '50',
-      'report_type': 'json',
-      'sort': sortParams,
-    };
+
     if (discount.items.isNotEmpty) {
-      param['filter[item][eq]'] =
-          discount.items.map((line) => line.code).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'item',
+          value: discount.items.map((line) => line.code).toList().join(',')));
     }
     if (discount.suppliers.isNotEmpty) {
-      param['filter[supplier][eq]'] =
-          discount.suppliers.map((line) => line.code).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'supplier',
+          value:
+              discount.suppliers.map((line) => line.code).toList().join(',')));
     }
     if (discount.itemTypes.isNotEmpty) {
-      param['filter[item_type][eq]'] =
-          discount.itemTypes.map((line) => line.name).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'item_type',
+          value:
+              discount.itemTypes.map((line) => line.name).toList().join(',')));
     }
     if (discount.brands.isNotEmpty) {
-      param['filter[brand][eq]'] =
-          discount.brands.map((line) => line.name).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'brand',
+          value: discount.brands.map((line) => line.name).toList().join(',')));
     }
     if (discount.blacklistItems.isNotEmpty) {
-      param['filter[item][not]'] =
-          discount.blacklistItems.map((line) => line.code).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'item',
+          operator: QueryOperator.not,
+          value: discount.blacklistItems
+              .map((line) => line.code)
+              .toList()
+              .join(',')));
     }
     if (discount.blacklistSuppliers.isNotEmpty) {
-      param['filter[supplier][not]'] = discount.blacklistSuppliers
-          .map((line) => line.code)
-          .toList()
-          .join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'supplier',
+          operator: QueryOperator.not,
+          value: discount.blacklistSuppliers
+              .map((line) => line.code)
+              .toList()
+              .join(',')));
     }
     if (discount.blacklistItemTypes.isNotEmpty) {
-      param['filter[item_type][not]'] = discount.blacklistItemTypes
-          .map((line) => line.name)
-          .toList()
-          .join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'item_type',
+          operator: QueryOperator.not,
+          value: discount.blacklistItemTypes
+              .map((line) => line.name)
+              .toList()
+              .join(',')));
     }
     if (discount.blacklistBrands.isNotEmpty) {
-      param['filter[brand][not]'] =
-          discount.blacklistBrands.map((line) => line.name).toList().join(',');
+      request.filters.add(ComparisonFilterData(
+          key: 'brand',
+          operator: QueryOperator.not,
+          value: discount.blacklistItemTypes
+              .map((line) => line.name)
+              .toList()
+              .join(',')));
     }
-    request.filter.forEach((key, value) {
-      if (param[key] == null) {
-        param[key] = value;
-      } else {
-        param[key] = "${param[key]},$value";
-      }
-    });
-
-    return server.get('item_reports', queryParam: param).then((response) {
-      try {
-        if (response.statusCode != 200) {
-          flash.showBanner(
-              messageType: ToastificationType.error,
-              title: 'Gagal Refresh Tabel');
-        }
-        var data = response.data;
-
-        final models = data['data'].map<ItemReport>((row) {
-          return ItemReportClass()
-              .fromJson(row, included: data['included'] ?? []);
-        }).toList();
-        return DataTableResponse<ItemReport>(
-            models: models, totalPage: data['meta']['total_pages']);
-      } catch (error, stackTrace) {
-        debugPrint(error.toString());
-        debugPrint(stackTrace.toString());
-        return DataTableResponse<ItemReport>();
-      }
+    return ItemReportClass().finds(server, request).then((response) {
+      return DataTableResponse<ItemReport>(
+          models: response.models, totalPage: response.metadata['total_pages']);
     }, onError: (error) {
       defaultErrorResponse(error: error);
       return DataTableResponse<ItemReport>();
-    }).whenComplete(() => _source.setShowLoading(false));
+    }).whenComplete(() => _source?.setShowLoading(false));
   }
 
   void refreshTable() {
-    _source.refreshTable();
+    _source?.refreshTable();
   }
 
   Percentage marginOf(Money sellPrice, Money buyPrice) {
@@ -827,31 +828,26 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                   'Aturan Aktif Diskon',
                                   style: labelStyle,
                                 ),
-                                Wrap(
-                                  children: [
-                                    Radio<DiscountType>(
-                                      value: DiscountType.period,
-                                      groupValue: discount.discountType,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          discount.discountType =
-                                              value ?? DiscountType.period;
-                                        });
-                                      },
-                                    ),
-                                    Text(DiscountType.period.humanize()),
-                                    Radio<DiscountType>(
-                                      value: DiscountType.dayOfWeek,
-                                      groupValue: discount.discountType,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          discount.discountType =
-                                              value ?? DiscountType.dayOfWeek;
-                                        });
-                                      },
-                                    ),
-                                    Text(DiscountType.dayOfWeek.humanize()),
-                                  ],
+                                RadioGroup(
+                                  groupValue: discount.discountType,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      discount.discountType =
+                                          value ?? DiscountType.period;
+                                    });
+                                  },
+                                  child: Wrap(
+                                    children: [
+                                      Radio<DiscountType>(
+                                        value: DiscountType.period,
+                                      ),
+                                      Text(DiscountType.period.humanize()),
+                                      Radio<DiscountType>(
+                                        value: DiscountType.dayOfWeek,
+                                      ),
+                                      Text(DiscountType.dayOfWeek.humanize()),
+                                    ],
+                                  ),
                                 ),
                                 Visibility(
                                   visible: discount.discountType ==
@@ -958,110 +954,65 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                         'Tipe Kalkulasi:',
                                         style: labelStyle,
                                       ),
-                                      Wrap(
-                                        children: [
-                                          Radio<DiscountCalculationType>(
-                                            value: DiscountCalculationType
-                                                .percentage,
-                                            groupValue:
-                                                discount.calculationType,
-                                            onChanged: (value) {
-                                              setState(() {
-                                                discount.calculationType =
-                                                    value ??
-                                                        DiscountCalculationType
-                                                            .percentage;
-                                                if (discount.discount1
-                                                    is Money) {
-                                                  discount.discount1 = discount
-                                                      .discount1Percentage;
-                                                }
-                                                _discount2Controller.text =
-                                                    discount.discount2
-                                                        .toString();
-                                                _discount3Controller.text =
-                                                    discount.discount3
-                                                        .toString();
-                                                _discount4Controller.text =
-                                                    discount.discount4
-                                                        .toString();
-                                              });
-                                            },
-                                          ),
-                                          Text(DiscountCalculationType
-                                              .percentage
-                                              .humanize()),
-                                          Radio<DiscountCalculationType>(
-                                            value:
-                                                DiscountCalculationType.nominal,
-                                            groupValue:
-                                                discount.calculationType,
-                                            onChanged: (value) {
-                                              setState(() {
-                                                discount.calculationType =
-                                                    value ??
-                                                        DiscountCalculationType
-                                                            .nominal;
-                                                if (discount.discount1
-                                                    is Percentage) {
-                                                  discount.discount1 =
-                                                      discount.discount1Nominal;
-                                                }
-                                                discount.discount2 =
-                                                    const Percentage(0);
-                                                discount.discount3 =
-                                                    discount.discount2;
-                                                discount.discount4 =
-                                                    discount.discount2;
-                                                _discount2Controller.text =
-                                                    discount.discount2
-                                                        .toString();
-                                                _discount3Controller.text =
-                                                    discount.discount3
-                                                        .toString();
-                                                _discount4Controller.text =
-                                                    discount.discount4
-                                                        .toString();
-                                              });
-                                            },
-                                          ),
-                                          Text(DiscountCalculationType.nominal
-                                              .humanize()),
-                                          Radio<DiscountCalculationType>(
-                                            value: DiscountCalculationType
-                                                .specialPrice,
-                                            groupValue:
-                                                discount.calculationType,
-                                            onChanged: (value) {
-                                              setState(() {
-                                                discount.calculationType =
-                                                    value ??
-                                                        DiscountCalculationType
-                                                            .specialPrice;
-
-                                                discount.discount2 =
-                                                    const Percentage(0);
-
-                                                discount.discount3 =
-                                                    discount.discount2;
-                                                discount.discount4 =
-                                                    discount.discount2;
-                                                _discount2Controller.text =
-                                                    discount.discount2
-                                                        .toString();
-                                                _discount3Controller.text =
-                                                    discount.discount3
-                                                        .toString();
-                                                _discount4Controller.text =
-                                                    discount.discount4
-                                                        .toString();
-                                              });
-                                            },
-                                          ),
-                                          Text(DiscountCalculationType
-                                              .specialPrice
-                                              .humanize()),
-                                        ],
+                                      RadioGroup(
+                                        groupValue: discount.calculationType,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            discount.calculationType = value ??
+                                                DiscountCalculationType
+                                                    .percentage;
+                                            if (discount.discount1 is Money) {
+                                              discount.discount1 =
+                                                  discount.discount1Percentage;
+                                              _discount2Controller.text =
+                                                  discount.discount2.toString();
+                                              _discount3Controller.text =
+                                                  discount.discount3.toString();
+                                              _discount4Controller.text =
+                                                  discount.discount4.toString();
+                                            } else if (discount.discount1
+                                                is Percentage) {
+                                              discount.discount1 =
+                                                  discount.discount1Nominal;
+                                              discount.discount2 =
+                                                  const Percentage(0);
+                                              discount.discount3 =
+                                                  discount.discount2;
+                                              discount.discount4 =
+                                                  discount.discount2;
+                                              _discount2Controller.text =
+                                                  discount.discount2.toString();
+                                              _discount3Controller.text =
+                                                  discount.discount3.toString();
+                                              _discount4Controller.text =
+                                                  discount.discount4.toString();
+                                            }
+                                          });
+                                        },
+                                        child: Wrap(
+                                          children: [
+                                            Radio<DiscountCalculationType>(
+                                              value: DiscountCalculationType
+                                                  .percentage,
+                                            ),
+                                            Text(DiscountCalculationType
+                                                .percentage
+                                                .humanize()),
+                                            Radio<DiscountCalculationType>(
+                                              value: DiscountCalculationType
+                                                  .nominal,
+                                            ),
+                                            Text(DiscountCalculationType.nominal
+                                                .humanize()),
+                                            Radio<DiscountCalculationType>(
+                                              value: DiscountCalculationType
+                                                  .specialPrice,
+                                            ),
+                                            Text(DiscountCalculationType
+                                                .specialPrice
+                                                .humanize()),
+                                          ],
+                                        ),
                                       ),
                                       if (discount.calculationType ==
                                           DiscountCalculationType.percentage)
@@ -1215,14 +1166,17 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                 const SizedBox(
                                   height: 10,
                                 ),
-                                SizedBox(
-                                  height: bodyScreenHeight,
-                                  child: CustomAsyncDataTable2<ItemReport>(
-                                    columns: _columns,
-                                    fetchData: (request) => fetchItem(request),
-                                    fixedLeftColumns: 2,
-                                    onLoaded: (stateManager) =>
-                                        _source = stateManager,
+                                Expanded(
+                                  child: SizedBox(
+                                    height: bodyScreenHeight,
+                                    child: CustomAsyncDataTable<ItemReport>(
+                                      columns: _columns,
+                                      fetchData: (request) =>
+                                          fetchItem(request),
+                                      fixedLeftColumns: 2,
+                                      onLoaded: (stateManager) =>
+                                          _source = stateManager,
+                                    ),
                                   ),
                                 )
                               ],

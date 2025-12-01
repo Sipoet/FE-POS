@@ -14,7 +14,7 @@ class VerticalBodyScroll extends StatelessWidget {
       child: SingleChildScrollView(
         controller: scrollController,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(5, 10, 25, 5),
+          padding: const EdgeInsets.fromLTRB(5, 10, 25, 10),
           child: child,
         ),
       ),

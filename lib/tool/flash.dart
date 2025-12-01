@@ -24,7 +24,7 @@ class Flash extends ChangeNotifier {
         title,
         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
       ),
-      description: Text(description),
+      description: Tooltip(message: description, child: Text(description)),
       type: messageType,
       autoCloseDuration: duration,
     );
