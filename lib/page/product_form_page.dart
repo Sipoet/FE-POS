@@ -255,7 +255,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                           ),
                       body: SizedBox(
                         height: bodyScreenHeight,
-                        child: CustomAsyncDataTable2<StockKeepingUnit>(
+                        child: CustomAsyncDataTable<StockKeepingUnit>(
                           fetchData: (QueryRequest request) {
                             if (product.isNewRecord) {
                               return Future.value(

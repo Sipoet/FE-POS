@@ -19,7 +19,7 @@ class ProductPage extends StatefulWidget {
 }
 
 class _ProductPageState extends State<ProductPage> with DefaultResponse {
-  late final PlutoGridStateManager _source;
+  late final TrinaGridStateManager _source;
   late final Server server;
   String _searchText = '';
   List<Product> products = [];
@@ -34,24 +34,8 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
-    final actionColumn = TableColumn(
-      clientWidth: 100,
-      name: 'action',
-      type: TableColumnType.action,
-      humanizeName: 'Action',
-      frozen: PlutoColumnFrozen.end,
-      renderBody: (rendererContext) {
-        return Row(
-          children: [
-            IconButton(
-              onPressed: () => _openEditForm(rendererContext.rowIdx),
-              icon: Icon(Icons.edit),
-            )
-          ],
-        );
-      },
-    );
-    columns = setting.tableColumn('product')..add(actionColumn);
+
+    columns = setting.tableColumn('product');
     super.initState();
   }
 
@@ -67,11 +51,6 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
     final desc = product.isNewRecord ? 'Tambah' : 'Edit';
     tabManager.addTab(
         '$desc Produk ${product.id ?? ''}', ProductFormPage(product: product));
-  }
-
-  void _openEditForm(int index) {
-    final product = products[index];
-    openForm(product);
   }
 
   void refreshTable() {
@@ -162,7 +141,15 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
           ),
           SizedBox(
             height: bodyScreenHeight,
-            child: CustomAsyncDataTable2<Product>(
+            child: CustomAsyncDataTable<Product>(
+              renderAction: (model) => Row(
+                children: [
+                  IconButton(
+                    onPressed: () => openForm(model),
+                    icon: Icon(Icons.edit),
+                  )
+                ],
+              ),
               onLoaded: (stateManager) => _source = stateManager,
               showFilter: false,
               showSummary: false,

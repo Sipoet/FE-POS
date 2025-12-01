@@ -1,6 +1,6 @@
 import 'package:fe_pos/model/account.dart';
 import 'package:fe_pos/model/model.dart';
-import 'package:fe_pos/model/purchase.dart';
+import 'package:fe_pos/model/ipos/purchase_header.dart';
 import 'package:fe_pos/model/purchase_order.dart';
 
 enum PurchaseType {
@@ -60,7 +60,7 @@ class PurchasePaymentHistory extends Model {
   PurchaseOrder? purchaseOrder;
 
   Supplier supplier;
-  Purchase? purchase;
+  IposPurchaseHeader? purchase;
   PurchasePaymentHistory(
       {super.id,
       this.code = '',
@@ -124,7 +124,7 @@ class PurchasePaymentHistory extends Model {
             relation: json['relationships']?['payment_account'],
           ) ??
           Account(code: attributes['payment_account_code'] ?? '');
-      purchase = PurchaseClass().findRelationData(
+      purchase = IposPurchaseHeaderClass().findRelationData(
         included: included,
         relation: json['relationships']?['purchase'],
       );

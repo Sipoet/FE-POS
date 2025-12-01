@@ -5,7 +5,6 @@ class AccessAuthorize extends Model {
   String controller;
   List<String> action;
   AccessAuthorize({required this.controller, required this.action, super.id});
-
   @override
   Map<String, dynamic> toMap() => {
         'controller': controller,
