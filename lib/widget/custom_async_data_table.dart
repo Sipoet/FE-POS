@@ -63,7 +63,7 @@ class CustomAsyncDataTable<T extends Model> extends StatefulWidget {
 
 class _CustomAsyncDataTableState<T extends Model>
     extends State<CustomAsyncDataTable<T>>
-    with TrinaTableDecorator, PlatformChecker, TextFormatter {
+    with TrinaTableDecorator<T>, PlatformChecker, TextFormatter {
   late final List<TrinaColumn> columns;
   late final TrinaGridStateManager _source;
   List selectedValues = [];

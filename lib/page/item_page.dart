@@ -43,7 +43,8 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
         return Row(
           children: [
             IconButton(
-              onPressed: () => _openEditForm(rendererContext.rowIdx),
+              onPressed: () =>
+                  _openEditForm(rendererContext.row.modelOf<Item>()),
               icon: Icon(Icons.edit),
             )
           ],
@@ -54,8 +55,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
     super.initState();
   }
 
-  void _openEditForm(int index) {
-    final item = items[index];
+  void _openEditForm(Item item) {
     final tabManager = context.read<TabManager>();
     tabManager.addTab('Edit item ${item.code}', ItemFormPage(item: item));
   }

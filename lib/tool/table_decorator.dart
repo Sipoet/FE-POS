@@ -80,7 +80,7 @@ class TableColumn<T extends Model> {
   String name;
   TableColumnType type;
   Widget Function(TrinaColumnRendererContext rendererContext)? renderBody;
-  dynamic Function(dynamic model)? getValue;
+  dynamic Function(Model model)? getValue;
   String humanizeName;
   bool canSort;
   bool canFilter;
@@ -109,7 +109,8 @@ class TableColumn<T extends Model> {
 }
 
 const modelKey = 'model';
-mixin TrinaTableDecorator implements PlatformChecker, TextFormatter {
+mixin TrinaTableDecorator<T extends Model>
+    implements PlatformChecker, TextFormatter {
   late final TabManager tabManager;
   final String _formatNumber = '#,###.#';
   final String _locale = 'id_ID';
@@ -198,6 +199,7 @@ mixin TrinaTableDecorator implements PlatformChecker, TextFormatter {
     final renderer = tableColumn.renderBody ??
         (TrinaColumnRendererContext rendererContext) =>
             defaultRenderBody(rendererContext, tableColumn);
+
     return TrinaColumn(
       readOnly: true,
       enableSorting: tableColumn.canSort,
@@ -216,9 +218,6 @@ mixin TrinaTableDecorator implements PlatformChecker, TextFormatter {
       enableFilterMenuItem: showFilter,
       enableContextMenu: !tableColumn.type.isAction(),
       renderer: renderer,
-      formatter: tableColumn.getValue == null
-          ? null
-          : (value) => tableColumn.getValue!(value).toString(),
       footerRenderer: showFooter
           ? (rendererContext) {
               return ListView(
@@ -333,6 +332,9 @@ mixin TrinaTableDecorator implements PlatformChecker, TextFormatter {
   Widget defaultRenderBody(
       TrinaColumnRendererContext rendererContext, TableColumn tableColumn) {
     var value = rendererContext.cell.value ?? '';
+    if (tableColumn.getValue != null) {
+      value = tableColumn.getValue!(rendererContext.row.modelOf<T>());
+    }
     if (tableColumn.type.isModel() && value is Model) {
       return InkWell(
         onTap: () => _openModelDetailPage(

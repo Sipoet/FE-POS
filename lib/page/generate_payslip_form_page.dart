@@ -5,6 +5,7 @@ import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
+
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
@@ -40,15 +41,19 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
     _server = context.read<Server>();
     final tabManager = context.read<TabManager>();
     _columns = [
-      TableColumn<Payslip>(
+      TableColumn(
         name: 'employee_name',
         humanizeName: 'Nama Karyawan',
         clientWidth: 180,
         frozen: TrinaColumnFrozen.start,
         type: TableColumnType.text,
         getValue: (model) {
-          Payslip payslip = model as Payslip;
-          return payslip.employee.name.toTitleCase();
+          if (model is Payslip) {
+            return model.employee.name.toTitleCase();
+          } else if (model is Employee) {
+            return model.name.toTitleCase();
+          }
+          return model.toString();
         },
       ),
       TableColumn(

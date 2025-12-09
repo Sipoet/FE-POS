@@ -1163,6 +1163,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     height: bodyScreenHeight,
                                     child: CustomAsyncDataTable<ItemReport>(
                                       columns: _columns,
+                                      showFilter: true,
                                       fetchData: (request) =>
                                           fetchItem(request),
                                       fixedLeftColumns: 2,
