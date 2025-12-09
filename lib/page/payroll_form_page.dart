@@ -29,6 +29,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
 
   final _formKey = GlobalKey<FormState>();
   Payroll get payroll => widget.payroll;
+  final _scrollController = ScrollController();
 
   @override
   bool get wantKeepAlive => true;
@@ -142,92 +143,103 @@ class _PayrollFormPageState extends State<PayrollFormPage>
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Center(
-          child: Container(
-            constraints: BoxConstraints.loose(const Size.fromWidth(600)),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Visibility(
-                    visible: payroll.id != null,
-                    child: ElevatedButton.icon(
-                        onPressed: () =>
-                            fetchHistoryByRecord('Payroll', payroll.id),
-                        label: const Text('Riwayat'),
-                        icon: const Icon(Icons.history)),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              spacing: 10,
+              children: [
+                Container(
+                  constraints: BoxConstraints.loose(const Size.fromWidth(600)),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Visibility(
+                        visible: payroll.id != null,
+                        child: ElevatedButton.icon(
+                            onPressed: () =>
+                                fetchHistoryByRecord('Payroll', payroll.id),
+                            label: const Text('Riwayat'),
+                            icon: const Icon(Icons.history)),
+                      ),
+                      const Divider(),
+                      TextFormField(
+                        decoration: const InputDecoration(
+                            labelText: 'Nama',
+                            labelStyle: labelStyle,
+                            border: OutlineInputBorder()),
+                        validator: (newValue) {
+                          if (newValue == null || newValue.isEmpty) {
+                            return 'harus diisi';
+                          }
+                          return null;
+                        },
+                        onSaved: (newValue) {
+                          payroll.name = newValue.toString();
+                        },
+                        onChanged: (newValue) {
+                          payroll.name = newValue.toString();
+                        },
+                        controller: codeInputWidget,
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      TextFormField(
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                            labelText: 'Paid Time Off',
+                            labelStyle: labelStyle,
+                            border: OutlineInputBorder()),
+                        initialValue: payroll.paidTimeOff.toString(),
+                        onSaved: (newValue) {
+                          payroll.paidTimeOff =
+                              int.tryParse(newValue.toString()) ?? 0;
+                        },
+                        validator: (newValue) {
+                          if (newValue == null || newValue.isEmpty) {
+                            return 'harus diisi';
+                          }
+                          return null;
+                        },
+                        onChanged: (newValue) {
+                          payroll.paidTimeOff = int.parse(newValue.toString());
+                        },
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      TextFormField(
+                        decoration: const InputDecoration(
+                            labelText: 'Deskripsi',
+                            labelStyle: labelStyle,
+                            border: OutlineInputBorder()),
+                        initialValue: payroll.description,
+                        maxLines: 4,
+                        onSaved: (newValue) {
+                          payroll.description = newValue.toString();
+                        },
+                        onChanged: (newValue) {
+                          payroll.description = newValue.toString();
+                        },
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const Text(
+                        "Lines",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
-                  const Divider(),
-                  TextFormField(
-                    decoration: const InputDecoration(
-                        labelText: 'Nama',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder()),
-                    validator: (newValue) {
-                      if (newValue == null || newValue.isEmpty) {
-                        return 'harus diisi';
-                      }
-                      return null;
-                    },
-                    onSaved: (newValue) {
-                      payroll.name = newValue.toString();
-                    },
-                    onChanged: (newValue) {
-                      payroll.name = newValue.toString();
-                    },
-                    controller: codeInputWidget,
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  TextFormField(
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                        labelText: 'Paid Time Off',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder()),
-                    initialValue: payroll.paidTimeOff.toString(),
-                    onSaved: (newValue) {
-                      payroll.paidTimeOff =
-                          int.tryParse(newValue.toString()) ?? 0;
-                    },
-                    validator: (newValue) {
-                      if (newValue == null || newValue.isEmpty) {
-                        return 'harus diisi';
-                      }
-                      return null;
-                    },
-                    onChanged: (newValue) {
-                      payroll.paidTimeOff = int.parse(newValue.toString());
-                    },
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  TextFormField(
-                    decoration: const InputDecoration(
-                        labelText: 'Deskripsi',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder()),
-                    initialValue: payroll.description,
-                    maxLines: 4,
-                    onSaved: (newValue) {
-                      payroll.description = newValue.toString();
-                    },
-                    onChanged: (newValue) {
-                      payroll.description = newValue.toString();
-                    },
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  const Text(
-                    "Lines",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  SingleChildScrollView(
+                ),
+                Scrollbar(
+                  thumbVisibility: true,
+                  controller: _scrollController,
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
                     scrollDirection: Axis.horizontal,
                     child: DataTable(
                       dataRowMinHeight: 60,
@@ -397,39 +409,39 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                           .toList(),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: ElevatedButton(
-                        onPressed: () => setState(() {
-                              payroll.lines
-                                  .add(PayrollLine(row: payroll.lines.length));
-                            }),
-                        child: const Text('Tambah')),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: ElevatedButton(
+                      onPressed: () => setState(() {
+                            payroll.lines
+                                .add(PayrollLine(row: payroll.lines.length));
+                          }),
+                      child: const Text('Tambah')),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, bottom: 10),
+                  child: Row(
+                    spacing: 25,
+                    children: [
+                      ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              flash.show(const Text('Loading'),
+                                  ToastificationType.info);
+                              _submit();
+                            }
+                          },
+                          child: const Text('submit')),
+                      ElevatedButton(
+                          onPressed: () {
+                            duplicateRecord();
+                          },
+                          child: const Text('duplicate')),
+                    ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10, bottom: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                flash.show(const Text('Loading'),
-                                    ToastificationType.info);
-                                _submit();
-                              }
-                            },
-                            child: const Text('submit')),
-                        ElevatedButton(
-                            onPressed: () {
-                              duplicateRecord();
-                            },
-                            child: const Text('duplicate')),
-                      ],
-                    ),
-                  )
-                ],
-              ),
+                )
+              ],
             ),
           ),
         ),
