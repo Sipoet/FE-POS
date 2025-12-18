@@ -54,6 +54,7 @@ class _PurchasePageState extends State<PurchasePage>
   Future<DataTableResponse<Purchase>> fetchPurchases(QueryRequest request) {
     request.filters = _filters;
     request.searchText = _searchText;
+    request.include.addAll(['purchase_order', 'supplier']);
     return PurchaseClass().finds(server, request).then(
         (value) => DataTableResponse<Purchase>(
             models: value.models,
@@ -143,7 +144,7 @@ class _PurchasePageState extends State<PurchasePage>
                 ),
                 onLoaded: (stateManager) {
                   _source = stateManager;
-                  _source.sortDescending(_source.columns[2]);
+                  _source.sortDescending(_source.columns[4]);
                 },
                 columns: columns,
                 fetchData: fetchPurchases,

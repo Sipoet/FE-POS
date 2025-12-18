@@ -56,6 +56,7 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
       QueryRequest request) {
     request.filters = _filters;
     request.searchText = _searchText;
+    request.include.addAll(['supplier']);
     return PurchaseOrderClass().finds(server, request).then(
         (value) => DataTableResponse<PurchaseOrder>(
             models: value.models,

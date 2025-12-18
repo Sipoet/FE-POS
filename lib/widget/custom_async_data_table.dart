@@ -319,8 +319,15 @@ class _CustomAsyncDataTableState<T extends Model>
                     MenuItemButton(
                       child: const Text('hide/show column'),
                       onPressed: () {
-                        _menuController.close();
                         displayShowHideColumn(stateManager);
+                        _menuController.close();
+                      },
+                    ),
+                    MenuItemButton(
+                      child: const Text('Refresh Data'),
+                      onPressed: () {
+                        stateManager.refreshTable();
+                        _menuController.close();
                       },
                     ),
                   ],
