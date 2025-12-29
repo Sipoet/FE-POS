@@ -396,7 +396,7 @@ extension TableStateMananger on TrinaGridStateManager {
     notifyListeners();
   }
 
-  void setModels(List models) {
+  void setModels(Iterable models) {
     if (rows.isNotEmpty) {
       removeAllRows();
     }

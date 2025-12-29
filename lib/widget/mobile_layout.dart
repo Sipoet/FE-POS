@@ -181,7 +181,7 @@ class _LeftMenubarState extends State<LeftMenubar>
         onTap: () {
           Navigator.pop(context);
           setState(() {
-            tabManager.addTab(menu.label, menu.page);
+            tabManager.addTab(menu.tabTitle, menu.page);
           });
         },
         title: Text(menu.label),

@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:collection';
+
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/custom_type.dart';
 import 'package:fe_pos/tool/query_data.dart';
@@ -150,6 +153,21 @@ abstract class ModelClass<T extends Model> {
     return values;
   }
 
+  HasManyRelationShip<T> findRelationsData2({
+    List included = const [],
+    Map? relation,
+    required String foreignKey,
+    dynamic foreignId,
+  }) {
+    QueryRequest queryRequest = QueryRequest(
+        filters: [ComparisonFilterData(key: foreignKey, value: foreignId)]);
+    return HasManyRelationShip<T>(
+        getData: (server) => finds(server, queryRequest).then(
+              (result) => result.models,
+            ),
+        values: findRelationsData(included: included, relation: relation));
+  }
+
   T fromJson(Map<String, dynamic> json, {List included = const []}) {
     var model = initModel();
     model.setFromJson(json, included: included);
@@ -203,7 +221,7 @@ mixin SaveNDestroyModel on Model {
       });
     } else {
       request = server.put("$path/$id", body: {
-        'data': {'type': modelName, 'attributes': toJson()}
+        'data': {'id': id.toString(), 'type': modelName, 'attributes': toJson()}
       });
     }
     return request.then((response) {
@@ -240,5 +258,32 @@ mixin SaveNDestroyModel on Model {
       _errors = [error.toString()];
       return false;
     });
+  }
+}
+
+class HasManyRelationShip<T extends Model> extends ChangeNotifier
+    with IterableMixin<T> {
+  List<T> values;
+  Future<List<T>> Function(Server server) getData;
+  HasManyRelationShip({this.values = const [], required this.getData});
+  Future<List<T>> reload(Server server) async {
+    values = await getData(server);
+    notifyListeners();
+    return values;
+  }
+
+  @override
+  Iterator<T> get iterator => values.iterator;
+}
+
+class BelongsToRelationShip<T extends Model> {
+  T? _value;
+  Server server;
+  Future<T> Function(Server server) getData;
+  BelongsToRelationShip({T? value, required this.server, required this.getData})
+      : _value = value;
+  FutureOr<T?> reload() async {
+    _value = await getData(server);
+    return _value!;
   }
 }

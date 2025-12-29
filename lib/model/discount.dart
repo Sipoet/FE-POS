@@ -102,6 +102,7 @@ class Discount extends Model {
   String? blacklistItemType;
   String? blacklistBrandName;
   String? blacklistSupplierCode;
+  String? blacklistItemCode;
   dynamic discount1;
   Percentage? discount2;
   Percentage? discount3;
@@ -134,6 +135,7 @@ class Discount extends Model {
       this.blacklistBrandName,
       this.blacklistItemType,
       this.blacklistSupplierCode,
+      this.blacklistItemCode,
       this.supplierCode,
       this.customerGroup,
       required this.calculationType,
@@ -174,6 +176,7 @@ class Discount extends Model {
         DiscountType.convertFromString(attributes['discount_type'].toString());
     blacklistItemType = attributes['blacklist_item_type_name'];
     blacklistSupplierCode = attributes['blacklist_supplier_code'];
+    blacklistItemCode = attributes['blacklist_item_code'];
     blacklistBrandName = attributes['blacklist_brand_name'];
     discount1 = calculationType == DiscountCalculationType.percentage
         ? Percentage(attributes['discount1'] ?? 0)
@@ -335,6 +338,7 @@ class Discount extends Model {
         'blacklist_item_type_name': blacklistItemType,
         'blacklist_brand_name': blacklistBrandName,
         'blacklist_supplier_code': blacklistSupplierCode,
+        'blacklist_item_code': blacklistItemCode,
         'customer_group_code': customerGroup?.code,
         'discount1': discount1,
         'discount2': discount2,

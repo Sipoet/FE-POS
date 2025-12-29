@@ -142,6 +142,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                     icon: Icons.pages,
                     isClosed: true,
                     label: 'Pembelian',
+                    tabTitle: 'Laporan Pembelian',
                     isDisabled: !setting.isAuthorize('purchase', 'report'),
                     pageFunct: () => const PurchaseReportPage(),
                     key: 'purchaseReport',

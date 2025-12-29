@@ -376,7 +376,7 @@ class _DiscountPageState extends State<DiscountPage>
                 columns: columns,
                 onLoaded: (stateManager) {
                   _source = stateManager;
-                  _source.sortDescending(_source.columns[16]);
+                  _source.sortDescending(_source.columns[17]);
                 },
                 fetchData: fetchDiscounts,
                 fixedLeftColumns: 1,

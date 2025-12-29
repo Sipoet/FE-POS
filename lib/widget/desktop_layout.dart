@@ -185,7 +185,7 @@ class _TopMenuBarState extends State<TopMenuBar> with PlatformChecker {
           icon: menu.icon,
           onTap: () {
             setState(() {
-              tabManager.addTab(menu.label, menu.page);
+              tabManager.addTab(menu.tabTitle, menu.page);
             });
           },
           title: menu.label,
