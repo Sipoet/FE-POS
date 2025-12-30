@@ -214,7 +214,7 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
   }
 }
 
-enum GroupPeriodMonthlyExpenseReport {
+enum GroupPeriodMonthlyExpenseReport implements EnumTranslation {
   yearly,
   monthly;
 
@@ -223,6 +223,7 @@ enum GroupPeriodMonthlyExpenseReport {
     monthly: 'Bulan',
   };
 
+  @override
   String humanize() {
     return groupPeriodLocales[this] ?? '';
   }

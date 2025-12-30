@@ -10,7 +10,7 @@ import 'package:fe_pos/model/discount_item_type.dart';
 export 'package:fe_pos/model/discount_item_type.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-enum DiscountCalculationType {
+enum DiscountCalculationType implements EnumTranslation {
   percentage,
   specialPrice,
   nominal;
@@ -28,7 +28,7 @@ enum DiscountCalculationType {
     return '';
   }
 
-  factory DiscountCalculationType.convertFromString(String value) {
+  factory DiscountCalculationType.fromString(String value) {
     if (value == 'percentage') {
       return percentage;
     } else if (value == 'nominal') {
@@ -39,6 +39,7 @@ enum DiscountCalculationType {
     throw '$value is not valid discount calculation type';
   }
 
+  @override
   String humanize() {
     if (this == percentage) {
       return 'persentase';
@@ -51,7 +52,7 @@ enum DiscountCalculationType {
   }
 }
 
-enum DiscountType {
+enum DiscountType implements EnumTranslation {
   period,
   // repeatedHourOnPeriod,
   dayOfWeek;
@@ -69,7 +70,7 @@ enum DiscountType {
     return '';
   }
 
-  factory DiscountType.convertFromString(String value) {
+  factory DiscountType.fromString(String value) {
     if (value == 'period') {
       return period;
     } else if (value == 'day_of_week') {
@@ -81,6 +82,7 @@ enum DiscountType {
     throw '$value is not valid discount type';
   }
 
+  @override
   String humanize() {
     if (this == period) {
       return 'Periode';
@@ -170,10 +172,10 @@ class Discount extends Model {
     supplierCode = attributes['supplier_code'];
     brandName = attributes['brand_name'];
 
-    calculationType = DiscountCalculationType.convertFromString(
+    calculationType = DiscountCalculationType.fromString(
         attributes['calculation_type'].toString());
     discountType =
-        DiscountType.convertFromString(attributes['discount_type'].toString());
+        DiscountType.fromString(attributes['discount_type'].toString());
     blacklistItemType = attributes['blacklist_item_type_name'];
     blacklistSupplierCode = attributes['blacklist_supplier_code'];
     blacklistItemCode = attributes['blacklist_item_code'];

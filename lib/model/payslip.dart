@@ -4,7 +4,7 @@ import 'package:fe_pos/model/payslip_line.dart';
 export 'package:fe_pos/model/payslip_line.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-enum PayslipStatus {
+enum PayslipStatus implements EnumTranslation {
   draft,
   confirmed,
   paid,
@@ -30,6 +30,7 @@ enum PayslipStatus {
     }
   }
 
+  @override
   String humanize() {
     switch (this) {
       case draft:

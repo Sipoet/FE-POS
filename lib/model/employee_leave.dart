@@ -4,7 +4,7 @@ export 'package:fe_pos/model/employee.dart';
 
 export 'package:fe_pos/tool/custom_type.dart';
 
-enum LeaveType {
+enum LeaveType implements EnumTranslation {
   sickLeave,
   annualLeave,
   changeDay,
@@ -42,6 +42,7 @@ enum LeaveType {
     }
   }
 
+  @override
   String humanize() {
     if (this == LeaveType.sickLeave) {
       return 'Cuti Sakit';

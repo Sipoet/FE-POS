@@ -1,7 +1,7 @@
 import 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-enum ActiveWeekWorkSchedule {
+enum ActiveWeekWorkSchedule implements EnumTranslation {
   allWeek,
   oddWeek,
   evenWeek,
@@ -41,6 +41,7 @@ enum ActiveWeekWorkSchedule {
     }
   }
 
+  @override
   String humanize() {
     switch (this) {
       case allWeek:

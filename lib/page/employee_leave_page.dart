@@ -195,6 +195,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
             SizedBox(
               height: <double>[bodyScreenHeight, 570].min,
               child: CustomAsyncDataTable<EmployeeLeave>(
+                enums: {'leave_type': LeaveType.values},
                 renderAction: (employeeLeave) => Row(
                   spacing: 10,
                   children: [

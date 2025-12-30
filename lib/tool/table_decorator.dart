@@ -50,6 +50,7 @@ enum TableColumnType {
       case 'money':
         return money;
       case 'enum':
+      case 'enums':
         return enums;
       case 'boolean':
         return boolean;

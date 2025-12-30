@@ -3,7 +3,7 @@ import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/purchase.dart';
 import 'package:fe_pos/model/purchase_order.dart';
 
-enum PurchaseType {
+enum PurchaseType implements EnumTranslation {
   payment,
   returned,
   dp;
@@ -31,6 +31,7 @@ enum PurchaseType {
     throw '$value is not valid purchase type';
   }
 
+  @override
   String humanize() {
     switch (this) {
       case payment:

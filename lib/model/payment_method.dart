@@ -1,7 +1,7 @@
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/bank.dart';
 
-enum PaymentType {
+enum PaymentType implements EnumTranslation {
   debitCard,
   creditCard,
   qris,
@@ -30,7 +30,7 @@ enum PaymentType {
     return '';
   }
 
-  factory PaymentType.convertFromString(String value) {
+  factory PaymentType.fromString(String value) {
     if (value == 'qris') {
       return qris;
     } else if (value == 'transfer') {
@@ -49,6 +49,7 @@ enum PaymentType {
     throw '$value is not valid employee marital status';
   }
 
+  @override
   String humanize() {
     if (this == debitCard) {
       return 'Kartu Debit';
@@ -96,7 +97,7 @@ class PaymentMethod extends Model {
         ) ??
         Bank();
     providerCode = bank.code;
-    paymentType = PaymentType.convertFromString(attributes['payment_type']);
+    paymentType = PaymentType.fromString(attributes['payment_type']);
   }
 
   @override

@@ -3,7 +3,7 @@ import 'package:fe_pos/model/role.dart';
 export 'package:fe_pos/model/role.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-enum UserStatus {
+enum UserStatus implements EnumTranslation {
   inactive,
   active;
 
@@ -17,7 +17,7 @@ enum UserStatus {
     return '';
   }
 
-  factory UserStatus.convertFromString(String? value) {
+  factory UserStatus.fromString(String? value) {
     if (value == 'active') {
       return active;
     } else if (value == 'inactive') {
@@ -25,7 +25,7 @@ enum UserStatus {
     }
     throw '$value is not valid employee status';
   }
-
+  @override
   String humanize() {
     if (this == active) {
       return 'Aktif';
@@ -82,7 +82,7 @@ class User extends Model {
     username = attributes['username'] ?? '';
     email = attributes['email'];
     // model.status =
-    //     UserStatus.convertFromString(attributes['status']?.toString());
+    //     UserStatus.fromString(attributes['status']?.toString());
     role = role ?? role;
   }
 

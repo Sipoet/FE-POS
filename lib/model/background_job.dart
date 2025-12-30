@@ -1,7 +1,7 @@
 import 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-enum BackgroundJobStatus {
+enum BackgroundJobStatus implements EnumTranslation {
   scheduled,
   process,
   finished,
@@ -27,6 +27,22 @@ enum BackgroundJobStatus {
 
   @override
   String toString() {
+    switch (this) {
+      case scheduled:
+        return 'scheduled';
+      case process:
+        return 'process';
+      case finished:
+        return 'finished';
+      case retry:
+        return 'retry';
+      case dead:
+        return 'dead';
+    }
+  }
+
+  @override
+  String humanize() {
     switch (this) {
       case scheduled:
         return 'scheduled';

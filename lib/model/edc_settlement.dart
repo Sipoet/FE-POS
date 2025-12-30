@@ -6,7 +6,7 @@ import 'package:fe_pos/model/payment_type.dart';
 export 'package:fe_pos/model/payment_provider.dart';
 export 'package:fe_pos/model/payment_type.dart';
 
-enum EdcSettlementStatus {
+enum EdcSettlementStatus implements EnumTranslation {
   draft,
   verified;
 
@@ -20,7 +20,7 @@ enum EdcSettlementStatus {
     return '';
   }
 
-  factory EdcSettlementStatus.convertFromString(String value) {
+  factory EdcSettlementStatus.fromString(String value) {
     if (value == 'draft') {
       return draft;
     } else if (value == 'verified') {
@@ -29,6 +29,7 @@ enum EdcSettlementStatus {
     throw '$value is not valid employee status';
   }
 
+  @override
   String humanize() {
     if (this == draft) {
       return 'Draft';
@@ -89,7 +90,7 @@ class EdcSettlement extends Model {
     merchantId = attributes['merchant_id'] ?? '';
     terminalId = attributes['terminal_id'];
     amount = Money.parse(attributes['amount']);
-    status = EdcSettlementStatus.convertFromString(attributes['status']);
+    status = EdcSettlementStatus.fromString(attributes['status']);
     diffAmount = Money.parse(attributes['diff_amount']);
     paymentType = PaymentTypeClass().findRelationData(
             included: included,

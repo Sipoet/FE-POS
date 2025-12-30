@@ -10,7 +10,7 @@ import 'package:fe_pos/model/work_schedule.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/model/work_schedule.dart';
 
-enum Religion {
+enum Religion implements EnumTranslation {
   buddhism,
   catholic,
   christian,
@@ -60,6 +60,7 @@ enum Religion {
     }
   }
 
+  @override
   String humanize() {
     switch (this) {
       case catholic:
@@ -80,7 +81,7 @@ enum Religion {
   }
 }
 
-enum EmployeeStatus {
+enum EmployeeStatus implements EnumTranslation {
   active,
   inactive;
 
@@ -94,7 +95,7 @@ enum EmployeeStatus {
     return '';
   }
 
-  factory EmployeeStatus.convertFromString(String value) {
+  factory EmployeeStatus.fromString(String value) {
     if (value == 'active') {
       return active;
     } else if (value == 'inactive') {
@@ -103,6 +104,7 @@ enum EmployeeStatus {
     throw '$value is not valid employee status';
   }
 
+  @override
   String humanize() {
     if (this == active) {
       return 'Aktif';
@@ -113,7 +115,7 @@ enum EmployeeStatus {
   }
 }
 
-enum EmployeeMaritalStatus {
+enum EmployeeMaritalStatus implements EnumTranslation {
   single,
   married,
   married1Child,
@@ -136,7 +138,7 @@ enum EmployeeMaritalStatus {
     return '';
   }
 
-  factory EmployeeMaritalStatus.convertFromString(String value) {
+  factory EmployeeMaritalStatus.fromString(String value) {
     if (value == 'single') {
       return single;
     } else if (value == 'married') {
@@ -151,6 +153,7 @@ enum EmployeeMaritalStatus {
     throw '$value is not valid employee marital status';
   }
 
+  @override
   String humanize() {
     if (this == single) {
       return 'single';
@@ -255,12 +258,12 @@ class Employee extends Model {
     id = int.parse(json['id']);
     code = attributes['code']?.trim();
     name = attributes['name']?.trim();
-    maritalStatus = EmployeeMaritalStatus.convertFromString(
+    maritalStatus = EmployeeMaritalStatus.fromString(
         attributes['marital_status'] ??
             EmployeeMaritalStatus.single.toString());
     taxNumber = attributes['tax_number'];
     userCode = attributes['user_code'];
-    status = EmployeeStatus.convertFromString(attributes['status'].toString());
+    status = EmployeeStatus.fromString(attributes['status'].toString());
     startWorkingDate = Date.parse(attributes['start_working_date']);
     endWorkingDate = Date.tryParse(attributes['end_working_date'] ?? '');
     debt = Money.parse(attributes['debt'] ?? 0);

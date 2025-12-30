@@ -3,7 +3,7 @@ import 'package:fe_pos/model/customer_group.dart';
 export 'package:fe_pos/model/customer_group.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-enum CustomerGroupDiscountPeriodType {
+enum CustomerGroupDiscountPeriodType implements EnumTranslation {
   activePeriod,
   dayOfMonth,
   dayOfWeek,
@@ -38,6 +38,7 @@ enum CustomerGroupDiscountPeriodType {
     }
   }
 
+  @override
   String humanize() {
     switch (this) {
       case activePeriod:

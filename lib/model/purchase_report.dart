@@ -1,7 +1,7 @@
 import 'package:fe_pos/model/supplier.dart';
 import 'package:fe_pos/model/model.dart';
 
-enum PurchaseReportStatus {
+enum PurchaseReportStatus implements EnumTranslation {
   noPaid,
   halfPaid,
   paid,
@@ -34,6 +34,7 @@ enum PurchaseReportStatus {
     throw '$value is not valid purchase report status';
   }
 
+  @override
   String humanize() {
     if (this == noPaid) {
       return 'Belum Bayar';

@@ -13,7 +13,7 @@ class SortData {
   }
 }
 
-enum QueryOperator {
+enum QueryOperator implements EnumTranslation {
   contains,
   equals,
   not,
@@ -45,6 +45,7 @@ enum QueryOperator {
     }
   }
 
+  @override
   String humanize() {
     switch (this) {
       case equals:

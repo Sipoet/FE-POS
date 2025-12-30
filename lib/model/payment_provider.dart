@@ -1,9 +1,8 @@
 import 'package:fe_pos/model/edc_settlement.dart';
 import 'package:fe_pos/model/model.dart';
-import 'package:fe_pos/model/payment_provider_edc.dart';
 export 'package:fe_pos/model/payment_provider_edc.dart';
 
-enum PaymentProviderStatus {
+enum PaymentProviderStatus implements EnumTranslation {
   active,
   inactive;
 
@@ -24,6 +23,7 @@ enum PaymentProviderStatus {
     }
   }
 
+  @override
   String humanize() {
     switch (this) {
       case inactive:

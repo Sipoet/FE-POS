@@ -544,11 +544,12 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
   }
 }
 
-enum EdcSummaryStatus {
+enum EdcSummaryStatus implements EnumTranslation {
   same,
   lesser,
   greater;
 
+  @override
   String humanize() {
     switch (this) {
       case same:
