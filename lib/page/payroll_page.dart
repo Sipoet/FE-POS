@@ -175,7 +175,6 @@ class _PayrollPageState extends State<PayrollPage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              width: 825,
               child: CustomAsyncDataTable<Payroll>(
                 renderAction: (payroll) => Row(
                   spacing: 10,

@@ -1,5 +1,6 @@
 library;
 
+import 'package:collection/collection.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/server.dart';
@@ -124,6 +125,7 @@ class _AsyncDropdownMultipleState<T extends Model>
   }
 
   late final FocusNode _focusNode;
+  List<Widget> pills = [];
   @override
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
@@ -146,15 +148,50 @@ class _AsyncDropdownMultipleState<T extends Model>
       suffixProps: const DropdownSuffixProps(
           clearButtonProps: ClearButtonProps(isVisible: true)),
       dropdownBuilder: (context, selectedItems) {
-        Widget moreWidget = selectedItems.length > widget.selectedDisplayLimit
-            ? IgnorePointer(
-                ignoring: true,
-                child: Text(
-                  '.....',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              )
-            : IgnorePointer(ignoring: true, child: SizedBox());
+        debugPrint('masuk dropdown builder');
+        pills = selectedItems.mapIndexed<Widget>((index, item) {
+          if (index >= widget.selectedDisplayLimit) {
+            return SizedBox();
+          }
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 5),
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer,
+              borderRadius: const BorderRadius.all(Radius.elliptical(10, 10)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                    child: Text(
+                  textFormat(item),
+                  style: const TextStyle(
+                      decoration: TextDecoration.none,
+                      fontSize: 14,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black),
+                )),
+                IconButton(
+                    onPressed: () {
+                      debugPrint('item ${item.id.toString()} pressed remove');
+
+                      setState(() {
+                        final result = selectedItems.remove(item);
+                        if (result == false) {
+                          debugPrint(
+                              'item ${item.id.toString()} failed to remove.');
+                        }
+                        selectedItems = selectedItems;
+                        if (widget.onChanged != null) {
+                          widget.onChanged!(selectedItems);
+                        }
+                      });
+                    },
+                    icon: const Icon(Icons.close_rounded))
+              ],
+            ),
+          );
+        }).toList();
         return SortableWrap(
             onSorted: (int oldIndex, int newIndex) {
               setState(() {
@@ -165,45 +202,14 @@ class _AsyncDropdownMultipleState<T extends Model>
             },
             spacing: 10,
             runSpacing: 15,
-            children: List<Widget>.generate(
-                selectedItems.length > widget.selectedDisplayLimit
-                    ? widget.selectedDisplayLimit
-                    : selectedItems.length, (index) {
-              final item = selectedItems[index];
-              return Container(
-                padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 5),
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  borderRadius:
-                      const BorderRadius.all(Radius.elliptical(10, 10)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                        child: Text(
-                      textFormat(item),
-                      style: const TextStyle(
-                          decoration: TextDecoration.none,
-                          fontSize: 14,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.black),
-                    )),
-                    IconButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedItems.remove(item);
-                            if (widget.onChanged != null) {
-                              widget.onChanged!(selectedItems);
-                            }
-                          });
-                        },
-                        icon: const Icon(Icons.close_rounded))
-                  ],
-                ),
-              );
-            })
-              ..add(moreWidget));
+            children: [
+              ...pills,
+              if (selectedItems.length > widget.selectedDisplayLimit)
+                IgnorePointer(
+                    ignoring: true,
+                    child: Text('.....',
+                        style: TextStyle(fontWeight: FontWeight.bold)))
+            ]);
       },
       popupProps: isMobile()
           ? PopupPropsMultiSelection.dialog(
