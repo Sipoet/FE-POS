@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -27,7 +28,7 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <title>Allegra POS</title>
   <link rel="manifest" href="manifest.json">
@@ -63,6 +64,7 @@
       0% {
         -webkit-transform: rotate(0deg);
       }
+
       100% {
         -webkit-transform: rotate(360deg);
       }
@@ -72,42 +74,26 @@
       0% {
         transform: rotate(0deg);
       }
+
       100% {
         transform: rotate(360deg);
       }
     }
-    .header-title-front{
-      text-align: center;font-size: 2em;
+
+    .header-title-front {
+      text-align: center;
+      font-size: 2em;
     }
   </style>
 </head>
-<body>
 
+<body>
   <div id="loading">
-    <p class="header-title-front" >Allegra Pos</p>
+    <p class="header-title-front">Allegra Pos</p>
     <div class="loader"></div>
   </div>
+  <script src="flutter_bootstrap.js" async></script>
 
-  <script>
-    window.addEventListener('load', function(ev) {
-      {{flutter_js}}
-      {{flutter_build_config}}
-      _flutter.loader.load({
-        serviceWorker: {
-          serviceWorkerVersion: {{flutter_service_worker_version}},
-        },
-        onEntrypointLoaded: async function(engineInitializer) {
-          loader = document.getElementById('loading');
-          if(loader ==  null) {
-            console.log('remove')
-            loader.remove();
-          }
-          engineInitializer.initializeEngine().then(function(appRunner) {
-            appRunner.runApp();
-          });
-        }
-      });
-    });
-  </script>
 </body>
+
 </html>
