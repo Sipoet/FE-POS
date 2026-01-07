@@ -279,7 +279,7 @@ class _AsyncDropdownMultipleState<T extends Model>
 typedef RequestRemote = Future Function(
     {int page, int limit, String searchText, required CancelToken cancelToken});
 
-class AsyncDropdown<T> extends StatefulWidget {
+class AsyncDropdown<T extends Model> extends StatefulWidget {
   const AsyncDropdown(
       {super.key,
       this.path,
@@ -316,7 +316,7 @@ class AsyncDropdown<T> extends StatefulWidget {
   final String? Function(T? model)? validator;
   final DropdownText<T> textOnSearch;
   final DropdownText<T>? textOnSelected;
-  final ModelClass modelClass;
+  final ModelClass<T> modelClass;
   // final T Function(Map<String, dynamic>, {List included}) converter;
   final Widget? label;
   final bool Function(T, T)? compareValue;
@@ -326,7 +326,7 @@ class AsyncDropdown<T> extends StatefulWidget {
   State<AsyncDropdown<T>> createState() => _AsyncDropdownState<T>();
 }
 
-class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
+class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
     with DefaultResponse, PlatformChecker {
   final notFoundSign = const DropdownMenuEntry<String>(
       label: 'Data tidak Ditemukan', value: '', enabled: false);
@@ -355,6 +355,7 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
           int limit = 20,
           required CancelToken cancelToken}) {
         _cancelToken = cancelToken;
+
         return server.get(widget.path!,
             queryParam: {
               'search_text': searchText,
@@ -432,26 +433,39 @@ class _AsyncDropdownState<T> extends State<AsyncDropdown<T>>
 
   Future<List<T>> getData(String filter, LoadProps? prop) async {
     int page = (prop!.skip / widget.recordLimit).round() + 1;
-    var response = await request(
+    if (widget.path == null) {
+      final response = await widget.modelClass.finds(
+          server,
+          QueryRequest(
+              cancelToken: _cancelToken,
+              searchText: filter,
+              page: page,
+              limit: widget.recordLimit));
+      return response.models;
+    }
+    return request(
       page: page,
       limit: widget.recordLimit,
       searchText: filter,
       cancelToken: _cancelToken,
-    ).onError((error, stackTrace) =>
-        {defaultErrorResponse(error: error, valueWhenError: [])});
-    if (response.statusCode == 200) {
-      Map responseBody = response.data;
-      return convertToOptions(
-          responseBody['data'], responseBody['included'] ?? []);
-    } else {
-      throw 'cant connect to server';
-    }
+    ).then((response) {
+      if (response.statusCode == 200) {
+        Map responseBody = response.data;
+        return convertToOptions(
+            responseBody['data'], responseBody['included'] ?? []);
+      } else {
+        throw 'cant connect to server';
+      }
+    }, onError: (error, stackTrace) {
+      defaultErrorResponse(error: error, valueWhenError: []);
+      return [];
+    });
   }
 
   List<T> convertToOptions(List list, List relationships) {
     return list
-        .map<T>((row) =>
-            widget.modelClass.fromJson(row, included: relationships) as T)
+        .map<T>(
+            (row) => widget.modelClass.fromJson(row, included: relationships))
         .toList();
   }
 }

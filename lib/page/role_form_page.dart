@@ -757,10 +757,15 @@ class _RoleFormPageState extends State<RoleFormPage>
                                             width: 350,
                                             child: AsyncDropdown<HashModel>(
                                                 textOnSearch: (value) =>
-                                                    value.id,
+                                                    value.data['name'] ??
+                                                    value.id.toString(),
                                                 onChanged: (value) =>
-                                                    columnAuthorize.table =
-                                                        value?.id ?? '',
+                                                    setState(() {
+                                                      columnAuthorize.table =
+                                                          value?.id ?? '';
+                                                      columnAuthorize.column
+                                                          .clear();
+                                                    }),
                                                 selected: columnAuthorize
                                                         .table.isEmpty
                                                     ? null

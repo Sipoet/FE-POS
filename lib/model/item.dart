@@ -35,7 +35,7 @@ class Item extends Model {
       Money? cogs,
       ItemType? itemType,
       super.id})
-      : itemType = itemType ?? ItemType(),
+      : itemType = itemType ?? ItemType(name: itemTypeName),
         cogs = cogs ?? const Money(0),
         sellPrice = sellPrice ?? const Money(0);
 
@@ -50,10 +50,11 @@ class Item extends Model {
         'brand': brand,
         'item_type': itemType,
         'supplier_name': supplier?.name,
-        'supplier_code': supplierCode,
-        'brand_name': brandName,
-        'item_type_name': itemTypeName,
+        'supplier_code': supplier?.code ?? supplierCode,
+        'brand_name': brand?.name ?? brandName,
+        'item_type_name': itemType.name,
         'sell_price': sellPrice,
+        'description': description,
         'cogs': cogs,
         'uom': uom
       };
@@ -77,7 +78,7 @@ class Item extends Model {
           relation: json['relationships']['item_type'],
           included: included,
         ) ??
-        ItemType();
+        ItemType(name: itemTypeName);
     brand = BrandClass().findRelationData(
         relation: json['relationships']['brand'], included: included);
   }

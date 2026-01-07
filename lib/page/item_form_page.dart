@@ -4,6 +4,7 @@ import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/money_form_field.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
@@ -59,108 +60,118 @@ class _ItemFormPageState extends State<ItemFormPage>
   Widget build(BuildContext context) {
     return VerticalBodyScroll(
       child: Column(
+        spacing: 10,
         children: [
-          TextFormField(
-            controller: _controller['code'],
-            readOnly: true,
-            decoration: InputDecoration(
-                label: Text(_setting.columnName('item', 'code')),
-                border: OutlineInputBorder()),
+          Visibility(
+            visible: _setting.canShow('ipos::Item', 'code'),
+            child: TextFormField(
+              controller: _controller['code'],
+              readOnly: true,
+              decoration: InputDecoration(
+                  label: Text(_setting.columnName('ipos::Item', 'code')),
+                  border: OutlineInputBorder()),
+            ),
           ),
-          const SizedBox(
-            height: 10,
+          Visibility(
+            visible: _setting.canShow('ipos::Item', 'name'),
+            child: TextFormField(
+              controller: _controller['name'],
+              readOnly: true,
+              decoration: InputDecoration(
+                  label: Text(_setting.columnName('ipos::Item', 'name')),
+                  border: OutlineInputBorder()),
+            ),
           ),
-          TextFormField(
-            controller: _controller['name'],
-            readOnly: true,
-            decoration: InputDecoration(
-                label: Text(_setting.columnName('item', 'name')),
-                border: OutlineInputBorder()),
+          Visibility(
+            visible: _setting.canShow('ipos::Item', 'brand'),
+            child: AsyncDropdown<Brand>(
+              allowClear: false,
+              textOnSearch: (e) => e.modelValue,
+              modelClass: BrandClass(),
+              label: Text(
+                _setting.columnName('ipos::Item', 'brand'),
+              ),
+              onChanged: (model) => item.brand = model,
+              selected: item.brand,
+            ),
           ),
-          const SizedBox(
-            height: 10,
+          Visibility(
+            visible: _setting.canShow('ipos::Item', 'item_type'),
+            child: AsyncDropdown<ItemType>(
+              allowClear: false,
+              textOnSearch: (model) => '${model.name} - ${model.description}',
+              modelClass: ItemTypeClass(),
+              label: Text(
+                _setting.columnName('ipos::Item', 'item_type'),
+              ),
+              onChanged: (model) => item.itemType = model ?? item.itemType,
+              selected: item.itemType,
+            ),
           ),
-          TextFormField(
-            controller: _controller['brand_name'],
-            readOnly: true,
-            decoration: InputDecoration(
-                label: Text(_setting.columnName('item', 'brand_name')),
-                border: OutlineInputBorder()),
+          Visibility(
+            visible: _setting.canShow('ipos::Item', 'supplier'),
+            child: AsyncDropdown<Supplier>(
+              allowClear: false,
+              textOnSearch: (model) => '${model.code} - ${model.name}',
+              modelClass: SupplierClass(),
+              label: Text(
+                _setting.columnName('ipos::Item', 'supplier'),
+              ),
+              onChanged: (model) => item.supplier = model ?? item.supplier,
+              selected: item.supplier,
+            ),
           ),
-          const SizedBox(
-            height: 10,
+          Visibility(
+            visible: _setting.canShow('ipos::Item', 'uom'),
+            child: TextFormField(
+              controller: _controller['uom'],
+              readOnly: true,
+              decoration: InputDecoration(
+                  label: Text(_setting.columnName('ipos::Item', 'uom')),
+                  border: OutlineInputBorder()),
+            ),
           ),
-          TextFormField(
-            controller: _controller['item_type_name'],
-            readOnly: true,
-            decoration: InputDecoration(
-                label: Text(_setting.columnName('item', 'item_type_name')),
-                border: OutlineInputBorder()),
+          Visibility(
+            visible: _setting.canShow('ipos::Item', 'description'),
+            child: TextFormField(
+              controller: _controller['description'],
+              readOnly: true,
+              minLines: 3,
+              maxLines: 5,
+              decoration: InputDecoration(
+                  label: Text(_setting.columnName('ipos::Item', 'description')),
+                  border: OutlineInputBorder()),
+            ),
           ),
-          const SizedBox(
-            height: 10,
+          Visibility(
+            visible: _setting.canShow('ipos::Item', 'cogs'),
+            child: MoneyFormField(
+              controller: _controller['cogs'],
+              onChanged: (value) {
+                setState(() {
+                  item.cogs = value ?? item.cogs;
+                });
+              },
+              label: Text(_setting.columnName('ipos::Item', 'cogs')),
+            ),
           ),
-          TextFormField(
-            controller: _controller['supplier_code'],
-            readOnly: true,
-            decoration: InputDecoration(
-                label: Text(_setting.columnName('item', 'supplier_code')),
-                border: OutlineInputBorder()),
+          Visibility(
+            visible: _setting.canShow('ipos::Item', 'sell_price'),
+            child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Margin: ${item.margin.format()}')),
           ),
-          const SizedBox(
-            height: 10,
-          ),
-          TextFormField(
-            controller: _controller['uom'],
-            readOnly: true,
-            decoration: InputDecoration(
-                label: Text(_setting.columnName('item', 'uom')),
-                border: OutlineInputBorder()),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          TextFormField(
-            controller: _controller['description'],
-            readOnly: true,
-            minLines: 3,
-            maxLines: 5,
-            decoration: InputDecoration(
-                label: Text(_setting.columnName('item', 'description')),
-                border: OutlineInputBorder()),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          MoneyFormField(
-            controller: _controller['cogs'],
-            onChanged: (value) {
-              setState(() {
-                item.cogs = value ?? item.cogs;
-              });
-            },
-            label: Text(_setting.columnName('item', 'cogs')),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Align(
-              alignment: Alignment.centerLeft,
-              child: Text('Margin: ${item.margin.format()}')),
-          const SizedBox(
-            height: 10,
-          ),
-          MoneyFormField(
-            controller: _controller['sell_price'],
-            onChanged: (value) {
-              setState(() {
-                item.sellPrice = value ?? item.sellPrice;
-              });
-            },
-            label: Text(_setting.columnName('item', 'sell_price')),
-          ),
-          const SizedBox(
-            height: 10,
+          Visibility(
+            visible: _setting.canShow('ipos::Item', 'sell_price'),
+            child: MoneyFormField(
+              controller: _controller['sell_price'],
+              onChanged: (value) {
+                setState(() {
+                  item.sellPrice = value ?? item.sellPrice;
+                });
+              },
+              label: Text(_setting.columnName('ipos::Item', 'sell_price')),
+            ),
           ),
           ElevatedButton(onPressed: _submit, child: Text('Submit')),
         ],

@@ -67,6 +67,8 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
   }
 
   Future<DataTableResponse<Item>> fetchItems(QueryRequest request) {
+    request.include.addAll(['supplier', 'brand', 'item_type']);
+    request.searchText = _searchText;
     return ItemClass().finds(server, request).then(
         (value) => DataTableResponse<Item>(
             models: value.models,
