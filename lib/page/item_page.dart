@@ -24,34 +24,17 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
   String _searchText = '';
   List<Item> items = [];
   final cancelToken = CancelToken();
-  late Flash flash;
+  late final Flash flash;
   late final List<TableColumn> columns;
+  late final Setting setting;
 
   @override
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    final setting = context.read<Setting>();
+    setting = context.read<Setting>();
 
-    final actionColumn = TableColumn(
-      clientWidth: 100,
-      name: 'action',
-      type: TableColumnType.action,
-      humanizeName: 'Action',
-      frozen: TrinaColumnFrozen.end,
-      renderBody: (rendererContext) {
-        return Row(
-          children: [
-            IconButton(
-              onPressed: () =>
-                  _openEditForm(rendererContext.row.modelOf<Item>()),
-              icon: Icon(Icons.edit),
-            )
-          ],
-        );
-      },
-    );
-    columns = setting.tableColumn('ipos::Item')..add(actionColumn);
+    columns = setting.tableColumn('ipos::Item');
     super.initState();
   }
 
@@ -69,13 +52,18 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
   Future<DataTableResponse<Item>> fetchItems(QueryRequest request) {
     request.include.addAll(['supplier', 'brand', 'item_type']);
     request.searchText = _searchText;
-    return ItemClass().finds(server, request).then(
-        (value) => DataTableResponse<Item>(
+    return ItemClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<Item>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void searchChanged(value) {
@@ -130,6 +118,15 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
           SizedBox(
             height: bodyScreenHeight,
             child: CustomAsyncDataTable<Item>(
+              renderAction: (model) => Row(
+                children: [
+                  if (setting.isAuthorize('item', 'update'))
+                    IconButton(
+                      onPressed: () => _openEditForm(model),
+                      icon: Icon(Icons.edit),
+                    ),
+                ],
+              ),
               onLoaded: (stateManager) => _source = stateManager,
               fixedLeftColumns: 1,
               fetchData: fetchItems,
