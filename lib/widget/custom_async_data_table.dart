@@ -1,4 +1,5 @@
-import 'package:fe_pos/model/item.dart';
+import 'package:fe_pos/model/hash_model.dart';
+
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
@@ -15,8 +16,8 @@ export 'package:trina_grid/trina_grid.dart';
 typedef OnLoadedCallBack = void Function(TrinaGridStateManager stateManager);
 typedef OnRowCheckedCallback = void Function(TrinaGridOnRowCheckedEvent event);
 typedef OnSelectedCallback = void Function(TrinaGridOnSelectedEvent event);
-typedef OnRowDoubleTapCallback = void Function(
-    TrinaGridOnRowDoubleTapEvent event);
+typedef OnRowDoubleTapCallback =
+    void Function(TrinaGridOnRowDoubleTapEvent event);
 
 class CustomAsyncDataTable<T extends Model> extends StatefulWidget {
   final int fixedLeftColumns;
@@ -72,39 +73,42 @@ class _CustomAsyncDataTableState<T extends Model>
   void initState() {
     server = context.read<Server>();
     tabManager = context.read<TabManager>();
-    columns = widget.columns.asMap().entries.map<TrinaColumn>((entry) {
-      int index = entry.key;
-      TableColumn tableColumn = entry.value;
-      return decorateColumn(
-        tableColumn,
-        tabManager: tabManager,
-        showCheckboxColumn: index == 0 ? widget.showCheckboxColumn : false,
-        listEnumValues: widget.enums[tableColumn.name],
-        showFilter: widget.showFilter,
-        isFrozen: index < widget.fixedLeftColumns,
-      );
-    }).toList()
-      ..add(TrinaColumn(
-          title: ' ',
-          field: 'model',
-          type: TrinaColumnType.text(defaultValue: null),
-          hide: widget.renderAction == null,
-          frozen: TrinaColumnFrozen.end,
-          enableFilterMenuItem: false,
-          enableAutoEditing: false,
-          enableColumnDrag: false,
-          enableSorting: false,
-          enableHideColumnMenuItem: false,
-          enableContextMenu: false,
-          enableEditingMode: false,
-          renderer: widget.renderAction == null
-              ? null
-              : (TrinaColumnRendererContext rendererContext) =>
-                  widget.renderAction!(rendererContext.cell.value as T),
-          width: widget.renderAction == null
-              ? 0
-              : widget.actionColumnWidth ?? TrinaGridSettings.columnWidth,
-          minWidth: 0));
+    columns =
+        widget.columns.asMap().entries.map<TrinaColumn>((entry) {
+          int index = entry.key;
+          TableColumn tableColumn = entry.value;
+          return decorateColumn(
+            tableColumn,
+            tabManager: tabManager,
+            showCheckboxColumn: index == 0 ? widget.showCheckboxColumn : false,
+            listEnumValues: widget.enums[tableColumn.name],
+            showFilter: widget.showFilter,
+            isFrozen: index < widget.fixedLeftColumns,
+          );
+        }).toList()..add(
+          TrinaColumn(
+            title: ' ',
+            field: 'model',
+            type: TrinaColumnType.text(defaultValue: null),
+            hide: widget.renderAction == null,
+            frozen: TrinaColumnFrozen.end,
+            enableFilterMenuItem: false,
+            enableAutoEditing: false,
+            enableColumnDrag: false,
+            enableSorting: false,
+            enableHideColumnMenuItem: false,
+            enableContextMenu: false,
+            enableEditingMode: false,
+            renderer: widget.renderAction == null
+                ? null
+                : (TrinaColumnRendererContext rendererContext) =>
+                      widget.renderAction!(rendererContext.cell.value as T),
+            width: widget.renderAction == null
+                ? 0
+                : widget.actionColumnWidth ?? TrinaGridSettings.columnWidth,
+            minWidth: 0,
+          ),
+        );
 
     super.initState();
   }
@@ -136,72 +140,74 @@ class _CustomAsyncDataTableState<T extends Model>
   List<FilterData> remoteFilters() {
     List<FilterData> filter = [];
     for (final row in _source.filterRows) {
-      filter.add(ComparisonFilterData(
-        key: row.cells['column']!.value,
-        operator: filterTypeRemote(row.cells['type']!.value),
-        value: row.cells['value']!.value.toString(),
-      ));
+      filter.add(
+        ComparisonFilterData(
+          key: row.cells['column']!.value,
+          operator: filterTypeRemote(row.cells['type']!.value),
+          value: row.cells['value']!.value.toString(),
+        ),
+      );
     }
     return filter;
   }
 
-  Map<String, List<Item>> selectedItems = {};
-  Future<List<Item>?> showRemoteOptions({
+  Map<String, List<HashModel>> selectedItems = {};
+  Future<List<HashModel>?> showRemoteOptions({
     required String path,
     required String attributeKey,
     String searchText = '',
     String title = '',
   }) {
     final itemBefore = selectedItems[title] ?? [];
-    return showDialog<List<Item>>(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Filter $title',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      selectedItems[title] = itemBefore;
-                      Navigator.of(context).pop(itemBefore);
-                    },
-                    icon: Icon(Icons.close),
-                  )
-                ],
+    return showDialog<List<HashModel>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Filter $title',
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              content: Column(
-                children: [
-                  SizedBox(
-                    width: 400,
-                    child: AsyncDropdownMultiple<Item>(
-                      path: path,
-                      width: 400,
-                      selecteds: itemBefore,
-                      textOnSearch: (item) => _itemText(item, attributeKey),
-                      modelClass: ItemClass(),
-                      onChanged: (List<Item> items) =>
-                          selectedItems[title] = items,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  ElevatedButton(
-                    onPressed: () =>
-                        Navigator.of(context).pop(selectedItems[title]),
-                    child: Text('Submit'),
-                  ),
-                ],
-              ));
-        });
+              IconButton(
+                onPressed: () {
+                  selectedItems[title] = itemBefore;
+                  Navigator.of(context).pop(itemBefore);
+                },
+                icon: Icon(Icons.close),
+              ),
+            ],
+          ),
+          content: Column(
+            children: [
+              SizedBox(
+                width: 400,
+                child: AsyncDropdownMultiple<HashModel>(
+                  path: path,
+                  width: 400,
+                  selecteds: itemBefore,
+                  textOnSearch: (item) => _itemText(item, attributeKey),
+                  modelClass: HashModelClass(),
+                  onChanged: (List<HashModel> items) =>
+                      selectedItems[title] = items,
+                ),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () =>
+                    Navigator.of(context).pop(selectedItems[title]),
+                child: Text('Submit'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
-  String _itemText(Item item, String attributeKey) {
+  String _itemText(HashModel item, String attributeKey) {
     final key = attributeKey.split('.').last;
     return "${item.id.toString()} - ${item[key].toString()}";
   }
@@ -223,17 +229,19 @@ class _CustomAsyncDataTableState<T extends Model>
         if (!event.column.sort.isNone) {
           sorts = [
             SortData(
-                key: event.column.field,
-                isAscending: event.column.sort.isAscending)
+              key: event.column.field,
+              isAscending: event.column.sort.isAscending,
+            ),
           ];
         }
         cancelToken?.cancel();
         cancelToken = CancelToken();
         var request = QueryRequest(
-            page: 1,
-            filters: remoteFilters(),
-            sorts: sorts,
-            cancelToken: cancelToken);
+          page: 1,
+          filters: remoteFilters(),
+          sorts: sorts,
+          cancelToken: cancelToken,
+        );
 
         widget.fetchData(request);
       },
@@ -247,31 +255,37 @@ class _CustomAsyncDataTableState<T extends Model>
             final columType = event.column.type;
             if (columType is TrinaColumnTypeModelSelect) {
               showRemoteOptions(
-                      searchText: event.filterValue,
-                      title: event.column.title,
-                      path: columType.path,
-                      attributeKey: columType.attributeKey)
-                  .then((items) {
+                searchText: event.filterValue,
+                title: event.column.title,
+                path: columType.path,
+                attributeKey: columType.attributeKey,
+              ).then((items) {
                 if (items == null) return;
                 final filterValue = items
                     .map<String>((item) => item.id.toString())
                     .toList()
                     .join(',');
                 List<TrinaRow> filterRows = _source.filterRows
-                    .where((filterRow) =>
-                        filterRow.cells['column']!.value ==
-                            event.column.field &&
-                        filterRow.cells['type']!.value is TrinaFilterTypeEquals)
+                    .where(
+                      (filterRow) =>
+                          filterRow.cells['column']!.value ==
+                              event.column.field &&
+                          filterRow.cells['type']!.value
+                              is TrinaFilterTypeEquals,
+                    )
                     .toList();
                 if (filterRows.isEmpty) {
-                  _source.filterRows.add(FilterHelper.createFilterRow(
-                    filterType: TrinaFilterTypeEquals(),
-                    filterValue: filterValue,
-                    columnField: event.column.field,
-                  ));
+                  _source.filterRows.add(
+                    FilterHelper.createFilterRow(
+                      filterType: TrinaFilterTypeEquals(),
+                      filterValue: filterValue,
+                      columnField: event.column.field,
+                    ),
+                  );
                 } else {
-                  filterRows.first.cells['value'] =
-                      TrinaCell(value: filterValue);
+                  filterRows.first.cells['value'] = TrinaCell(
+                    value: filterValue,
+                  );
                 }
                 _source.setFilterRows(_source.filterRows);
                 _source.refreshTable();
@@ -312,26 +326,28 @@ class _CustomAsyncDataTableState<T extends Model>
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           SizedBox(
-              width: 50,
-              child: SubmenuButton(
-                  controller: _menuController,
-                  menuChildren: [
-                    MenuItemButton(
-                      child: const Text('hide/show column'),
-                      onPressed: () {
-                        displayShowHideColumn(stateManager);
-                        _menuController.close();
-                      },
-                    ),
-                    MenuItemButton(
-                      child: const Text('Refresh Data'),
-                      onPressed: () {
-                        stateManager.refreshTable();
-                        _menuController.close();
-                      },
-                    ),
-                  ],
-                  child: const Icon(Icons.more_vert)))
+            width: 50,
+            child: SubmenuButton(
+              controller: _menuController,
+              menuChildren: [
+                MenuItemButton(
+                  child: const Text('hide/show column'),
+                  onPressed: () {
+                    displayShowHideColumn(stateManager);
+                    _menuController.close();
+                  },
+                ),
+                MenuItemButton(
+                  child: const Text('Refresh Data'),
+                  onPressed: () {
+                    stateManager.refreshTable();
+                    _menuController.close();
+                  },
+                ),
+              ],
+              child: const Icon(Icons.more_vert),
+            ),
+          ),
         ],
       ),
       createFooter: (stateManager) {
@@ -339,66 +355,73 @@ class _CustomAsyncDataTableState<T extends Model>
           fetch: (event) async {
             cancelToken?.cancel();
             cancelToken = CancelToken();
-            var request =
-                QueryRequest(page: event.page, cancelToken: cancelToken);
+            var request = QueryRequest(
+              page: event.page,
+              cancelToken: cancelToken,
+            );
             final sortColumn = event.sortColumn;
 
             if (sortColumn != null) {
               request.sorts = [
                 SortData(
-                    key: event.sortColumn!.field,
-                    isAscending: event.sortColumn!.sort.isAscending),
+                  key: event.sortColumn!.field,
+                  isAscending: event.sortColumn!.sort.isAscending,
+                ),
               ];
             }
             request.filters = remoteFilters();
-            return widget.fetchData(request).then(
-              (DataTableResponse<T> response) {
-                return TrinaLazyPaginationResponse(
-                    rows: response.models
-                        .map<TrinaRow>(
-                          (model) => decorateRow(
-                              isChecked: _containsCheckedValue(model.toMap()),
-                              model: model,
-                              tableColumns: columns),
-                        )
-                        .toList(),
-                    totalPage: response.totalPage);
-              },
-            );
+            return widget.fetchData(request).then((
+              DataTableResponse<T> response,
+            ) {
+              return TrinaLazyPaginationResponse(
+                rows: response.models
+                    .map<TrinaRow>(
+                      (model) => decorateRow(
+                        isChecked: _containsCheckedValue(model.toMap()),
+                        model: model,
+                        tableColumns: columns,
+                      ),
+                    )
+                    .toList(),
+                totalPage: response.totalPage,
+              );
+            });
           },
           stateManager: stateManager,
         );
       },
       configuration: TrinaGridConfiguration(
-          columnFilter: TrinaGridColumnFilterConfig(
-            filters: [
-              TrinaFilterTypeContains(),
-              TrinaFilterTypeEquals(),
-              TrinaFilterTypeNot(),
-              TrinaFilterTypeLessThan(),
-              TrinaFilterTypeLessThanOrEqualTo(),
-              TrinaFilterTypeGreaterThan(),
-              TrinaFilterTypeGreaterThanOrEqualTo(),
-            ],
-            debounceMilliseconds: 500,
-            resolveDefaultColumnFilter: (column, resolver) {
-              if (column.type is TrinaColumnTypeModelSelect ||
-                  column.type is TrinaColumnTypeNumber ||
-                  column.type is TrinaColumnTypeCurrency) {
-                return resolver<TrinaFilterTypeEquals>();
-              } else {
-                return resolver<TrinaFilterTypeContains>();
-              }
-            },
-          ),
-          scrollbar: const TrinaGridScrollbarConfig(
-            isAlwaysShown: true,
-            // scrollbarThickness: 10,
-          ),
-          style: TrinaGridStyleConfig(
-              borderColor: colorScheme.outline,
-              rowColor: colorScheme.secondaryContainer,
-              evenRowColor: colorScheme.onPrimary)),
+        columnFilter: TrinaGridColumnFilterConfig(
+          filters: [
+            TrinaFilterTypeContains(),
+            TrinaFilterTypeEquals(),
+            TrinaFilterTypeNot(),
+            TrinaFilterTypeLessThan(),
+            TrinaFilterTypeLessThanOrEqualTo(),
+            TrinaFilterTypeGreaterThan(),
+            TrinaFilterTypeGreaterThanOrEqualTo(),
+          ],
+          debounceMilliseconds: 500,
+          resolveDefaultColumnFilter: (column, resolver) {
+            if (column.type is TrinaColumnTypeModelSelect ||
+                column.type is TrinaColumnTypeNumber ||
+                column.type is TrinaColumnTypeCurrency) {
+              return resolver<TrinaFilterTypeEquals>();
+            } else {
+              return resolver<TrinaFilterTypeContains>();
+            }
+          },
+        ),
+        scrollbar: const TrinaGridScrollbarConfig(
+          isAlwaysShown: true,
+          // scrollbarThickness: 10,
+        ),
+        style: TrinaGridStyleConfig(
+          borderColor: colorScheme.outline,
+          rowColor: colorScheme.secondaryContainer,
+          evenRowColor: colorScheme.onPrimary,
+        ),
+      ),
     );
   }
 }

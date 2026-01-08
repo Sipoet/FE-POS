@@ -98,7 +98,9 @@ class _ItemFormPageState extends State<ItemFormPage>
                       allowClear: false,
                       textOnSearch: (e) => e.modelValue,
                       modelClass: BrandClass(),
-                      label: Text(_setting.columnName('ipos::Item', 'brand')),
+                      label: Text(
+                        _setting.columnName('ipos::Item', 'brand_name'),
+                      ),
                       onChanged: (model) => item.brand = model,
                       selected: item.brand,
                     ),
@@ -114,7 +116,7 @@ class _ItemFormPageState extends State<ItemFormPage>
                           '${model.name} - ${model.description}',
                       modelClass: ItemTypeClass(),
                       label: Text(
-                        _setting.columnName('ipos::Item', 'item_type'),
+                        _setting.columnName('ipos::Item', 'item_type_name'),
                       ),
                       onChanged: (model) =>
                           item.itemType = model ?? item.itemType,
@@ -131,7 +133,7 @@ class _ItemFormPageState extends State<ItemFormPage>
                       textOnSearch: (model) => '${model.code} - ${model.name}',
                       modelClass: SupplierClass(),
                       label: Text(
-                        _setting.columnName('ipos::Item', 'supplier'),
+                        _setting.columnName('ipos::Item', 'supplier_code'),
                       ),
                       onChanged: (model) =>
                           item.supplier = model ?? item.supplier,
