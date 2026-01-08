@@ -42,14 +42,18 @@ class User extends Model {
   String? password;
   String? passwordConfirmation;
   UserStatus status;
+  DateTime? currentSignInAt;
+  DateTime? lastSignInAt;
   Role role;
-  User(
-      {this.username = '',
-      this.email,
-      super.id,
-      Role? role,
-      this.status = UserStatus.inactive})
-      : role = role ?? Role();
+  User({
+    this.username = '',
+    this.email,
+    super.id,
+    this.lastSignInAt,
+    this.currentSignInAt,
+    Role? role,
+    this.status = UserStatus.inactive,
+  }) : role = role ?? Role();
 
   @override
   Map<String, dynamic> toMap() {
@@ -58,7 +62,10 @@ class User extends Model {
       'email': email,
       'role_id': role.id,
       'role.name': role.name,
-      'status': status
+      'role': role,
+      'current_sign_in_at': currentSignInAt,
+      'last_sign_in_at': lastSignInAt,
+      'status': status,
     };
     if (password != null && password!.isNotEmpty) {
       result['password'] = password;
@@ -74,16 +81,16 @@ class User extends Model {
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    Role? role = RoleClass().findRelationData(
-      included: included,
-      relation: json['relationships']['role'],
-    );
+    role =
+        RoleClass().findRelationData(
+          included: included,
+          relation: json['relationships']['role'],
+        ) ??
+        role;
 
     username = attributes['username'] ?? '';
     email = attributes['email'];
-    // model.status =
-    //     UserStatus.fromString(attributes['status']?.toString());
-    role = role ?? role;
+    // status = UserStatus.fromString(attributes['status']?.toString());
   }
 
   @override

@@ -25,6 +25,7 @@ class _UserPageState extends State<UserPage>
   final cancelToken = CancelToken();
   late Flash flash;
   final _menuController = MenuController();
+  late final Setting setting;
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
 
@@ -35,7 +36,7 @@ class _UserPageState extends State<UserPage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    final setting = context.read<Setting>();
+    setting = context.read<Setting>();
     columns = setting.tableColumn('user');
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
@@ -54,49 +55,69 @@ class _UserPageState extends State<UserPage>
   Future<DataTableResponse<User>> fetchUsers(QueryRequest request) {
     request.filters = _filters;
     request.searchText = _searchText;
-    return UserClass().finds(server, request).then(
-        (value) => DataTableResponse<User>(
+    request.include.add('role');
+    return UserClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<User>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void addForm() {
-    User user = User(username: '', role: Role(name: ''));
+    User user = User(
+      username: '',
+      role: Role(name: ''),
+    );
 
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'New User', UserFormPage(key: ObjectKey(user), user: user));
+        'New User',
+        UserFormPage(key: ObjectKey(user), user: user),
+      );
     });
   }
 
   void editForm(User user) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Edit User ${user.username}',
-          UserFormPage(key: ObjectKey(user), user: user));
+      tabManager.addTab(
+        'Edit User ${user.username}',
+        UserFormPage(key: ObjectKey(user), user: user),
+      );
     });
   }
 
   void destroyRecord(User user) {
     showConfirmDialog(
-        message: 'Apakah anda yakin hapus ${user.username}?',
-        onSubmit: () {
-          server.delete('/users/${user.username}').then((response) {
-            if (response.statusCode == 200) {
-              flash.showBanner(
-                  messageType: ToastificationType.success,
-                  title: 'Sukses Hapus',
-                  description: 'Sukses Hapus user ${user.username}');
-              refreshTable();
-            }
-          }, onError: (error) {
-            defaultErrorResponse(error: error);
-          });
-        });
+      message: 'Apakah anda yakin hapus ${user.username}?',
+      onSubmit: () {
+        server
+            .delete('/users/${user.username}')
+            .then(
+              (response) {
+                if (response.statusCode == 200) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses Hapus',
+                    description: 'Sukses Hapus user ${user.username}',
+                  );
+                  refreshTable();
+                }
+              },
+              onError: (error) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
   void searchChanged(value) {
@@ -114,16 +135,22 @@ class _UserPageState extends State<UserPage>
   }
 
   void _unlockAccess(User user) {
-    server.post('/users/${user.username}/unlock_access').then((response) {
-      if (response.statusCode == 200) {
-        flash.showBanner(
-            messageType: ToastificationType.success,
-            title: 'Sukses unlock',
-            description: 'Sukses unlock ${user.username}');
-      }
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-    });
+    server
+        .post('/users/${user.username}/unlock_access')
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              flash.showBanner(
+                messageType: ToastificationType.success,
+                title: 'Sukses unlock',
+                description: 'Sukses unlock ${user.username}',
+              );
+            }
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
   @override
@@ -161,8 +188,9 @@ class _UserPageState extends State<UserPage>
                   SizedBox(
                     width: 150,
                     child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
+                      decoration: const InputDecoration(
+                        hintText: 'Search Text',
+                      ),
                       onChanged: searchChanged,
                       onSubmitted: searchChanged,
                     ),
@@ -170,18 +198,19 @@ class _UserPageState extends State<UserPage>
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(
-                        controller: _menuController,
-                        menuChildren: [
-                          MenuItemButton(
-                            child: const Text('Tambah User'),
-                            onPressed: () {
-                              _menuController.close();
-                              addForm();
-                            },
-                          ),
-                        ],
-                        child: const Icon(Icons.table_rows_rounded)),
-                  )
+                      controller: _menuController,
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah User'),
+                          onPressed: () {
+                            _menuController.close();
+                            addForm();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -192,23 +221,28 @@ class _UserPageState extends State<UserPage>
                 renderAction: (user) => Row(
                   spacing: 10,
                   children: [
-                    IconButton(
+                    if (setting.isAuthorize('user', 'update'))
+                      IconButton(
                         onPressed: () {
                           editForm(user);
                         },
                         tooltip: 'Edit User',
-                        icon: const Icon(Icons.edit)),
-                    IconButton(
-                      tooltip: 'unlock Akses User',
-                      icon: const Icon(Icons.lock_open),
-                      onPressed: () => _unlockAccess(user),
-                    ),
-                    IconButton(
+                        icon: const Icon(Icons.edit),
+                      ),
+                    if (setting.isAuthorize('user', 'unlock_access'))
+                      IconButton(
+                        tooltip: 'unlock Akses User',
+                        icon: const Icon(Icons.lock_open),
+                        onPressed: () => _unlockAccess(user),
+                      ),
+                    if (setting.isAuthorize('user', 'destroy'))
+                      IconButton(
                         onPressed: () {
                           destroyRecord(user);
                         },
                         tooltip: 'Hapus User',
-                        icon: const Icon(Icons.delete)),
+                        icon: const Icon(Icons.delete),
+                      ),
                   ],
                 ),
                 onLoaded: (stateManager) => _source = stateManager,
