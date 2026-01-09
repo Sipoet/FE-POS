@@ -55,34 +55,45 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
   }
 
   Future<DataTableResponse<EmployeeLeave>> fetchEmployeeLeaves(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
     request.searchText = _searchText;
     request.include.add('employee');
-    return EmployeeLeaveClass().finds(server, request).then(
-        (value) => DataTableResponse<EmployeeLeave>(
+    return EmployeeLeaveClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<EmployeeLeave>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void addForm() {
     var tabManager = context.read<TabManager>();
     setState(() {
       EmployeeLeave employeeLeave = EmployeeLeave(
-          leaveType: LeaveType.annualLeave,
-          date: Date.today(),
-          employee: Employee(
-              code: '',
-              name: '',
-              role: Role(name: ''),
-              startWorkingDate: Date.today()));
+        leaveType: LeaveType.annualLeave,
+        date: Date.today(),
+        employee: Employee(
+          code: '',
+          name: '',
+          role: Role(name: ''),
+          startWorkingDate: Date.today(),
+        ),
+      );
       tabManager.addTab(
-          'Buat Cuti Karyawan',
-          EmployeeLeaveFormPage(
-              key: ObjectKey(employeeLeave), employeeLeave: employeeLeave));
+        'Buat Cuti Karyawan',
+        EmployeeLeaveFormPage(
+          key: ObjectKey(employeeLeave),
+          employeeLeave: employeeLeave,
+        ),
+      );
     });
   }
 
@@ -90,31 +101,40 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Edit Cuti Karyawan ${employeeLeave.id}',
-          EmployeeLeaveFormPage(
-              key: ObjectKey(employeeLeave), employeeLeave: employeeLeave));
+        'Edit Cuti Karyawan ${employeeLeave.id}',
+        EmployeeLeaveFormPage(
+          key: ObjectKey(employeeLeave),
+          employeeLeave: employeeLeave,
+        ),
+      );
     });
   }
 
   void destroyRecord(EmployeeLeave employeeLeave) {
     showConfirmDialog(
-        message:
-            'Apakah anda yakin hapus ${employeeLeave.employee.name} tanggal ${dateFormat(employeeLeave.date)}?',
-        onSubmit: () {
-          server.delete('/employee_leaves/${employeeLeave.id}').then(
+      message:
+          'Apakah anda yakin hapus ${employeeLeave.employee.name} tanggal ${dateFormat(employeeLeave.date)}?',
+      onSubmit: () {
+        server
+            .delete('/employee_leaves/${employeeLeave.id}')
+            .then(
               (response) {
-            if (response.statusCode == 200) {
-              flash.showBanner(
-                  messageType: ToastificationType.success,
-                  title: 'Sukses Hapus',
-                  description:
-                      'Sukses Hapus employee_leave ${employeeLeave.employee.name}');
-              refreshTable();
-            }
-          }, onError: (error) {
-            defaultErrorResponse(error: error);
-          });
-        });
+                if (response.statusCode == 200) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses Hapus',
+                    description:
+                        'Sukses Hapus employee_leave ${employeeLeave.employee.name}',
+                  );
+                  refreshTable();
+                }
+              },
+              onError: (error) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
   void searchChanged(value) {
@@ -168,8 +188,9 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
                   SizedBox(
                     width: 150,
                     child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
+                      decoration: const InputDecoration(
+                        hintText: 'Search Text',
+                      ),
                       onChanged: searchChanged,
                       onSubmitted: searchChanged,
                     ),
@@ -177,8 +198,9 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(
-                        controller: menuController,
-                        menuChildren: [
+                      controller: menuController,
+                      menuChildren: [
+                        if (setting.isAuthorize('employeeLeave', 'create'))
                           MenuItemButton(
                             child: const Text('Tambah Cuti Karyawan'),
                             onPressed: () {
@@ -186,9 +208,10 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
                               addForm();
                             },
                           ),
-                        ],
-                        child: const Icon(Icons.table_rows_rounded)),
-                  )
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -199,18 +222,22 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
                 renderAction: (employeeLeave) => Row(
                   spacing: 10,
                   children: [
-                    IconButton(
+                    if (setting.isAuthorize('employeeLeave', 'update'))
+                      IconButton(
                         onPressed: () {
                           editForm(employeeLeave);
                         },
                         tooltip: 'Edit Cuti Karyawan',
-                        icon: const Icon(Icons.edit)),
-                    IconButton(
+                        icon: const Icon(Icons.edit),
+                      ),
+                    if (setting.isAuthorize('employeeLeave', 'destroy'))
+                      IconButton(
                         onPressed: () {
                           destroyRecord(employeeLeave);
                         },
                         tooltip: 'Hapus Cuti Karyawan',
-                        icon: const Icon(Icons.delete)),
+                        icon: const Icon(Icons.delete),
+                      ),
                   ],
                 ),
                 onLoaded: (stateManager) {

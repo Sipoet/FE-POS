@@ -43,32 +43,32 @@ class PaymentProvider extends Model {
   PaymentProviderStatus status;
   String? swiftCode;
   List<PaymentProviderEdc> paymentProviderEdcs;
-  PaymentProvider(
-      {this.bankOrProvider = '',
-      this.name = '',
-      super.id,
-      super.createdAt,
-      super.updatedAt,
-      this.status = PaymentProviderStatus.inactive,
-      List<PaymentProviderEdc>? paymentProviderEdcs,
-      this.currency = 'IDR',
-      this.accountNumber = '',
-      this.accountRegisterName = '',
-      this.swiftCode})
-      : paymentProviderEdcs = paymentProviderEdcs ?? <PaymentProviderEdc>[];
+  PaymentProvider({
+    this.bankOrProvider = '',
+    this.name = '',
+    super.id,
+    super.createdAt,
+    super.updatedAt,
+    this.status = PaymentProviderStatus.inactive,
+    List<PaymentProviderEdc>? paymentProviderEdcs,
+    this.currency = 'IDR',
+    this.accountNumber = '',
+    this.accountRegisterName = '',
+    this.swiftCode,
+  }) : paymentProviderEdcs = paymentProviderEdcs ?? <PaymentProviderEdc>[];
 
   @override
   Map<String, dynamic> toMap() => {
-        'bank_or_provider': bankOrProvider,
-        'name': name,
-        'status': status,
-        'currency': currency,
-        'account_number': accountNumber,
-        'account_register_name': accountRegisterName,
-        'swift_code': swiftCode,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-      };
+    'bank_or_provider': bankOrProvider,
+    'name': name,
+    'status': status,
+    'currency': currency,
+    'account_number': accountNumber,
+    'account_register_name': accountRegisterName,
+    'swift_code': swiftCode,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
   @override
   String get modelName => 'payment_provider';
   @override
@@ -82,10 +82,14 @@ class PaymentProvider extends Model {
     accountNumber = attributes['account_number'] ?? '';
     accountRegisterName = attributes['account_register_name'] ?? '';
     swiftCode = attributes['swift_code'];
-    status = PaymentProviderStatus.fromString(attributes['status']);
+    if (attributes['status'] != null &&
+        attributes['status'].toString().isNotEmpty) {
+      status = PaymentProviderStatus.fromString(attributes['status']);
+    }
     paymentProviderEdcs = PaymentProviderEdcClass().findRelationsData(
-        included: included,
-        relation: json['relationships']?['payment_provider_edcs']);
+      included: included,
+      relation: json['relationships']?['payment_provider_edcs'],
+    );
   }
 
   @override

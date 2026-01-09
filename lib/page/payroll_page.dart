@@ -21,6 +21,7 @@ class _PayrollPageState extends State<PayrollPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final TrinaGridStateManager _source;
   late final Server server;
+  late final Setting setting;
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
@@ -34,7 +35,7 @@ class _PayrollPageState extends State<PayrollPage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    final setting = context.read<Setting>();
+    setting = context.read<Setting>();
     columns = setting.tableColumn('payroll');
 
     super.initState();
@@ -56,13 +57,18 @@ class _PayrollPageState extends State<PayrollPage>
   Future<DataTableResponse<Payroll>> fetchPayrolls(QueryRequest request) {
     request.filters = _filters;
     request.searchText = _searchText;
-    return PayrollClass().finds(server, request).then(
-        (value) => DataTableResponse<Payroll>(
+    return PayrollClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<Payroll>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void addForm() {
@@ -70,35 +76,46 @@ class _PayrollPageState extends State<PayrollPage>
 
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('New Payroll',
-          PayrollFormPage(key: ObjectKey(payroll), payroll: payroll));
+      tabManager.addTab(
+        'New Payroll',
+        PayrollFormPage(key: ObjectKey(payroll), payroll: payroll),
+      );
     });
   }
 
   void editForm(Payroll payroll) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Edit Payroll ${payroll.name}',
-          PayrollFormPage(key: ObjectKey(payroll), payroll: payroll));
+      tabManager.addTab(
+        'Edit Payroll ${payroll.name}',
+        PayrollFormPage(key: ObjectKey(payroll), payroll: payroll),
+      );
     });
   }
 
   void destroyRecord(Payroll payroll) {
     showConfirmDialog(
-        message: 'Apakah anda yakin hapus ${payroll.name}?',
-        onSubmit: () {
-          server.delete('/payrolls/${payroll.id}').then((response) {
-            if (response.statusCode == 200) {
-              flash.showBanner(
-                  messageType: ToastificationType.success,
-                  title: 'Sukses Hapus',
-                  description: 'Sukses Hapus payroll ${payroll.name}');
-              refreshTable();
-            }
-          }, onError: (error) {
-            defaultErrorResponse(error: error);
-          });
-        });
+      message: 'Apakah anda yakin hapus ${payroll.name}?',
+      onSubmit: () {
+        server
+            .delete('/payrolls/${payroll.id}')
+            .then(
+              (response) {
+                if (response.statusCode == 200) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses Hapus',
+                    description: 'Sukses Hapus payroll ${payroll.name}',
+                  );
+                  refreshTable();
+                }
+              },
+              onError: (error) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
   void searchChanged(value) {
@@ -149,8 +166,9 @@ class _PayrollPageState extends State<PayrollPage>
                   SizedBox(
                     width: 150,
                     child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
+                      decoration: const InputDecoration(
+                        hintText: 'Search Text',
+                      ),
                       onChanged: searchChanged,
                       onSubmitted: searchChanged,
                     ),
@@ -158,18 +176,19 @@ class _PayrollPageState extends State<PayrollPage>
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(
-                        controller: _menuController,
-                        menuChildren: [
-                          MenuItemButton(
-                            child: const Text('Tambah Payroll'),
-                            onPressed: () {
-                              _menuController.close();
-                              addForm();
-                            },
-                          ),
-                        ],
-                        child: const Icon(Icons.table_rows_rounded)),
-                  )
+                      controller: _menuController,
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah Payroll'),
+                          onPressed: () {
+                            _menuController.close();
+                            addForm();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -179,18 +198,22 @@ class _PayrollPageState extends State<PayrollPage>
                 renderAction: (payroll) => Row(
                   spacing: 10,
                   children: [
-                    IconButton(
+                    if (setting.isAuthorize('payroll', 'update'))
+                      IconButton(
                         onPressed: () {
                           editForm(payroll);
                         },
                         tooltip: 'Edit Payroll',
-                        icon: const Icon(Icons.edit)),
-                    IconButton(
+                        icon: const Icon(Icons.edit),
+                      ),
+                    if (setting.isAuthorize('payroll', 'destroy'))
+                      IconButton(
                         onPressed: () {
                           destroyRecord(payroll);
                         },
                         tooltip: 'Hapus Payroll',
-                        icon: const Icon(Icons.delete)),
+                        icon: const Icon(Icons.delete),
+                      ),
                   ],
                 ),
                 onLoaded: (stateManager) => _source = stateManager,

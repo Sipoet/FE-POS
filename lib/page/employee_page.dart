@@ -22,6 +22,7 @@ class _EmployeePageState extends State<EmployeePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final TrinaGridStateManager _source;
   late final Server server;
+  late final Setting setting;
   String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
@@ -36,7 +37,7 @@ class _EmployeePageState extends State<EmployeePage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    final setting = context.read<Setting>();
+    setting = context.read<Setting>();
     columns = setting.tableColumn('employee');
     super.initState();
   }
@@ -57,60 +58,79 @@ class _EmployeePageState extends State<EmployeePage>
     request.filters = _filters;
     request.searchText = _searchText;
     request.include = ['payroll', 'role'];
-    return EmployeeClass().finds(server, request).then(
-        (value) => DataTableResponse<Employee>(
+    return EmployeeClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<Employee>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void addForm() {
     Employee employee = Employee(
-        code: '',
-        name: '',
-        startWorkingDate: Date.today(),
-        role: Role(name: ''));
+      code: '',
+      name: '',
+      startWorkingDate: Date.today(),
+      role: Role(name: ''),
+    );
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Tambah Karyawan',
-          EmployeeFormPage(key: ObjectKey(employee), employee: employee));
+      tabManager.addTab(
+        'Tambah Karyawan',
+        EmployeeFormPage(key: ObjectKey(employee), employee: employee),
+      );
     });
   }
 
   void editForm(Employee employee) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Edit Karyawan ${employee.code}',
-          EmployeeFormPage(key: ObjectKey(employee), employee: employee));
+      tabManager.addTab(
+        'Edit Karyawan ${employee.code}',
+        EmployeeFormPage(key: ObjectKey(employee), employee: employee),
+      );
     });
   }
 
   void toggleStatus(Employee employee) {
-    final statusPath =
-        employee.status == EmployeeStatus.active ? 'deactivate' : 'activate';
-    final statusName =
-        employee.status == EmployeeStatus.active ? 'nonaktifkan' : 'aktifkan';
+    final statusPath = employee.status == EmployeeStatus.active
+        ? 'deactivate'
+        : 'activate';
+    final statusName = employee.status == EmployeeStatus.active
+        ? 'nonaktifkan'
+        : 'aktifkan';
     showConfirmDialog(
-        message: 'Apakah yakin $statusName ${employee.name}?',
-        onSubmit: () {
-          server.post('employees/${employee.id}/$statusPath').then((response) {
-            setState(() {
-              employee.status = employee.status == EmployeeStatus.active
-                  ? EmployeeStatus.inactive
-                  : EmployeeStatus.active;
-            });
-            _source.refreshTable();
-            flash.showBanner(
-                title: 'Sukses',
-                description: 'karyawan ${employee.code} sukses $statusName',
-                messageType: ToastificationType.success,
-                duration: const Duration(seconds: 3));
-          }, onError: (error, stack) {
-            defaultErrorResponse(error: error);
-          });
-        });
+      message: 'Apakah yakin $statusName ${employee.name}?',
+      onSubmit: () {
+        server
+            .post('employees/${employee.id}/$statusPath')
+            .then(
+              (response) {
+                setState(() {
+                  employee.status = employee.status == EmployeeStatus.active
+                      ? EmployeeStatus.inactive
+                      : EmployeeStatus.active;
+                });
+                _source.refreshTable();
+                flash.showBanner(
+                  title: 'Sukses',
+                  description: 'karyawan ${employee.code} sukses $statusName',
+                  messageType: ToastificationType.success,
+                  duration: const Duration(seconds: 3),
+                );
+              },
+              onError: (error, stack) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
   void activateSelected() {
@@ -118,23 +138,25 @@ class _EmployeePageState extends State<EmployeePage>
       return;
     }
     showConfirmDialog(
-        message: 'Apakah yakin aktifkan ${_selected.values.length} karyawan?',
-        onSubmit: () async {
-          try {
-            for (final employee in _selected.values) {
-              var response =
-                  await server.post('employees/${employee.id}/activate');
-              if (response.statusCode == 200) {
-                setState(() {
-                  employee.setFromJson(response.data['data']);
-                });
-              }
+      message: 'Apakah yakin aktifkan ${_selected.values.length} karyawan?',
+      onSubmit: () async {
+        try {
+          for (final employee in _selected.values) {
+            var response = await server.post(
+              'employees/${employee.id}/activate',
+            );
+            if (response.statusCode == 200) {
+              setState(() {
+                employee.setFromJson(response.data['data']);
+              });
             }
-            _source.refreshTable();
-          } catch (e) {
-            defaultErrorResponse(error: e);
           }
-        });
+          _source.refreshTable();
+        } catch (e) {
+          defaultErrorResponse(error: e);
+        }
+      },
+    );
   }
 
   void deactivateSelected() {
@@ -142,24 +164,25 @@ class _EmployeePageState extends State<EmployeePage>
       return;
     }
     showConfirmDialog(
-        message:
-            'Apakah yakin nonaktifkan ${_selected.values.length} karyawan?',
-        onSubmit: () async {
-          try {
-            for (final employee in _selected.values) {
-              var response =
-                  await server.post('employees/${employee.id}/deactivate');
-              if (response.statusCode == 200) {
-                setState(() {
-                  employee.setFromJson(response.data['data']);
-                });
-              }
+      message: 'Apakah yakin nonaktifkan ${_selected.values.length} karyawan?',
+      onSubmit: () async {
+        try {
+          for (final employee in _selected.values) {
+            var response = await server.post(
+              'employees/${employee.id}/deactivate',
+            );
+            if (response.statusCode == 200) {
+              setState(() {
+                employee.setFromJson(response.data['data']);
+              });
             }
-            _source.refreshTable();
-          } catch (e) {
-            defaultErrorResponse(error: e);
           }
-        });
+          _source.refreshTable();
+        } catch (e) {
+          defaultErrorResponse(error: e);
+        }
+      },
+    );
   }
 
   void searchChanged(value) {
@@ -179,11 +202,12 @@ class _EmployeePageState extends State<EmployeePage>
   List<Widget> actionButtons(Employee employee, int index) {
     return <Widget>[
       IconButton(
-          onPressed: () {
-            editForm(employee);
-          },
-          tooltip: 'Edit karyawan',
-          icon: const Icon(Icons.edit)),
+        onPressed: () {
+          editForm(employee);
+        },
+        tooltip: 'Edit karyawan',
+        icon: const Icon(Icons.edit),
+      ),
       IconButton(
         onPressed: () {
           setState(() {
@@ -193,10 +217,11 @@ class _EmployeePageState extends State<EmployeePage>
         tooltip: 'Aktivasi/deaktivasi karyawan',
         icon: Icon(
           Icons.lightbulb,
-          color:
-              employee.status == EmployeeStatus.active ? Colors.yellow : null,
+          color: employee.status == EmployeeStatus.active
+              ? Colors.yellow
+              : null,
         ),
-      )
+      ),
     ];
   }
 
@@ -238,8 +263,9 @@ class _EmployeePageState extends State<EmployeePage>
                   SizedBox(
                     width: 150,
                     child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
+                      decoration: const InputDecoration(
+                        hintText: 'Search Text',
+                      ),
                       onChanged: searchChanged,
                       onSubmitted: searchChanged,
                     ),
@@ -247,32 +273,33 @@ class _EmployeePageState extends State<EmployeePage>
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(
-                        controller: _menuController,
-                        menuChildren: [
-                          MenuItemButton(
-                            child: const Text('Tambah Karyawan'),
-                            onPressed: () {
-                              _menuController.close();
-                              addForm();
-                            },
-                          ),
-                          MenuItemButton(
-                            child: const Text('Aktifkan Karyawan'),
-                            onPressed: () {
-                              _menuController.close();
-                              activateSelected();
-                            },
-                          ),
-                          MenuItemButton(
-                            child: const Text('nonaktifkan Karyawan'),
-                            onPressed: () {
-                              _menuController.close();
-                              deactivateSelected();
-                            },
-                          ),
-                        ],
-                        child: const Icon(Icons.table_rows_rounded)),
-                  )
+                      controller: _menuController,
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah Karyawan'),
+                          onPressed: () {
+                            _menuController.close();
+                            addForm();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('Aktifkan Karyawan'),
+                          onPressed: () {
+                            _menuController.close();
+                            activateSelected();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('nonaktifkan Karyawan'),
+                          onPressed: () {
+                            _menuController.close();
+                            deactivateSelected();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -282,26 +309,31 @@ class _EmployeePageState extends State<EmployeePage>
                 renderAction: (employee) => Row(
                   spacing: 10,
                   children: [
-                    IconButton(
+                    if (setting.isAuthorize('employee', 'update'))
+                      IconButton(
                         onPressed: () {
                           editForm(employee);
                         },
                         tooltip: 'Edit karyawan',
-                        icon: const Icon(Icons.edit)),
-                    IconButton(
-                      onPressed: () {
-                        setState(() {
-                          toggleStatus(employee);
-                        });
-                      },
-                      tooltip: 'Aktivasi/deaktivasi karyawan',
-                      icon: Icon(
-                        Icons.lightbulb,
-                        color: employee.status == EmployeeStatus.active
-                            ? Colors.yellow
-                            : null,
+                        icon: const Icon(Icons.edit),
                       ),
-                    )
+                    if (setting.isAuthorize('employee', 'deactivate') ||
+                        setting.isAuthorize('employee', 'activate') &&
+                            setting.canShow('employee', 'status'))
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            toggleStatus(employee);
+                          });
+                        },
+                        tooltip: 'Aktivasi/deaktivasi karyawan',
+                        icon: Icon(
+                          Icons.lightbulb,
+                          color: employee.status == EmployeeStatus.active
+                              ? Colors.yellow
+                              : null,
+                        ),
+                      ),
                   ],
                 ),
                 onRowChecked: (event) {

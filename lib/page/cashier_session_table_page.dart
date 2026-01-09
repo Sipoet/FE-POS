@@ -57,13 +57,18 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
   Future<DataTableResponse<CashierSession>> fetchData(QueryRequest request) {
     request.filters = _filters;
     request.searchText = _searchText;
-    return CashierSessionClass().finds(server, request).then(
-        (value) => DataTableResponse<CashierSession>(
+    return CashierSessionClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<CashierSession>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse<CashierSession>.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse<CashierSession>.empty();
+          },
+        );
   }
 
   void searchChanged(value) {
@@ -82,11 +87,12 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
 
   void openEdcSettlement(cashierSession) {
     tabManager.addTab(
-        "EDC Settlement ${dateFormat(cashierSession.date)}",
-        EdcSettlementFormPage(
-          key: ObjectKey(cashierSession),
-          cashierSession: cashierSession,
-        ));
+      "EDC Settlement ${dateFormat(cashierSession.date)}",
+      EdcSettlementFormPage(
+        key: ObjectKey(cashierSession),
+        cashierSession: cashierSession,
+      ),
+    );
   }
 
   @override
@@ -122,8 +128,9 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
                   SizedBox(
                     width: 150,
                     child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
+                      decoration: const InputDecoration(
+                        hintText: 'Search Text',
+                      ),
                       onChanged: searchChanged,
                       onSubmitted: searchChanged,
                     ),
@@ -135,14 +142,21 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
               height: bodyScreenHeight - 150,
               child: CustomAsyncDataTable<CashierSession>(
                 columns: columns,
-                onLoaded: (stateManager) => _source = stateManager,
-                renderAction: (cashierSession) => Row(spacing: 10, children: [
-                  IconButton.filled(
+                onLoaded: (stateManager) {
+                  _source = stateManager;
+                  _source.sortDescending(_source.columns[0]);
+                },
+                renderAction: (cashierSession) => Row(
+                  spacing: 10,
+                  children: [
+                    IconButton.filled(
                       onPressed: () {
                         openEdcSettlement(cashierSession);
                       },
-                      icon: const Icon(Icons.search)),
-                ]),
+                      icon: const Icon(Icons.search),
+                    ),
+                  ],
+                ),
                 fetchData: fetchData,
                 fixedLeftColumns: 1,
               ),

@@ -18,10 +18,10 @@ class Payroll extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'name': name,
-        'paid_time_off': paidTimeOff,
-        'description': description,
-      };
+    'name': name,
+    'paid_time_off': paidTimeOff,
+    'description': description,
+  };
 
   @override
   String get modelName => 'payroll';
@@ -31,7 +31,7 @@ class Payroll extends Model {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];
     name = attributes['name'];
-    paidTimeOff = attributes['paid_time_off'];
+    paidTimeOff = attributes['paid_time_off'] ?? paidTimeOff;
     description = attributes['description'];
     lines = PayrollLineClass().findRelationsData(
       included: included,

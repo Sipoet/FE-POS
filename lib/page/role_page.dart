@@ -21,6 +21,7 @@ class _RolePageState extends State<RolePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final TrinaGridStateManager _source;
   late final Server server;
+  late final Setting setting;
 
   String _searchText = '';
   final cancelToken = CancelToken();
@@ -35,7 +36,7 @@ class _RolePageState extends State<RolePage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    final setting = context.read<Setting>();
+    setting = context.read<Setting>();
 
     columns = setting.tableColumn('role');
     super.initState();
@@ -56,13 +57,18 @@ class _RolePageState extends State<RolePage>
   Future<DataTableResponse<Role>> fetchRoles(QueryRequest request) {
     request.filters = _filters;
     request.searchText = _searchText;
-    return RoleClass().finds(server, request).then(
-        (value) => DataTableResponse<Role>(
+    return RoleClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<Role>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void addForm() {
@@ -71,34 +77,45 @@ class _RolePageState extends State<RolePage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'New Role', RoleFormPage(key: ObjectKey(role), role: role));
+        'New Role',
+        RoleFormPage(key: ObjectKey(role), role: role),
+      );
     });
   }
 
   void editForm(Role role) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Edit Role ${role.name}',
-          RoleFormPage(key: ObjectKey(role), role: role));
+      tabManager.addTab(
+        'Edit Role ${role.name}',
+        RoleFormPage(key: ObjectKey(role), role: role),
+      );
     });
   }
 
   void destroyRecord(Role role) {
     showConfirmDialog(
-        message: 'Apakah anda yakin hapus ${role.name}?',
-        onSubmit: () {
-          server.delete('/roles/${role.id}').then((response) {
-            if (response.statusCode == 200) {
-              flash.showBanner(
-                  messageType: ToastificationType.success,
-                  title: 'Sukses Hapus',
-                  description: 'Sukses Hapus role ${role.name}');
-              refreshTable();
-            }
-          }, onError: (error) {
-            defaultErrorResponse(error: error);
-          });
-        });
+      message: 'Apakah anda yakin hapus ${role.name}?',
+      onSubmit: () {
+        server
+            .delete('/roles/${role.id}')
+            .then(
+              (response) {
+                if (response.statusCode == 200) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses Hapus',
+                    description: 'Sukses Hapus role ${role.name}',
+                  );
+                  refreshTable();
+                }
+              },
+              onError: (error) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
   void searchChanged(value) {
@@ -149,21 +166,26 @@ class _RolePageState extends State<RolePage>
                   SizedBox(
                     width: 150,
                     child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
+                      decoration: const InputDecoration(
+                        hintText: 'Search Text',
+                      ),
                       onChanged: searchChanged,
                       onSubmitted: searchChanged,
                     ),
                   ),
                   SizedBox(
                     width: 50,
-                    child: SubmenuButton(menuChildren: [
-                      MenuItemButton(
-                        child: const Text('Tambah Role'),
-                        onPressed: () => addForm(),
-                      ),
-                    ], child: const Icon(Icons.table_rows_rounded)),
-                  )
+                    child: SubmenuButton(
+                      menuChildren: [
+                        if (setting.isAuthorize('role', 'create'))
+                          MenuItemButton(
+                            child: const Text('Tambah Role'),
+                            onPressed: () => addForm(),
+                          ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -174,18 +196,22 @@ class _RolePageState extends State<RolePage>
                 renderAction: (role) => Row(
                   spacing: 10,
                   children: [
-                    IconButton(
+                    if (setting.isAuthorize('role', 'update'))
+                      IconButton(
                         onPressed: () {
                           editForm(role);
                         },
                         tooltip: 'Edit Role',
-                        icon: const Icon(Icons.edit)),
-                    IconButton(
+                        icon: const Icon(Icons.edit),
+                      ),
+                    if (setting.isAuthorize('role', 'destroy'))
+                      IconButton(
                         onPressed: () {
                           destroyRecord(role);
                         },
                         tooltip: 'Hapus Role',
-                        icon: const Icon(Icons.delete)),
+                        icon: const Icon(Icons.delete),
+                      ),
                   ],
                 ),
                 columns: columns,
