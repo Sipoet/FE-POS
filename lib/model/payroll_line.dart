@@ -149,35 +149,35 @@ class PayrollLine extends Model {
   double? variable5;
   int row;
   String description;
-  PayrollLine(
-      {super.id,
-      this.row = 0,
-      PayrollGroup? group,
-      this.payrollType,
-      PayrollFormula? formula,
-      this.description = '',
-      this.variable2,
-      this.variable3,
-      this.variable4,
-      this.variable5,
-      this.variable1})
-      : formula = formula ?? PayrollFormula.basic,
-        group = group ?? PayrollGroup.earning;
+  PayrollLine({
+    super.id,
+    this.row = 0,
+    PayrollGroup? group,
+    this.payrollType,
+    PayrollFormula? formula,
+    this.description = '',
+    this.variable2,
+    this.variable3,
+    this.variable4,
+    this.variable5,
+    this.variable1,
+  }) : formula = formula ?? PayrollFormula.basic,
+       group = group ?? PayrollGroup.earning;
 
   @override
   Map<String, dynamic> toMap() => {
-        'row': row,
-        'group': group,
-        'payroll_type_id': payrollType?.id,
-        'payroll_type': payrollType,
-        'formula': formula,
-        'variable1': variable1,
-        'variable2': variable2,
-        'variable3': variable3,
-        'variable4': variable4,
-        'variable5': variable5,
-        'description': description,
-      };
+    'row': row,
+    'group': group,
+    'payroll_type_id': payrollType?.id,
+    'payroll_type': payrollType,
+    'formula': formula,
+    'variable1': variable1,
+    'variable2': variable2,
+    'variable3': variable3,
+    'variable4': variable4,
+    'variable5': variable5,
+    'description': description,
+  };
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -185,12 +185,18 @@ class PayrollLine extends Model {
     var attributes = json['attributes'];
 
     row = attributes['row'];
-    group = PayrollGroup.fromString(attributes['group']);
+    if (attributes['group'] != null) {
+      group = PayrollGroup.fromString(attributes['group']);
+    }
+
     payrollType = PayrollTypeClass().findRelationData(
       included: included,
       relation: json['relationships']['payroll_type'],
     );
-    formula = PayrollFormula.fromString(attributes['formula']);
+    if (attributes['formula'] != null) {
+      formula = PayrollFormula.fromString(attributes['formula']);
+    }
+
     variable1 = double.tryParse(attributes['variable1'] ?? '');
     variable2 = double.tryParse(attributes['variable2'] ?? '');
     variable3 = double.tryParse(attributes['variable3'] ?? '');

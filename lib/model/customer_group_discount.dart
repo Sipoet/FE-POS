@@ -68,55 +68,59 @@ class CustomerGroupDiscount extends Model {
   int? variable7;
   CustomerGroup customerGroup;
 
-  CustomerGroupDiscount(
-      {this.periodType = CustomerGroupDiscountPeriodType.activePeriod,
-      this.discountPercentage = const Percentage(0),
-      Date? startActiveDate,
-      Date? endActiveDate,
-      this.level = 1,
-      CustomerGroup? customerGroup,
-      this.variable1,
-      this.variable2,
-      this.variable3,
-      this.variable4,
-      this.variable5,
-      this.variable6,
-      this.variable7,
-      super.id,
-      super.createdAt,
-      super.updatedAt})
-      : startActiveDate = startActiveDate ?? Date.today(),
-        endActiveDate = endActiveDate ?? Date.today(),
-        customerGroup = customerGroup ?? CustomerGroup();
+  CustomerGroupDiscount({
+    this.periodType = CustomerGroupDiscountPeriodType.activePeriod,
+    this.discountPercentage = const Percentage(0),
+    Date? startActiveDate,
+    Date? endActiveDate,
+    this.level = 1,
+    CustomerGroup? customerGroup,
+    this.variable1,
+    this.variable2,
+    this.variable3,
+    this.variable4,
+    this.variable5,
+    this.variable6,
+    this.variable7,
+    super.id,
+    super.createdAt,
+    super.updatedAt,
+  }) : startActiveDate = startActiveDate ?? Date.today(),
+       endActiveDate = endActiveDate ?? Date.today(),
+       customerGroup = customerGroup ?? CustomerGroup();
 
   @override
   Map<String, dynamic> toMap() => {
-        'discount_percentage': discountPercentage,
-        'period_type': periodType,
-        'start_active_date': startActiveDate,
-        'end_active_date': endActiveDate,
-        'level': level,
-        'customer_group': customerGroup,
-        'customer_group_code': customerGroupCode,
-        'variable1': variable1,
-        'variable2': variable2,
-        'variable3': variable3,
-        'variable4': variable4,
-        'variable5': variable5,
-        'variable6': variable6,
-        'variable7': variable7,
-        'customer_group.grup': customerGroup.name,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-      };
+    'discount_percentage': discountPercentage,
+    'period_type': periodType,
+    'start_active_date': startActiveDate,
+    'end_active_date': endActiveDate,
+    'level': level,
+    'customer_group': customerGroup,
+    'customer_group_code': customerGroupCode,
+    'variable1': variable1,
+    'variable2': variable2,
+    'variable3': variable3,
+    'variable4': variable4,
+    'variable5': variable5,
+    'variable6': variable6,
+    'variable7': variable7,
+    'customer_group.grup': customerGroup.name,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
   String get customerGroupCode => customerGroup.code;
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];
     discountPercentage = Percentage.parse(attributes['discount_percentage']);
-    periodType =
-        CustomerGroupDiscountPeriodType.fromString(attributes['period_type']);
+    if (attributes['period_type'] != null) {
+      periodType = CustomerGroupDiscountPeriodType.fromString(
+        attributes['period_type'],
+      );
+    }
+
     startActiveDate = Date.parse(attributes['start_active_date']);
     endActiveDate = Date.parse(attributes['end_active_date']);
     level = attributes['level'];
@@ -127,9 +131,11 @@ class CustomerGroupDiscount extends Model {
     variable5 = attributes['variable5'];
     variable6 = attributes['variable6'];
     variable7 = attributes['variable7'];
-    customerGroup = CustomerGroupClass().findRelationData(
-            included: included,
-            relation: json['relationships']?['customer_group']) ??
+    customerGroup =
+        CustomerGroupClass().findRelationData(
+          included: included,
+          relation: json['relationships']?['customer_group'],
+        ) ??
         customerGroup;
   }
 

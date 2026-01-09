@@ -64,22 +64,23 @@ class WorkSchedule extends Model {
   int shift;
   int dayOfWeek;
   ActiveWeekWorkSchedule activeWeek;
-  WorkSchedule(
-      {this.beginWork = '',
-      this.endWork = '',
-      this.dayOfWeek = 1,
-      this.shift = 1,
-      this.activeWeek = ActiveWeekWorkSchedule.allWeek,
-      super.id});
+  WorkSchedule({
+    this.beginWork = '',
+    this.endWork = '',
+    this.dayOfWeek = 1,
+    this.shift = 1,
+    this.activeWeek = ActiveWeekWorkSchedule.allWeek,
+    super.id,
+  });
 
   @override
   Map<String, dynamic> toMap() => {
-        'begin_work': beginWork,
-        'end_work': endWork,
-        'shift': shift,
-        'day_of_week': dayOfWeek,
-        'active_week': activeWeek,
-      };
+    'begin_work': beginWork,
+    'end_work': endWork,
+    'shift': shift,
+    'day_of_week': dayOfWeek,
+    'active_week': activeWeek,
+  };
 
   @override
   String get modelName => 'work_schedule';
@@ -93,7 +94,9 @@ class WorkSchedule extends Model {
     endWork = attributes['end_work'];
     shift = attributes['shift'];
     dayOfWeek = attributes['day_of_week'];
-    activeWeek = ActiveWeekWorkSchedule.fromString(attributes['active_week']);
+    if (attributes['active_week'] != null) {
+      activeWeek = ActiveWeekWorkSchedule.fromString(attributes['active_week']);
+    }
   }
 
   @override

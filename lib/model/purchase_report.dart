@@ -94,11 +94,11 @@ class PurchaseReport extends Model {
     this.paidAmount = const Money(0),
     this.lastPaidDate,
     this.debtAmount = const Money(0),
-  })  : supplier = supplier ?? Supplier(),
-        purchaseDate = purchaseDate ?? DateTime.now(),
-        dueDate = dueDate ?? Date.today(),
-        orderDate = orderDate ?? DateTime.now(),
-        shippingDate = shippingDate ?? DateTime.now();
+  }) : supplier = supplier ?? Supplier(),
+       purchaseDate = purchaseDate ?? DateTime.now(),
+       dueDate = dueDate ?? Date.today(),
+       orderDate = orderDate ?? DateTime.now(),
+       shippingDate = shippingDate ?? DateTime.now();
   @override
   String get modelName => 'purchase_report';
 
@@ -107,13 +107,17 @@ class PurchaseReport extends Model {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];
     if (included.isNotEmpty) {
-      supplier = SupplierClass().findRelationData(
+      supplier =
+          SupplierClass().findRelationData(
             included: included,
             relation: json['relationships']['supplier'],
           ) ??
           supplier;
     }
-    status = PurchaseReportStatus.fromString(attributes['status']);
+    if (attributes['status'] != null) {
+      status = PurchaseReportStatus.fromString(attributes['status']);
+    }
+
     code = attributes['code'];
     supplierCode = attributes['supplier_code'];
     purchaseItemTotal =
@@ -126,10 +130,11 @@ class PurchaseReport extends Model {
         Money.tryParse(attributes['purchase_subtotal']) ?? purchaseSubtotal;
     headerDiscountAmount =
         Money.tryParse(attributes['header_discount_amount']) ??
-            headerDiscountAmount;
+        headerDiscountAmount;
     purchaseOtherCost =
         Money.tryParse(attributes['purchase_other_cost']) ?? purchaseOtherCost;
-    purchaseGrandTotal = Money.tryParse(attributes['purchase_grand_total']) ??
+    purchaseGrandTotal =
+        Money.tryParse(attributes['purchase_grand_total']) ??
         purchaseGrandTotal;
     orderGrandTotal =
         Money.tryParse(attributes['order_grand_total']) ?? orderGrandTotal;
@@ -151,29 +156,29 @@ class PurchaseReport extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'code': code,
-        'supplier': "$supplierCode - $supplierName",
-        'supplier_code': supplierCode,
-        'supplier_name': supplierName,
-        'purchase_date': purchaseDate,
-        'due_date': dueDate,
-        'purchase_item_total': purchaseItemTotal,
-        'purchase_subtotal': purchaseSubtotal,
-        'header_discount_amount': headerDiscountAmount,
-        'purchase_other_cost': purchaseOtherCost,
-        'purchase_grand_total': purchaseGrandTotal,
-        'order_date': orderDate,
-        'shipping_date': shippingDate,
-        'order_item_total': orderItemTotal,
-        'order_grand_total': orderGrandTotal,
-        'return_item_total': returnItemTotal,
-        'return_amount_total': returnAmountTotal,
-        'grandtotal': grandtotal,
-        'paid_amount': paidAmount,
-        'last_paid_date': lastPaidDate,
-        'debt_amount': debtAmount,
-        'status': status.humanize(),
-      };
+    'code': code,
+    'supplier': "$supplierCode - $supplierName",
+    'supplier_code': supplierCode,
+    'supplier_name': supplierName,
+    'purchase_date': purchaseDate,
+    'due_date': dueDate,
+    'purchase_item_total': purchaseItemTotal,
+    'purchase_subtotal': purchaseSubtotal,
+    'header_discount_amount': headerDiscountAmount,
+    'purchase_other_cost': purchaseOtherCost,
+    'purchase_grand_total': purchaseGrandTotal,
+    'order_date': orderDate,
+    'shipping_date': shippingDate,
+    'order_item_total': orderItemTotal,
+    'order_grand_total': orderGrandTotal,
+    'return_item_total': returnItemTotal,
+    'return_amount_total': returnAmountTotal,
+    'grandtotal': grandtotal,
+    'paid_amount': paidAmount,
+    'last_paid_date': lastPaidDate,
+    'debt_amount': debtAmount,
+    'status': status.humanize(),
+  };
   @override
   String get modelValue => code;
   @override

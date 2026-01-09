@@ -20,8 +20,10 @@ class MonthlyExpenseReportPage extends StatefulWidget {
 
 class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
     with TextFormatter {
-  static const TextStyle _filterLabelStyle =
-      TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
+  static const TextStyle _filterLabelStyle = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.bold,
+  );
   late final Server server;
   late final Setting setting;
   late Flash flash;
@@ -31,8 +33,9 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
   final _chartController = SalesChartController();
 
   DateTimeRange _range = DateTimeRange(
-      start: DateTime.now().beginningOfYear(),
-      end: DateTime.now().endOfMonth());
+    start: DateTime.now().beginningOfYear(),
+    end: DateTime.now().endOfMonth(),
+  );
 
   List<String> _comparisonKeys = [];
   List<Date> _listDates = [];
@@ -68,18 +71,21 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
     lines = {};
     var identifierList = ['Total Pengeluaran'];
 
-    _reports = await MonthlyExpenseReportClass().groupBy(
-            server: server,
-            groupPeriod: _groupPeriod.toString(),
-            range: _range) ??
+    _reports =
+        await MonthlyExpenseReportClass().groupBy(
+          server: server,
+          groupPeriod: _groupPeriod.toString(),
+          range: _range,
+        ) ??
         [];
     if (_reports.isEmpty) {
       return;
     }
     final rangeXIndex = _rangeX(_groupPeriod);
     _listDates = rangeXIndex.keys.toList();
-    lines[LineTitle(name: 'Pengeluaran')] =
-        _reports.map<FlSpot>((MonthlyExpenseReport e) {
+    lines[LineTitle(name: 'Pengeluaran')] = _reports.map<FlSpot>((
+      MonthlyExpenseReport e,
+    ) {
       int xCoord = rangeXIndex[e.datePk] ?? -1;
       return FlSpot(xCoord.toDouble(), e.total.value);
     }).toList();
@@ -90,8 +96,9 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
       }
       final detail = response.data['data'].first;
       LineTitle lineTitle = LineTitle(
-          name: key.replaceAll('_', ' '),
-          description: detail['description'] ?? '');
+        name: key.replaceAll('_', ' '),
+        description: detail['description'] ?? '',
+      );
       final datePkCast = _groupPeriod == GroupPeriodMonthlyExpenseReport.yearly
           ? (String data) => Date.parse('$data-01-01')
           : (String data) => Date.parse(data);
@@ -101,7 +108,8 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
         int xCoord = rangeXIndex[datePk] ?? -1;
         if (xCoord == -1) {
           debugPrint(
-              '==========spot x ${spot[0]} datePk ${datePk.toIso8601String()}');
+            '==========spot x ${spot[0]} datePk ${datePk.toIso8601String()}',
+          );
         }
         return FlSpot(xCoord.toDouble(), spot[1]);
       }).toList();
@@ -109,22 +117,26 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
     }
     setState(() {
       _chartController.setChartData(
-          lines: lines,
-          identifierList: identifierList,
-          startDate: _range.start,
-          endDate: _range.end);
+        lines: lines,
+        identifierList: identifierList,
+        startDate: _range.start,
+        endDate: _range.end,
+      );
     });
   }
 
   Future fetchSalesPerformance(String valueType) async {
-    return server.get('item_sales_performance_reports/group_by', queryParam: {
-      'start_date': _range.start.toIso8601String(),
-      'end_date': _range.end.toIso8601String(),
-      'group_period': _groupPeriod.toString(),
-      'group_type': 'period',
-      'value_type': valueType,
-      'separate_purchase_year': '0',
-    });
+    return server.get(
+      'item_sales_performance_reports/group_by',
+      queryParam: {
+        'start_date': _range.start.toIso8601String(),
+        'end_date': _range.end.toIso8601String(),
+        'group_period': _groupPeriod.toString(),
+        'group_type': 'period',
+        'value_type': valueType,
+        'separate_purchase_year': '0',
+      },
+    );
   }
 
   String xFormat(double value, SalesChartController controller) {
@@ -153,11 +165,15 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
                     .map<DropdownMenuEntry<GroupPeriodMonthlyExpenseReport>>(
                       (entry) =>
                           DropdownMenuEntry<GroupPeriodMonthlyExpenseReport>(
-                              value: entry, label: entry.humanize()),
+                            value: entry,
+                            label: entry.humanize(),
+                          ),
                     )
                     .toList(),
-                label:
-                    const Text('Dipisah Berdasarkan', style: _filterLabelStyle),
+                label: const Text(
+                  'Dipisah Berdasarkan',
+                  style: _filterLabelStyle,
+                ),
                 onSelected: (value) {
                   setState(() {
                     _groupPeriod = value ?? _groupPeriod;
@@ -166,48 +182,47 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
                 initialSelection: _groupPeriod,
                 width: 250,
                 inputDecorationTheme: InputDecorationTheme(
-                    isDense: true, border: OutlineInputBorder()),
+                  isDense: true,
+                  border: OutlineInputBorder(),
+                ),
               ),
               SizedBox(
-                  width: 300,
-                  child: DateRangeFormField(
-                    onChanged: (range) => _range = range ?? _range,
-                    label: Text('Rentang Periode'),
-                    rangeType: MonthRangeType(),
-                    initialDateRange: _range,
-                  )),
+                width: 300,
+                child: DateRangeFormField(
+                  onChanged: (range) => _range = range ?? _range,
+                  label: Text('Rentang Periode'),
+                  rangeType: MonthRangeType(),
+                  initialDateRange: _range,
+                ),
+              ),
               SizedBox(
                 width: 250,
                 child: DropdownSearch<String>.multiSelection(
-                  items: (filter, loadProps) => [
-                    'gross_profit',
-                    'sales_total',
-                  ],
+                  items: (filter, loadProps) => ['gross_profit', 'sales_total'],
                   itemAsString: (item) => item.replaceAll('_', ' '),
                   decoratorProps: DropDownDecoratorProps(
-                      decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          label: Text(
-                            'Pembandingan dengan(Optional)',
-                            style: _filterLabelStyle,
-                          ))),
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      label: Text(
+                        'Pembandingan dengan(Optional)',
+                        style: _filterLabelStyle,
+                      ),
+                    ),
+                  ),
                   onChanged: (value) => _comparisonKeys = value,
                 ),
               ),
             ],
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           ElevatedButton(onPressed: generateReport, child: Text('Generate')),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           SalesPerformanceChart(
-              xFormat: xFormat,
-              controller: _chartController,
-              yFormat: compactNumberFormat,
-              spotYFormat: moneyFormat),
+            xFormat: xFormat,
+            controller: _chartController,
+            yFormat: compactNumberFormat,
+            spotYFormat: moneyFormat,
+          ),
         ],
       ),
     );
@@ -218,14 +233,22 @@ enum GroupPeriodMonthlyExpenseReport implements EnumTranslation {
   yearly,
   monthly;
 
-  static const groupPeriodLocales = {
-    yearly: 'Tahun',
-    monthly: 'Bulan',
-  };
+  static const groupPeriodLocales = {yearly: 'Tahun', monthly: 'Bulan'};
 
   @override
   String humanize() {
     return groupPeriodLocales[this] ?? '';
+  }
+
+  factory GroupPeriodMonthlyExpenseReport.fromString(String value) {
+    switch (value) {
+      case 'yearly':
+        return yearly;
+      case 'monthly':
+        return monthly;
+      default:
+        throw '$value is not valid GroupPeriodMonthlyExpenseReport';
+    }
   }
 
   @override

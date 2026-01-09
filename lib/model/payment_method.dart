@@ -75,15 +75,15 @@ class PaymentMethod extends Model {
   String providerCode;
   Bank bank;
   PaymentType paymentType;
-  PaymentMethod(
-      {this.providerCode = '',
-      Bank? bank,
-      this.name = '',
-      this.paymentType = PaymentType.other,
-      super.id,
-      super.createdAt,
-      super.updatedAt})
-      : bank = bank ?? Bank();
+  PaymentMethod({
+    this.providerCode = '',
+    Bank? bank,
+    this.name = '',
+    this.paymentType = PaymentType.other,
+    super.id,
+    super.createdAt,
+    super.updatedAt,
+  }) : bank = bank ?? Bank();
   @override
   String get modelName => 'payment_method';
   @override
@@ -91,21 +91,24 @@ class PaymentMethod extends Model {
     super.setFromJson(json, included: included);
     final attributes = json['attributes'];
 
-    bank = BankClass().findRelationData(
+    bank =
+        BankClass().findRelationData(
           included: included,
           relation: json['relationships']['bank'],
         ) ??
         Bank();
     providerCode = bank.code;
-    paymentType = PaymentType.fromString(attributes['payment_type']);
+    if (attributes['payment_type'] != null) {
+      paymentType = PaymentType.fromString(attributes['payment_type']);
+    }
   }
 
   @override
   Map<String, dynamic> toMap() => {
-        'name': name,
-        'provider': providerCode,
-        'payment_type': paymentType,
-      };
+    'name': name,
+    'provider': providerCode,
+    'payment_type': paymentType,
+  };
   @override
   String get modelValue => name;
 }

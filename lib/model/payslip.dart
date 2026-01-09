@@ -65,61 +65,61 @@ class Payslip extends Model {
   int totalWorkDays;
   int late;
   List<PayslipLine> lines;
-  Payslip(
-      {Employee? employee,
-      Payroll? payroll,
-      this.status = PayslipStatus.draft,
-      Date? startDate,
-      Date? endDate,
-      this.paymentTime,
-      this.grossSalary = 0,
-      this.notes,
-      this.taxAmount = 0,
-      this.nettSalary = 0,
-      this.sickLeave = 0,
-      this.knownAbsence = 0,
-      this.unknownAbsence = 0,
-      this.paidTimeOff = 0,
-      this.overtimeHour = 0,
-      this.late = 0,
-      this.workDays = 0,
-      this.totalWorkDays = 0,
-      this.lines = const [],
-      super.createdAt,
-      super.updatedAt,
-      super.id})
-      : employee = employee ?? Employee(),
-        payroll = payroll ?? Payroll(name: ''),
-        startDate = startDate ?? Date.today(),
-        endDate = endDate ?? Date.today();
+  Payslip({
+    Employee? employee,
+    Payroll? payroll,
+    this.status = PayslipStatus.draft,
+    Date? startDate,
+    Date? endDate,
+    this.paymentTime,
+    this.grossSalary = 0,
+    this.notes,
+    this.taxAmount = 0,
+    this.nettSalary = 0,
+    this.sickLeave = 0,
+    this.knownAbsence = 0,
+    this.unknownAbsence = 0,
+    this.paidTimeOff = 0,
+    this.overtimeHour = 0,
+    this.late = 0,
+    this.workDays = 0,
+    this.totalWorkDays = 0,
+    this.lines = const [],
+    super.createdAt,
+    super.updatedAt,
+    super.id,
+  }) : employee = employee ?? Employee(),
+       payroll = payroll ?? Payroll(name: ''),
+       startDate = startDate ?? Date.today(),
+       endDate = endDate ?? Date.today();
 
   @override
   Map<String, dynamic> toMap() => {
-        'employee_name': employee.name,
-        'employee_id': employee.id,
-        'payroll_id': payroll.id,
-        'payroll': payroll,
-        'employee': employee,
-        'payroll.name': payroll.name,
-        'status': status.toString(),
-        'start_date': startDate,
-        'end_date': endDate,
-        'payment_time': paymentTime,
-        'gross_salary': grossSalary,
-        'notes': notes,
-        'tax_amount': taxAmount,
-        'nett_salary': nettSalary,
-        'sick_leave': sickLeave,
-        'known_absence': knownAbsence,
-        'unknown_absence': unknownAbsence,
-        'paid_time_off': paidTimeOff,
-        'overtime_hour': overtimeHour,
-        'work_days': workDays,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-        'late': late,
-        'total_day': totalWorkDays,
-      };
+    'employee_name': employee.name,
+    'employee_id': employee.id,
+    'payroll_id': payroll.id,
+    'payroll': payroll,
+    'employee': employee,
+    'payroll.name': payroll.name,
+    'status': status.toString(),
+    'start_date': startDate,
+    'end_date': endDate,
+    'payment_time': paymentTime,
+    'gross_salary': grossSalary,
+    'notes': notes,
+    'tax_amount': taxAmount,
+    'nett_salary': nettSalary,
+    'sick_leave': sickLeave,
+    'known_absence': knownAbsence,
+    'unknown_absence': unknownAbsence,
+    'paid_time_off': paidTimeOff,
+    'overtime_hour': overtimeHour,
+    'work_days': workDays,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+    'late': late,
+    'total_day': totalWorkDays,
+  };
 
   @override
   String get modelName => 'payslip';
@@ -131,7 +131,10 @@ class Payslip extends Model {
     super.setFromJson(json, included: included);
     startDate = Date.parse(attributes['start_date']);
     endDate = Date.parse(attributes['end_date']);
-    status = PayslipStatus.fromString(attributes['status']);
+    if (attributes['status'] != null) {
+      status = PayslipStatus.fromString(attributes['status']);
+    }
+
     paymentTime = DateTime.tryParse(attributes['payment_time'] ?? '');
     grossSalary = double.parse(attributes['gross_salary']);
     nettSalary = double.parse(attributes['nett_salary']);
@@ -146,12 +149,14 @@ class Payslip extends Model {
     workDays = double.parse(attributes['work_days']);
     totalWorkDays = attributes['total_day'];
     if (included.isNotEmpty) {
-      payroll = PayrollClass().findRelationData(
+      payroll =
+          PayrollClass().findRelationData(
             included: included,
             relation: json['relationships']['payroll'],
           ) ??
           payroll;
-      employee = EmployeeClass().findRelationData(
+      employee =
+          EmployeeClass().findRelationData(
             included: included,
             relation: json['relationships']['employee'],
           ) ??

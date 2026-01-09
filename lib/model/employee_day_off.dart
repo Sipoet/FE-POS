@@ -69,9 +69,9 @@ class EmployeeDayOff extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'active_week': activeWeek,
-        'day_of_week': dayOfWeek,
-      };
+    'active_week': activeWeek,
+    'day_of_week': dayOfWeek,
+  };
 
   @override
   String get modelName => 'employee_day_of';
@@ -80,8 +80,10 @@ class EmployeeDayOff extends Model {
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];
+    if (attributes['active_week'] != null) {
+      activeWeek = ActiveWeekDayOff.fromString(attributes['active_week']);
+    }
 
-    activeWeek = ActiveWeekDayOff.fromString(attributes['active_week']);
     dayOfWeek = attributes['day_of_week'];
   }
 

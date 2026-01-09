@@ -259,9 +259,12 @@ class Employee extends Model {
     id = int.parse(json['id']);
     code = attributes['code']?.trim();
     name = attributes['name']?.trim();
-    maritalStatus = EmployeeMaritalStatus.fromString(
-      attributes['marital_status'] ?? EmployeeMaritalStatus.single.toString(),
-    );
+    if (attributes['marital_status'] != null) {
+      maritalStatus = EmployeeMaritalStatus.fromString(
+        attributes['marital_status'] ?? EmployeeMaritalStatus.single.toString(),
+      );
+    }
+
     taxNumber = attributes['tax_number'];
     userCode = attributes['user_code'];
     if (attributes['status'] != null) {
@@ -280,7 +283,10 @@ class Employee extends Model {
     imageCode = attributes['image_code'];
     shift = attributes['shift'];
     bankRegisterName = attributes['bank_register_name'];
-    religion = Religion.fromString(attributes['religion']);
+    if (attributes['religion'] != null) {
+      religion = Religion.fromString(attributes['religion']);
+    }
+
     email = attributes['email'];
   }
 

@@ -55,11 +55,11 @@ enum QueryOperator implements EnumTranslation {
       case not:
         return 'bukan';
       case lessThan:
-        return 'lebih kecil';
+        return 'lebih kecil dari';
       case lessThanOrEqualTo:
         return 'lebih kecil atau sama dengan';
       case greaterThan:
-        return 'lebih besar';
+        return 'lebih besar dari';
       case greaterThanOrEqualTo:
         return 'lebih besar atau sama dengan';
       case between:
@@ -70,9 +70,7 @@ enum QueryOperator implements EnumTranslation {
 
 abstract class FilterData {
   String key;
-  FilterData({
-    required this.key,
-  });
+  FilterData({required this.key});
 
   MapEntry<String, String> toEntryJson();
 
@@ -99,10 +97,11 @@ abstract class FilterData {
 class ComparisonFilterData extends FilterData {
   dynamic value;
   QueryOperator operator;
-  ComparisonFilterData(
-      {required super.key,
-      this.operator = QueryOperator.equals,
-      required this.value});
+  ComparisonFilterData({
+    required super.key,
+    this.operator = QueryOperator.equals,
+    required this.value,
+  });
 
   @override
   MapEntry<String, String> toEntryJson() {
@@ -118,8 +117,9 @@ class BetweenFilterData extends FilterData {
   BetweenFilterData({required super.key, required this.values});
   @override
   MapEntry<String, String> toEntryJson() {
-    final jsonValue =
-        values.map<String>((value) => _convertValue(value)).join(',');
+    final jsonValue = values
+        .map<String>((value) => _convertValue(value))
+        .join(',');
     return MapEntry('filter[$key][btw]', jsonValue);
   }
 }
@@ -134,19 +134,19 @@ class QueryRequest {
   String? searchText;
   List<String> include;
 
-  QueryRequest(
-      {this.page = 1,
-      this.limit = 10,
-      this.cancelToken,
-      this.searchText,
-      List<String>? fields,
-      List<String>? include,
-      List<FilterData>? filters,
-      List<SortData>? sorts})
-      : include = include ?? [],
-        filters = filters ?? [],
-        sorts = sorts ?? [],
-        fields = fields ?? [];
+  QueryRequest({
+    this.page = 1,
+    this.limit = 10,
+    this.cancelToken,
+    this.searchText,
+    List<String>? fields,
+    List<String>? include,
+    List<FilterData>? filters,
+    List<SortData>? sorts,
+  }) : include = include ?? [],
+       filters = filters ?? [],
+       sorts = sorts ?? [],
+       fields = fields ?? [];
 
   Map<String, String?> toQueryParam() {
     Map<String, String?> result = {

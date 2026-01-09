@@ -90,7 +90,9 @@ class User extends Model {
 
     username = attributes['username'] ?? '';
     email = attributes['email'];
-    // status = UserStatus.fromString(attributes['status']?.toString());
+    if (attributes['status'] != null) {
+      status = UserStatus.fromString(attributes['status'].toString());
+    }
   }
 
   @override

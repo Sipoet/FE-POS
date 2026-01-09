@@ -63,22 +63,23 @@ class BackgroundJob extends Model {
   String? args;
   BackgroundJobStatus status;
   String description;
-  BackgroundJob(
-      {this.jobClass = '',
-      this.args,
-      this.description = '',
-      this.status = BackgroundJobStatus.scheduled,
-      super.id,
-      super.createdAt,
-      super.updatedAt});
+  BackgroundJob({
+    this.jobClass = '',
+    this.args,
+    this.description = '',
+    this.status = BackgroundJobStatus.scheduled,
+    super.id,
+    super.createdAt,
+    super.updatedAt,
+  });
 
   @override
   Map<String, dynamic> toMap() => {
-        'job_class': jobClass,
-        'args': args,
-        'status': status,
-        'description': description,
-      };
+    'job_class': jobClass,
+    'args': args,
+    'status': status,
+    'description': description,
+  };
 
   @override
   String get modelName => 'background_job';
@@ -91,7 +92,9 @@ class BackgroundJob extends Model {
     jobClass = attributes['job_class'] ?? '';
     args = attributes['args'].toString();
     description = attributes['description'].toString();
-    status = BackgroundJobStatus.fromString(attributes['status']);
+    if (attributes['status'] != null) {
+      status = BackgroundJobStatus.fromString(attributes['status']);
+    }
   }
 
   @override
