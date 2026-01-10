@@ -5,13 +5,15 @@ extension StringExt on String {
   String toSnakeCase() => unclassify().toLowerCase().replaceAll(' ', '_');
 
   String unclassify() => replaceAllMapped(
-      RegExp(r'\s*([A-Z])'), (Match match) => " ${match.group(1)}").trimLeft();
+    RegExp(r'\s*([A-Z])'),
+    (Match match) => " ${match.group(1)}",
+  ).trimLeft();
   String toCapitalized() =>
       length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
-  String toTitleCase() => replaceAll(RegExp(' +'), ' ')
-      .split(' ')
-      .map<String>((str) => str.toCapitalized())
-      .join(' ');
+  String toTitleCase() => replaceAll(
+    RegExp(' +'),
+    ' ',
+  ).split(' ').map<String>((str) => str.toCapitalized()).join(' ');
 }
 
 abstract class EnumTranslation {
@@ -21,13 +23,18 @@ abstract class EnumTranslation {
 extension DateTimeExt on DateTime {
   DateTime beginningOfDay() {
     return copyWith(
-        hour: 0, minute: 0, second: 0, microsecond: 0, millisecond: 0);
+      hour: 0,
+      minute: 0,
+      second: 0,
+      microsecond: 0,
+      millisecond: 0,
+    );
   }
 
   DateTime endOfDay() {
-    return add(Duration(days: 1))
-        .beginningOfDay()
-        .subtract(Duration(milliseconds: 1));
+    return add(
+      Duration(days: 1),
+    ).beginningOfDay().subtract(Duration(milliseconds: 1));
   }
 
   DateTime beginningOfWeek() {
@@ -52,8 +59,11 @@ extension DateTimeExt on DateTime {
     if (month == 12) {
       return DateTime(year, month, 31).endOfDay();
     } else {
-      return DateTime(year, month + 1, 1)
-          .subtract(const Duration(milliseconds: 1));
+      return DateTime(
+        year,
+        month + 1,
+        1,
+      ).subtract(const Duration(milliseconds: 1));
     }
   }
 
@@ -85,11 +95,7 @@ extension DateTimeRangeExt on DateTimeRange {
 }
 
 class Date extends DateTime {
-  Date(
-    super.year, [
-    super.month = 1,
-    super.day = 1,
-  ]);
+  Date(super.year, [super.month = 1, super.day = 1]);
   static Date parse(String value) {
     var datetime = DateTime.parse(value);
     return Date.parsingDateTime(datetime);
@@ -163,6 +169,7 @@ class Date extends DateTime {
   }
 
   static Date parsingDateTime(DateTime value) {
+    value = value.toLocal();
     return Date(value.year, value.month, value.day);
   }
 }
@@ -201,8 +208,10 @@ class Money {
 
   String format({int? decimalDigits}) {
     return NumberFormat.currency(
-            locale: "id_ID", symbol: symbol, decimalDigits: decimalDigits)
-        .format(value);
+      locale: "id_ID",
+      symbol: symbol,
+      decimalDigits: decimalDigits,
+    ).format(value);
   }
 
   @override
@@ -399,7 +408,7 @@ extension TimeDay on TimeOfDay {
   String format24Hour({bool showSecond = false, String separator = ':'}) {
     List<String> part = [
       hour.toString().padLeft(2, '0'),
-      minute.toString().padLeft(2, '0')
+      minute.toString().padLeft(2, '0'),
     ];
     if (showSecond) {
       part.add('00');

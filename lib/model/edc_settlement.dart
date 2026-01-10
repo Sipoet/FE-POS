@@ -95,8 +95,9 @@ class EdcSettlement extends Model {
     if (attributes['status'] != null) {
       status = EdcSettlementStatus.fromString(attributes['status']);
     }
-
-    diffAmount = Money.parse(attributes['diff_amount']);
+    if (attributes['diff_amount'] != null) {
+      diffAmount = Money.parse(attributes['diff_amount']);
+    }
     paymentType =
         PaymentTypeClass().findRelationData(
           included: included,
