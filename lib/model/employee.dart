@@ -257,8 +257,8 @@ class Employee extends Model {
       included: included,
     );
     id = int.parse(json['id']);
-    code = attributes['code']?.trim();
-    name = attributes['name']?.trim();
+    code = attributes['code']?.trim() ?? '';
+    name = attributes['name']?.trim() ?? '';
     if (attributes['marital_status'] != null) {
       maritalStatus = EmployeeMaritalStatus.fromString(
         attributes['marital_status'] ?? EmployeeMaritalStatus.single.toString(),

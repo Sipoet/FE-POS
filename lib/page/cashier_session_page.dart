@@ -126,12 +126,13 @@ class _CashierSessionPageState extends State<CashierSessionPage>
                           },
                           child: const Text('EDC Settlement Hari ini'),
                         ),
-                      MenuItemButton(
-                        onPressed: () {
-                          _menuController.close();
-                        },
-                        child: const Text('Tambah Kas Keluar'),
-                      ),
+                      if (setting.isAuthorize('cashOut', 'create'))
+                        MenuItemButton(
+                          onPressed: () {
+                            _menuController.close();
+                          },
+                          child: const Text('Tambah Kas Keluar'),
+                        ),
                     ],
                     child: const Icon(Icons.table_rows_rounded),
                   ),

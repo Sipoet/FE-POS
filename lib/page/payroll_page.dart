@@ -178,13 +178,14 @@ class _PayrollPageState extends State<PayrollPage>
                     child: SubmenuButton(
                       controller: _menuController,
                       menuChildren: [
-                        MenuItemButton(
-                          child: const Text('Tambah Payroll'),
-                          onPressed: () {
-                            _menuController.close();
-                            addForm();
-                          },
-                        ),
+                        if (setting.isAuthorize('payroll', 'create'))
+                          MenuItemButton(
+                            child: const Text('Tambah Payroll'),
+                            onPressed: () {
+                              _menuController.close();
+                              addForm();
+                            },
+                          ),
                       ],
                       child: const Icon(Icons.table_rows_rounded),
                     ),
