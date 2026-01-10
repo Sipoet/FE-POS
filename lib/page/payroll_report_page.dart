@@ -41,75 +41,108 @@ class _PayrollReportPageState extends State<PayrollReportPage>
     showLoadingPopup();
     tableStateManager?.removeAllRows();
     final tabManager = context.read<TabManager>();
-    fetchReport(reportType: 'json').then((response) {
-      if (response.statusCode == 200) {
-        final json = response.data;
-        final included = json['included'];
-        setState(() {
-          tableColumns = json['meta']['table_columns'].map<TableColumn>((row) {
-            return TableColumn(
-                clientWidth:
-                    double.parse((row['client_width'] ?? '200').toString()),
-                type: TableColumnType.fromString(row['type']),
-                inputOptions: row['input_options'],
-                canFilter: true,
-                name: row['name'],
-                humanizeName: row['humanize_name']);
-          }).toList();
-          tableStateManager?.setTableColumns(tableColumns,
-              tabManager: tabManager, showFilter: true);
-          for (final row in json['data']) {
-            final model =
-                PayrollReportClass().fromJson(row, included: included ?? []);
-            tableStateManager?.appendModel(model);
-          }
-        });
-      }
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-    }).whenComplete(() => hideLoadingPopup());
+    fetchReport(reportType: 'json')
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              final json = response.data;
+              final included = json['included'];
+              setState(() {
+                tableColumns = json['meta']['table_columns'].map<TableColumn>((
+                  row,
+                ) {
+                  return TableColumn(
+                    clientWidth: double.parse(
+                      (row['client_width'] ?? '200').toString(),
+                    ),
+                    type: TableColumnType.fromString(row['type']),
+                    inputOptions: row['input_options'],
+                    canFilter: true,
+                    name: row['name'],
+                    humanizeName: row['humanize_name'],
+                  );
+                }).toList();
+                tableStateManager?.setTableColumns(
+                  tableColumns,
+                  tabManager: tabManager,
+                  showFilter: true,
+                );
+                for (final row in json['data']) {
+                  final model = PayrollReportClass().fromJson(
+                    row,
+                    included: included ?? [],
+                  );
+                  tableStateManager?.appendModel(model);
+                }
+              });
+            }
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+          },
+        )
+        .whenComplete(() => hideLoadingPopup());
   }
 
   void downloadReport() {
     flash.hide();
-    fetchReport(reportType: 'xlsx').then((response) {
-      if (response.statusCode != 200) {
-        flash.show(
-            const Text('gagal simpan ke excel'), ToastificationType.error);
-        return;
-      }
-      String filename = response.headers.value('content-disposition') ?? '';
-      if (filename.isEmpty) {
-        flash.show(const Text('gagal filename tidak ditemukan'),
-            ToastificationType.error);
-        return;
-      }
-      filename = filename.substring(
-          filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
-      var downloader = const FileSaver();
-      downloader.download(filename, response.data, 'xlsx',
+    fetchReport(reportType: 'xlsx').then(
+      (response) {
+        if (response.statusCode != 200) {
+          flash.show(
+            const Text('gagal simpan ke excel'),
+            ToastificationType.error,
+          );
+          return;
+        }
+        String filename = response.headers.value('content-disposition') ?? '';
+        if (filename.isEmpty) {
+          flash.show(
+            const Text('gagal filename tidak ditemukan'),
+            ToastificationType.error,
+          );
+          return;
+        }
+        filename = filename.substring(
+          filename.indexOf('filename="') + 10,
+          filename.indexOf('xlsx";') + 4,
+        );
+        var downloader = const FileSaver();
+        downloader.download(
+          filename,
+          response.data,
+          'xlsx',
           onSuccess: (String path) {
-        flash.showBanner(
-            messageType: ToastificationType.success,
-            title: 'Sukses download',
-            description: 'sukses disimpan di $path');
-      });
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-    });
+            flash.showBanner(
+              messageType: ToastificationType.success,
+              title: 'Sukses download',
+              description: 'sukses disimpan di $path',
+            );
+          },
+        );
+      },
+      onError: (error) {
+        defaultErrorResponse(error: error);
+      },
+    );
   }
 
   Future fetchReport({String reportType = ''}) {
     final params = {
       'date': _date.toIso8601String(),
       'report_type': reportType,
-      'payroll_type_ids[]':
-          payrollTypes.map((payrollType) => payrollType.id.toString()).toList(),
-      'employee_ids[]':
-          employees.map((employee) => employee.id.toString()).toList()
+      'payroll_type_ids[]': payrollTypes
+          .map((payrollType) => payrollType.id.toString())
+          .toList(),
+      'employee_ids[]': employees
+          .map((employee) => employee.id.toString())
+          .toList(),
     };
-    return server.get('payrolls/report',
-        responseType: reportType, queryParam: params);
+    return server.get(
+      'payrolls/report',
+      responseType: reportType,
+      queryParam: params,
+    );
   }
 
   @override
@@ -120,10 +153,13 @@ class _PayrollReportPageState extends State<PayrollReportPage>
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Wrap(spacing: 10, runSpacing: 10, children: [
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
                   SizedBox(
                     width: 350,
                     child: DateFormField(
@@ -137,49 +173,56 @@ class _PayrollReportPageState extends State<PayrollReportPage>
                   SizedBox(
                     width: 350,
                     child: AsyncDropdownMultiple<Employee>(
-                        textOnSearch: (employee) => employee.name,
-                        path: 'employees',
-                        onChanged: (newEmployees) => employees = newEmployees,
-                        modelClass: PayrollTypeClass()),
+                      textOnSearch: (employee) => employee.name,
+                      path: 'employees',
+                      onChanged: (newEmployees) => employees = newEmployees,
+                      modelClass: EmployeeClass(),
+                    ),
                   ),
                   SizedBox(
                     width: 350,
                     child: AsyncDropdownMultiple<PayrollType>(
-                        textOnSearch: (payrollType) => payrollType.name,
-                        path: 'payroll_types',
-                        label: Text('Tipe Payroll'),
-                        onChanged: (newPayrollTypes) =>
-                            payrollTypes = newPayrollTypes,
-                        modelClass: PayrollTypeClass()),
+                      textOnSearch: (payrollType) => payrollType.name,
+                      path: 'payroll_types',
+                      label: Text('Tipe Payroll'),
+                      onChanged: (newPayrollTypes) =>
+                          payrollTypes = newPayrollTypes,
+                      modelClass: PayrollTypeClass(),
+                    ),
                   ),
-                ]),
-                Row(children: [
+                ],
+              ),
+              Row(
+                children: [
                   Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: ElevatedButton(
-                        onPressed: () {
-                          searchReport();
-                        },
-                        child: const Text('Search')),
+                      onPressed: () {
+                        searchReport();
+                      },
+                      child: const Text('Search'),
+                    ),
                   ),
                   ElevatedButton(
-                      onPressed: () {
-                        downloadReport();
-                      },
-                      child: const Text('Download')),
-                ]),
-                const Divider(),
-                SizedBox(
-                  height: bodyScreenHeight,
-                  child: SyncDataTable(
-                    columns: tableColumns,
-                    showSummary: true,
-                    showFilter: true,
-                    onLoaded: (stateManager) =>
-                        tableStateManager = stateManager,
+                    onPressed: () {
+                      downloadReport();
+                    },
+                    child: const Text('Download'),
                   ),
-                )
-              ]),
+                ],
+              ),
+              const Divider(),
+              SizedBox(
+                height: bodyScreenHeight,
+                child: SyncDataTable(
+                  columns: tableColumns,
+                  showSummary: true,
+                  showFilter: true,
+                  onLoaded: (stateManager) => tableStateManager = stateManager,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

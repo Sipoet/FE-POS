@@ -53,7 +53,7 @@ class AsyncDropdownMultiple<T extends Model> extends StatefulWidget {
   });
 
   final String? path;
-  final ModelClass modelClass;
+  final ModelClass<T> modelClass;
   final String? attributeKey;
   final Duration delayedSearch;
   final int recordLimit;
@@ -265,6 +265,18 @@ class _AsyncDropdownMultipleState<T extends Model>
 
   Future<List<T>> getData(String filter, LoadProps? prop) async {
     int page = (prop!.skip / widget.recordLimit).round() + 1;
+    if (widget.path == null && widget.request == null) {
+      final response = await widget.modelClass.finds(
+        server,
+        QueryRequest(
+          cancelToken: _cancelToken,
+          searchText: filter,
+          page: page,
+          limit: widget.recordLimit,
+        ),
+      );
+      return response.models;
+    }
     var response =
         await request(
           page: page,
@@ -290,8 +302,7 @@ class _AsyncDropdownMultipleState<T extends Model>
   List<T> convertToOptions(List list, List relationships) {
     return list
         .map<T>(
-          (row) =>
-              widget.modelClass.fromJson(row, included: relationships) as T,
+          (row) => widget.modelClass.fromJson(row, included: relationships),
         )
         .toList();
   }
