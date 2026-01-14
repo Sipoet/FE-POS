@@ -43,46 +43,49 @@ class _ItemReportPageState extends State<ItemReportPage>
   void _displayReport() async {
     _source?.setShowLoading(true);
     final sortData = SortData(
-        key: _source?.getSortedColumn?.field ?? 'item_code',
-        isAscending: _source?.getSortedColumn?.sort.isAscending ?? true);
-    _requestReport(page: 1, limit: 2000, sortData: sortData).then((response) {
-      try {
-        if (response.statusCode != 200) {
-          setState(() {
-            _itemReports = [];
-            _source?.setModels(_itemReports);
-          });
-          return;
-        }
-        var data = response.data;
-        final initClass = ItemReportClass();
-        setState(() {
-          _itemReports = data['data'].map<ItemReport>((row) {
-            return initClass.fromJson(row);
-          }).toList();
-          _source?.setModels(_itemReports);
-        });
-      } catch (error, stackTrace) {
-        debugPrint(error.toString());
-        debugPrint(stackTrace.toString());
-      }
-    },
-        onError: ((error, stackTrace) => defaultErrorResponse(
-            error: error))).whenComplete(() => _source?.setShowLoading(false));
+      key: _source?.getSortedColumn?.field ?? 'item_code',
+      isAscending: _source?.getSortedColumn?.sort.isAscending ?? true,
+    );
+    _requestReport(page: 1, limit: 2000, sortData: sortData)
+        .then((response) {
+          try {
+            if (response.statusCode != 200) {
+              setState(() {
+                _itemReports = [];
+                _source?.setModels(_itemReports);
+              });
+              return;
+            }
+            var data = response.data;
+            final initClass = ItemReportClass();
+            setState(() {
+              _itemReports = data['data'].map<ItemReport>((row) {
+                return initClass.fromJson(row);
+              }).toList();
+              _source?.setModels(_itemReports);
+            });
+          } catch (error, stackTrace) {
+            debugPrint(error.toString());
+            debugPrint(stackTrace.toString());
+          }
+        }, onError: ((error, stackTrace) => defaultErrorResponse(error: error)))
+        .whenComplete(() => _source?.setShowLoading(false));
   }
 
   void _downloadReport() async {
-    flash.show(
-      const Text('Dalam proses.'),
-      ToastificationType.info,
-    );
+    flash.show(const Text('Dalam proses.'), ToastificationType.info);
     _reportType = 'xlsx';
-    _requestReport(limit: null).then(_downloadResponse,
-        onError: ((error, stackTrace) => defaultErrorResponse(error: error)));
+    _requestReport(limit: null).then(
+      _downloadResponse,
+      onError: ((error, stackTrace) => defaultErrorResponse(error: error)),
+    );
   }
 
-  Future _requestReport(
-      {int page = 1, int? limit = 10, SortData? sortData}) async {
+  Future _requestReport({
+    int page = 1,
+    int? limit = 10,
+    SortData? sortData,
+  }) async {
     String orderKey = sortData?.key ?? 'item_code';
     Map<String, dynamic> param = {
       'page[page]': page.toString(),
@@ -95,8 +98,11 @@ class _ItemReportPageState extends State<ItemReportPage>
       final entry = filterData.toEntryJson();
       param[entry.key] = entry.value;
     }
-    return server.get('item_reports',
-        queryParam: param, type: _reportType ?? 'json');
+    return server.get(
+      'item_reports',
+      queryParam: param,
+      type: _reportType ?? 'json',
+    );
   }
 
   void _downloadResponse(response) async {
@@ -110,15 +116,22 @@ class _ItemReportPageState extends State<ItemReportPage>
       return;
     }
     filename = filename.substring(
-        filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
+      filename.indexOf('filename="') + 10,
+      filename.indexOf('xlsx";') + 4,
+    );
     var downloader = const FileSaver();
-    downloader.download(filename, response.data, 'xlsx',
-        onSuccess: (String path) {
-      flash.showBanner(
+    downloader.download(
+      filename,
+      response.data,
+      'xlsx',
+      onSuccess: (String path) {
+        flash.showBanner(
           messageType: ToastificationType.success,
           title: 'Sukses download',
-          description: 'sukses disimpan di $path');
-    });
+          description: 'sukses disimpan di $path',
+        );
+      },
+    );
   }
 
   @override
@@ -131,16 +144,17 @@ class _ItemReportPageState extends State<ItemReportPage>
         spacing: 10,
         children: [
           TableFilterForm(
-              showCanopy: false,
-              onSubmit: (filter) {
-                _filters = filter;
-                _displayReport();
-              },
-              onDownload: (filter) {
-                _filters = filter;
-                _downloadReport();
-              },
-              columns: columns),
+            showCanopy: false,
+            onSubmit: (filter) {
+              _filters = filter;
+              _displayReport();
+            },
+            onDownload: (filter) {
+              _filters = filter;
+              _downloadReport();
+            },
+            columns: columns,
+          ),
           const Divider(),
           SizedBox(
             height: bodyScreenHeight,

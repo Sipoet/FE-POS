@@ -16,14 +16,15 @@ class TableFilterForm extends StatefulWidget {
   final FilterProcess onSubmit;
   final FilterProcess? onDownload;
   final bool showCanopy;
-  const TableFilterForm(
-      {super.key,
-      this.enums = const {},
-      required this.onSubmit,
-      this.onDownload,
-      required this.columns,
-      this.showCanopy = true,
-      this.controller});
+  const TableFilterForm({
+    super.key,
+    this.enums = const {},
+    required this.onSubmit,
+    this.onDownload,
+    required this.columns,
+    this.showCanopy = true,
+    this.controller,
+  });
 
   @override
   State<TableFilterForm> createState() => _TableFilterFormState();
@@ -31,8 +32,10 @@ class TableFilterForm extends StatefulWidget {
 
 class _TableFilterFormState extends State<TableFilterForm> {
   final _key = GlobalKey<FormState>();
-  final _labelStyle =
-      const TextStyle(fontWeight: FontWeight.bold, fontSize: 16);
+  final _labelStyle = const TextStyle(
+    fontWeight: FontWeight.bold,
+    fontSize: 16,
+  );
   late final TableFilterFormController controller;
   late ColorScheme colorScheme;
   bool isShowFilter = false;
@@ -54,32 +57,29 @@ class _TableFilterFormState extends State<TableFilterForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          "Filter",
-          style: _labelStyle,
-        ),
+        Text("Filter", style: _labelStyle),
         Visibility(
-            visible: widget.showCanopy,
-            child: Column(
-              children: [
-                Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        isShowFilter = !isShowFilter;
-                      });
-                    },
-                    icon: Icon(
-                        isShowFilter ? Icons.expand_more : Icons.expand_less),
-                    label: const Divider(),
+          visible: widget.showCanopy,
+          child: Column(
+            children: [
+              Directionality(
+                textDirection: TextDirection.rtl,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      isShowFilter = !isShowFilter;
+                    });
+                  },
+                  icon: Icon(
+                    isShowFilter ? Icons.expand_more : Icons.expand_less,
                   ),
+                  label: const Divider(),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
-              ],
-            )),
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        ),
         Visibility(
           visible: isShowFilter,
           child: Form(
@@ -102,44 +102,47 @@ class _TableFilterFormState extends State<TableFilterForm> {
                     Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: ElevatedButton(
-                          onPressed: () {
-                            if (_key.currentState!.validate()) {
-                              _key.currentState!.save();
-                              widget.onSubmit(controller.decoratedFilter);
-                            }
-                          },
-                          child: const Text('Cari')),
+                        onPressed: () {
+                          if (_key.currentState!.validate()) {
+                            _key.currentState!.save();
+                            widget.onSubmit(controller.decoratedFilter);
+                          }
+                        },
+                        child: const Text('Cari'),
+                      ),
                     ),
                     Visibility(
                       visible: widget.onDownload != null,
                       child: Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: ElevatedButton(
-                            onPressed: () {
-                              if (_key.currentState!.validate()) {
-                                _key.currentState!.save();
-                                widget.onDownload!(controller.decoratedFilter);
-                              }
-                            },
-                            child: const Text('Download')),
+                          onPressed: () {
+                            if (_key.currentState!.validate()) {
+                              _key.currentState!.save();
+                              widget.onDownload!(controller.decoratedFilter);
+                            }
+                          },
+                          child: const Text('Download'),
+                        ),
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: ElevatedButton(
-                          onPressed: () {
-                            controller.removeAllFilter();
-                            for (final controller in _textController.values) {
-                              controller.clear();
+                        onPressed: () {
+                          controller.removeAllFilter();
+                          for (final controller in _textController.values) {
+                            controller.clear();
+                          }
+                          setState(() {
+                            for (final key in val.keys) {
+                              val[key] = null;
                             }
-                            setState(() {
-                              for (final key in val.keys) {
-                                val[key] = null;
-                              }
-                            });
-                          },
-                          child: const Text('Reset')),
-                    )
+                          });
+                        },
+                        child: const Text('Reset'),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -175,14 +178,12 @@ class _TableFilterFormState extends State<TableFilterForm> {
           child: TextFormField(
             enabled: false,
             decoration: InputDecoration(
-                contentPadding: const EdgeInsets.all(12),
-                label: Text(
-                  column.name,
-                  style: _labelStyle,
-                ),
-                border: const OutlineInputBorder(),
-                helperStyle: const TextStyle(fontSize: 11),
-                helperText: 'Tidak support filter'),
+              contentPadding: const EdgeInsets.all(12),
+              label: Text(column.name, style: _labelStyle),
+              border: const OutlineInputBorder(),
+              helperStyle: const TextStyle(fontSize: 11),
+              helperText: 'Tidak support filter',
+            ),
           ),
         );
     }
@@ -192,21 +193,23 @@ class _TableFilterFormState extends State<TableFilterForm> {
     return SizedBox(
       width: 300,
       child: CheckboxListTile(
-          title: Text(column.humanizeName),
-          controlAffinity: ListTileControlAffinity.leading,
-          value: val[column.name] as bool?,
-          tristate: true,
-          onChanged: (value) {
-            setState(() {
-              val[column.name] = value;
-            });
-            if (value == null) {
-              controller.removeFilter(column.name);
-            } else {
-              controller.setFilter(ComparisonFilterData(
-                  key: column.name, value: value.toString()));
-            }
-          }),
+        title: Text(column.humanizeName),
+        controlAffinity: ListTileControlAffinity.leading,
+        value: val[column.name] as bool?,
+        tristate: true,
+        onChanged: (value) {
+          setState(() {
+            val[column.name] = value;
+          });
+          if (value == null) {
+            controller.removeFilter(column.name);
+          } else {
+            controller.setFilter(
+              ComparisonFilterData(key: column.name, value: value.toString()),
+            );
+          }
+        },
+      ),
     );
   }
 
@@ -226,8 +229,12 @@ class _TableFilterFormState extends State<TableFilterForm> {
           if (value == null) {
             controller.removeFilter(column.name);
           } else {
-            controller.setFilter(BetweenFilterData(
-                key: column.name, values: [value.start, value.end]));
+            controller.setFilter(
+              BetweenFilterData(
+                key: column.name,
+                values: [value.start, value.end],
+              ),
+            );
           }
         },
       ),
@@ -238,30 +245,34 @@ class _TableFilterFormState extends State<TableFilterForm> {
     final enumList = widget.enums[column.name];
     _textController[column.name] ??= TextEditingController();
     return DropdownMenu<String>(
-        width: 300,
-        controller: _textController[column.name],
-        inputDecorationTheme: const InputDecorationTheme(
-            contentPadding: EdgeInsets.all(12), border: OutlineInputBorder()),
-        key: ValueKey(column.name),
-        label: Text(
-          column.humanizeName,
-          style: _labelStyle,
-        ),
-        onSelected: (String? value) {
-          if (value == null || value.isEmpty) {
-            controller.removeFilter(column.name);
-            return;
-          }
-          controller
-              .setFilter(ComparisonFilterData(key: column.name, value: value));
-        },
-        dropdownMenuEntries: const [
-              DropdownMenuEntry<String>(value: '', label: '')
-            ] +
-            enumList!
-                .map<DropdownMenuEntry<String>>((data) => DropdownMenuEntry(
-                    value: data.toString(), label: data.humanize()))
-                .toList());
+      width: 300,
+      controller: _textController[column.name],
+      inputDecorationTheme: const InputDecorationTheme(
+        contentPadding: EdgeInsets.all(12),
+        border: OutlineInputBorder(),
+      ),
+      key: ValueKey(column.name),
+      label: Text(column.humanizeName, style: _labelStyle),
+      onSelected: (String? value) {
+        if (value == null || value.isEmpty) {
+          controller.removeFilter(column.name);
+          return;
+        }
+        controller.setFilter(
+          ComparisonFilterData(key: column.name, value: value),
+        );
+      },
+      dropdownMenuEntries:
+          const [DropdownMenuEntry<String>(value: '', label: '')] +
+          enumList!
+              .map<DropdownMenuEntry<String>>(
+                (data) => DropdownMenuEntry(
+                  value: data.toString(),
+                  label: data.humanize(),
+                ),
+              )
+              .toList(),
+    );
   }
 
   Widget textFilter(TableColumn column) {
@@ -276,26 +287,33 @@ class _TableFilterFormState extends State<TableFilterForm> {
             controller.removeFilter(column.name);
             return;
           }
-          controller.setFilter(ComparisonFilterData(
+          controller.setFilter(
+            ComparisonFilterData(
               key: column.name,
               operator: QueryOperator.contains,
-              value: newValue));
+              value: newValue,
+            ),
+          );
         },
         onChanged: (newValue) {
           if (newValue.isEmpty) {
             controller.removeFilter(column.name);
             return;
           }
-          controller.setFilter(ComparisonFilterData(
+          controller.setFilter(
+            ComparisonFilterData(
               key: column.name,
               operator: QueryOperator.contains,
-              value: newValue));
+              value: newValue,
+            ),
+          );
         },
         controller: _textController[column.name],
         decoration: InputDecoration(
-            contentPadding: const EdgeInsets.all(12),
-            label: Text(column.humanizeName, style: _labelStyle),
-            border: const OutlineInputBorder()),
+          contentPadding: const EdgeInsets.all(12),
+          label: Text(column.humanizeName, style: _labelStyle),
+          border: const OutlineInputBorder(),
+        ),
       ),
     );
   }
@@ -313,30 +331,37 @@ class _TableFilterFormState extends State<TableFilterForm> {
             "${value['id'].toString()} - ${value['attributes'][attributeKey]}",
         textOnSelected: (value) => value.modelValue,
         label: Text(column.humanizeName, style: _labelStyle),
-        request: (
-            {int page = 1,
-            int limit = 20,
-            String searchText = '',
-            CancelToken? cancelToken}) {
-          final server = context.read<Server>();
-          return server.get(column.inputOptions['path'] ?? '',
-              queryParam: {
-                'search_text': searchText,
-                'fields[$modelName]': attributeKey,
-                'page[page]': page.toString(),
-                'page[limit]': limit.toString(),
-              },
-              cancelToken: cancelToken);
-        },
+        request:
+            ({
+              int page = 1,
+              int limit = 20,
+              String searchText = '',
+              CancelToken? cancelToken,
+            }) {
+              final server = context.read<Server>();
+              return server.get(
+                column.inputOptions['path'] ?? '',
+                queryParam: {
+                  'search_text': searchText,
+                  'fields[$modelName]': attributeKey,
+                  'page[page]': page.toString(),
+                  'page[limit]': limit.toString(),
+                },
+                cancelToken: cancelToken,
+              );
+            },
         selecteds: val[column.name] as List<HashModel>? ?? <HashModel>[],
         attributeKey: attributeKey,
-        onSaved: (value) {
+        onChanged: (value) {
           setState(() {
             val[column.name] = value;
           });
+        },
+        onSaved: (value) {
           if (value != null && value.isNotEmpty) {
             controller.setFilter(
-                ComparisonFilterData(key: column.name, value: value));
+              ComparisonFilterData(key: column.name, value: value),
+            );
           } else {
             controller.removeFilter(column.name);
           }
@@ -358,10 +383,16 @@ class _TableFilterFormState extends State<TableFilterForm> {
           value1.isNotEmpty &&
           value2.isNotEmpty) {
         controller.setFilter(
-            BetweenFilterData(key: column.name, values: [value1, value2]));
+          BetweenFilterData(key: column.name, values: [value1, value2]),
+        );
       } else if (comparison != QueryOperator.between && value1.isNotEmpty) {
-        controller.setFilter(ComparisonFilterData(
-            key: column.name, operator: comparison, value: value1));
+        controller.setFilter(
+          ComparisonFilterData(
+            key: column.name,
+            operator: comparison,
+            value: value1,
+          ),
+        );
       }
     });
   }
@@ -378,24 +409,28 @@ class _TableFilterFormState extends State<TableFilterForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           DropdownMenu<QueryOperator>(
-              width: 170,
-              onSelected: (value) {
-                setState(() {
-                  _numComparison[column.name] = value;
-                });
-              },
-              inputDecorationTheme: const InputDecorationTheme(
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.all(12),
-              ),
-              requestFocusOnTap: false,
-              controller: _textController['${column.name}-cmpr'],
-              label: Text(column.humanizeName, style: _labelStyle),
-              dropdownMenuEntries: QueryOperator.values
-                  .map<DropdownMenuEntry<QueryOperator>>((data) =>
-                      DropdownMenuEntry<QueryOperator>(
-                          value: data, label: data.humanize()))
-                  .toList()),
+            width: 170,
+            onSelected: (value) {
+              setState(() {
+                _numComparison[column.name] = value;
+              });
+            },
+            inputDecorationTheme: const InputDecorationTheme(
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.all(12),
+            ),
+            requestFocusOnTap: false,
+            controller: _textController['${column.name}-cmpr'],
+            label: Text(column.humanizeName, style: _labelStyle),
+            dropdownMenuEntries: QueryOperator.values
+                .map<DropdownMenuEntry<QueryOperator>>(
+                  (data) => DropdownMenuEntry<QueryOperator>(
+                    value: data,
+                    label: data.humanize(),
+                  ),
+                )
+                .toList(),
+          ),
           SizedBox(
             width: 130,
             child: TextFormField(
@@ -406,8 +441,9 @@ class _TableFilterFormState extends State<TableFilterForm> {
               },
               controller: _textController['${column.name}-val1'],
               decoration: const InputDecoration(
-                  contentPadding: EdgeInsets.all(12),
-                  border: OutlineInputBorder()),
+                contentPadding: EdgeInsets.all(12),
+                border: OutlineInputBorder(),
+              ),
             ),
           ),
           Visibility(
@@ -422,8 +458,9 @@ class _TableFilterFormState extends State<TableFilterForm> {
                 },
                 controller: _textController['${column.name}-val2'],
                 decoration: const InputDecoration(
-                    contentPadding: EdgeInsets.all(12),
-                    border: OutlineInputBorder()),
+                  contentPadding: EdgeInsets.all(12),
+                  border: OutlineInputBorder(),
+                ),
               ),
             ),
           ),
@@ -436,7 +473,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
             },
             icon: const Icon(Icons.close),
             // color: colorScheme.primary,
-          )
+          ),
         ],
       ),
     );
