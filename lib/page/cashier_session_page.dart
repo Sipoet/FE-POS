@@ -118,7 +118,7 @@ class _CashierSessionPageState extends State<CashierSessionPage>
                     controller: _menuController,
                     menuChildren: [
                       if (_isTodayCashierFetched &&
-                          setting.isAuthorize('edcSettlement', 'update'))
+                          setting.isAuthorize('edc_settlements', 'update'))
                         MenuItemButton(
                           onPressed: () {
                             _menuController.close();
@@ -126,7 +126,7 @@ class _CashierSessionPageState extends State<CashierSessionPage>
                           },
                           child: const Text('EDC Settlement Hari ini'),
                         ),
-                      if (setting.isAuthorize('cashOut', 'create'))
+                      if (setting.isAuthorize('cash_outs', 'create'))
                         MenuItemButton(
                           onPressed: () {
                             _menuController.close();
@@ -140,7 +140,7 @@ class _CashierSessionPageState extends State<CashierSessionPage>
               ],
             ),
             Visibility(
-              visible: setting.isAuthorize('cashierSession', 'index'),
+              visible: setting.isAuthorize('cashier_sessions', 'read'),
               child: const CashierSessionTablePage(),
             ),
           ],

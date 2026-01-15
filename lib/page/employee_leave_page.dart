@@ -200,7 +200,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
                     child: SubmenuButton(
                       controller: menuController,
                       menuChildren: [
-                        if (setting.isAuthorize('employeeLeave', 'create'))
+                        if (setting.isAuthorize('employee_leaves', 'create'))
                           MenuItemButton(
                             child: const Text('Tambah Cuti Karyawan'),
                             onPressed: () {
@@ -222,7 +222,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
                 renderAction: (employeeLeave) => Row(
                   spacing: 10,
                   children: [
-                    if (setting.isAuthorize('employeeLeave', 'update'))
+                    if (setting.isAuthorize('employee_leaves', 'update'))
                       IconButton(
                         onPressed: () {
                           editForm(employeeLeave);
@@ -230,7 +230,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
                         tooltip: 'Edit Cuti Karyawan',
                         icon: const Icon(Icons.edit),
                       ),
-                    if (setting.isAuthorize('employeeLeave', 'destroy'))
+                    if (setting.isAuthorize('employee_leaves', 'destroy'))
                       IconButton(
                         onPressed: () {
                           destroyRecord(employeeLeave);

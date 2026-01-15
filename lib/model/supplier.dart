@@ -26,20 +26,20 @@ class Supplier extends Model {
   });
 
   @override
-  String get modelName => 'supplier';
+  String get path => 'ipos/suppliers';
 
   @override
   Map<String, dynamic> toMap() => {
-        'code': code,
-        'name': name,
-        'bank': bank,
-        'account': account,
-        'account_register_name': accountRegisterName,
-        'address': address,
-        'contact': contact,
-        'city': city,
-        'description': description,
-      };
+    'code': code,
+    'name': name,
+    'bank': bank,
+    'account': account,
+    'account_register_name': accountRegisterName,
+    'address': address,
+    'contact': contact,
+    'city': city,
+    'description': description,
+  };
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {

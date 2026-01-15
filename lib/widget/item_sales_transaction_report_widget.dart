@@ -13,12 +13,13 @@ class ItemSalesTransactionReportWidget extends StatefulWidget {
   final String groupKey;
   final String limit;
   final String label;
-  const ItemSalesTransactionReportWidget(
-      {super.key,
-      required this.label,
-      required this.groupKey,
-      required this.limit,
-      this.controller});
+  const ItemSalesTransactionReportWidget({
+    super.key,
+    required this.label,
+    required this.groupKey,
+    required this.limit,
+    this.controller,
+  });
 
   @override
   State<ItemSalesTransactionReportWidget> createState() =>
@@ -37,27 +38,30 @@ class _ItemSalesTransactionReportWidgetState
   late AnimationController _controller;
   final _scrollController = ScrollController();
   DateTimeRange _dateRange = DateTimeRange(
-      start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
-      end: DateTime.now()
-          .copyWith(hour: 23, minute: 59, second: 59, millisecond: 999));
+    start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
+    end: DateTime.now().copyWith(
+      hour: 23,
+      minute: 59,
+      second: 59,
+      millisecond: 999,
+    ),
+  );
 
   late String limit;
   CancelToken cancelToken = CancelToken();
   @override
   void initState() {
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 5),
-    )
-      ..addListener(() {
-        if (mounted) setState(() {});
-      })
-      ..addStatusListener((status) {
-        if (mounted && status == AnimationStatus.completed) {
-          _controller.reset();
-          _controller.forward();
-        }
-      });
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 5))
+          ..addListener(() {
+            if (mounted) setState(() {});
+          })
+          ..addStatusListener((status) {
+            if (mounted && status == AnimationStatus.completed) {
+              _controller.reset();
+              _controller.forward();
+            }
+          });
     limit = widget.limit;
     setting = context.read<Setting>();
     _dateRange = widget.controller?.range ?? _dateRange;
@@ -84,30 +88,33 @@ class _ItemSalesTransactionReportWidgetState
   void refreshReport() {
     _controller.forward();
     final server = context.read<Server>();
-    server.get('sale_items/transaction_report',
-        cancelToken: cancelToken,
-        queryParam: {
-          'group_key': widget.groupKey,
-          'limit': limit,
-          'start_time': _dateRange.start.toIso8601String(),
-          'end_time': _dateRange.end.toIso8601String(),
-        }).then((response) {
-      if (cancelToken.isCancelled || !mounted) {
-        return;
-      }
-      if (response.statusCode == 200) {
-        setState(() {
-          results = response.data['data'];
+    server
+        .get(
+          'ipos/sale_items/transaction_report',
+          cancelToken: cancelToken,
+          queryParam: {
+            'group_key': widget.groupKey,
+            'limit': limit,
+            'start_time': _dateRange.start.toIso8601String(),
+            'end_time': _dateRange.end.toIso8601String(),
+          },
+        )
+        .then((response) {
+          if (cancelToken.isCancelled || !mounted) {
+            return;
+          }
+          if (response.statusCode == 200) {
+            setState(() {
+              results = response.data['data'];
+            });
+          }
+        }, onError: (error, stack) => defaultErrorResponse(error: error))
+        .whenComplete(() {
+          if (_controller.isAnimating) {
+            _controller.stop();
+            _controller.reset();
+          }
         });
-      }
-    },
-        onError: (error, stack) =>
-            defaultErrorResponse(error: error)).whenComplete(() {
-      if (_controller.isAnimating) {
-        _controller.stop();
-        _controller.reset();
-      }
-    });
   }
 
   String _humanizeKey(String key) {
@@ -131,7 +138,9 @@ class _ItemSalesTransactionReportWidgetState
     super.build(context);
     var colorScheme = Theme.of(context).colorScheme;
     var style = TextStyle(
-        fontWeight: FontWeight.bold, color: colorScheme.onSecondaryContainer);
+      fontWeight: FontWeight.bold,
+      color: colorScheme.onSecondaryContainer,
+    );
     Size size = MediaQuery.of(context).size;
     final padding = MediaQuery.of(context).padding;
     double width = size.width - padding.left - padding.right - 50;
@@ -150,59 +159,47 @@ class _ItemSalesTransactionReportWidgetState
               widget.label,
               softWrap: true,
               style: TextStyle(
-                  fontSize: 18,
-                  color: colorScheme.onPrimaryContainer,
-                  fontWeight: FontWeight.w900),
+                fontSize: 18,
+                color: colorScheme.onPrimaryContainer,
+                fontWeight: FontWeight.w900,
+              ),
             ),
             IconButton.filled(
-                tooltip: 'Refresh Laporan',
-                alignment: Alignment.centerRight,
-                onPressed: () => refreshReport(),
-                icon: const Icon(Icons.refresh_rounded))
+              tooltip: 'Refresh Laporan',
+              alignment: Alignment.centerRight,
+              onPressed: () => refreshReport(),
+              icon: const Icon(Icons.refresh_rounded),
+            ),
           ],
         ),
         DropdownMenu<String>(
           width: 100,
-          textStyle:
-              TextStyle(fontSize: 18, color: colorScheme.onPrimaryContainer),
+          textStyle: TextStyle(
+            fontSize: 18,
+            color: colorScheme.onPrimaryContainer,
+          ),
           inputDecorationTheme: const InputDecorationTheme(
-              filled: true,
-              isDense: true,
-              fillColor: Colors.white,
-              contentPadding: EdgeInsets.only(left: 10, right: 0),
-              border: OutlineInputBorder()),
+            filled: true,
+            isDense: true,
+            fillColor: Colors.white,
+            contentPadding: EdgeInsets.only(left: 10, right: 0),
+            border: OutlineInputBorder(),
+          ),
           enableSearch: false,
           initialSelection: limit,
           dropdownMenuEntries: const [
-            DropdownMenuEntry<String>(
-              value: '5',
-              label: '5',
-            ),
-            DropdownMenuEntry<String>(
-              value: '10',
-              label: '10',
-            ),
-            DropdownMenuEntry<String>(
-              value: '20',
-              label: '20',
-            ),
-            DropdownMenuEntry<String>(
-              value: '50',
-              label: '50',
-            ),
-            DropdownMenuEntry<String>(
-              value: '100',
-              label: '100',
-            ),
+            DropdownMenuEntry<String>(value: '5', label: '5'),
+            DropdownMenuEntry<String>(value: '10', label: '10'),
+            DropdownMenuEntry<String>(value: '20', label: '20'),
+            DropdownMenuEntry<String>(value: '50', label: '50'),
+            DropdownMenuEntry<String>(value: '100', label: '100'),
           ],
           onSelected: ((value) {
             limit = value ?? '5';
             refreshReport();
           }),
         ),
-        const SizedBox(
-          height: 10,
-        ),
+        const SizedBox(height: 10),
         if (_controller.isAnimating)
           Center(
             child: CircularProgressIndicator(
@@ -221,127 +218,129 @@ class _ItemSalesTransactionReportWidgetState
               child: SizedBox(
                 width: width,
                 child: Table(
-                    border: TableBorder.all(
-                      color: Colors.grey.shade400.withValues(alpha: 0.5),
-                    ),
-                    columnWidths: const {
-                      0: FixedColumnWidth(50),
-                      3: FixedColumnWidth(100),
-                    },
-                    children: <TableRow>[
-                          TableRow(
+                  border: TableBorder.all(
+                    color: Colors.grey.shade400.withValues(alpha: 0.5),
+                  ),
+                  columnWidths: const {
+                    0: FixedColumnWidth(50),
+                    3: FixedColumnWidth(100),
+                  },
+                  children:
+                      <TableRow>[
+                        TableRow(
+                          decoration: BoxDecoration(
+                            color: colorScheme.secondaryContainer,
+                          ),
+                          children: [
+                            Text(
+                              'NO',
+                              style: style,
+                              textAlign: TextAlign.center,
+                            ),
+                            Text(
+                              _humanizeKey(widget.groupKey),
+                              style: style,
+                              textAlign: TextAlign.center,
+                            ),
+                            Text(
+                              'Total Terjual',
+                              style: style,
+                              textAlign: TextAlign.center,
+                            ),
+                            Text(
+                              'Jumlah',
+                              style: style,
+                              textAlign: TextAlign.center,
+                            ),
+                            Text(
+                              'Total Diskon',
+                              style: style,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ] +
+                      results
+                          .mapIndexed<TableRow>(
+                            (index, row) => TableRow(
                               decoration: BoxDecoration(
-                                color: colorScheme.secondaryContainer,
+                                color: index.isEven
+                                    ? colorScheme.tertiaryContainer
+                                    : colorScheme.secondaryContainer,
                               ),
                               children: [
-                                Text(
-                                  'NO',
-                                  style: style,
-                                  textAlign: TextAlign.center,
+                                Padding(
+                                  padding: const EdgeInsets.all(5),
+                                  child: Text(
+                                    (index += 1).toString(),
+                                    textAlign: TextAlign.right,
+                                    style: TextStyle(
+                                      color: index.isOdd
+                                          ? colorScheme.onTertiaryContainer
+                                          : colorScheme.onSecondaryContainer,
+                                    ),
+                                  ),
                                 ),
-                                Text(
-                                  _humanizeKey(widget.groupKey),
-                                  style: style,
-                                  textAlign: TextAlign.center,
+                                Padding(
+                                  padding: const EdgeInsets.all(5),
+                                  child: Text(
+                                    row['identifier'] ?? '',
+                                    style: TextStyle(
+                                      color: index.isOdd
+                                          ? colorScheme.onTertiaryContainer
+                                          : colorScheme.onSecondaryContainer,
+                                    ),
+                                  ),
                                 ),
-                                Text(
-                                  'Total Terjual',
-                                  style: style,
-                                  textAlign: TextAlign.center,
+                                Padding(
+                                  padding: const EdgeInsets.all(5),
+                                  child: Text(
+                                    moneyFormat(row['sales_total']),
+                                    style: TextStyle(
+                                      color: index.isOdd
+                                          ? colorScheme.onTertiaryContainer
+                                          : colorScheme.onSecondaryContainer,
+                                    ),
+                                    textAlign: TextAlign.right,
+                                  ),
                                 ),
-                                Text(
-                                  'Jumlah',
-                                  style: style,
-                                  textAlign: TextAlign.center,
+                                Padding(
+                                  padding: const EdgeInsets.all(5),
+                                  child: Text(
+                                    numberFormat(row['quantity']),
+                                    style: TextStyle(
+                                      color: index.isOdd
+                                          ? colorScheme.onTertiaryContainer
+                                          : colorScheme.onSecondaryContainer,
+                                    ),
+                                    textAlign: TextAlign.right,
+                                  ),
                                 ),
-                                Text(
-                                  'Total Diskon',
-                                  style: style,
-                                  textAlign: TextAlign.center,
-                                )
-                              ]),
-                        ] +
-                        results
-                            .mapIndexed<TableRow>((index, row) => TableRow(
-                                    decoration: BoxDecoration(
-                                        color: index.isEven
-                                            ? colorScheme.tertiaryContainer
-                                            : colorScheme.secondaryContainer),
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(5),
-                                        child: Text(
-                                          (index += 1).toString(),
-                                          textAlign: TextAlign.right,
-                                          style: TextStyle(
-                                              color: index.isOdd
-                                                  ? colorScheme
-                                                      .onTertiaryContainer
-                                                  : colorScheme
-                                                      .onSecondaryContainer),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(5),
-                                        child: Text(
-                                          row['identifier'] ?? '',
-                                          style: TextStyle(
-                                              color: index.isOdd
-                                                  ? colorScheme
-                                                      .onTertiaryContainer
-                                                  : colorScheme
-                                                      .onSecondaryContainer),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(5),
-                                        child: Text(
-                                          moneyFormat(
-                                            row['sales_total'],
-                                          ),
-                                          style: TextStyle(
-                                              color: index.isOdd
-                                                  ? colorScheme
-                                                      .onTertiaryContainer
-                                                  : colorScheme
-                                                      .onSecondaryContainer),
-                                          textAlign: TextAlign.right,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(5),
-                                        child: Text(
-                                          numberFormat(row['quantity']),
-                                          style: TextStyle(
-                                              color: index.isOdd
-                                                  ? colorScheme
-                                                      .onTertiaryContainer
-                                                  : colorScheme
-                                                      .onSecondaryContainer),
-                                          textAlign: TextAlign.right,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(5),
-                                        child: Text(
-                                          moneyFormat(row['discount_total']),
-                                          style: TextStyle(
-                                              color: index.isOdd
-                                                  ? colorScheme
-                                                      .onTertiaryContainer
-                                                  : colorScheme
-                                                      .onSecondaryContainer),
-                                          textAlign: TextAlign.right,
-                                        ),
-                                      ),
-                                    ]))
-                            .toList()),
+                                Padding(
+                                  padding: const EdgeInsets.all(5),
+                                  child: Text(
+                                    moneyFormat(row['discount_total']),
+                                    style: TextStyle(
+                                      color: index.isOdd
+                                          ? colorScheme.onTertiaryContainer
+                                          : colorScheme.onSecondaryContainer,
+                                    ),
+                                    textAlign: TextAlign.right,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                          .toList(),
+                ),
               ),
             ),
           ),
         if (results.isEmpty && !_controller.isAnimating)
-          Text('belum ada transaksi',
-              style: TextStyle(color: colorScheme.onPrimaryContainer)),
+          Text(
+            'belum ada transaksi',
+            style: TextStyle(color: colorScheme.onPrimaryContainer),
+          ),
       ],
     );
   }

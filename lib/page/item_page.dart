@@ -120,7 +120,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
             child: CustomAsyncDataTable<Item>(
               renderAction: (model) => Row(
                 children: [
-                  if (setting.isAuthorize('item', 'update'))
+                  if (setting.isAuthorize('ipos/items', 'update'))
                     IconButton(
                       onPressed: () => _openEditForm(model),
                       icon: Icon(Icons.edit),

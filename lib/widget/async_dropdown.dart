@@ -11,21 +11,6 @@ import 'package:flutter_sortable_wrap/flutter_sortable_wrap.dart';
 import 'package:provider/provider.dart';
 export 'package:fe_pos/model/server.dart';
 
-class DropdownResult {
-  String text;
-  dynamic value;
-  String? customSearch;
-  Map raw;
-  DropdownResult({
-    required this.text,
-    required this.value,
-    this.customSearch,
-    this.raw = const {},
-  });
-
-  String get searchableText => customSearch ?? "$value $text";
-}
-
 typedef DropdownText<T> = String Function(T model);
 typedef DropdownValidator<T> = String? Function(List<T>? models);
 

@@ -313,7 +313,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   const SizedBox(height: 10),
                   Visibility(
                     visible:
-                        setting.isAuthorize('role', 'index') &&
+                        setting.isAuthorize('roles', 'read') &&
                         setting.canShow('employee', 'role'),
                     child: Flexible(
                       child: AsyncDropdown<Role>(
@@ -366,7 +366,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   const SizedBox(height: 10),
                   Visibility(
                     visible:
-                        setting.isAuthorize('payroll', 'index') &&
+                        setting.isAuthorize('payrolls', 'read') &&
                         setting.canShow('employee', 'payroll'),
                     child: AsyncDropdown<Payroll>(
                       label: const Text('Payroll', style: labelStyle),

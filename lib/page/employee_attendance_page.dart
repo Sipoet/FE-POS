@@ -238,7 +238,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
                 renderAction: (employeeAttendance) => Row(
                   spacing: 10,
                   children: [
-                    if (setting.isAuthorize('employeeAttendance', 'update'))
+                    if (setting.isAuthorize('employee_attendances', 'update'))
                       IconButton(
                         onPressed: () {
                           editRecord(employeeAttendance);
@@ -246,7 +246,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
                         tooltip: 'Edit Absensi Karyawan',
                         icon: const Icon(Icons.edit),
                       ),
-                    if (setting.isAuthorize('employeeAttendance', 'destroy'))
+                    if (setting.isAuthorize('employee_attendances', 'destroy'))
                       IconButton(
                         onPressed: () {
                           destroyRecord(employeeAttendance);

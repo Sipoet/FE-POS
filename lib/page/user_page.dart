@@ -221,7 +221,7 @@ class _UserPageState extends State<UserPage>
                 renderAction: (user) => Row(
                   spacing: 10,
                   children: [
-                    if (setting.isAuthorize('user', 'update'))
+                    if (setting.isAuthorize('users', 'update'))
                       IconButton(
                         onPressed: () {
                           editForm(user);
@@ -229,13 +229,13 @@ class _UserPageState extends State<UserPage>
                         tooltip: 'Edit User',
                         icon: const Icon(Icons.edit),
                       ),
-                    if (setting.isAuthorize('user', 'unlock_access'))
+                    if (setting.isAuthorize('users', 'unlock_access'))
                       IconButton(
                         tooltip: 'unlock Akses User',
                         icon: const Icon(Icons.lock_open),
                         onPressed: () => _unlockAccess(user),
                       ),
-                    if (setting.isAuthorize('user', 'destroy'))
+                    if (setting.isAuthorize('users', 'destroy'))
                       IconButton(
                         onPressed: () {
                           destroyRecord(user);

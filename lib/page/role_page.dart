@@ -177,7 +177,7 @@ class _RolePageState extends State<RolePage>
                     width: 50,
                     child: SubmenuButton(
                       menuChildren: [
-                        if (setting.isAuthorize('role', 'create'))
+                        if (setting.isAuthorize('roles', 'create'))
                           MenuItemButton(
                             child: const Text('Tambah Role'),
                             onPressed: () => addForm(),
@@ -196,7 +196,7 @@ class _RolePageState extends State<RolePage>
                 renderAction: (role) => Row(
                   spacing: 10,
                   children: [
-                    if (setting.isAuthorize('role', 'update'))
+                    if (setting.isAuthorize('roles', 'update'))
                       IconButton(
                         onPressed: () {
                           editForm(role);
@@ -204,7 +204,7 @@ class _RolePageState extends State<RolePage>
                         tooltip: 'Edit Role',
                         icon: const Icon(Icons.edit),
                       ),
-                    if (setting.isAuthorize('role', 'destroy'))
+                    if (setting.isAuthorize('roles', 'destroy'))
                       IconButton(
                         onPressed: () {
                           destroyRecord(role);

@@ -179,7 +179,7 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
                     onSubmitted: searchChanged,
                   ),
                 ),
-                if (setting.isAuthorize('paymentProvider', 'create'))
+                if (setting.isAuthorize('payment_providers', 'create'))
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(
@@ -201,7 +201,7 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
               renderAction: (paymentProvider) => Row(
                 spacing: 10,
                 children: [
-                  if (setting.isAuthorize('paymentProvider', 'update'))
+                  if (setting.isAuthorize('payment_providers', 'update'))
                     IconButton(
                       onPressed: () {
                         editForm(paymentProvider);
@@ -209,7 +209,7 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
                       tooltip: 'Edit Payment Provider',
                       icon: const Icon(Icons.edit),
                     ),
-                  if (setting.isAuthorize('paymentProvider', 'destroy'))
+                  if (setting.isAuthorize('payment_providers', 'destroy'))
                     IconButton(
                       onPressed: () {
                         destroyRecord(paymentProvider);

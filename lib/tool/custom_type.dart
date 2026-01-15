@@ -1,19 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pluralize/pluralize.dart';
+
+final plurale = Pluralize()
+  ..addSingularRule(RegExp(r'leaves', caseSensitive: false), 'leave');
 
 extension StringExt on String {
   String toSnakeCase() => unclassify().toLowerCase().replaceAll(' ', '_');
+
+  String toCamelCase() {
+    List<String> container = split(RegExp(r'[\s+_]'));
+    return '${container[0].toLowerCase()}${container.sublist(1).map((e) => e.toCapitalize()).join()}';
+  }
 
   String unclassify() => replaceAllMapped(
     RegExp(r'\s*([A-Z])'),
     (Match match) => " ${match.group(1)}",
   ).trimLeft();
-  String toCapitalized() =>
+  String toCapitalize() =>
       length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
   String toTitleCase() => replaceAll(
-    RegExp(' +'),
+    RegExp(r'[_\s+]'),
     ' ',
-  ).split(' ').map<String>((str) => str.toCapitalized()).join(' ');
+  ).split(' ').map<String>((str) => str.toCapitalize()).join(' ');
+  String toSingularize() => plurale.singular(this);
+  String toPluralize() => plurale.plural(this);
+  String toClassify() =>
+      toSingularize().toTitleCase().replaceAll(RegExp(r'[_\s]'), '');
+  bool insensitiveContains(String text) =>
+      toLowerCase().contains(text.toLowerCase());
 }
 
 abstract class EnumTranslation {

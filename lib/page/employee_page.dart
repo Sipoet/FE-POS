@@ -309,7 +309,7 @@ class _EmployeePageState extends State<EmployeePage>
                 renderAction: (employee) => Row(
                   spacing: 10,
                   children: [
-                    if (setting.isAuthorize('employee', 'update'))
+                    if (setting.isAuthorize('employees', 'update'))
                       IconButton(
                         onPressed: () {
                           editForm(employee);
@@ -317,8 +317,8 @@ class _EmployeePageState extends State<EmployeePage>
                         tooltip: 'Edit karyawan',
                         icon: const Icon(Icons.edit),
                       ),
-                    if (setting.isAuthorize('employee', 'deactivate') ||
-                        setting.isAuthorize('employee', 'activate') &&
+                    if (setting.isAuthorize('employees', 'deactivate') ||
+                        setting.isAuthorize('employees', 'activate') &&
                             setting.canShow('employee', 'status'))
                       IconButton(
                         onPressed: () {

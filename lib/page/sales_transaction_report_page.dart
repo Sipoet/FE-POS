@@ -34,10 +34,13 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
     final today = Date.today();
     var now = DateTime.utc(today.year, today.month, today.day);
     range = DateTimeRange(
-        start: beginningOfDay(now.copyWith(day: 1)),
-        end: endOfDay(now
+      start: beginningOfDay(now.copyWith(day: 1)),
+      end: endOfDay(
+        now
             .copyWith(month: now.month + 1, day: 1)
-            .subtract(const Duration(days: 1))));
+            .subtract(const Duration(days: 1)),
+      ),
+    );
     flash = Flash();
     server = context.read<Server>();
     final setting = context.read<Setting>();
@@ -53,23 +56,27 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
 
   void _refreshTable(DateTimeRange range) {
     stateManager.setShowLoading(true);
-    server.get('sales/daily_transaction_report', queryParam: {
-      'start_date': range.start.toIso8601String(),
-      'end_date': range.end.toIso8601String(),
-    }).then((response) {
-      if (response.statusCode != 200) return;
-      var data = response.data['data'];
-      setState(() {
-        salesTransactionReports = data
-            .map<SalesTransactionReport>(
-                (line) => SalesTransactionReportClass().fromJson(line))
-            .toList();
-        stateManager.setModels(salesTransactionReports);
-      });
-    },
-        onError: (error, trace) =>
-            defaultErrorResponse(error: error)).whenComplete(
-        () => stateManager.setShowLoading(false));
+    server
+        .get(
+          'ipos/sales/daily_transaction_report',
+          queryParam: {
+            'start_date': range.start.toIso8601String(),
+            'end_date': range.end.toIso8601String(),
+          },
+        )
+        .then((response) {
+          if (response.statusCode != 200) return;
+          var data = response.data['data'];
+          setState(() {
+            salesTransactionReports = data
+                .map<SalesTransactionReport>(
+                  (line) => SalesTransactionReportClass().fromJson(line),
+                )
+                .toList();
+            stateManager.setModels(salesTransactionReports);
+          });
+        }, onError: (error, trace) => defaultErrorResponse(error: error))
+        .whenComplete(() => stateManager.setShowLoading(false));
   }
 
   DateTime beginningOfDay(DateTime date) {
@@ -97,7 +104,8 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
               initialDateRange: range,
               rangeType: DateRangeType(),
               onChanged: (newRange) {
-                range = newRange ??
+                range =
+                    newRange ??
                     DateTimeRange(start: DateTime.now(), end: DateTime.now());
                 _refreshTable(range);
               },

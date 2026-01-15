@@ -93,7 +93,7 @@ class _ItemFormPageState extends State<ItemFormPage>
                 Visibility(
                   visible: _setting.canShow('ipos::Item', 'brand_name'),
                   child: IgnorePointer(
-                    ignoring: !_setting.isAuthorize('brand', 'index'),
+                    ignoring: !_setting.isAuthorize('ipos/brands', 'read'),
                     child: AsyncDropdown<Brand>(
                       allowClear: false,
                       textOnSearch: (e) => e.modelValue,
@@ -109,7 +109,7 @@ class _ItemFormPageState extends State<ItemFormPage>
                 Visibility(
                   visible: _setting.canShow('ipos::Item', 'item_type_name'),
                   child: IgnorePointer(
-                    ignoring: !_setting.isAuthorize('itemType', 'index'),
+                    ignoring: !_setting.isAuthorize('ipos/item_types', 'read'),
                     child: AsyncDropdown<ItemType>(
                       allowClear: false,
                       textOnSearch: (model) =>
@@ -127,7 +127,7 @@ class _ItemFormPageState extends State<ItemFormPage>
                 Visibility(
                   visible: _setting.canShow('ipos::Item', 'supplier_code'),
                   child: IgnorePointer(
-                    ignoring: !_setting.isAuthorize('supplier', 'index'),
+                    ignoring: !_setting.isAuthorize('ipos/suppliers', 'read'),
                     child: AsyncDropdown<Supplier>(
                       allowClear: false,
                       textOnSearch: (model) => '${model.code} - ${model.name}',

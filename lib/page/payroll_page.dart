@@ -178,7 +178,7 @@ class _PayrollPageState extends State<PayrollPage>
                     child: SubmenuButton(
                       controller: _menuController,
                       menuChildren: [
-                        if (setting.isAuthorize('payroll', 'create'))
+                        if (setting.isAuthorize('payrolls', 'create'))
                           MenuItemButton(
                             child: const Text('Tambah Payroll'),
                             onPressed: () {
@@ -199,7 +199,7 @@ class _PayrollPageState extends State<PayrollPage>
                 renderAction: (payroll) => Row(
                   spacing: 10,
                   children: [
-                    if (setting.isAuthorize('payroll', 'update'))
+                    if (setting.isAuthorize('payrolls', 'update'))
                       IconButton(
                         onPressed: () {
                           editForm(payroll);
@@ -207,7 +207,7 @@ class _PayrollPageState extends State<PayrollPage>
                         tooltip: 'Edit Payroll',
                         icon: const Icon(Icons.edit),
                       ),
-                    if (setting.isAuthorize('payroll', 'destroy'))
+                    if (setting.isAuthorize('payrolls', 'destroy'))
                       IconButton(
                         onPressed: () {
                           destroyRecord(payroll);

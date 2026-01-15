@@ -13,37 +13,37 @@ class Transfer extends Model {
   String sourceLocation;
   String destLocation;
   String? shift;
-  Transfer(
-      {this.userName = '',
-      this.description = '',
-      this.totalItem = 0,
-      this.code = '',
-      this.sourceLocation = '',
-      this.destLocation = '',
-      this.shift = '',
-      super.id,
-      super.createdAt,
-      super.updatedAt,
-      DateTime? datetime,
-      List<TransferItem>? transferItems})
-      : transferItems = transferItems ?? <TransferItem>[],
-        datetime = datetime ?? DateTime.now();
+  Transfer({
+    this.userName = '',
+    this.description = '',
+    this.totalItem = 0,
+    this.code = '',
+    this.sourceLocation = '',
+    this.destLocation = '',
+    this.shift = '',
+    super.id,
+    super.createdAt,
+    super.updatedAt,
+    DateTime? datetime,
+    List<TransferItem>? transferItems,
+  }) : transferItems = transferItems ?? <TransferItem>[],
+       datetime = datetime ?? DateTime.now();
 
   @override
   Map<String, dynamic> toMap() => {
-        'user1': userName,
-        'tanggal': datetime,
-        'keterangan': description,
-        'totalitem': totalItem,
-        'updated_at': updatedAt,
-        'shiftkerja': shift,
-        'notransaksi': code,
-        'kantordari': sourceLocation,
-        'kantortujuan': destLocation
-      };
+    'user1': userName,
+    'tanggal': datetime,
+    'keterangan': description,
+    'totalitem': totalItem,
+    'updated_at': updatedAt,
+    'shiftkerja': shift,
+    'notransaksi': code,
+    'kantordari': sourceLocation,
+    'kantortujuan': destLocation,
+  };
 
   @override
-  String get modelName => 'transfer';
+  String get path => 'ipos/transfers';
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {

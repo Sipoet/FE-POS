@@ -186,7 +186,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
                     width: 50,
                     child: SubmenuButton(
                       menuChildren: [
-                        if (setting.isAuthorize('paymentType', 'create'))
+                        if (setting.isAuthorize('payment_types', 'create'))
                           MenuItemButton(
                             child: const Text('Tambah PaymentType'),
                             onPressed: () => addForm(),
@@ -204,7 +204,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
                 renderAction: (paymentType) => Row(
                   spacing: 10,
                   children: [
-                    if (setting.isAuthorize('paymentType', 'update'))
+                    if (setting.isAuthorize('payment_types', 'update'))
                       IconButton(
                         onPressed: () {
                           editForm(paymentType);
@@ -212,7 +212,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
                         tooltip: 'Edit PaymentType',
                         icon: const Icon(Icons.edit),
                       ),
-                    if (setting.isAuthorize('paymentType', 'destroy'))
+                    if (setting.isAuthorize('payment_types', 'destroy'))
                       IconButton(
                         onPressed: () {
                           destroyRecord(paymentType);
