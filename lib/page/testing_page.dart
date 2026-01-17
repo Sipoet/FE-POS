@@ -38,19 +38,20 @@ class _TestingPageState extends State<TestingPage> {
             alignment: WrapAlignment.start,
             children: [
               Container(
-                  padding: const EdgeInsets.only(right: 10),
-                  constraints: const BoxConstraints(maxWidth: 600),
-                  child: AsyncDropdownMultiple<Brand>(
-                    label: const Text('Merek :'),
-                    key: const ValueKey('brandSelect'),
-                    textOnSearch: (Brand brand) => brand.name,
-                    modelClass: BrandClass(),
-                    attributeKey: 'merek',
-                    path: '/brands',
-                    onChanged: (value) {
-                      debugPrint("list: ${value.toString()}");
-                    },
-                  )),
+                padding: const EdgeInsets.only(right: 10),
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: AsyncDropdownMultiple<Brand>(
+                  label: const Text('Merek :'),
+                  key: const ValueKey('brandSelect'),
+                  textOnSearch: (Brand brand) => brand.name,
+                  modelClass: BrandClass(),
+                  attributeKey: 'merek',
+
+                  onChanged: (value) {
+                    debugPrint("list: ${value.toString()}");
+                  },
+                ),
+              ),
               Draggable<int>(
                 // Data is the value this Draggable stores.
                 data: 10,
@@ -61,43 +62,41 @@ class _TestingPageState extends State<TestingPage> {
                   child: const Text(
                     'feedback dragged',
                     style: TextStyle(
-                        decoration: TextDecoration.none,
-                        fontSize: 12,
-                        color: Colors.black),
+                      decoration: TextDecoration.none,
+                      fontSize: 12,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
                 childWhenDragging: Container(
                   height: 100.0,
                   width: 100.0,
                   color: Colors.pinkAccent,
-                  child: const Center(
-                    child: Text('Child When Dragging'),
-                  ),
+                  child: const Center(child: Text('Child When Dragging')),
                 ),
                 child: Container(
                   height: 100.0,
                   width: 100.0,
                   color: Colors.lightGreenAccent,
-                  child: const Center(
-                    child: Text('Draggable'),
-                  ),
+                  child: const Center(child: Text('Draggable')),
                 ),
               ),
               DragTarget<int>(
-                builder: (
-                  BuildContext context,
-                  List<dynamic> accepted,
-                  List<dynamic> rejected,
-                ) {
-                  return Container(
-                    height: 100.0,
-                    width: 100.0,
-                    color: Colors.cyan,
-                    child: Center(
-                      child: Text('Value is updated to: $acceptedData'),
-                    ),
-                  );
-                },
+                builder:
+                    (
+                      BuildContext context,
+                      List<dynamic> accepted,
+                      List<dynamic> rejected,
+                    ) {
+                      return Container(
+                        height: 100.0,
+                        width: 100.0,
+                        color: Colors.cyan,
+                        child: Center(
+                          child: Text('Value is updated to: $acceptedData'),
+                        ),
+                      );
+                    },
                 onAcceptWithDetails: (DragTargetDetails<int> details) {
                   setState(() {
                     acceptedData += details.data;

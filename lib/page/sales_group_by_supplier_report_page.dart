@@ -24,8 +24,10 @@ class SalesGroupBySupplierReportPage extends StatefulWidget {
 class _SalesGroupBySupplierReportPageState
     extends State<SalesGroupBySupplierReportPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  static const TextStyle _filterLabelStyle =
-      TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
+  static const TextStyle _filterLabelStyle = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.bold,
+  );
   late Server server;
   String? _reportType;
   late TrinaGridStateManager _source;
@@ -38,7 +40,7 @@ class _SalesGroupBySupplierReportPageState
     'supplier_name',
     'brand_name',
     'item_type_name',
-    'last_purchase_date'
+    'last_purchase_date',
   ];
   final _cancelToken = CancelToken();
   final _formState = GlobalKey<FormState>();
@@ -59,33 +61,36 @@ class _SalesGroupBySupplierReportPageState
   void _displayReport() async {
     _source.setShowLoading(true);
     _reportType = 'json';
-    _requestReport().then(_displayDatatable,
-        onError: ((error, stackTrace) => defaultErrorResponse(error: error)));
+    _requestReport().then(
+      _displayDatatable,
+      onError: ((error, stackTrace) => defaultErrorResponse(error: error)),
+    );
   }
 
   void _downloadReport() async {
-    flash.show(
-      const Text('Dalam proses.'),
-      ToastificationType.info,
-    );
+    flash.show(const Text('Dalam proses.'), ToastificationType.info);
     _reportType = 'xlsx';
-    _requestReport().then(_downloadResponse,
-        onError: ((error, stackTrace) => defaultErrorResponse(error: error)));
+    _requestReport().then(
+      _downloadResponse,
+      onError: ((error, stackTrace) => defaultErrorResponse(error: error)),
+    );
   }
 
   Future _requestReport({int? page, int? per}) async {
-    return server.get('item_reports/grouped_report',
-        queryParam: {
-          'suppliers[]': _suppliers,
-          'brands[]': _brands,
-          'item_types[]': _itemTypes,
-          'report_type': _reportType,
-          'group_names[]': _groupKeys,
-          if (page != null) 'page': page.toString(),
-          if (per != null) 'per': per.toString()
-        },
-        type: _reportType ?? 'json',
-        cancelToken: _cancelToken);
+    return server.get(
+      'item_reports/grouped_report',
+      queryParam: {
+        'suppliers[]': _suppliers,
+        'brands[]': _brands,
+        'item_types[]': _itemTypes,
+        'report_type': _reportType,
+        'group_names[]': _groupKeys,
+        if (page != null) 'page': page.toString(),
+        if (per != null) 'per': per.toString(),
+      },
+      type: _reportType ?? 'json',
+      cancelToken: _cancelToken,
+    );
   }
 
   void _downloadResponse(response) async {
@@ -99,16 +104,23 @@ class _SalesGroupBySupplierReportPageState
       return;
     }
     filename = filename.substring(
-        filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
+      filename.indexOf('filename="') + 10,
+      filename.indexOf('xlsx";') + 4,
+    );
 
     var downloader = const FileSaver();
-    downloader.download(filename, response.data, 'xlsx',
-        onSuccess: (String path) {
-      flash.showBanner(
+    downloader.download(
+      filename,
+      response.data,
+      'xlsx',
+      onSuccess: (String path) {
+        flash.showBanner(
           messageType: ToastificationType.success,
           title: 'Sukses download',
-          description: 'sukses disimpan di $path');
-    });
+          description: 'sukses disimpan di $path',
+        );
+      },
+    );
   }
 
   void _displayDatatable(response) async {
@@ -123,34 +135,37 @@ class _SalesGroupBySupplierReportPageState
         return SalesGroupBySupplierClass().fromJson(row);
       }).toList();
 
-      _source.setTableColumns(whitelistColumns,
-          fixedLeftColumns: _groupKeys.length, tabManager: tabManager);
+      _source.setTableColumns(
+        whitelistColumns,
+        fixedLeftColumns: _groupKeys.length,
+        tabManager: tabManager,
+      );
       _source.setModels(rawData);
     });
   }
 
   List<TableColumn> get whitelistColumns => () {
-        List<TableColumn> columns = List.from(_tableColumns);
-        columns.removeWhere(
-          (tableColumn) =>
-              groupList.contains(tableColumn.name) &&
-              !_groupKeys.contains(tableColumn.name),
-        );
-        columns.sort((columnA, columnB) {
-          final index = _groupKeys.indexOf(columnA.name);
-          final index2 = _groupKeys.indexOf(columnB.name);
-          if (index >= 0 && index2 >= 0) {
-            return index.compareTo(index2);
-          } else if (index >= 0) {
-            return -1;
-          } else if (index2 >= 0) {
-            return 1;
-          } else {
-            return columns.indexOf(columnA).compareTo(columns.indexOf(columnB));
-          }
-        });
-        return columns;
-      }();
+    List<TableColumn> columns = List.from(_tableColumns);
+    columns.removeWhere(
+      (tableColumn) =>
+          groupList.contains(tableColumn.name) &&
+          !_groupKeys.contains(tableColumn.name),
+    );
+    columns.sort((columnA, columnB) {
+      final index = _groupKeys.indexOf(columnA.name);
+      final index2 = _groupKeys.indexOf(columnB.name);
+      if (index >= 0 && index2 >= 0) {
+        return index.compareTo(index2);
+      } else if (index >= 0) {
+        return -1;
+      } else if (index2 >= 0) {
+        return 1;
+      } else {
+        return columns.indexOf(columnA).compareTo(columns.indexOf(columnB));
+      }
+    });
+    return columns;
+  }();
 
   @override
   Widget build(BuildContext context) {
@@ -160,8 +175,10 @@ class _SalesGroupBySupplierReportPageState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Filter',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const Text(
+            'Filter',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 10),
           Form(
             key: _formState,
@@ -171,64 +188,72 @@ class _SalesGroupBySupplierReportPageState
               runSpacing: 10,
               children: [
                 SizedBox(
-                    width: 350,
-                    child: DropdownSearch<String>.multiSelection(
-                      decoratorProps: const DropDownDecoratorProps(
-                          decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              label: Text(
-                                'Group Berdasarkan',
-                                style: _filterLabelStyle,
-                              ))),
-                      items: (searchText, props) => groupList,
-                      onChanged: (value) => _groupKeys = value,
-                      validator: (value) {
-                        if (value?.isEmpty ?? true) {
-                          return 'harus diisi';
-                        }
-                        return null;
-                      },
-                      itemAsString: (item) {
-                        return _setting.columnName(
-                            'salesGroupBySupplierReport', item);
-                      },
-                    )),
+                  width: 350,
+                  child: DropdownSearch<String>.multiSelection(
+                    decoratorProps: const DropDownDecoratorProps(
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        label: Text(
+                          'Group Berdasarkan',
+                          style: _filterLabelStyle,
+                        ),
+                      ),
+                    ),
+                    items: (searchText, props) => groupList,
+                    onChanged: (value) => _groupKeys = value,
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) {
+                        return 'harus diisi';
+                      }
+                      return null;
+                    },
+                    itemAsString: (item) {
+                      return _setting.columnName(
+                        'salesGroupBySupplierReport',
+                        item,
+                      );
+                    },
+                  ),
+                ),
                 SizedBox(
-                    width: 350,
-                    child: AsyncDropdownMultiple<Brand>(
-                      label: const Text('Merek :', style: _filterLabelStyle),
-                      key: const ValueKey('brandSelect'),
-                      textOnSearch: (Brand brand) => brand.name,
-                      modelClass: BrandClass(),
-                      attributeKey: 'merek',
-                      path: '/brands',
-                      onSaved: (value) => _brands = value == null
-                          ? []
-                          : value.map<String>((e) => e.name).toList(),
-                    )),
+                  width: 350,
+                  child: AsyncDropdownMultiple<Brand>(
+                    label: const Text('Merek :', style: _filterLabelStyle),
+                    key: const ValueKey('brandSelect'),
+                    textOnSearch: (Brand brand) => brand.name,
+                    modelClass: BrandClass(),
+                    attributeKey: 'merek',
+                    onSaved: (value) => _brands = value == null
+                        ? []
+                        : value.map<String>((e) => e.name).toList(),
+                  ),
+                ),
                 SizedBox(
-                    width: 350,
-                    child: AsyncDropdownMultiple<ItemType>(
-                      label: const Text('Jenis/Departemen :',
-                          style: _filterLabelStyle),
-                      key: const ValueKey('itemTypeSelect'),
-                      textOnSearch: (itemType) =>
-                          "${itemType.name} - ${itemType.description}",
-                      textOnSelected: (itemType) => itemType.name,
-                      modelClass: ItemTypeClass(),
-                      attributeKey: 'jenis',
-                      path: '/item_types',
-                      onSaved: (value) => _itemTypes = value == null
-                          ? []
-                          : value.map<String>((e) => e.name).toList(),
-                    )),
+                  width: 350,
+                  child: AsyncDropdownMultiple<ItemType>(
+                    label: const Text(
+                      'Jenis/Departemen :',
+                      style: _filterLabelStyle,
+                    ),
+                    key: const ValueKey('itemTypeSelect'),
+                    textOnSearch: (itemType) =>
+                        "${itemType.name} - ${itemType.description}",
+                    textOnSelected: (itemType) => itemType.name,
+                    modelClass: ItemTypeClass(),
+                    attributeKey: 'jenis',
+
+                    onSaved: (value) => _itemTypes = value == null
+                        ? []
+                        : value.map<String>((e) => e.name).toList(),
+                  ),
+                ),
                 SizedBox(
                   width: 350,
                   child: AsyncDropdownMultiple<Supplier>(
                     label: const Text('Supplier :', style: _filterLabelStyle),
                     key: const ValueKey('supplierSelect'),
                     attributeKey: 'nama',
-                    path: '/suppliers',
+
                     textOnSearch: (supplier) =>
                         "${supplier.code} - ${supplier.name}",
                     textOnSelected: (supplier) => supplier.code,
@@ -241,9 +266,7 @@ class _SalesGroupBySupplierReportPageState
               ],
             ),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           Wrap(
             runSpacing: 10,
             spacing: 10,

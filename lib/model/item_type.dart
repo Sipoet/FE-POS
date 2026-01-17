@@ -25,7 +25,7 @@ class ItemType extends Model {
   }
 
   @override
-  String get modelValue => name;
+  String get valueDescription => description;
 }
 
 class ItemTypeClass extends ModelClass<ItemType> {

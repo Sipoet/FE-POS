@@ -92,6 +92,8 @@ abstract class FilterData {
     }
     return value.toString();
   }
+
+  String get decoratedValue;
 }
 
 class ComparisonFilterData extends FilterData {
@@ -109,6 +111,9 @@ class ComparisonFilterData extends FilterData {
     final jsonValue = _convertValue(value);
     return MapEntry(jsonKey, jsonValue);
   }
+
+  @override
+  String get decoratedValue => value.toString();
 }
 
 class BetweenFilterData extends FilterData {
@@ -122,6 +127,10 @@ class BetweenFilterData extends FilterData {
         .join(',');
     return MapEntry('filter[$key][btw]', jsonValue);
   }
+
+  @override
+  String get decoratedValue =>
+      values.map<String>((e) => e.toString()).join(' - ');
 }
 
 class QueryRequest {

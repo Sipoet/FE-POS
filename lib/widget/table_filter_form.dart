@@ -154,39 +154,21 @@ class _TableFilterFormState extends State<TableFilterForm> {
   }
 
   Widget formFilter(TableColumn column) {
-    switch (column.type) {
-      case TableColumnType.text:
-        return textFilter(column);
-      case TableColumnType.money:
-      case TableColumnType.percentage:
-      case TableColumnType.number:
-        return numberFilter(column);
-      case TableColumnType.boolean:
-        return boolFilter(column);
-      case TableColumnType.date:
-        return dateFilter(column, DateRangeType());
-      case TableColumnType.datetime:
-        return dateFilter(column, DateTimeRangeType());
-      case TableColumnType.enums:
-        return enumFilter(column);
-      case TableColumnType.model:
-        return linkFilter(column);
-      default:
-        return SizedBox(
-          width: 300,
-          height: 90,
-          child: TextFormField(
-            enabled: false,
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.all(12),
-              label: Text(column.name, style: _labelStyle),
-              border: const OutlineInputBorder(),
-              helperStyle: const TextStyle(fontSize: 11),
-              helperText: 'Tidak support filter',
-            ),
-          ),
-        );
-    }
+    return column.type.renderFilter(
+      key: ValueKey('filter-${column.name}-field'),
+      name: column.name,
+      label: Text(column.humanizeName, style: _labelStyle),
+      initialValue: controller.filterOfColumn(column.name),
+      onChanged: (FilterData? filterData) {
+        setState(() {
+          if (filterData == null) {
+            controller.removeFilter(column.name);
+          } else {
+            controller.setFilter(filterData);
+          }
+        });
+      },
+    );
   }
 
   Widget boolFilter(TableColumn column) {
@@ -481,16 +463,20 @@ class _TableFilterFormState extends State<TableFilterForm> {
 }
 
 class TableFilterFormController extends ChangeNotifier {
-  final List<FilterData> _filter = [];
+  final Map<String, FilterData> _filter = {};
 
   void setFilter(FilterData filterData) {
-    _filter.add(filterData);
+    _filter[filterData.key] = filterData;
     notifyListeners();
   }
 
   void removeFilter(String key) {
-    _filter.removeWhere((filterData) => filterData.key == key);
+    _filter.remove(key);
     notifyListeners();
+  }
+
+  FilterData? filterOfColumn(String key) {
+    return _filter[key];
   }
 
   void removeAllFilter() {
@@ -498,7 +484,7 @@ class TableFilterFormController extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<FilterData> get decoratedFilter => _filter;
+  List<FilterData> get decoratedFilter => _filter.values.toList();
 }
 
 extension FilterText on TextEditingController {

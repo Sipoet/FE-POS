@@ -55,33 +55,32 @@ class _UserFormPageState extends State<UserFormPage>
 
   void _fetchUser() {
     showLoadingPopup();
-    _server.get("users/${user.username}", queryParam: {'include': 'role'}).then(
-        (response) {
-      final data = response.data;
-      if (response.statusCode == 200) {
-        setState(() {
-          user.setFromJson(data['data'], included: data['included'] ?? []);
-          _refreshForm();
+    _server
+        .get("users/${user.username}", queryParam: {'include': 'role'})
+        .then((response) {
+          final data = response.data;
+          if (response.statusCode == 200) {
+            setState(() {
+              user.setFromJson(data['data'], included: data['included'] ?? []);
+              _refreshForm();
+            });
+          } else {
+            flash.showBanner(
+              title: data['message'],
+              description: data['errors'].join('\n'),
+              messageType: ToastificationType.error,
+            );
+          }
+        })
+        .whenComplete(() {
+          hideLoadingPopup();
+          _focusNode.requestFocus();
         });
-      } else {
-        flash.showBanner(
-            title: data['message'],
-            description: data['errors'].join('\n'),
-            messageType: ToastificationType.error);
-      }
-    }).whenComplete(() {
-      hideLoadingPopup();
-      _focusNode.requestFocus();
-    });
   }
 
   void _submit() async {
     Map body = {
-      'data': {
-        'type': 'user',
-        'id': user.id,
-        'attributes': user.toJson(),
-      }
+      'data': {'type': 'user', 'id': user.id, 'attributes': user.toJson()},
     };
     Future request;
     if (user.id == null) {
@@ -89,27 +88,34 @@ class _UserFormPageState extends State<UserFormPage>
     } else {
       request = _server.put('users/${user.username}', body: body);
     }
-    request.then((response) {
-      if ([200, 201].contains(response.statusCode)) {
-        var data = response.data;
-        setState(() {
-          user.setFromJson(data['data'], included: data['included'] ?? []);
-          _refreshForm();
-          var tabManager = context.read<TabManager>();
-          tabManager.changeTabHeader(widget, 'Edit user ${user.username}');
-        });
+    request.then(
+      (response) {
+        if ([200, 201].contains(response.statusCode)) {
+          var data = response.data;
+          setState(() {
+            user.setFromJson(data['data'], included: data['included'] ?? []);
+            _refreshForm();
+            var tabManager = context.read<TabManager>();
+            tabManager.changeTabHeader(widget, 'Edit user ${user.username}');
+          });
 
-        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
-      } else if (response.statusCode == 409) {
-        var data = response.data;
-        flash.showBanner(
+          flash.show(
+            const Text('Berhasil disimpan'),
+            ToastificationType.success,
+          );
+        } else if (response.statusCode == 409) {
+          var data = response.data;
+          flash.showBanner(
             title: data['message'],
             description: data['errors'].join('\n'),
-            messageType: ToastificationType.error);
-      }
-    }, onError: (error, stackTrace) {
-      defaultErrorResponse(error: error);
-    });
+            messageType: ToastificationType.error,
+          );
+        }
+      },
+      onError: (error, stackTrace) {
+        defaultErrorResponse(error: error);
+      },
+    );
   }
 
   @override
@@ -135,14 +141,16 @@ class _UserFormPageState extends State<UserFormPage>
                     child: Row(
                       children: [
                         ElevatedButton.icon(
-                            onPressed: () =>
-                                fetchHistoryByRecord('User', user.id),
-                            label: const Text('Riwayat'),
-                            icon: const Icon(Icons.history)),
+                          onPressed: () =>
+                              fetchHistoryByRecord('User', user.id),
+                          label: const Text('Riwayat'),
+                          icon: const Icon(Icons.history),
+                        ),
                         ElevatedButton.icon(
-                            onPressed: () => fetchHistoryByUser(user.id ?? 0),
-                            label: const Text('Aktivitas User'),
-                            icon: const Icon(Icons.history)),
+                          onPressed: () => fetchHistoryByUser(user.id ?? 0),
+                          label: const Text('Aktivitas User'),
+                          icon: const Icon(Icons.history),
+                        ),
                       ],
                     ),
                   ),
@@ -150,9 +158,10 @@ class _UserFormPageState extends State<UserFormPage>
                   TextFormField(
                     focusNode: user.isNewRecord ? _focusNode : null,
                     decoration: const InputDecoration(
-                        labelText: 'Username',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder()),
+                      labelText: 'Username',
+                      labelStyle: labelStyle,
+                      border: OutlineInputBorder(),
+                    ),
                     onSaved: (newValue) {
                       user.username = newValue.toString();
                     },
@@ -162,15 +171,14 @@ class _UserFormPageState extends State<UserFormPage>
                       user.username = newValue.toString();
                     },
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 10),
                   TextFormField(
                     focusNode: user.isNewRecord ? null : _focusNode,
                     decoration: const InputDecoration(
-                        labelText: 'Email',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder()),
+                      labelText: 'Email',
+                      labelStyle: labelStyle,
+                      border: OutlineInputBorder(),
+                    ),
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                     onSaved: (newValue) {
@@ -186,21 +194,15 @@ class _UserFormPageState extends State<UserFormPage>
                       user.email = newValue.toString();
                     },
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 10),
                   Visibility(
                     visible: setting.canShow('user', 'role'),
                     child: AsyncDropdown<Role>(
                       allowClear: false,
                       modelClass: RoleClass(),
                       key: const ValueKey('roleSelect'),
-                      path: '/roles',
                       attributeKey: 'name',
-                      label: const Text(
-                        'Jabatan :',
-                        style: labelStyle,
-                      ),
+                      label: const Text('Jabatan :', style: labelStyle),
                       onChanged: (role) {
                         user.role = role ?? Role();
                       },
@@ -215,41 +217,38 @@ class _UserFormPageState extends State<UserFormPage>
                     ),
                   ),
                   Visibility(
-                      visible: setting.canShow('user', 'status'),
-                      child: RadioGroup(
-                        groupValue: user.status,
-                        onChanged: (value) {
-                          setState(() {
-                            user.status = value ?? UserStatus.inactive;
-                          });
-                        },
-                        child: Column(
-                          spacing: 10,
-                          children: [
-                            const Text(
-                              'Status:',
-                              style: labelStyle,
-                            ),
-                            RadioListTile<UserStatus>(
-                              title: const Text('Inactive'),
-                              value: UserStatus.inactive,
-                            ),
-                            RadioListTile<UserStatus>(
-                              title: const Text('Active'),
-                              value: UserStatus.active,
-                            ),
-                          ],
-                        ),
-                      )),
-                  const SizedBox(
-                    height: 10,
+                    visible: setting.canShow('user', 'status'),
+                    child: RadioGroup(
+                      groupValue: user.status,
+                      onChanged: (value) {
+                        setState(() {
+                          user.status = value ?? UserStatus.inactive;
+                        });
+                      },
+                      child: Column(
+                        spacing: 10,
+                        children: [
+                          const Text('Status:', style: labelStyle),
+                          RadioListTile<UserStatus>(
+                            title: const Text('Inactive'),
+                            value: UserStatus.inactive,
+                          ),
+                          RadioListTile<UserStatus>(
+                            title: const Text('Active'),
+                            value: UserStatus.active,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
+                  const SizedBox(height: 10),
                   TextFormField(
                     obscureText: true,
                     decoration: const InputDecoration(
-                        labelText: 'password',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder()),
+                      labelText: 'password',
+                      labelStyle: labelStyle,
+                      border: OutlineInputBorder(),
+                    ),
                     onSaved: (newValue) {
                       user.password = newValue.toString();
                     },
@@ -264,15 +263,14 @@ class _UserFormPageState extends State<UserFormPage>
                       user.password = newValue.toString();
                     },
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 10),
                   TextFormField(
                     obscureText: true,
                     decoration: const InputDecoration(
-                        labelText: 'Konfirmasi password',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder()),
+                      labelText: 'Konfirmasi password',
+                      labelStyle: labelStyle,
+                      border: OutlineInputBorder(),
+                    ),
                     onSaved: (newValue) {
                       user.passwordConfirmation = newValue.toString();
                     },
@@ -288,22 +286,23 @@ class _UserFormPageState extends State<UserFormPage>
                       user.passwordConfirmation = newValue.toString();
                     },
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.only(top: 10, bottom: 10),
                     child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            _formKey.currentState!.save();
-                            flash.show(
-                                const Text('Loading'), ToastificationType.info);
-                            _submit();
-                          }
-                        },
-                        child: const Text('submit')),
-                  )
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          _formKey.currentState!.save();
+                          flash.show(
+                            const Text('Loading'),
+                            ToastificationType.info,
+                          );
+                          _submit();
+                        }
+                      },
+                      child: const Text('submit'),
+                    ),
+                  ),
                 ],
               ),
             ),

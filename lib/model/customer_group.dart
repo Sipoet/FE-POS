@@ -38,7 +38,7 @@ class CustomerGroup extends Model {
   }
 
   @override
-  String get modelValue => "$code - $name";
+  String get modelValue => name;
 }
 
 class CustomerGroupClass extends ModelClass<CustomerGroup> {

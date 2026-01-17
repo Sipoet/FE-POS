@@ -32,7 +32,6 @@ class AsyncDropdownMultiple<T extends Model> extends StatefulWidget {
     required this.textOnSearch,
     this.textOnSelected,
     this.compareValue,
-    // required this.converter,
     required this.modelClass,
     this.selecteds = const [],
   });
@@ -51,7 +50,6 @@ class AsyncDropdownMultiple<T extends Model> extends StatefulWidget {
   final DropdownValidator<T>? validator;
   final DropdownText<T> textOnSearch;
   final DropdownText<T>? textOnSelected;
-  // final T Function(Map<String, dynamic>, {List included}) converter;
   final Widget? label;
   final bool Function(T, T)? compareValue;
   final RequestRemote? request;

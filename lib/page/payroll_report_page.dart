@@ -19,7 +19,7 @@ class PayrollReportPage extends StatefulWidget {
 }
 
 class _PayrollReportPageState extends State<PayrollReportPage>
-    with LoadingPopup, DefaultResponse {
+    with LoadingPopup, DefaultResponse, ColumnTypeFinder {
   TrinaGridStateManager? tableStateManager;
   List<PayrollType> payrollTypes = [];
   List<Employee> employees = [];
@@ -55,7 +55,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
                     clientWidth: double.parse(
                       (row['client_width'] ?? '200').toString(),
                     ),
-                    type: TableColumnType.fromString(row['type']),
+                    type: convertToColumnType(row['type'], row),
                     inputOptions: row['input_options'],
                     canFilter: true,
                     name: row['name'],
@@ -174,7 +174,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
                     width: 350,
                     child: AsyncDropdownMultiple<Employee>(
                       textOnSearch: (employee) => employee.name,
-                      path: 'employees',
+
                       onChanged: (newEmployees) => employees = newEmployees,
                       modelClass: EmployeeClass(),
                     ),
@@ -183,7 +183,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
                     width: 350,
                     child: AsyncDropdownMultiple<PayrollType>(
                       textOnSearch: (payrollType) => payrollType.name,
-                      path: 'payroll_types',
+
                       label: Text('Tipe Payroll'),
                       onChanged: (newPayrollTypes) =>
                           payrollTypes = newPayrollTypes,

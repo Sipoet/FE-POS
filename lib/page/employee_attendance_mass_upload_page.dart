@@ -39,38 +39,39 @@ class _EmployeeAttendanceMassUploadPageState
     _server = context.read<Server>();
     _columns = [
       TableColumn(
-          clientWidth: 200,
-          name: 'employee.name',
-          humanizeName: 'Nama Karyawan'),
+        clientWidth: 200,
+        name: 'employee.name',
+        humanizeName: 'Nama Karyawan',
+      ),
       TableColumn(
         clientWidth: 150,
         name: 'date',
         humanizeName: 'Tanggal',
-        type: TableColumnType.date,
+        type: DateTableColumnType(),
       ),
       TableColumn(
         clientWidth: 120,
         name: 'start_work',
         humanizeName: 'Jam Masuk',
-        type: TableColumnType.timeOnly,
+        type: TimeTableColumnType(),
       ),
       TableColumn(
         clientWidth: 120,
         name: 'end_work',
         humanizeName: 'Jam Keluar',
-        type: TableColumnType.timeOnly,
+        type: TimeTableColumnType(),
       ),
       TableColumn(
         clientWidth: 100,
         name: 'shift',
         humanizeName: 'Shift',
-        type: TableColumnType.number,
+        type: NumberTableColumnType(),
       ),
       TableColumn(
         clientWidth: 120,
         name: 'is_late',
         humanizeName: 'Terlambat?',
-        type: TableColumnType.boolean,
+        type: BooleanTableColumnType(),
       ),
     ];
     super.initState();
@@ -86,92 +87,101 @@ class _EmployeeAttendanceMassUploadPageState
     const headerStyle = TextStyle(fontWeight: FontWeight.bold, fontSize: 16);
 
     return SingleChildScrollView(
-        child: Container(
-      alignment: Alignment.center,
-      margin: const EdgeInsets.all(10),
-      child: Column(
-        children: [
-          const SizedBox(
-            height: 20,
-          ),
-          Center(
-            child: ElevatedButton(
+      child: Container(
+        alignment: Alignment.center,
+        margin: const EdgeInsets.all(10),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            Center(
+              child: ElevatedButton(
                 onPressed: () {
                   pickFile();
                 },
                 focusNode: _focusNode,
-                child: const Text('Pilih file')),
-          ),
-          Column(
-            children: [
-              const SizedBox(
-                height: 10,
+                child: const Text('Pilih file'),
               ),
-              const Text(
-                'Hasil :',
-                style: headerStyle,
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              SizedBox(
-                height: bodyScreenHeight,
-                child: SyncDataTable<ItemReport>(
-                  columns: _columns,
-                  onLoaded: (stateManager) => _source = stateManager,
-                  showFilter: true,
-                  showSummary: false,
-                  isPaginated: true,
+            ),
+            Column(
+              children: [
+                const SizedBox(height: 10),
+                const Text('Hasil :', style: headerStyle),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: bodyScreenHeight,
+                  child: SyncDataTable<ItemReport>(
+                    columns: _columns,
+                    onLoaded: (stateManager) => _source = stateManager,
+                    showFilter: true,
+                    showSummary: false,
+                    isPaginated: true,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-        ],
+              ],
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
       ),
-    ));
+    );
   }
 
   void pickFile() async {
-    FilePickerResult? result = await FilePicker.platform
-        .pickFiles(type: FileType.custom, allowedExtensions: ['xlsx']);
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['xlsx'],
+    );
     if (result == null) {
       return;
     }
     Future<dynamic> request;
     if (isWeb()) {
       final file = result.files.first;
-      request = _server.upload('employee_attendances/mass_upload',
-          bytes: file.bytes!.toList(), filename: file.name);
+      request = _server.upload(
+        'employee_attendances/mass_upload',
+        bytes: file.bytes!.toList(),
+        filename: file.name,
+      );
     } else {
       final file = result.xFiles.first;
-      request = _server.upload('employee_attendances/mass_upload',
-          file: file, filename: file.name);
+      request = _server.upload(
+        'employee_attendances/mass_upload',
+        file: file,
+        filename: file.name,
+      );
     }
 
     showLoadingPopup();
 
-    request.then((response) {
-      if (response.statusCode == 201) {
-        final responseBody = response.data['data'] as List;
-        setState(() {
-          final employeeAttendances = responseBody
-              .map<EmployeeAttendance>((json) => EmployeeAttendanceClass()
-                  .fromJson(json, included: response.data['included']))
-              .toList();
-          _source?.setModels(employeeAttendances);
-        });
-      } else {
-        final flash = Flash();
-        flash.showBanner(
-            messageType: ToastificationType.error,
-            title: 'gagal upload Absensi Karyawan',
-            description: response.data['message']);
-      }
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-    }).whenComplete(() => hideLoadingPopup());
+    request
+        .then(
+          (response) {
+            if (response.statusCode == 201) {
+              final responseBody = response.data['data'] as List;
+              setState(() {
+                final employeeAttendances = responseBody
+                    .map<EmployeeAttendance>(
+                      (json) => EmployeeAttendanceClass().fromJson(
+                        json,
+                        included: response.data['included'],
+                      ),
+                    )
+                    .toList();
+                _source?.setModels(employeeAttendances);
+              });
+            } else {
+              final flash = Flash();
+              flash.showBanner(
+                messageType: ToastificationType.error,
+                title: 'gagal upload Absensi Karyawan',
+                description: response.data['message'],
+              );
+            }
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+          },
+        )
+        .whenComplete(() => hideLoadingPopup());
   }
 }

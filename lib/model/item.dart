@@ -93,7 +93,7 @@ class Item extends Model {
       : Percentage((sellPrice / cogs).value - 1);
 
   @override
-  String get modelValue => "$code - $name";
+  String get valueDescription => name;
 }
 
 class ItemClass extends ModelClass<Item> {

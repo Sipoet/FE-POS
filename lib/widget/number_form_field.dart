@@ -14,18 +14,19 @@ class NumberFormField<T extends num> extends StatefulWidget {
   final bool readOnly;
   final FocusNode? focusNode;
   final String? hintText;
-  const NumberFormField(
-      {super.key,
-      this.initialValue,
-      this.onFieldSubmitted,
-      this.onChanged,
-      this.onSaved,
-      this.label,
-      this.hintText,
-      this.validator,
-      this.focusNode,
-      this.readOnly = false,
-      this.controller});
+  const NumberFormField({
+    super.key,
+    this.initialValue,
+    this.onFieldSubmitted,
+    this.onChanged,
+    this.onSaved,
+    this.label,
+    this.hintText,
+    this.validator,
+    this.focusNode,
+    this.readOnly = false,
+    this.controller,
+  });
 
   @override
   State<NumberFormField<T>> createState() => _NumberFormFieldState<T>();
@@ -37,6 +38,9 @@ class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
 
   T? _valueFromInput(String input) {
     input = input.replaceAll(',', '');
+    if (input.isEmpty) {
+      return null;
+    }
     if (T == double) {
       return double.tryParse(input) as T?;
     } else if (T == int) {
@@ -55,20 +59,29 @@ class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
   @override
   void initState() {
     if (widget.controller != null) {
-      _controller = TextEditingController(
-          text: numberFormat(_valueFromInput(widget.controller!.text)));
+      final val = _valueFromInput(widget.controller?.text ?? '');
+      if (val != null) {
+        _controller = TextEditingController(text: numberFormat(val));
+      } else {
+        _controller = TextEditingController();
+      }
     }
     widget.controller?.addListener(() {
-      _controller!.text =
-          numberFormat(_valueFromInput(widget.controller!.text));
+      final val = _valueFromInput(widget.controller?.text ?? '');
+      if (val != null) {
+        _controller!.text = numberFormat(val);
+      } else {
+        _controller!.clear();
+      }
     });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final value =
-        widget.initialValue == null ? null : numberFormat(widget.initialValue);
+    final value = widget.initialValue == null
+        ? null
+        : numberFormat(widget.initialValue);
     return TextFormField(
       enableSuggestions: false,
       controller: widget.controller == null ? null : _controller,
@@ -101,10 +114,11 @@ class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
           : null,
       inputFormatters: [ThousandSeparatorFormatter()],
       decoration: InputDecoration(
-          contentPadding: const EdgeInsets.all(5),
-          label: widget.label,
-          hintText: widget.hintText,
-          border: const OutlineInputBorder()),
+        contentPadding: const EdgeInsets.all(5),
+        label: widget.label,
+        hintText: widget.hintText,
+        border: const OutlineInputBorder(),
+      ),
       initialValue: value,
     );
   }

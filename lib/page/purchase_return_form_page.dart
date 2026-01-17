@@ -52,20 +52,32 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
   void fetchPurchaseReturn() {
     showLoadingPopup();
 
-    _server.get('purchase_returns/show', queryParam: {
-      'code': Uri.encodeComponent(purchaseReturn.id),
-      'include': 'purchase_return_items,purchase_return_items.item,supplier'
-    }).then((response) {
-      if (response.statusCode == 200) {
-        setState(() {
-          purchaseReturn.setFromJson(response.data['data'],
-              included: response.data['included']);
-          _source.setModels(purchaseReturn.purchaseItems);
-        });
-      }
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-    }).whenComplete(() => hideLoadingPopup());
+    _server
+        .get(
+          'ipos/purchase_returns/show',
+          queryParam: {
+            'code': Uri.encodeComponent(purchaseReturn.id),
+            'include':
+                'purchase_return_items,purchase_return_items.item,supplier',
+          },
+        )
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              setState(() {
+                purchaseReturn.setFromJson(
+                  response.data['data'],
+                  included: response.data['included'],
+                );
+                _source.setModels(purchaseReturn.purchaseItems);
+              });
+            }
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+          },
+        )
+        .whenComplete(() => hideLoadingPopup());
   }
 
   @override
@@ -98,15 +110,20 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
                       // const Divider(),
                       Visibility(
                         visible: setting.canShow(
-                            'ipos::PurchaseReturn', 'notransaksi'),
+                          'ipos::PurchaseReturn',
+                          'notransaksi',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10.0),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'notransaksi'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'notransaksi',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchaseReturn.code,
                           ),
@@ -114,15 +131,20 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
                       ),
                       Visibility(
                         visible: setting.canShow(
-                            'ipos::PurchaseReturn', 'kodesupel'),
+                          'ipos::PurchaseReturn',
+                          'kodesupel',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10.0),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'kodesupel'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'kodesupel',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue:
                                 "${purchaseReturn.supplierCode} - ${purchaseReturn.supplierName}",
@@ -131,81 +153,107 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
                       ),
                       Visibility(
                         visible: setting.canShow(
-                            'ipos::PurchaseReturn', 'kantortujuan'),
+                          'ipos::PurchaseReturn',
+                          'kantortujuan',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10.0),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'kantortujuan'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'kantortujuan',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchaseReturn.destLocation,
                           ),
                         ),
                       ),
                       Visibility(
-                        visible:
-                            setting.canShow('ipos::PurchaseReturn', 'user1'),
+                        visible: setting.canShow(
+                          'ipos::PurchaseReturn',
+                          'user1',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'user1'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'user1',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchaseReturn.userName,
                           ),
                         ),
                       ),
                       Visibility(
-                        visible:
-                            setting.canShow('ipos::PurchaseReturn', 'tanggal'),
+                        visible: setting.canShow(
+                          'ipos::PurchaseReturn',
+                          'tanggal',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'tanggal'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'tanggal',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
-                            initialValue:
-                                dateTimeFormat(purchaseReturn.datetime),
+                            initialValue: dateTimeFormat(
+                              purchaseReturn.datetime,
+                            ),
                           ),
                         ),
                       ),
 
                       Visibility(
                         visible: setting.canShow(
-                            'ipos::PurchaseReturn', 'totalitem'),
+                          'ipos::PurchaseReturn',
+                          'totalitem',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'totalitem'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'totalitem',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchaseReturn.totalItem.toString(),
                           ),
                         ),
                       ),
                       Visibility(
-                        visible:
-                            setting.canShow('ipos::PurchaseReturn', 'subtotal'),
+                        visible: setting.canShow(
+                          'ipos::PurchaseReturn',
+                          'subtotal',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'subtotal'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'subtotal',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: moneyFormat(purchaseReturn.subtotal),
                           ),
@@ -213,48 +261,64 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
                       ),
                       Visibility(
                         visible: setting.canShow(
-                            'ipos::PurchaseReturn', 'potnomfaktur'),
+                          'ipos::PurchaseReturn',
+                          'potnomfaktur',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'potnomfaktur'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'potnomfaktur',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
-                            initialValue:
-                                moneyFormat(purchaseReturn.discountAmount),
+                            initialValue: moneyFormat(
+                              purchaseReturn.discountAmount,
+                            ),
                           ),
                         ),
                       ),
                       Visibility(
                         visible: setting.canShow(
-                            'ipos::PurchaseReturn', 'biayalain'),
+                          'ipos::PurchaseReturn',
+                          'biayalain',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'biayalain'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'biayalain',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: moneyFormat(purchaseReturn.otherCost),
                           ),
                         ),
                       ),
                       Visibility(
-                        visible:
-                            setting.canShow('ipos::PurchaseReturn', 'pajak'),
+                        visible: setting.canShow(
+                          'ipos::PurchaseReturn',
+                          'pajak',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'pajak'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'pajak',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: moneyFormat(purchaseReturn.taxAmount),
                           ),
@@ -262,32 +326,43 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
                       ),
                       Visibility(
                         visible: setting.canShow(
-                            'ipos::PurchaseReturn', 'totalakhir'),
+                          'ipos::PurchaseReturn',
+                          'totalakhir',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'totalakhir'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'totalakhir',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
-                            initialValue:
-                                moneyFormat(purchaseReturn.grandtotal),
+                            initialValue: moneyFormat(
+                              purchaseReturn.grandtotal,
+                            ),
                           ),
                         ),
                       ),
                       Visibility(
                         visible: setting.canShow(
-                            'ipos::PurchaseReturn', 'payment_type'),
+                          'ipos::PurchaseReturn',
+                          'payment_type',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'payment_type'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'payment_type',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchaseReturn.paymentMethodType,
                           ),
@@ -295,85 +370,114 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
                       ),
                       Visibility(
                         visible: setting.canShow(
-                            'ipos::PurchaseReturn', 'bank_code'),
+                          'ipos::PurchaseReturn',
+                          'bank_code',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'bank_code'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'bank_code',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchaseReturn.bankCode,
                           ),
                         ),
                       ),
                       Visibility(
-                        visible:
-                            setting.canShow('ipos::PurchaseReturn', 'jmltunai'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'jmltunai'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
-                            readOnly: true,
-                            initialValue:
-                                moneyFormat(purchaseReturn.cashAmount),
-                          ),
+                        visible: setting.canShow(
+                          'ipos::PurchaseReturn',
+                          'jmltunai',
                         ),
-                      ),
-                      Visibility(
-                        visible:
-                            setting.canShow('ipos::PurchaseReturn', 'jmldebit'),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'jmldebit'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'jmltunai',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
-                            initialValue:
-                                moneyFormat(purchaseReturn.debitCardAmount),
+                            initialValue: moneyFormat(
+                              purchaseReturn.cashAmount,
+                            ),
                           ),
                         ),
                       ),
                       Visibility(
                         visible: setting.canShow(
-                            'ipos::PurchaseReturn', 'jmlkredit'),
+                          'ipos::PurchaseReturn',
+                          'jmldebit',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'jmlkredit'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'jmldebit',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
-                            initialValue:
-                                moneyFormat(purchaseReturn.creditCardAmount),
+                            initialValue: moneyFormat(
+                              purchaseReturn.debitCardAmount,
+                            ),
                           ),
                         ),
                       ),
                       Visibility(
                         visible: setting.canShow(
-                            'ipos::PurchaseReturn', 'jmldeposit'),
+                          'ipos::PurchaseReturn',
+                          'jmlkredit',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'jmldeposit'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'jmlkredit',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
-                            initialValue:
-                                moneyFormat(purchaseReturn.emoneyAmount),
+                            initialValue: moneyFormat(
+                              purchaseReturn.creditCardAmount,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible: setting.canShow(
+                          'ipos::PurchaseReturn',
+                          'jmldeposit',
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'jmldeposit',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
+                            readOnly: true,
+                            initialValue: moneyFormat(
+                              purchaseReturn.emoneyAmount,
+                            ),
                           ),
                         ),
                       ),
@@ -383,10 +487,13 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'ppn'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'ppn',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchaseReturn.taxType,
                           ),
@@ -394,15 +501,20 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
                       ),
                       Visibility(
                         visible: setting.canShow(
-                            'ipos::PurchaseReturn', 'keterangan'),
+                          'ipos::PurchaseReturn',
+                          'keterangan',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::PurchaseReturn', 'keterangan'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::PurchaseReturn',
+                                'keterangan',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             minLines: 3,
                             maxLines: 5,
@@ -413,9 +525,7 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
                     ],
                   ),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 const Align(
                   alignment: Alignment.centerLeft,
                   child: Text(

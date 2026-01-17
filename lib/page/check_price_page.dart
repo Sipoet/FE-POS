@@ -26,40 +26,49 @@ class _CheckPricePageState extends State<CheckPricePage>
   List<ItemWithDiscount> models = [];
   final List<TableColumn> _columns = [
     TableColumn(
-        clientWidth: 120,
-        frozen: TrinaColumnFrozen.start,
-        name: 'item_code',
-        humanizeName: 'Kode Item'),
+      clientWidth: 120,
+      frozen: TrinaColumnFrozen.start,
+      name: 'item_code',
+      humanizeName: 'Kode Item',
+    ),
     TableColumn(clientWidth: 200, name: 'item_name', humanizeName: 'Nama Item'),
     TableColumn(
-        clientWidth: 100,
-        type: TableColumnType.number,
-        name: 'store_stock',
-        humanizeName: 'Stok Toko'),
+      clientWidth: 100,
+      type: NumberTableColumnType(),
+      name: 'store_stock',
+      humanizeName: 'Stok Toko',
+    ),
     TableColumn(
-        clientWidth: 160,
-        type: TableColumnType.money,
-        name: 'sell_price',
-        humanizeName: 'Harga Normal'),
+      clientWidth: 160,
+      type: MoneyTableColumnType(),
+      name: 'sell_price',
+      humanizeName: 'Harga Normal',
+    ),
     TableColumn(
-        clientWidth: 200, name: 'discount_desc', humanizeName: 'Promo Diskon'),
+      clientWidth: 200,
+      name: 'discount_desc',
+      humanizeName: 'Promo Diskon',
+    ),
     TableColumn(
-        clientWidth: 160,
-        type: TableColumnType.money,
-        name: 'discount_amount',
-        humanizeName: 'Jumlah Diskon'),
+      clientWidth: 160,
+      type: MoneyTableColumnType(),
+      name: 'discount_amount',
+      humanizeName: 'Jumlah Diskon',
+    ),
     TableColumn(clientWidth: 90, name: 'uom', humanizeName: 'Satuan'),
     TableColumn(
-        clientWidth: 110,
-        type: TableColumnType.number,
-        name: 'warehouse_stock',
-        humanizeName: 'Stok Gudang'),
+      clientWidth: 110,
+      type: NumberTableColumnType(),
+      name: 'warehouse_stock',
+      humanizeName: 'Stok Gudang',
+    ),
     TableColumn(
-        clientWidth: 160,
-        type: TableColumnType.money,
-        name: 'sell_price_after_discount',
-        humanizeName: 'Harga Setelah Diskon',
-        frozen: TrinaColumnFrozen.end),
+      clientWidth: 160,
+      type: MoneyTableColumnType(),
+      name: 'sell_price_after_discount',
+      humanizeName: 'Harga Setelah Diskon',
+      frozen: TrinaColumnFrozen.end,
+    ),
   ];
 
   @override
@@ -70,8 +79,11 @@ class _CheckPricePageState extends State<CheckPricePage>
 
   void _openCamera() {
     FlutterBarcodeScanner.scanBarcode(
-            '#ff6666', 'Batal', true, ScanMode.BARCODE)
-        .then((res) {
+      '#ff6666',
+      'Batal',
+      true,
+      ScanMode.BARCODE,
+    ).then((res) {
       if (res.isNotEmpty && res != '-1') {
         setState(() {
           finalSearch = res;
@@ -95,12 +107,10 @@ class _CheckPricePageState extends State<CheckPricePage>
             child: Padding(
               padding: const EdgeInsets.only(top: 10, bottom: 10),
               child: ElevatedButton.icon(
-                  icon: Icon(
-                    Icons.camera_alt_outlined,
-                    size: 45,
-                  ),
-                  onPressed: () => _openCamera(),
-                  label: Text('Open Camera')),
+                icon: Icon(Icons.camera_alt_outlined, size: 45),
+                onPressed: () => _openCamera(),
+                label: Text('Open Camera'),
+              ),
             ),
           ),
           TextFormField(
@@ -113,46 +123,51 @@ class _CheckPricePageState extends State<CheckPricePage>
               _searchItem();
             },
             decoration: InputDecoration(
-                label: Text('Barcode / keterangan barang'),
-                border: OutlineInputBorder(),
-                suffixIcon: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        finalSearch = _controller.text;
-                        _controller.text = '';
-                      });
-                    },
-                    icon: Icon(Icons.search))),
+              label: Text('Barcode / keterangan barang'),
+              border: OutlineInputBorder(),
+              suffixIcon: IconButton(
+                onPressed: () {
+                  setState(() {
+                    finalSearch = _controller.text;
+                    _controller.text = '';
+                  });
+                },
+                icon: Icon(Icons.search),
+              ),
+            ),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           Visibility(
-              visible: finalSearch != null,
-              child: Padding(
-                padding: EdgeInsets.all(10),
-                child: SelectableText("Kata Yang dicari: $finalSearch"),
-              )),
+            visible: finalSearch != null,
+            child: Padding(
+              padding: EdgeInsets.all(10),
+              child: SelectableText("Kata Yang dicari: $finalSearch"),
+            ),
+          ),
           SizedBox(
             height: bodyScreenHeight,
             child: LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-              if (size.height > size.width || size.height <= 420) {
-                if (_isLoading) return loadingWidget();
-                return ListView(
-                  children: models
-                      .map<Widget>((model) => Card(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                if (size.height > size.width || size.height <= 420) {
+                  if (_isLoading) return loadingWidget();
+                  return ListView(
+                    children: models
+                        .map<Widget>(
+                          (model) => Card(
                             surfaceTintColor: colorScheme.outline,
                             child: ListTile(
                               key: ValueKey(model.code),
                               title: RichText(
                                 text: TextSpan(
-                                    text: "Kode Item: ",
-                                    style: TextStyle(color: Colors.black),
-                                    children: [
-                                      TextSpan(
-                                          text: model.code, style: labelStyle)
-                                    ]),
+                                  text: "Kode Item: ",
+                                  style: TextStyle(color: Colors.black),
+                                  children: [
+                                    TextSpan(
+                                      text: model.code,
+                                      style: labelStyle,
+                                    ),
+                                  ],
+                                ),
                               ),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,140 +179,191 @@ class _CheckPricePageState extends State<CheckPricePage>
                                     },
                                     border: TableBorder(
                                       horizontalInside: BorderSide(
-                                        color: Colors.grey.shade400
-                                            .withValues(alpha: 0.5),
+                                        color: Colors.grey.shade400.withValues(
+                                          alpha: 0.5,
+                                        ),
                                       ),
                                     ),
                                     children: [
-                                      TableRow(children: [
-                                        TableCell(
-                                            child: Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: Text(
-                                            'Nama Item',
-                                            style: labelStyle,
-                                          ),
-                                        )),
-                                        TableCell(
-                                            child: Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: Text(
-                                            model.name,
-                                          ),
-                                        ))
-                                      ]),
-                                      TableRow(children: [
-                                        TableCell(
-                                            child: Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: Text(
-                                            'Harga Normal',
-                                            style: labelStyle,
-                                          ),
-                                        )),
-                                        TableCell(
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Align(
-                                              alignment: Alignment.topRight,
-                                              child: Text(model.sellPrice
-                                                  .format(decimalDigits: 0)),
-                                            ),
-                                          ),
-                                        ),
-                                      ]),
-                                      if (model.discountDesc != null &&
-                                          model.discountDesc!.isNotEmpty)
-                                        TableRow(children: [
-                                          TableCell(
-                                              child: Padding(
-                                            padding: const EdgeInsets.all(5.0),
-                                            child: Text(
-                                              'Diskon',
-                                              style: labelStyle,
-                                            ),
-                                          )),
-                                          TableCell(
-                                              child: Padding(
-                                            padding: const EdgeInsets.all(5.0),
-                                            child: Text(
-                                              model.discountDesc ?? '',
-                                            ),
-                                          ))
-                                        ]),
-                                      if (model.sellPrice !=
-                                          model.sellPriceAfterDiscount)
-                                        TableRow(children: [
-                                          TableCell(
-                                              child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              'Harga Setelah Diskon',
-                                              style: labelStyle,
-                                            ),
-                                          )),
+                                      TableRow(
+                                        children: [
                                           TableCell(
                                             child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Align(
-                                                alignment: Alignment.topRight,
-                                                child: Text(model
-                                                    .sellPriceAfterDiscount
-                                                    .format(decimalDigits: 0)),
+                                              padding: const EdgeInsets.all(
+                                                5.0,
+                                              ),
+                                              child: Text(
+                                                'Nama Item',
+                                                style: labelStyle,
                                               ),
                                             ),
                                           ),
-                                        ]),
-                                      TableRow(children: [
-                                        TableCell(
+                                          TableCell(
                                             child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            'Stok',
-                                            style: labelStyle,
+                                              padding: const EdgeInsets.all(
+                                                5.0,
+                                              ),
+                                              child: Text(model.name),
+                                            ),
                                           ),
-                                        )),
-                                        TableCell(
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                                "TOKO: ${model.storeStock}, Gudang: ${model.warehouseStock}"),
-                                          ),
-                                        ),
-                                      ]),
-                                      TableRow(children: [
-                                        TableCell(
+                                        ],
+                                      ),
+                                      TableRow(
+                                        children: [
+                                          TableCell(
                                             child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            'Satuan',
-                                            style: labelStyle,
+                                              padding: const EdgeInsets.all(
+                                                5.0,
+                                              ),
+                                              child: Text(
+                                                'Harga Normal',
+                                                style: labelStyle,
+                                              ),
+                                            ),
                                           ),
-                                        )),
-                                        TableCell(
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(model.uom),
+                                          TableCell(
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Align(
+                                                alignment: Alignment.topRight,
+                                                child: Text(
+                                                  model.sellPrice.format(
+                                                    decimalDigits: 0,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
                                           ),
+                                        ],
+                                      ),
+                                      if (model.discountDesc != null &&
+                                          model.discountDesc!.isNotEmpty)
+                                        TableRow(
+                                          children: [
+                                            TableCell(
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(
+                                                  5.0,
+                                                ),
+                                                child: Text(
+                                                  'Diskon',
+                                                  style: labelStyle,
+                                                ),
+                                              ),
+                                            ),
+                                            TableCell(
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(
+                                                  5.0,
+                                                ),
+                                                child: Text(
+                                                  model.discountDesc ?? '',
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ]),
+                                      if (model.sellPrice !=
+                                          model.sellPriceAfterDiscount)
+                                        TableRow(
+                                          children: [
+                                            TableCell(
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(
+                                                  8.0,
+                                                ),
+                                                child: Text(
+                                                  'Harga Setelah Diskon',
+                                                  style: labelStyle,
+                                                ),
+                                              ),
+                                            ),
+                                            TableCell(
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(
+                                                  8.0,
+                                                ),
+                                                child: Align(
+                                                  alignment: Alignment.topRight,
+                                                  child: Text(
+                                                    model.sellPriceAfterDiscount
+                                                        .format(
+                                                          decimalDigits: 0,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      TableRow(
+                                        children: [
+                                          TableCell(
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Text(
+                                                'Stok',
+                                                style: labelStyle,
+                                              ),
+                                            ),
+                                          ),
+                                          TableCell(
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Text(
+                                                "TOKO: ${model.storeStock}, Gudang: ${model.warehouseStock}",
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      TableRow(
+                                        children: [
+                                          TableCell(
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Text(
+                                                'Satuan',
+                                                style: labelStyle,
+                                              ),
+                                            ),
+                                          ),
+                                          TableCell(
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Text(model.uom),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ],
                                   ),
                                 ],
                               ),
                             ),
-                          ))
-                      .toList(),
-                );
-              } else {
-                return SyncDataTable(
-                  showFilter: false,
-                  columns: _columns,
-                  onLoaded: (stateManager) => _source = stateManager,
-                );
-              }
-            }),
+                          ),
+                        )
+                        .toList(),
+                  );
+                } else {
+                  return SyncDataTable(
+                    showFilter: false,
+                    columns: _columns,
+                    onLoaded: (stateManager) => _source = stateManager,
+                  );
+                }
+              },
+            ),
           ),
         ],
       ),
@@ -312,27 +378,37 @@ class _CheckPricePageState extends State<CheckPricePage>
       _isLoading = true;
     });
     _source?.setShowLoading(true);
-    _server.get('items/with_discount', queryParam: {
-      'search_text': finalSearch,
-      'page[page]': '1',
-      'page[limit]': '100'
-    }).then((response) {
-      if (mounted && response.statusCode == 200) {
-        final data = response.data;
-        setState(() {
-          models = data['data']
-              .map<ItemWithDiscount>((row) => ItemWithDiscountClass()
-                  .fromJson(row, included: data['included'] ?? []))
-              .toList();
-        });
+    _server
+        .get(
+          'items/with_discount',
+          queryParam: {
+            'search_text': finalSearch,
+            'page[page]': '1',
+            'page[limit]': '100',
+          },
+        )
+        .then((response) {
+          if (mounted && response.statusCode == 200) {
+            final data = response.data;
+            setState(() {
+              models = data['data']
+                  .map<ItemWithDiscount>(
+                    (row) => ItemWithDiscountClass().fromJson(
+                      row,
+                      included: data['included'] ?? [],
+                    ),
+                  )
+                  .toList();
+            });
 
-        _source?.setModels(models);
-      }
-    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(() {
-      _source?.setShowLoading(false);
-      setState(() {
-        _isLoading = false;
-      });
-    });
+            _source?.setModels(models);
+          }
+        }, onError: (error) => defaultErrorResponse(error: error))
+        .whenComplete(() {
+          _source?.setShowLoading(false);
+          setState(() {
+            _isLoading = false;
+          });
+        });
   }
 }

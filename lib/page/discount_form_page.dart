@@ -87,7 +87,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     _columns.addAll([
       TableColumn(
         clientWidth: 180,
-        type: TableColumnType.money,
+        type: MoneyTableColumnType(),
         name: 'discount_amount',
         humanizeName: 'Jumlah Diskon',
         getValue: (model) {
@@ -109,7 +109,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       ),
       TableColumn(
         clientWidth: 180,
-        type: TableColumnType.money,
+        type: MoneyTableColumnType(),
         name: 'sell_price_after_discount',
         humanizeName: 'Harga Setelah Diskon',
         getValue: (model) {
@@ -133,7 +133,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       TableColumn(
         clientWidth: 180,
         name: 'profit_after_discount',
-        type: TableColumnType.money,
+        type: MoneyTableColumnType(),
         humanizeName: 'Jumlah Profit Setelah Diskon',
         getValue: (model) {
           if (model is ItemReport) {
@@ -158,7 +158,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       TableColumn(
         clientWidth: 180,
         name: 'profit_margin_after_discount',
-        type: TableColumnType.percentage,
+        type: PercentageTableColumnType(),
         humanizeName: 'Profit Setelah Diskon(%)',
         getValue: (model) {
           if (model is ItemReport) {
@@ -618,7 +618,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                 child: AsyncDropdownMultiple<ItemType>(
                                   selecteds: discount.itemTypes,
                                   key: const ValueKey('itemTypeSelect'),
-                                  path: '/item_types',
                                   attributeKey: 'jenis',
                                   label: const Text(
                                     'Jenis/Departemen :',
@@ -648,7 +647,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                 child: AsyncDropdownMultiple<Supplier>(
                                   key: const ValueKey('supplierSelect'),
                                   selecteds: discount.suppliers,
-                                  path: '/suppliers',
                                   attributeKey: 'kode',
                                   textOnSelected: (supplier) => supplier.code,
                                   textOnSearch: (supplier) =>
@@ -678,7 +676,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                 child: AsyncDropdownMultiple<Brand>(
                                   key: const ValueKey('brandSelect'),
                                   selecteds: discount.brands,
-                                  path: '/brands',
                                   attributeKey: 'merek',
                                   textOnSearch: (brand) => brand.name,
                                   modelClass: BrandClass(),
@@ -706,7 +703,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                 child: AsyncDropdownMultiple<Item>(
                                   key: const ValueKey('itemSelect'),
                                   selecteds: discount.items,
-                                  path: '/items',
                                   attributeKey: 'namaitem',
                                   textOnSelected: (item) => item.code,
                                   textOnSearch: (item) =>
@@ -735,7 +731,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     'blacklistItemTypeSelect',
                                   ),
                                   selecteds: discount.blacklistItemTypes,
-                                  path: '/item_types',
                                   attributeKey: 'jenis',
                                   textOnSelected: (itemType) => itemType.name,
                                   textOnSearch: (itemType) =>
@@ -758,7 +753,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     'blacklistSupplierSelect',
                                   ),
                                   selecteds: discount.blacklistSuppliers,
-                                  path: '/suppliers',
                                   attributeKey: 'kode',
                                   textOnSelected: (supplier) => supplier.code,
                                   textOnSearch: (supplier) =>
@@ -779,7 +773,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                 child: AsyncDropdownMultiple<Brand>(
                                   key: const ValueKey('blacklistBrandSelect'),
                                   selecteds: discount.blacklistBrands,
-                                  path: '/brands',
+
                                   attributeKey: 'merek',
                                   textOnSearch: (brand) => brand.name,
                                   modelClass: BrandClass(),
@@ -798,7 +792,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                 child: AsyncDropdownMultiple<Item>(
                                   key: const ValueKey('blacklistItemSelect'),
                                   selecteds: discount.blacklistItems,
-                                  path: '/items',
+
                                   attributeKey: 'namaitem',
                                   textOnSelected: (item) => item.code,
                                   textOnSearch: (item) =>
@@ -819,7 +813,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                 child: AsyncDropdown<CustomerGroup>(
                                   key: const ValueKey('customerGroupCode'),
                                   selected: discount.customerGroup,
-                                  path: '/customer_groups',
                                   attributeKey: 'grup',
                                   textOnSelected: (customerGroup) =>
                                       customerGroup.code,

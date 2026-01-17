@@ -39,30 +39,37 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
 
   Future<DataTableResponse<PurchaseReport>> fetchData(QueryRequest request) {
     _reportType = 'json';
-    return _requestReport(request).then((response) {
-      try {
-        if (response.statusCode != 200) {
+    return _requestReport(request).then(
+      (response) {
+        try {
+          if (response.statusCode != 200) {
+            return DataTableResponse<PurchaseReport>(totalPage: 0, models: []);
+          }
+          var data = response.data;
+          setState(() {
+            _isDisplayTable = true;
+          });
+          final models = data['data'].map<PurchaseReport>((row) {
+            return PurchaseReportClass().fromJson(
+              row,
+              included: data['included'] ?? [],
+            );
+          }).toList();
+          return DataTableResponse<PurchaseReport>(
+            models: models,
+            totalPage: data['meta']['total_pages'],
+          );
+        } catch (error, stackTrace) {
+          debugPrint(error.toString());
+          debugPrint(stackTrace.toString());
           return DataTableResponse<PurchaseReport>(totalPage: 0, models: []);
         }
-        var data = response.data;
-        setState(() {
-          _isDisplayTable = true;
-        });
-        final models = data['data'].map<PurchaseReport>((row) {
-          return PurchaseReportClass()
-              .fromJson(row, included: data['included'] ?? []);
-        }).toList();
-        return DataTableResponse<PurchaseReport>(
-            models: models, totalPage: data['meta']['total_pages']);
-      } catch (error, stackTrace) {
-        debugPrint(error.toString());
-        debugPrint(stackTrace.toString());
-        return DataTableResponse<PurchaseReport>(totalPage: 0, models: []);
-      }
-    }, onError: ((error, stackTrace) {
-      defaultErrorResponse(error: error);
-      return Future(() => DataTableResponse<PurchaseReport>(models: []));
-    }));
+      },
+      onError: ((error, stackTrace) {
+        defaultErrorResponse(error: error);
+        return Future(() => DataTableResponse<PurchaseReport>(models: []));
+      }),
+    );
   }
 
   @override
@@ -73,22 +80,23 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
   }
 
   void _downloadReport() async {
-    flash.show(
-      const Text('Dalam proses.'),
-      ToastificationType.info,
-    );
+    flash.show(const Text('Dalam proses.'), ToastificationType.info);
     _reportType = 'xlsx';
-    _requestReport(QueryRequest(limit: 99999)).then(_downloadResponse,
-        onError: ((error, stackTrace) => defaultErrorResponse(error: error)));
+    _requestReport(QueryRequest(limit: 99999)).then(
+      _downloadResponse,
+      onError: ((error, stackTrace) => defaultErrorResponse(error: error)),
+    );
   }
 
   Future _requestReport(QueryRequest request) async {
     request.filters = _filters;
     request.include = ['supplier'];
-    return server.get('purchases/report',
-        queryParam: request.toQueryParam()
-          ..addEntries([MapEntry('report_type', _reportType)]),
-        type: _reportType ?? 'json');
+    return server.get(
+      'ipos/purchases/report',
+      queryParam: request.toQueryParam()
+        ..addEntries([MapEntry('report_type', _reportType)]),
+      type: _reportType ?? 'json',
+    );
   }
 
   void _downloadResponse(response) async {
@@ -102,15 +110,22 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
       return;
     }
     filename = filename.substring(
-        filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
+      filename.indexOf('filename="') + 10,
+      filename.indexOf('xlsx";') + 4,
+    );
     var downloader = const FileSaver();
-    downloader.download(filename, response.data, 'xlsx',
-        onSuccess: (String path) {
-      flash.showBanner(
+    downloader.download(
+      filename,
+      response.data,
+      'xlsx',
+      onSuccess: (String path) {
+        flash.showBanner(
           messageType: ToastificationType.success,
           title: 'Sukses download',
-          description: 'sukses disimpan di $path');
-    });
+          description: 'sukses disimpan di $path',
+        );
+      },
+    );
   }
 
   @override
@@ -122,19 +137,18 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TableFilterForm(
-              showCanopy: true,
-              onSubmit: (filter) {
-                _filters = filter;
-                _displayReport();
-              },
-              enums: const {
-                'status': PurchaseReportStatus.values,
-              },
-              onDownload: (filter) {
-                _filters = filter;
-                _downloadReport();
-              },
-              columns: columns),
+            showCanopy: true,
+            onSubmit: (filter) {
+              _filters = filter;
+              _displayReport();
+            },
+            enums: const {'status': PurchaseReportStatus.values},
+            onDownload: (filter) {
+              _filters = filter;
+              _downloadReport();
+            },
+            columns: columns,
+          ),
           const SizedBox(height: 10),
           Visibility(visible: _isDisplayTable, child: const Divider()),
           SizedBox(

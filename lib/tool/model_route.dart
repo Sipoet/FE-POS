@@ -62,18 +62,28 @@ class ModelRoute {
     'Discount': (model) =>
         DiscountFormPage(key: ObjectKey(model), discount: model as Discount),
     'EmployeeAttendance': (model) => EmployeeAttendanceFormPage(
-        key: ObjectKey(model), employeeAttendance: model as EmployeeAttendance),
+      key: ObjectKey(model),
+      employeeAttendance: model as EmployeeAttendance,
+    ),
     'EmployeeLeave': (model) => EmployeeLeaveFormPage(
-        key: ObjectKey(model), employeeLeave: model as EmployeeLeave),
+      key: ObjectKey(model),
+      employeeLeave: model as EmployeeLeave,
+    ),
     'Holiday': (model) =>
         HolidayFormPage(key: ObjectKey(model), holiday: model as Holiday),
     'User': (model) => UserFormPage(key: ObjectKey(model), user: model as User),
     'PaymentType': (model) => PaymentTypeFormPage(
-        key: ObjectKey(model), paymentType: model as PaymentType),
+      key: ObjectKey(model),
+      paymentType: model as PaymentType,
+    ),
     'PaymentProvider': (model) => PaymentProviderFormPage(
-        key: ObjectKey(model), paymentProvider: model as PaymentProvider),
+      key: ObjectKey(model),
+      paymentProvider: model as PaymentProvider,
+    ),
     'PayrollType': (model) => PayrollTypeFormPage(
-        key: ObjectKey(model), payrollType: model as PayrollType),
+      key: ObjectKey(model),
+      payrollType: model as PayrollType,
+    ),
   };
 
   Type classOf(String className) {
@@ -87,4 +97,39 @@ class ModelRoute {
   Widget detailPageOf(Model model) {
     return _detailPages[model.runtimeType.toString()]!.call(model);
   }
+
+  ModelClass modelClassOf(String className) {
+    return _modelClasses[className]!;
+  }
+
+  static final Map<String, ModelClass> _modelClasses = Map.unmodifiable({
+    'Ipos::Item': ItemClass(),
+    'Ipos::Account': AccountClass(),
+    'PayrollType': PayrollTypeClass(),
+    'Ipos::CustomerGroup': CustomerGroupClass(),
+    'Ipos::Supplier': SupplierClass(),
+    'Ipos::Brand': BrandClass(),
+    'Ipos::ItemType': ItemTypeClass(),
+    'Payroll': PayrollClass(),
+    'Payslip': PayslipClass(),
+    'Employee': EmployeeClass(),
+    'EmployeeLeave': EmployeeLeaveClass(),
+    'EmployeeAttendance': EmployeeAttendanceClass(),
+    'Role': RoleClass(),
+    'Discount': DiscountClass(),
+    'Holiday': HolidayClass(),
+    'User': UserClass(),
+    'PaymentProvider': PaymentProviderClass(),
+    'PaymentType': PaymentTypeClass(),
+    'BookEmployeeAttendance': BookEmployeeAttendanceClass(),
+    'BookPayslipLine': BookPayslipLineClass(),
+    'Ipos::Purchase': PurchaseClass(),
+    'Ipos::PurchaseOrder': PurchaseOrderClass(),
+    'Ipos::PurchaseItem': PurchaseItemClass(),
+    'Ipos::PurchaseReturn': PurchaseReturnClass(),
+    'Ipos::Sale': SaleClass(),
+    'Ipos::SaleItem': SaleItemClass(),
+    'Ipos::Transfer': TransferClass(),
+    'Ipos::TransferItem': TransferItemClass(),
+  });
 }

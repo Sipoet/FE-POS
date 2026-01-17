@@ -23,9 +23,18 @@ class GeneratePayslipFormPage extends StatefulWidget {
 class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
     with AutomaticKeepAliveClientMixin, LoadingPopup, DefaultResponse {
   DateTime startDate = DateTime.now().copyWith(
-      month: DateTime.now().month - 1, day: 26, hour: 0, minute: 0, second: 0);
-  DateTime endDate =
-      DateTime.now().copyWith(day: 25, hour: 23, minute: 59, second: 59);
+    month: DateTime.now().month - 1,
+    day: 26,
+    hour: 0,
+    minute: 0,
+    second: 0,
+  );
+  DateTime endDate = DateTime.now().copyWith(
+    day: 25,
+    hour: 23,
+    minute: 59,
+    second: 59,
+  );
   final formKey = GlobalKey<FormState>();
   List<String> _employeeIds = [];
   late final Server _server;
@@ -46,7 +55,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
         humanizeName: 'Nama Karyawan',
         clientWidth: 180,
         frozen: TrinaColumnFrozen.start,
-        type: TableColumnType.text,
+        type: TextTableColumnType(),
         getValue: (model) {
           if (model is Payslip) {
             return model.employee.name.toTitleCase();
@@ -57,61 +66,73 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
         },
       ),
       TableColumn(
-          name: 'start_date',
-          humanizeName: 'Periode Mulai',
-          clientWidth: 150,
-          type: TableColumnType.date),
+        name: 'start_date',
+        humanizeName: 'Periode Mulai',
+        clientWidth: 150,
+        type: DateTableColumnType(),
+      ),
       TableColumn(
-          name: 'end_date',
-          humanizeName: 'Periode Akhir',
-          clientWidth: 150,
-          type: TableColumnType.date),
+        name: 'end_date',
+        humanizeName: 'Periode Akhir',
+        clientWidth: 150,
+        type: DateTableColumnType(),
+      ),
       TableColumn(
-          name: 'gross_salary',
-          humanizeName: 'Gaji Kotor',
-          clientWidth: 180,
-          type: TableColumnType.money),
+        name: 'gross_salary',
+        humanizeName: 'Gaji Kotor',
+        clientWidth: 180,
+        type: MoneyTableColumnType(),
+      ),
       TableColumn(
-          name: 'nett_salary',
-          humanizeName: 'Gaji Bersih',
-          clientWidth: 180,
-          type: TableColumnType.money),
+        name: 'nett_salary',
+        humanizeName: 'Gaji Bersih',
+        clientWidth: 180,
+        type: MoneyTableColumnType(),
+      ),
       TableColumn(
-          name: 'work_days',
-          humanizeName: 'Hari Kerja',
-          clientWidth: 180,
-          type: TableColumnType.number),
+        name: 'work_days',
+        humanizeName: 'Hari Kerja',
+        clientWidth: 180,
+        type: NumberTableColumnType(),
+      ),
       TableColumn(
-          name: 'sick_leave',
-          humanizeName: 'Jumlah Sakit(Hari)',
-          clientWidth: 180,
-          type: TableColumnType.number),
+        name: 'sick_leave',
+        humanizeName: 'Jumlah Sakit(Hari)',
+        clientWidth: 180,
+        type: NumberTableColumnType(),
+      ),
       TableColumn(
-          name: 'known_absence',
-          humanizeName: 'Jumlah Izin(Hari)',
-          clientWidth: 180,
-          type: TableColumnType.number),
+        name: 'known_absence',
+        humanizeName: 'Jumlah Izin(Hari)',
+        clientWidth: 180,
+        type: NumberTableColumnType(),
+      ),
       TableColumn(
-          name: 'unknown_absence',
-          humanizeName: 'Jumlah Alpha/Tanpa kabar(Hari)',
-          clientWidth: 180,
-          type: TableColumnType.number),
+        name: 'unknown_absence',
+        humanizeName: 'Jumlah Alpha/Tanpa kabar(Hari)',
+        clientWidth: 180,
+        type: NumberTableColumnType(),
+      ),
       TableColumn(
-          name: 'detail',
-          humanizeName: 'Detail',
-          frozen: TrinaColumnFrozen.end,
-          clientWidth: 180,
-          renderBody: (rendererContext) => Row(
-                children: [
-                  IconButton(
-                      onPressed: () => tabManager.setSafeAreaContent(
-                          'Edit Slip Gaji ${rendererContext.row.modelOf<Payslip>().id}',
-                          PayslipFormPage(
-                              payslip: rendererContext.row.modelOf<Payslip>())),
-                      icon: Icon(Icons.edit))
-                ],
+        name: 'detail',
+        humanizeName: 'Detail',
+        frozen: TrinaColumnFrozen.end,
+        clientWidth: 180,
+        renderBody: (rendererContext) => Row(
+          children: [
+            IconButton(
+              onPressed: () => tabManager.setSafeAreaContent(
+                'Edit Slip Gaji ${rendererContext.row.modelOf<Payslip>().id}',
+                PayslipFormPage(
+                  payslip: rendererContext.row.modelOf<Payslip>(),
+                ),
               ),
-          type: TableColumnType.text),
+              icon: Icon(Icons.edit),
+            ),
+          ],
+        ),
+        type: TextTableColumnType(),
+      ),
     ];
 
     flash = Flash();
@@ -126,117 +147,126 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Center(
-            child: Form(
-              key: formKey,
-              child: Column(
-                spacing: 10,
-                children: [
-                  Container(
-                      constraints:
-                          BoxConstraints.loose(const Size.fromWidth(600)),
-                      child: Column(
-                        spacing: 10,
-                        children: [
-                          DateRangeFormField(
-                            focusNode: _focusNode,
-                            rangeType: DateRangeType(),
-                            key: const ValueKey('generate_payslip-periode'),
-                            label: const Text(
-                              'Periode',
-                              style: labelStyle,
-                            ),
-                            onChanged: (range) {
-                              startDate = range!.start;
-                              endDate = range.end;
+        padding: const EdgeInsets.all(10.0),
+        child: Center(
+          child: Form(
+            key: formKey,
+            child: Column(
+              spacing: 10,
+              children: [
+                Container(
+                  constraints: BoxConstraints.loose(const Size.fromWidth(600)),
+                  child: Column(
+                    spacing: 10,
+                    children: [
+                      DateRangeFormField(
+                        focusNode: _focusNode,
+                        rangeType: DateRangeType(),
+                        key: const ValueKey('generate_payslip-periode'),
+                        label: const Text('Periode', style: labelStyle),
+                        onChanged: (range) {
+                          startDate = range!.start;
+                          endDate = range.end;
+                        },
+                        initialDateRange: DateTimeRange(
+                          start: startDate,
+                          end: endDate,
+                        ),
+                      ),
+                      AsyncDropdownMultiple<Employee>(
+                        key: const ValueKey('generate_payslip-karyawan'),
+                        attributeKey: 'name',
+                        label: const Text('Nama Karyawan', style: labelStyle),
+                        onChanged: (values) {
+                          _employeeIds = values
+                              .map<String>((e) => e.id.toString())
+                              .toList();
+                        },
+                        textOnSearch: (employee) =>
+                            "${employee.code} - ${employee.name}",
+                        textOnSelected: (employee) => employee.code,
+                        modelClass: EmployeeClass(),
+                        request:
+                            ({
+                              int page = 1,
+                              int limit = 20,
+                              String searchText = '',
+                              required CancelToken cancelToken,
+                            }) {
+                              return _server.get(
+                                'employees',
+                                queryParam: {
+                                  'field[employee]': 'code,name',
+                                  'search_text': searchText,
+                                  'page[limit]': '20',
+                                },
+                                cancelToken: cancelToken,
+                              );
                             },
-                            initialDateRange:
-                                DateTimeRange(start: startDate, end: endDate),
-                          ),
-                          AsyncDropdownMultiple<Employee>(
-                            key: const ValueKey('generate_payslip-karyawan'),
-                            attributeKey: 'name',
-                            label: const Text(
-                              'Nama Karyawan',
-                              style: labelStyle,
-                            ),
-                            onChanged: (values) {
-                              _employeeIds = values
-                                  .map<String>((e) => e.id.toString())
-                                  .toList();
-                            },
-                            textOnSearch: (employee) =>
-                                "${employee.code} - ${employee.name}",
-                            textOnSelected: (employee) => employee.code,
-                            modelClass: EmployeeClass(),
-                            request: (
-                                {int page = 1,
-                                int limit = 20,
-                                String searchText = '',
-                                required CancelToken cancelToken}) {
-                              return _server.get('employees',
-                                  queryParam: {
-                                    'field[employee]': 'code,name',
-                                    'search_text': searchText,
-                                    'page[limit]': '20',
-                                  },
-                                  cancelToken: cancelToken);
-                            },
-                          ),
-                          ElevatedButton(
-                              onPressed: () {
-                                if (formKey.currentState!.validate()) {
-                                  _generatePayslip();
-                                }
-                              },
-                              child: const Text('generate')),
-                        ],
-                      )),
-                  const Text(
-                    'Hasil :',
-                    style: labelStyle,
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (formKey.currentState!.validate()) {
+                            _generatePayslip();
+                          }
+                        },
+                        child: const Text('generate'),
+                      ),
+                    ],
                   ),
-                  Container(
-                    constraints: BoxConstraints(maxHeight: bodyScreenHeight),
-                    child: SyncDataTable<Payslip>(
-                      showFilter: true,
-                      onLoaded: (stateManager) => _source = stateManager,
-                      columns: _columns,
-                    ),
+                ),
+                const Text('Hasil :', style: labelStyle),
+                Container(
+                  constraints: BoxConstraints(maxHeight: bodyScreenHeight),
+                  child: SyncDataTable<Payslip>(
+                    showFilter: true,
+                    onLoaded: (stateManager) => _source = stateManager,
+                    columns: _columns,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          )),
+          ),
+        ),
+      ),
     );
   }
 
   void _generatePayslip() async {
     _source.setShowLoading(true);
-    _server.post('payslips/generate_payslip', body: {
-      'employee_ids': _employeeIds,
-      'start_date': startDate.toIso8601String(),
-      'end_date': endDate.toIso8601String(),
-    }).then((response) {
-      if (response.statusCode == 201) {
-        final responseBody = response.data['data'] as List;
-        setState(() {
-          final payslips = responseBody
-              .map<Payslip>((row) => PayslipClass()
-                  .fromJson(row, included: response.data['included'] ?? []))
-              .toList();
+    _server
+        .post(
+          'payslips/generate_payslip',
+          body: {
+            'employee_ids': _employeeIds,
+            'start_date': startDate.toIso8601String(),
+            'end_date': endDate.toIso8601String(),
+          },
+        )
+        .then((response) {
+          if (response.statusCode == 201) {
+            final responseBody = response.data['data'] as List;
+            setState(() {
+              final payslips = responseBody
+                  .map<Payslip>(
+                    (row) => PayslipClass().fromJson(
+                      row,
+                      included: response.data['included'] ?? [],
+                    ),
+                  )
+                  .toList();
 
-          _source.setModels(payslips);
-        });
-      } else {
-        flash.showBanner(
-            messageType: ToastificationType.error,
-            title: 'gagal buat slip gaji',
-            description: response.data['message'] ?? '');
-      }
-      response.data['data'];
-    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => _source.setShowLoading(false));
+              _source.setModels(payslips);
+            });
+          } else {
+            flash.showBanner(
+              messageType: ToastificationType.error,
+              title: 'gagal buat slip gaji',
+              description: response.data['message'] ?? '',
+            );
+          }
+          response.data['data'];
+        }, onError: (error) => defaultErrorResponse(error: error))
+        .whenComplete(() => _source.setShowLoading(false));
   }
 }

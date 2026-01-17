@@ -36,15 +36,20 @@ class _SupplierFormPageState extends State<SupplierFormPage>
 
   void fetchSupplier() {
     showLoadingPopup();
-    _server.get('suppliers/${supplier.id}').then((response) {
-      if (mounted && response.statusCode == 200) {
-        supplier.setFromJson(response.data['data'],
-            included: response.data['included'] ?? []);
-        supplier.toMap().forEach((key, value) {
-          _controller[key]!.text = value.toString();
-        });
-      }
-    }).whenComplete(() => hideLoadingPopup());
+    _server
+        .get('ipos/suppliers/${supplier.id}')
+        .then((response) {
+          if (mounted && response.statusCode == 200) {
+            supplier.setFromJson(
+              response.data['data'],
+              included: response.data['included'] ?? [],
+            );
+            supplier.toMap().forEach((key, value) {
+              _controller[key]!.text = value.toString();
+            });
+          }
+        })
+        .whenComplete(() => hideLoadingPopup());
   }
 
   @override
@@ -56,71 +61,67 @@ class _SupplierFormPageState extends State<SupplierFormPage>
             controller: _controller['code'],
             readOnly: true,
             decoration: InputDecoration(
-                label: Text(_setting.columnName('supplier', 'code')),
-                border: OutlineInputBorder()),
+              label: Text(_setting.columnName('supplier', 'code')),
+              border: OutlineInputBorder(),
+            ),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           TextFormField(
             controller: _controller['name'],
             readOnly: true,
             decoration: InputDecoration(
-                label: Text(_setting.columnName('supplier', 'name')),
-                border: OutlineInputBorder()),
+              label: Text(_setting.columnName('supplier', 'name')),
+              border: OutlineInputBorder(),
+            ),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           TextFormField(
             controller: _controller['address'],
             readOnly: true,
             minLines: 3,
             maxLines: 5,
             decoration: InputDecoration(
-                label: Text(_setting.columnName('supplier', 'address')),
-                border: OutlineInputBorder()),
+              label: Text(_setting.columnName('supplier', 'address')),
+              border: OutlineInputBorder(),
+            ),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           TextFormField(
             controller: _controller['contact'],
             readOnly: true,
             decoration: InputDecoration(
-                label: Text(_setting.columnName('supplier', 'contact')),
-                border: OutlineInputBorder()),
+              label: Text(_setting.columnName('supplier', 'contact')),
+              border: OutlineInputBorder(),
+            ),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           TextFormField(
             controller: _controller['bank'],
             readOnly: true,
             decoration: InputDecoration(
-                label: Text(_setting.columnName('supplier', 'bank')),
-                border: OutlineInputBorder()),
+              label: Text(_setting.columnName('supplier', 'bank')),
+              border: OutlineInputBorder(),
+            ),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           TextFormField(
             controller: _controller['account'],
             readOnly: true,
             decoration: InputDecoration(
-                label: Text(_setting.columnName('supplier', 'account')),
-                border: OutlineInputBorder()),
+              label: Text(_setting.columnName('supplier', 'account')),
+              border: OutlineInputBorder(),
+            ),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           TextFormField(
             controller: _controller['account_register_name'],
             readOnly: true,
             decoration: InputDecoration(
-                label: Text(
-                    _setting.columnName('supplier', 'account_register_name')),
-                border: OutlineInputBorder()),
+              label: Text(
+                _setting.columnName('supplier', 'account_register_name'),
+              ),
+              border: OutlineInputBorder(),
+            ),
           ),
         ],
       ),

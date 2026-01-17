@@ -317,7 +317,6 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                         setting.canShow('employee', 'role'),
                     child: Flexible(
                       child: AsyncDropdown<Role>(
-                        path: '/roles',
                         attributeKey: 'name',
                         label: const Text('Jabatan :', style: labelStyle),
                         onChanged: (role) {
@@ -370,7 +369,6 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                         setting.canShow('employee', 'payroll'),
                     child: AsyncDropdown<Payroll>(
                       label: const Text('Payroll', style: labelStyle),
-                      path: 'payrolls',
                       textOnSearch: (payroll) => payroll.name,
                       attributeKey: 'name',
                       onChanged: (payroll) {

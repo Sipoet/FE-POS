@@ -1,6 +1,10 @@
 library;
 
 export 'package:fe_pos/model/model.dart';
+export 'package:fe_pos/model/account.dart';
+export 'package:fe_pos/model/payroll_type.dart';
+export 'package:fe_pos/model/customer_group.dart';
+export 'package:fe_pos/model/hash_model.dart';
 export 'package:fe_pos/model/supplier.dart';
 export 'package:fe_pos/model/item.dart';
 export 'package:fe_pos/model/brand.dart';
@@ -18,3 +22,11 @@ export 'package:fe_pos/model/payment_provider.dart';
 export 'package:fe_pos/model/payment_type.dart';
 export 'package:fe_pos/model/book_employee_attendance.dart';
 export 'package:fe_pos/model/book_payslip_line.dart';
+export 'package:fe_pos/model/purchase.dart';
+export 'package:fe_pos/model/purchase_order.dart';
+export 'package:fe_pos/model/purchase_item.dart';
+export 'package:fe_pos/model/purchase_return.dart';
+export 'package:fe_pos/model/sale.dart';
+export 'package:fe_pos/model/sale_item.dart';
+export 'package:fe_pos/model/transfer.dart';
+export 'package:fe_pos/model/transfer_item.dart';

@@ -31,33 +31,18 @@ class _SystemSettingPageState extends State<SystemSettingPage>
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
-    final actionColumn = TableColumn(
-      clientWidth: 100,
-      name: 'action',
-      type: TableColumnType.action,
-      humanizeName: 'Action',
-      frozen: TrinaColumnFrozen.end,
-      renderBody: (rendererContext) {
-        return Row(
-          children: [
-            IconButton(
-              onPressed: () => _openEditForm(rendererContext.rowIdx),
-              icon: Icon(Icons.edit),
-            )
-          ],
-        );
-      },
-    );
-    columns = setting.tableColumn('setting')..add(actionColumn);
+
+    columns = setting.tableColumn('setting');
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
 
-  void _openEditForm(int index) {
-    final record = records[index];
+  void _openEditForm(SystemSetting record) {
     final tabManager = context.read<TabManager>();
-    tabManager.addTab('Edit System Setting ${record.key}',
-        SystemSettingFormPage(systemSetting: record));
+    tabManager.addTab(
+      'Edit System Setting ${record.key}',
+      SystemSettingFormPage(systemSetting: record),
+    );
   }
 
   @override
@@ -71,14 +56,20 @@ class _SystemSettingPageState extends State<SystemSettingPage>
   }
 
   Future<DataTableResponse<SystemSetting>> fetchSystemSettings(
-      QueryRequest request) {
-    return SystemSettingClass().finds(server, request).then(
-        (value) => DataTableResponse<SystemSetting>(
+    QueryRequest request,
+  ) {
+    return SystemSettingClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<SystemSetting>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void searchChanged(value) {
@@ -120,8 +111,9 @@ class _SystemSettingPageState extends State<SystemSettingPage>
                   SizedBox(
                     width: 150,
                     child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
+                      decoration: const InputDecoration(
+                        hintText: 'Search Text',
+                      ),
                       onChanged: searchChanged,
                       onSubmitted: searchChanged,
                     ),
@@ -132,6 +124,14 @@ class _SystemSettingPageState extends State<SystemSettingPage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<SystemSetting>(
+                renderAction: (model) => Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => _openEditForm(model),
+                      icon: Icon(Icons.edit),
+                    ),
+                  ],
+                ),
                 onLoaded: (stateManager) => _source = stateManager,
                 fixedLeftColumns: 0,
                 fetchData: fetchSystemSettings,

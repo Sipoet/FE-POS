@@ -58,7 +58,7 @@ class Supplier extends Model {
   }
 
   @override
-  String get modelValue => id.toString();
+  String get valueDescription => name;
 }
 
 class SupplierClass extends ModelClass<Supplier> {

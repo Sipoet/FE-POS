@@ -216,7 +216,6 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
               }
               return null;
             },
-            path: 'payment_types',
           ),
         ),
       ),

@@ -37,12 +37,15 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   TrinaGridStateManager? _source;
 
   String fieldKey = 'sales_total';
-  static const TextStyle _filterLabelStyle =
-      TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
+  static const TextStyle _filterLabelStyle = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.bold,
+  );
 
   DateTimeRange _dateRange = DateTimeRange(
-      start: DateTime.now().beginningOfMonth(),
-      end: DateTime.now().endOfMonth());
+    start: DateTime.now().beginningOfMonth(),
+    end: DateTime.now().endOfMonth(),
+  );
   final salesReportController = SalesChartController();
   final yearNow = DateTime.now().year;
   List<ItemType> _itemTypes = [];
@@ -102,29 +105,32 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
     setState(() {
       salesReportController.isLoading = true;
     });
-    final response = await server
-        .get('item_sales_performance_reports/group_by', queryParam: {
-      'start_date': _dateRange.start.toIso8601String(),
-      'end_date': _dateRange.end.toIso8601String(),
-      'item_type_names[]': _itemTypes.map<String>((e) => e.name).toList(),
-      'supplier_codes[]': _suppliers.map<String>((e) => e.code).toList(),
-      'item_codes[]': _items.map<String>((e) => e.code).toList(),
-      'brand_names[]': _brands.map<String>((e) => e.name).toList(),
-      'group_type': _groupType,
-      'group_period': _groupPeriod,
-      'value_type': fieldKey,
-      'separate_purchase_year': _separatePurchaseYear ? '1' : '0',
-      'last_purchase_years[]': _lastPurchaseYears,
-    });
+    final response = await server.get(
+      'item_sales_performance_reports/group_by',
+      queryParam: {
+        'start_date': _dateRange.start.toIso8601String(),
+        'end_date': _dateRange.end.toIso8601String(),
+        'item_type_names[]': _itemTypes.map<String>((e) => e.name).toList(),
+        'supplier_codes[]': _suppliers.map<String>((e) => e.code).toList(),
+        'item_codes[]': _items.map<String>((e) => e.code).toList(),
+        'brand_names[]': _brands.map<String>((e) => e.name).toList(),
+        'group_type': _groupType,
+        'group_period': _groupPeriod,
+        'value_type': fieldKey,
+        'separate_purchase_year': _separatePurchaseYear ? '1' : '0',
+        'last_purchase_years[]': _lastPurchaseYears,
+      },
+    );
     if (response.statusCode != 200) {
       setState(() {
         salesReportController.isLoading = false;
       });
       if (response.statusCode == 409) {
         flash.showBanner(
-            messageType: ToastificationType.error,
-            title: response.data['message'],
-            description: response.data['errors'].join(','));
+          messageType: ToastificationType.error,
+          title: response.data['message'],
+          description: response.data['errors'].join(','),
+        );
       }
       return;
     }
@@ -133,8 +139,9 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
     final metadata = data['metadata'];
     final startDate = DateTime.parse(metadata['start_date']);
     final endDate = DateTime.parse(metadata['end_date']);
-    final identifierList =
-        metadata['identifier_list'].map<String>((e) => e.toString()).toList();
+    final identifierList = metadata['identifier_list']
+        .map<String>((e) => e.toString())
+        .toList();
     final filteredDetails = getFilteredTitle(data);
     Map<LineTitle, List<FlSpot>> lines = {};
     for (var detail in data['data']) {
@@ -153,49 +160,56 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
     setState(() {
       _columns = [
         TableColumn<HashModel>(
-            clientWidth: 180,
-            name: 'group_key',
-            canFilter: true,
-            renderBody: (model) => Text(model.cell.value.toString()),
-            humanizeName: groupKeyLocales[_groupType] ?? ''),
+          clientWidth: 180,
+          name: 'group_key',
+          canFilter: true,
+          renderBody: (model) => Text(model.cell.value.toString()),
+          humanizeName: groupKeyLocales[_groupType] ?? '',
+        ),
         if (_groupType != 'period' || _groupPeriod != 'dow')
           TableColumn(
-              clientWidth: 180,
-              name: 'description',
-              canFilter: true,
-              renderBody: (model) =>
-                  Text(model.row.cells['description']?.value.toString() ?? ''),
-              humanizeName: 'Deskripsi'),
+            clientWidth: 180,
+            name: 'description',
+            canFilter: true,
+            renderBody: (model) =>
+                Text(model.row.cells['description']?.value.toString() ?? ''),
+            humanizeName: 'Deskripsi',
+          ),
         if (_separatePurchaseYear)
           TableColumn<HashModel>(
-              clientWidth: 180,
-              name: 'last_purchase_year',
-              type: TableColumnType.text,
-              humanizeName: 'Tahun Beli Terakhir'),
+            clientWidth: 180,
+            name: 'last_purchase_year',
+            type: TextTableColumnType(),
+            humanizeName: 'Tahun Beli Terakhir',
+          ),
         if (fieldKey == 'sales_through_rate')
           TableColumn<HashModel>(
-              clientWidth: 180,
-              name: 'start_stock',
-              type: TableColumnType.number,
-              humanizeName: 'Stok Awal'),
+            clientWidth: 180,
+            name: 'start_stock',
+            type: NumberTableColumnType(),
+            humanizeName: 'Stok Awal',
+          ),
         if (fieldKey == 'sales_through_rate')
           TableColumn<HashModel>(
-              clientWidth: 200,
-              name: 'increase_period_stock',
-              type: TableColumnType.number,
-              humanizeName: 'Tambahan Stok(Periode)'),
+            clientWidth: 200,
+            name: 'increase_period_stock',
+            type: NumberTableColumnType(),
+            humanizeName: 'Tambahan Stok(Periode)',
+          ),
         if (fieldKey == 'sales_through_rate')
           TableColumn<HashModel>(
-              clientWidth: 180,
-              name: 'sales_quantity',
-              type: TableColumnType.number,
-              humanizeName: 'Jumlah Penjualan'),
+            clientWidth: 180,
+            name: 'sales_quantity',
+            type: NumberTableColumnType(),
+            humanizeName: 'Jumlah Penjualan',
+          ),
         TableColumn(
-            clientWidth: 220,
-            name: 'total',
-            type: basedValueType(),
-            canSort: true,
-            humanizeName: fieldKeyLocales[fieldKey] ?? ''),
+          clientWidth: 220,
+          name: 'total',
+          type: basedValueType(),
+          canSort: true,
+          humanizeName: fieldKeyLocales[fieldKey] ?? '',
+        ),
       ];
       final groupModels = convertResponseToHashModels(data);
 
@@ -206,11 +220,12 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
       }
 
       salesReportController.setChartData(
-          lines: lines,
-          filteredDetails: filteredDetails,
-          identifierList: identifierList,
-          startDate: startDate,
-          endDate: endDate);
+        lines: lines,
+        filteredDetails: filteredDetails,
+        identifierList: identifierList,
+        startDate: startDate,
+        endDate: endDate,
+      );
       salesReportController.isLoading = false;
     });
   }
@@ -222,15 +237,22 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
     if (_groupType == 'period') {
       for (var detail in data['data']) {
         for (var spot in detail['spots']) {
-          models.add(HashModel(data: {
-            'group_key': datePkFormat(
-                spot[0].toString(), identifierList, startDate,
-                shortText: false),
-            'value': spot[0],
-            'total': spot[1],
-            'description': detail['description'] ?? '',
-            'last_purchase_year': detail['last_purchase_year'].toString(),
-          }));
+          models.add(
+            HashModel(
+              data: {
+                'group_key': datePkFormat(
+                  spot[0].toString(),
+                  identifierList,
+                  startDate,
+                  shortText: false,
+                ),
+                'value': spot[0],
+                'total': spot[1],
+                'description': detail['description'] ?? '',
+                'last_purchase_year': detail['last_purchase_year'].toString(),
+              },
+            ),
+          );
         }
       }
       models.sort((a, b) => b.data['total'].compareTo(a.data['total']));
@@ -244,15 +266,19 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
         if (fieldKey == 'sales_through_rate' && spots.isNotEmpty) {
           total = total / spots.length;
         }
-        models.add(HashModel(data: {
-          'group_key': detail['name'],
-          'total': total,
-          'sales_quantity': detail['sales_quantity'],
-          'start_stock': detail['start_stock'],
-          'increase_period_stock': detail['increase_period_stock'],
-          'description': detail['description'],
-          'last_purchase_year': detail['last_purchase_year'].toString(),
-        }));
+        models.add(
+          HashModel(
+            data: {
+              'group_key': detail['name'],
+              'total': total,
+              'sales_quantity': detail['sales_quantity'],
+              'start_stock': detail['start_stock'],
+              'increase_period_stock': detail['increase_period_stock'],
+              'description': detail['description'],
+              'last_purchase_year': detail['last_purchase_year'].toString(),
+            },
+          ),
+        );
       }
       models.sort((a, b) => b.data['total'].compareTo(a.data['total']));
       return models;
@@ -267,8 +293,9 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
       filteredDetails.add("Merek ${metadata['brand_names'].join(', ')}");
     }
     if (metadata['item_type_names']?.isNotEmpty ?? false) {
-      filteredDetails
-          .add("Jenis/ Departmen: ${metadata['item_type_names'].join(', ')}");
+      filteredDetails.add(
+        "Jenis/ Departmen: ${metadata['item_type_names'].join(', ')}",
+      );
     }
     if (metadata['supplier_codes']?.isNotEmpty ?? false) {
       filteredDetails.add("Supplier: ${metadata['supplier_codes'].join(', ')}");
@@ -278,7 +305,8 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
     }
     if (metadata['last_purchase_years']?.isNotEmpty ?? false) {
       filteredDetails.add(
-          "Tahun Beli Terakhir: ${metadata['last_purchase_years'].join(', ')}");
+        "Tahun Beli Terakhir: ${metadata['last_purchase_years'].join(', ')}",
+      );
     }
     return filteredDetails;
   }
@@ -296,28 +324,29 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   }
 
   String xFormatBasedPeriod(
-      double valueX, List identifierList, DateTime startDate) {
+    double valueX,
+    List identifierList,
+    DateTime startDate,
+  ) {
     final datePk = identifierList[valueX.round()];
     return datePkFormat(datePk, identifierList, startDate);
   }
 
-  String datePkFormat(String datePk, List identifierList, DateTime startDate,
-      {bool shortText = true}) {
+  String datePkFormat(
+    String datePk,
+    List identifierList,
+    DateTime startDate, {
+    bool shortText = true,
+  }) {
     DateTime date = DateTime.tryParse(datePk) ?? DateTime.now();
     switch (_generatedGroupPeriod) {
       case 'hourly':
         return TimeOfDay(hour: int.parse(datePk), minute: 0).format24Hour();
       case 'dow':
         if (shortText) {
-          return [
-            'Min',
-            'Sen',
-            'Sel',
-            'Rab',
-            'Kam',
-            'Jum',
-            'Sab',
-          ][int.parse(datePk)];
+          return ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'][int.parse(
+            datePk,
+          )];
         } else {
           return [
             '(7)Minggu',
@@ -362,11 +391,11 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   TableColumnType basedValueType() {
     switch (fieldKey) {
       case 'sales_quantity':
-        return TableColumnType.number;
+        return NumberTableColumnType();
       case 'sales_through_rate':
-        return TableColumnType.percentage;
+        return PercentageTableColumnType();
       default:
-        return TableColumnType.money;
+        return MoneyTableColumnType();
     }
   }
 
@@ -382,73 +411,87 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const Divider(),
-          const SizedBox(
-            height: 15,
-          ),
-          Wrap(spacing: 10, runSpacing: 10, children: [
-            SizedBox(
-              width: 300,
-              child: DateRangeFormField(
-                label: Text('Rentang Periode'),
-                rangeType: DateRangeType(),
-                initialDateRange: _dateRange,
-                onChanged: (range) => _dateRange = range ?? _dateRange,
-                allowClear: false,
+          const SizedBox(height: 15),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              SizedBox(
+                width: 300,
+                child: DateRangeFormField(
+                  label: Text('Rentang Periode'),
+                  rangeType: DateRangeType(),
+                  initialDateRange: _dateRange,
+                  onChanged: (range) => _dateRange = range ?? _dateRange,
+                  allowClear: false,
+                ),
               ),
-            ),
-            DropdownMenu(
-              dropdownMenuEntries: [
-                DropdownMenuEntry(value: 'hourly', label: 'Jam'),
-                DropdownMenuEntry(value: 'daily', label: 'Harian'),
-                DropdownMenuEntry(value: 'weekly', label: 'Minggu'),
-                DropdownMenuEntry(value: 'dow', label: 'Hari dalam minggu'),
-                DropdownMenuEntry(value: 'monthly', label: 'Bulan'),
-                DropdownMenuEntry(value: 'yearly', label: 'Tahun'),
-              ],
-              label: const Text('Group Periode Berdasarkan',
-                  style: _filterLabelStyle),
-              onSelected: (value) {
-                setState(() {
-                  _groupPeriod = value ?? _groupPeriod;
-                });
-              },
-              initialSelection: _groupPeriod,
-              width: 300,
-              inputDecorationTheme: InputDecorationTheme(
-                  isDense: true, border: OutlineInputBorder()),
-            ),
-            DropdownMenu(
-              dropdownMenuEntries: groupKeyLocales.entries
-                  .map<DropdownMenuEntry>(
-                    (entry) =>
-                        DropdownMenuEntry(value: entry.key, label: entry.value),
-                  )
-                  .toList(),
-              label:
-                  const Text('Dipisah Berdasarkan', style: _filterLabelStyle),
-              onSelected: (value) {
-                setState(() {
-                  _groupType = value ?? _groupType;
-                });
-              },
-              initialSelection: _groupType,
-              width: 300,
-              inputDecorationTheme: InputDecorationTheme(
-                  isDense: true, border: OutlineInputBorder()),
-            ),
-            SizedBox(
+              DropdownMenu(
+                dropdownMenuEntries: [
+                  DropdownMenuEntry(value: 'hourly', label: 'Jam'),
+                  DropdownMenuEntry(value: 'daily', label: 'Harian'),
+                  DropdownMenuEntry(value: 'weekly', label: 'Minggu'),
+                  DropdownMenuEntry(value: 'dow', label: 'Hari dalam minggu'),
+                  DropdownMenuEntry(value: 'monthly', label: 'Bulan'),
+                  DropdownMenuEntry(value: 'yearly', label: 'Tahun'),
+                ],
+                label: const Text(
+                  'Group Periode Berdasarkan',
+                  style: _filterLabelStyle,
+                ),
+                onSelected: (value) {
+                  setState(() {
+                    _groupPeriod = value ?? _groupPeriod;
+                  });
+                },
+                initialSelection: _groupPeriod,
+                width: 300,
+                inputDecorationTheme: InputDecorationTheme(
+                  isDense: true,
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              DropdownMenu(
+                dropdownMenuEntries: groupKeyLocales.entries
+                    .map<DropdownMenuEntry>(
+                      (entry) => DropdownMenuEntry(
+                        value: entry.key,
+                        label: entry.value,
+                      ),
+                    )
+                    .toList(),
+                label: const Text(
+                  'Dipisah Berdasarkan',
+                  style: _filterLabelStyle,
+                ),
+                onSelected: (value) {
+                  setState(() {
+                    _groupType = value ?? _groupType;
+                  });
+                },
+                initialSelection: _groupType,
+                width: 300,
+                inputDecorationTheme: InputDecorationTheme(
+                  isDense: true,
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(
                 width: 300,
                 child: AsyncDropdownMultiple<ItemType>(
-                  label: const Text('Jenis/Departemen :',
-                      style: _filterLabelStyle),
+                  label: const Text(
+                    'Jenis/Departemen :',
+                    style: _filterLabelStyle,
+                  ),
                   key: const ValueKey('itemTypeSelect'),
                   textOnSearch: (ItemType itemType) => itemType.name,
                   modelClass: ItemTypeClass(),
                   attributeKey: 'jenis',
-                  path: '/item_types',
+
                   onChanged: (value) => _itemTypes = value,
-                )),
-            SizedBox(
+                ),
+              ),
+              SizedBox(
                 width: 300,
                 child: AsyncDropdownMultiple<Supplier>(
                   label: const Text('Supplier :', style: _filterLabelStyle),
@@ -458,10 +501,11 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
                   textOnSelected: (supplier) => supplier.code,
                   modelClass: SupplierClass(),
                   attributeKey: 'kode',
-                  path: '/suppliers',
+
                   onChanged: (value) => _suppliers = value,
-                )),
-            SizedBox(
+                ),
+              ),
+              SizedBox(
                 width: 300,
                 child: AsyncDropdownMultiple<Brand>(
                   label: const Text('Merek :', style: _filterLabelStyle),
@@ -470,10 +514,11 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
                   textOnSelected: (brand) => brand.name,
                   modelClass: BrandClass(),
                   attributeKey: 'nama',
-                  path: '/brands',
+
                   onChanged: (value) => _brands = value,
-                )),
-            SizedBox(
+                ),
+              ),
+              SizedBox(
                 width: 300,
                 child: AsyncDropdownMultiple<Item>(
                   label: const Text('Item :', style: _filterLabelStyle),
@@ -482,10 +527,10 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
                   textOnSelected: (item) => item.code,
                   modelClass: ItemClass(),
                   attributeKey: 'kode',
-                  path: '/items',
                   onChanged: (value) => _items = value,
-                )),
-            SizedBox(
+                ),
+              ),
+              SizedBox(
                 width: 300,
                 child: DropdownSearch<String>.multiSelection(
                   selectedItems: _lastPurchaseYears,
@@ -502,75 +547,86 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
                           disableFilter: true,
                         ),
                   decoratorProps: DropDownDecoratorProps(
-                      decoration: InputDecoration(
-                          label: Text(
-                            'Tahun Beli Terakhir',
-                            style: _filterLabelStyle,
-                          ),
-                          border: const OutlineInputBorder())),
+                    decoration: InputDecoration(
+                      label: Text(
+                        'Tahun Beli Terakhir',
+                        style: _filterLabelStyle,
+                      ),
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
                   items: (searchText, loadProps) {
                     return List<String>.generate(
-                            50, (index) => (yearNow - index).toString())
-                        .where((year) =>
-                            year.contains(searchText) || searchText.isEmpty)
+                          50,
+                          (index) => (yearNow - index).toString(),
+                        )
+                        .where(
+                          (year) =>
+                              year.contains(searchText) || searchText.isEmpty,
+                        )
                         .toList();
                   },
-                )),
-            SizedBox(
-              width: 250,
-              child: CheckboxListTile.adaptive(
+                ),
+              ),
+              SizedBox(
+                width: 250,
+                child: CheckboxListTile.adaptive(
                   title: Text('Pisah tahun beli'),
                   value: _separatePurchaseYear,
                   onChanged: (value) => setState(() {
-                        _separatePurchaseYear = value ?? false;
-                      })),
-            ),
-          ]),
-          const SizedBox(
-            height: 10,
-          ),
-          DropdownMenu<String>(
-              label: Text('Berdasarkan'),
-              initialSelection: fieldKey,
-              onSelected: (value) => setState(() {
-                    fieldKey = value ?? 'sales_total';
+                    _separatePurchaseYear = value ?? false;
                   }),
-              dropdownMenuEntries: fieldKeyLocales.entries
-                  .map<DropdownMenuEntry<String>>(
-                    (entry) => DropdownMenuEntry<String>(
-                        value: entry.key, label: entry.value),
-                  )
-                  .toList()),
-          const SizedBox(
-            height: 10,
+                ),
+              ),
+            ],
           ),
+          const SizedBox(height: 10),
+          DropdownMenu<String>(
+            label: Text('Berdasarkan'),
+            initialSelection: fieldKey,
+            onSelected: (value) => setState(() {
+              fieldKey = value ?? 'sales_total';
+            }),
+            dropdownMenuEntries: fieldKeyLocales.entries
+                .map<DropdownMenuEntry<String>>(
+                  (entry) => DropdownMenuEntry<String>(
+                    value: entry.key,
+                    label: entry.value,
+                  ),
+                )
+                .toList(),
+          ),
+          const SizedBox(height: 10),
           ElevatedButton(onPressed: _refreshGraph, child: Text('Generate')),
-          const SizedBox(
-            height: 10,
+          const SizedBox(height: 10),
+          Text(
+            'Grouped Result',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          Text('Grouped Result',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           SizedBox(
-              height: bodyScreenHeight,
-              child: SyncDataTable<HashModel>(
-                columns: _columns,
-                isPaginated: true,
-                onLoaded: (stateManager) => _source = stateManager,
-                showSummary: true,
-              )),
-          const SizedBox(
-            height: 10,
+            height: bodyScreenHeight,
+            child: SyncDataTable<HashModel>(
+              columns: _columns,
+              isPaginated: true,
+              onLoaded: (stateManager) => _source = stateManager,
+              showSummary: true,
+            ),
           ),
+          const SizedBox(height: 10),
           Card(
             child: SalesPerformanceChart(
-                controller: salesReportController,
-                xFormat: (double valueX, SalesChartController control) =>
-                    xFormatBasedPeriod(valueX, control.identifierList,
-                        control.startDate ?? DateTime.now()),
-                yFormat: fieldKey == 'sales_through_rate'
-                    ? percentageFormat
-                    : compactNumberFormat,
-                spotYFormat: _tooltipFormat),
+              controller: salesReportController,
+              xFormat: (double valueX, SalesChartController control) =>
+                  xFormatBasedPeriod(
+                    valueX,
+                    control.identifierList,
+                    control.startDate ?? DateTime.now(),
+                  ),
+              yFormat: fieldKey == 'sales_through_rate'
+                  ? percentageFormat
+                  : compactNumberFormat,
+              spotYFormat: _tooltipFormat,
+            ),
           ),
         ],
       ),

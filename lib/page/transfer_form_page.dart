@@ -53,20 +53,31 @@ class _TransferFormPageState extends State<TransferFormPage>
   void fetchTransfer() {
     showLoadingPopup();
 
-    _server.get('transfers/show', queryParam: {
-      'code': Uri.encodeComponent(transfer.id),
-      'include': 'transfer_items,transfer_items.item'
-    }).then((response) {
-      if (response.statusCode == 200) {
-        setState(() {
-          transfer.setFromJson(response.data['data'],
-              included: response.data['included'] ?? []);
-          _source.setModels(transfer.transferItems);
-        });
-      }
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-    }).whenComplete(() => hideLoadingPopup());
+    _server
+        .get(
+          'ipos/transfers/show',
+          queryParam: {
+            'code': Uri.encodeComponent(transfer.id),
+            'include': 'transfer_items,transfer_items.item',
+          },
+        )
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              setState(() {
+                transfer.setFromJson(
+                  response.data['data'],
+                  included: response.data['included'] ?? [],
+                );
+                _source.setModels(transfer.transferItems);
+              });
+            }
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+          },
+        )
+        .whenComplete(() => hideLoadingPopup());
   }
 
   @override
@@ -101,10 +112,13 @@ class _TransferFormPageState extends State<TransferFormPage>
                       padding: const EdgeInsets.only(bottom: 10.0),
                       child: TextFormField(
                         decoration: InputDecoration(
-                            labelText: setting.columnName(
-                                'ipos::Transfer', 'notransaksi'),
-                            labelStyle: labelStyle,
-                            border: const OutlineInputBorder()),
+                          labelText: setting.columnName(
+                            'ipos::Transfer',
+                            'notransaksi',
+                          ),
+                          labelStyle: labelStyle,
+                          border: const OutlineInputBorder(),
+                        ),
                         readOnly: true,
                         initialValue: transfer.code,
                       ),
@@ -116,10 +130,13 @@ class _TransferFormPageState extends State<TransferFormPage>
                       padding: const EdgeInsets.only(bottom: 10.0),
                       child: TextFormField(
                         decoration: InputDecoration(
-                            labelText: setting.columnName(
-                                'ipos::Transfer', 'kantordari'),
-                            labelStyle: labelStyle,
-                            border: const OutlineInputBorder()),
+                          labelText: setting.columnName(
+                            'ipos::Transfer',
+                            'kantordari',
+                          ),
+                          labelStyle: labelStyle,
+                          border: const OutlineInputBorder(),
+                        ),
                         readOnly: true,
                         initialValue: transfer.sourceLocation,
                       ),
@@ -131,10 +148,13 @@ class _TransferFormPageState extends State<TransferFormPage>
                       padding: const EdgeInsets.only(bottom: 10.0),
                       child: TextFormField(
                         decoration: InputDecoration(
-                            labelText: setting.columnName(
-                                'ipos::Transfer', 'kantortujuan'),
-                            labelStyle: labelStyle,
-                            border: const OutlineInputBorder()),
+                          labelText: setting.columnName(
+                            'ipos::Transfer',
+                            'kantortujuan',
+                          ),
+                          labelStyle: labelStyle,
+                          border: const OutlineInputBorder(),
+                        ),
                         readOnly: true,
                         initialValue: transfer.destLocation,
                       ),
@@ -146,10 +166,13 @@ class _TransferFormPageState extends State<TransferFormPage>
                       padding: const EdgeInsets.only(bottom: 10),
                       child: TextFormField(
                         decoration: InputDecoration(
-                            labelText:
-                                setting.columnName('ipos::Transfer', 'user1'),
-                            labelStyle: labelStyle,
-                            border: const OutlineInputBorder()),
+                          labelText: setting.columnName(
+                            'ipos::Transfer',
+                            'user1',
+                          ),
+                          labelStyle: labelStyle,
+                          border: const OutlineInputBorder(),
+                        ),
                         readOnly: true,
                         initialValue: transfer.userName,
                       ),
@@ -161,10 +184,13 @@ class _TransferFormPageState extends State<TransferFormPage>
                       padding: const EdgeInsets.only(bottom: 10),
                       child: TextFormField(
                         decoration: InputDecoration(
-                            labelText:
-                                setting.columnName('ipos::Transfer', 'tanggal'),
-                            labelStyle: labelStyle,
-                            border: const OutlineInputBorder()),
+                          labelText: setting.columnName(
+                            'ipos::Transfer',
+                            'tanggal',
+                          ),
+                          labelStyle: labelStyle,
+                          border: const OutlineInputBorder(),
+                        ),
                         readOnly: true,
                         initialValue: dateTimeLocalFormat(transfer.datetime),
                       ),
@@ -177,10 +203,13 @@ class _TransferFormPageState extends State<TransferFormPage>
                       padding: const EdgeInsets.only(bottom: 10),
                       child: TextFormField(
                         decoration: InputDecoration(
-                            labelText: setting.columnName(
-                                'ipos::Transfer', 'totalitem'),
-                            labelStyle: labelStyle,
-                            border: const OutlineInputBorder()),
+                          labelText: setting.columnName(
+                            'ipos::Transfer',
+                            'totalitem',
+                          ),
+                          labelStyle: labelStyle,
+                          border: const OutlineInputBorder(),
+                        ),
                         readOnly: true,
                         initialValue: transfer.totalItem.toString(),
                       ),
@@ -193,10 +222,13 @@ class _TransferFormPageState extends State<TransferFormPage>
                       padding: const EdgeInsets.only(bottom: 10),
                       child: TextFormField(
                         decoration: InputDecoration(
-                            labelText: setting.columnName(
-                                'ipos::Transfer', 'shiftkerja'),
-                            labelStyle: labelStyle,
-                            border: const OutlineInputBorder()),
+                          labelText: setting.columnName(
+                            'ipos::Transfer',
+                            'shiftkerja',
+                          ),
+                          labelStyle: labelStyle,
+                          border: const OutlineInputBorder(),
+                        ),
                         readOnly: true,
                         initialValue: transfer.shift,
                       ),
@@ -209,10 +241,13 @@ class _TransferFormPageState extends State<TransferFormPage>
                       padding: const EdgeInsets.only(bottom: 10),
                       child: TextFormField(
                         decoration: InputDecoration(
-                            labelText: setting.columnName(
-                                'ipos::Transfer', 'keterangan'),
-                            labelStyle: labelStyle,
-                            border: const OutlineInputBorder()),
+                          labelText: setting.columnName(
+                            'ipos::Transfer',
+                            'keterangan',
+                          ),
+                          labelStyle: labelStyle,
+                          border: const OutlineInputBorder(),
+                        ),
                         readOnly: true,
                         minLines: 3,
                         maxLines: 5,
@@ -226,10 +261,13 @@ class _TransferFormPageState extends State<TransferFormPage>
                       padding: const EdgeInsets.only(bottom: 10),
                       child: TextFormField(
                         decoration: InputDecoration(
-                            labelText: setting.columnName(
-                                'ipos::Transfer', 'updated_at'),
-                            labelStyle: labelStyle,
-                            border: const OutlineInputBorder()),
+                          labelText: setting.columnName(
+                            'ipos::Transfer',
+                            'updated_at',
+                          ),
+                          labelStyle: labelStyle,
+                          border: const OutlineInputBorder(),
+                        ),
                         readOnly: true,
                         initialValue: transfer.updatedAt == null
                             ? ''

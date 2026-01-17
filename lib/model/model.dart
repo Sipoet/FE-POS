@@ -111,6 +111,7 @@ abstract class Model with ChangeNotifier {
   }
 
   String get modelValue => id.toString();
+  String? get valueDescription => null;
 
   bool get isNewRecord => id == null;
 }

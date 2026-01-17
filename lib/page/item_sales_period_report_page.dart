@@ -168,7 +168,6 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                   textOnSearch: (Brand brand) => brand.name,
                   modelClass: BrandClass(),
                   attributeKey: 'merek',
-                  path: '/brands',
                   onChanged: (value) =>
                       _brands = value.map<String>((e) => e.name).toList(),
                 ),
@@ -186,7 +185,6 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                   textOnSelected: (itemType) => itemType.name,
                   modelClass: ItemTypeClass(),
                   attributeKey: 'jenis',
-                  path: '/item_types',
                   onChanged: (value) =>
                       _itemTypes = value.map<String>((e) => e.name).toList(),
                 ),
@@ -197,7 +195,6 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                   label: const Text('Supplier :', style: _filterLabelStyle),
                   key: const ValueKey('supplierSelect'),
                   attributeKey: 'nama',
-                  path: '/suppliers',
                   textOnSearch: (supplier) =>
                       "${supplier.code} - ${supplier.name}",
                   textOnSelected: (supplier) => supplier.code,
@@ -212,7 +209,6 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                   label: const Text('Item :', style: _filterLabelStyle),
                   key: const ValueKey('itemSelect'),
                   attributeKey: 'namaitem',
-                  path: '/items',
                   textOnSearch: (item) => "${item.code} - ${item.name}",
                   textOnSelected: (item) => item.code,
                   modelClass: ItemClass(),

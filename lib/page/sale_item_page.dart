@@ -57,13 +57,18 @@ class _SaleItemPageState extends State<SaleItemPage>
   Future<DataTableResponse<SaleItem>> fetchSaleItems(QueryRequest request) {
     request.filters = _filters;
     request.searchText = _searchText;
-    return SaleItemClass().finds(server, request).then(
-        (value) => DataTableResponse<SaleItem>(
+    return SaleItemClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<SaleItem>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void searchChanged(value) {
@@ -83,16 +88,15 @@ class _SaleItemPageState extends State<SaleItemPage>
   void viewRecord(SaleItem saleItem) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Lihat Penjualan ${saleItem.saleCode}',
-          SaleFormPage(sale: Sale(code: saleItem.saleCode ?? '')));
+      tabManager.addTab(
+        'Lihat Penjualan ${saleItem.saleCode}',
+        SaleFormPage(sale: Sale(code: saleItem.saleCode ?? '')),
+      );
     });
   }
 
   void download() {
-    flash.show(
-      const Text('Dalam proses.'),
-      ToastificationType.info,
-    );
+    flash.show(const Text('Dalam proses.'), ToastificationType.info);
     Map<String, dynamic> param = {
       'search_text': _searchText,
       'include': 'item,sale',
@@ -106,37 +110,54 @@ class _SaleItemPageState extends State<SaleItemPage>
 
     try {
       server
-          .get('sale_items',
-              queryParam: param, cancelToken: cancelToken, type: 'xlsx')
-          .then((response) {
-        flash.hide();
-        if (response.statusCode != 200) {
-          flash.show(
-              const Text('gagal simpan ke excel'), ToastificationType.error);
-          return;
-        }
-        String filename = response.headers.value('content-disposition') ?? '';
-        if (filename.isEmpty) {
-          return;
-        }
-        filename = filename.substring(filename.indexOf('filename="') + 10,
-            filename.indexOf('xlsx";') + 4);
-        var downloader = const FileSaver();
-        downloader.download(filename, response.data, 'xlsx',
-            onSuccess: (String path) {
-          flash.showBanner(
-              messageType: ToastificationType.success,
-              title: 'Sukses download',
-              description: 'sukses disimpan di $path');
-        });
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
+          .get(
+            'ipos/sale_items',
+            queryParam: param,
+            cancelToken: cancelToken,
+            type: 'xlsx',
+          )
+          .then(
+            (response) {
+              flash.hide();
+              if (response.statusCode != 200) {
+                flash.show(
+                  const Text('gagal simpan ke excel'),
+                  ToastificationType.error,
+                );
+                return;
+              }
+              String filename =
+                  response.headers.value('content-disposition') ?? '';
+              if (filename.isEmpty) {
+                return;
+              }
+              filename = filename.substring(
+                filename.indexOf('filename="') + 10,
+                filename.indexOf('xlsx";') + 4,
+              );
+              var downloader = const FileSaver();
+              downloader.download(
+                filename,
+                response.data,
+                'xlsx',
+                onSuccess: (String path) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses download',
+                    description: 'sukses disimpan di $path',
+                  );
+                },
+              );
+            },
+            onError: (error, stackTrace) =>
+                defaultErrorResponse(error: error, valueWhenError: []),
+          );
     } catch (e, trace) {
       flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
+        title: e.toString(),
+        description: trace.toString(),
+        messageType: ToastificationType.error,
+      );
     }
   }
 
@@ -174,8 +195,9 @@ class _SaleItemPageState extends State<SaleItemPage>
                   SizedBox(
                     width: 150,
                     child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
+                      decoration: const InputDecoration(
+                        hintText: 'Search Text',
+                      ),
                       onChanged: searchChanged,
                       onSubmitted: searchChanged,
                     ),
@@ -183,19 +205,20 @@ class _SaleItemPageState extends State<SaleItemPage>
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(
-                        controller: _menuController,
-                        menuChildren: [
-                          MenuItemButton(
-                            leadingIcon: const Icon(Icons.download),
-                            child: const Text('Download Excel'),
-                            onPressed: () {
-                              _menuController.close();
-                              download();
-                            },
-                          ),
-                        ],
-                        child: const Icon(Icons.table_rows_rounded)),
-                  )
+                      controller: _menuController,
+                      menuChildren: [
+                        MenuItemButton(
+                          leadingIcon: const Icon(Icons.download),
+                          child: const Text('Download Excel'),
+                          onPressed: () {
+                            _menuController.close();
+                            download();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -207,10 +230,11 @@ class _SaleItemPageState extends State<SaleItemPage>
                   spacing: 10,
                   children: [
                     IconButton.filled(
-                        onPressed: () {
-                          viewRecord(saleItem);
-                        },
-                        icon: const Icon(Icons.search_rounded)),
+                      onPressed: () {
+                        viewRecord(saleItem);
+                      },
+                      icon: const Icon(Icons.search_rounded),
+                    ),
                   ],
                 ),
                 onLoaded: (stateManager) {
