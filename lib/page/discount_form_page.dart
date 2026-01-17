@@ -842,16 +842,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                 child: SizedBox(
                                   width: 400,
                                   child: DateRangeFormField(
-                                    initialDateRange: DateTimeRange(
+                                    rangeType: DateTimeRangeType(),
+                                    initialValue: DateTimeRange(
                                       start: discount.startTime,
                                       end: discount.endTime,
-                                    ),
-                                    label: const Text(
-                                      'Tanggal Aktif',
-                                      style: labelStyle,
-                                    ),
-                                    icon: const Icon(
-                                      Icons.calendar_today_outlined,
                                     ),
                                     onChanged: ((DateTimeRange? range) {
                                       if (range == null) {
@@ -860,6 +854,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                       discount.startTime = range.start;
                                       discount.endTime = range.end;
                                     }),
+                                    label: const Text(
+                                      'Tanggal Aktif',
+                                      style: labelStyle,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.calendar_today_outlined,
+                                    ),
                                   ),
                                 ),
                               ),

@@ -14,14 +14,16 @@ mixin TextFormatter {
   String moneyFormat(dynamic value, {int decimalDigits = 1}) {
     if (value is Money) {
       return NumberFormat.currency(
-              locale: "id_ID",
-              symbol: value.symbol,
-              decimalDigits: decimalDigits)
-          .format(value.value);
+        locale: "id_ID",
+        symbol: value.symbol,
+        decimalDigits: decimalDigits,
+      ).format(value.value);
     }
     return NumberFormat.currency(
-            locale: "id_ID", symbol: "Rp", decimalDigits: decimalDigits)
-        .format(value);
+      locale: "id_ID",
+      symbol: "Rp",
+      decimalDigits: decimalDigits,
+    ).format(value);
   }
 
   String dateTimeFormat(DateTime date) {
@@ -33,6 +35,9 @@ mixin TextFormatter {
   }
 
   String numberFormat(number) {
+    if (number is! num) {
+      return '';
+    }
     return NumberFormat(",##0.##", "en_US").format(number);
   }
 

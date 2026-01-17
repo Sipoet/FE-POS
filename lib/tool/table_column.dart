@@ -33,9 +33,9 @@ mixin ColumnTypeFinder {
       case 'bool':
         return BooleanTableColumnType();
       case 'date':
-        return DateTableColumnType();
+        return DateTableColumnType(DateRangeType());
       case 'datetime':
-        return DateTimeTableColumnType();
+        return DateTableColumnType(DateTimeRangeType());
       case 'time':
         return TimeTableColumnType();
       case 'money':
@@ -97,14 +97,33 @@ class TableColumn<T extends Model> {
   }
 }
 
+class FilterFormController extends ChangeNotifier {
+  FilterData? value;
+  FilterFormController(this.value);
+
+  void clear() {
+    value = null;
+    notifyListeners();
+  }
+
+  void setFilterData(FilterData? filterData, {bool notify = false}) {
+    value = filterData;
+    if (notify) {
+      notifyListeners();
+    }
+  }
+
+  String? get key => value?.key;
+}
+
 abstract class TableColumnType<T> {
   Widget renderFilter({
     Widget? label,
     Key? key,
     required String name,
-    required void Function(FilterData? filterData) onChanged,
-    FilterData? initialValue,
+    required FilterFormController controller,
   });
+
   Widget renderCell({
     required T value,
     required TableColumn column,
@@ -121,25 +140,34 @@ class TextTableColumnType extends TableColumnType<String> {
     Widget? label,
     required String name,
     Key? key,
-    TextEditingController? controller,
-    required void Function(FilterData? value) onChanged,
-    FilterData? initialValue,
+    required FilterFormController controller,
   }) {
+    final textController = TextEditingController(
+      text: controller.value?.decoratedValue,
+    );
+    debugPrint('==render filter');
+    controller.addListener(() {
+      debugPrint('==value text berubah ${controller.value?.decoratedValue}');
+      if (controller.value == null) {
+        textController.clear();
+      } else {
+        textController.text = controller.value!.decoratedValue;
+      }
+    });
     return SizedBox(
       width: 300,
       height: 50,
       child: TextFormField(
         key: key,
-        controller: controller,
-        initialValue: initialValue?.decoratedValue,
+        controller: textController,
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.all(12),
           border: OutlineInputBorder(),
           label: label,
         ),
         onChanged: (text) => text.isEmpty
-            ? onChanged(null)
-            : onChanged(
+            ? controller.setFilterData(null)
+            : controller.setFilterData(
                 ComparisonFilterData(
                   key: name,
                   operator: .contains,
@@ -174,8 +202,7 @@ class ActionTableColumnType<T extends Model> extends TableColumnType<T> {
     Widget? label,
     required String name,
     Key? key,
-    required void Function(FilterData value) onChanged,
-    FilterData? initialValue,
+    required FilterFormController controller,
   }) {
     return SizedBox(key: key);
   }
@@ -196,46 +223,60 @@ class ActionTableColumnType<T extends Model> extends TableColumnType<T> {
   TrinaColumnType get trinaColumnType => TrinaColumnType.text();
 }
 
-class DateTableColumnType extends TableColumnType<Date> {
+class DateTableColumnType<T extends DateTime> extends TableColumnType<T> {
+  RangeType<T> rangeType;
+  DateTableColumnType(this.rangeType);
   @override
   Widget renderFilter({
     Widget? label,
     required String name,
     Key? key,
-    required void Function(FilterData? value) onChanged,
-    FilterData? initialValue,
+    required FilterFormController controller,
   }) {
-    DateTimeRange<Date>? initialDateTime;
-    if (initialValue is BetweenFilterData) {
-      initialDateTime = DateTimeRange<Date>(
-        start: initialValue.values.first,
-        end: initialValue.values.last,
+    DateTimeRange<T>? initialDateTime;
+    final value = controller.value;
+    if (value is BetweenFilterData) {
+      initialDateTime = DateTimeRange<T>(
+        start: value.values.first,
+        end: value.values.last,
       );
     }
+    final dateController = DateRangeEditingController<T>(initialDateTime);
+    controller.addListener(() {
+      final filterData = controller.value;
+      if (filterData == null) {
+        dateController.clear();
+      } else if (filterData is BetweenFilterData) {
+        dateController.value = DateTimeRange<T>(
+          start: filterData.values.first,
+          end: filterData.values.last,
+        );
+      }
+    });
     return SizedBox(
       width: 300,
       height: 50,
-      child: DateRangeFormField(
+      child: DateRangeFormField<T>(
         key: key,
-        rangeType: DateRangeType(),
-        initialDateRange: initialDateTime,
-        label: label,
-        allowClear: true,
+        rangeType: rangeType,
         onChanged: (dateRange) => dateRange == null
-            ? onChanged(null)
-            : onChanged(
+            ? controller.setFilterData(null)
+            : controller.setFilterData(
                 BetweenFilterData(
                   key: name,
                   values: [dateRange.start, dateRange.end],
                 ),
               ),
+        controller: dateController,
+        label: label,
+        allowClear: true,
       ),
     );
   }
 
   @override
   Widget renderCell({
-    required Date? value,
+    required T? value,
     required TableColumn column,
     TabManager? tabManager,
   }) {
@@ -243,69 +284,12 @@ class DateTableColumnType extends TableColumnType<Date> {
   }
 
   @override
-  Date? convert(dynamic value) =>
-      value is Date ? value : Date.tryParse(value.toString());
+  T? convert(dynamic value) => rangeType.convert(value);
 
   @override
-  TrinaColumnType get trinaColumnType =>
-      TrinaColumnType.date(format: 'dd/MM/yyyy');
-}
-
-class DateTimeTableColumnType extends TableColumnType<DateTime> {
-  @override
-  Widget renderFilter({
-    Widget? label,
-    required String name,
-    Key? key,
-    DateRangeEditingController? controller,
-    required void Function(FilterData? value) onChanged,
-    FilterData? initialValue,
-  }) {
-    DateTimeRange? initialDateTime;
-    if (initialValue is BetweenFilterData) {
-      initialDateTime = DateTimeRange(
-        start: initialValue.values.first,
-        end: initialValue.values.last,
-      );
-    }
-    return SizedBox(
-      width: 300,
-      height: 50,
-      child: DateRangeFormField(
-        key: key,
-        controller: controller,
-        rangeType: DateTimeRangeType(),
-        initialDateRange: initialDateTime,
-        label: label,
-        allowClear: true,
-        onChanged: (dateRange) => dateRange == null
-            ? onChanged(null)
-            : onChanged(
-                BetweenFilterData(
-                  key: name,
-                  values: [dateRange.start, dateRange.end],
-                ),
-              ),
-      ),
-    );
-  }
-
-  @override
-  Widget renderCell({
-    required DateTime? value,
-    required TableColumn column,
-    TabManager? tabManager,
-  }) {
-    return Text(value?.toLocal().format() ?? '');
-  }
-
-  @override
-  DateTime convert(dynamic value) =>
-      value is DateTime ? value : DateTime.parse(value.toString());
-
-  @override
-  TrinaColumnType get trinaColumnType =>
-      TrinaColumnType.dateTime(format: 'dd/MM/yyyy HH:mm');
+  TrinaColumnType get trinaColumnType => T == Date
+      ? TrinaColumnType.date(format: 'dd/MM/yyyy')
+      : TrinaColumnType.dateTime(format: 'dd/MM/yyyy HH:mm');
 }
 
 class TimeTableColumnType extends TableColumnType<TimeOfDay> {
@@ -314,15 +298,28 @@ class TimeTableColumnType extends TableColumnType<TimeOfDay> {
     Widget? label,
     required String name,
     Key? key,
-    required ChangeFunc onChanged,
-    FilterData? initialValue,
+    required FilterFormController controller,
   }) {
     TimeOfDay? start;
     TimeOfDay? end;
-    if (initialValue is BetweenFilterData) {
-      start = initialValue.values.first;
-      end = initialValue.values.last;
+
+    final value = controller.value;
+    if (value is BetweenFilterData) {
+      start = value.values.first;
+      end = value.values.last;
     }
+    final startController = TextEditingController(text: start?.format24Hour());
+    final endController = TextEditingController(text: end?.format24Hour());
+    controller.addListener(() {
+      final value = controller.value;
+      if (value == null) {
+        startController.clear();
+        endController.clear();
+      } else if (value is BetweenFilterData) {
+        startController.text = value.values.first.format24Hour();
+        endController.text = value.values.last.format24Hour();
+      }
+    });
     return Column(
       children: [
         if (label != null) label,
@@ -333,16 +330,16 @@ class TimeTableColumnType extends TableColumnType<TimeOfDay> {
               height: 50,
               child: TimeFormField(
                 key: key,
-                initialValue: start,
+                controller: startController,
                 label: Text('Dari'),
                 onChanged: (time) {
                   start = time;
                   if (start != null && end != null) {
-                    onChanged(
+                    controller.setFilterData(
                       BetweenFilterData(key: name, values: [start, end]),
                     );
                   } else {
-                    onChanged(null);
+                    controller.setFilterData(null);
                   }
                 },
               ),
@@ -352,16 +349,16 @@ class TimeTableColumnType extends TableColumnType<TimeOfDay> {
               height: 50,
               child: TimeFormField(
                 key: key,
-                initialValue: end,
+                controller: endController,
                 label: Text('Sampai'),
                 onChanged: (time) {
                   end = time;
                   if (start != null && end != null) {
-                    onChanged(
+                    controller.setFilterData(
                       BetweenFilterData(key: name, values: [start, end]),
                     );
                   } else {
-                    onChanged(null);
+                    controller.setFilterData(null);
                   }
                 },
               ),
@@ -401,26 +398,19 @@ class TimeTableColumnType extends TableColumnType<TimeOfDay> {
   TrinaColumnType get trinaColumnType => TrinaColumnType.time();
 }
 
-typedef ChangeFunc = void Function(FilterData? value);
-
 class NumberTableColumnType extends TableColumnType<double> with TextFormatter {
   @override
   Widget renderFilter({
     Widget? label,
     required String name,
     Key? key,
-    TextEditingController? operatorController,
-    TextEditingController? startValController,
-    TextEditingController? endValController,
-    required ChangeFunc onChanged,
-    FilterData? initialValue,
+    required FilterFormController controller,
   }) {
     return NumberFilterField(
       label: label,
-      onChanged: onChanged,
+      controller: controller,
       name: name,
       key: key,
-      initialValue: initialValue,
     );
   }
 
@@ -444,13 +434,11 @@ class NumberTableColumnType extends TableColumnType<double> with TextFormatter {
 class NumberFilterField extends StatefulWidget {
   final Widget? label;
   final String name;
-  final ChangeFunc onChanged;
-  final FilterData? initialValue;
+  final FilterFormController controller;
   const NumberFilterField({
     super.key,
-    required this.onChanged,
+    required this.controller,
     this.label,
-    this.initialValue,
     required this.name,
   });
 
@@ -466,21 +454,40 @@ class _NumberFilterFieldState extends State<NumberFilterField> {
   final operatorController = TextEditingController(text: '');
   final startValController = TextEditingController(text: '');
   final endValController = TextEditingController(text: '');
+  FilterFormController get controller => widget.controller;
   @override
   void initState() {
-    final filterData = widget.initialValue;
-    if (filterData == null) {
-    } else if (filterData is BetweenFilterData) {
-      start = filterData.values.first;
+    controller.addListener(changeData);
+    changeData();
+
+    super.initState();
+  }
+
+  void changeData() {
+    final value = controller.value;
+    if (value == null) {
+      startValController.clear();
+      endValController.clear();
+      operatorController.clear();
+    } else if (value is BetweenFilterData) {
+      start = value.values.first;
       startValController.text = start.toString();
-      end = filterData.values.last;
+      end = value.values.last;
       endValController.text = end.toString();
       operatorFilter = .between;
-    } else if (filterData is ComparisonFilterData) {
-      start = filterData.value;
-      operatorFilter = filterData.operator;
+    } else if (value is ComparisonFilterData) {
+      start = value.value;
+      operatorFilter = value.operator;
     }
-    super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller.removeListener(changeData);
+    startValController.dispose();
+    endValController.dispose();
+    operatorController.dispose();
+    super.dispose();
   }
 
   @override
@@ -519,7 +526,7 @@ class _NumberFilterFieldState extends State<NumberFilterField> {
           SizedBox(
             width: 130,
             child: NumberFormField<double>(
-              key: ValueKey('${widget.name}-value1'),
+              key: ValueKey('${widget.name}-value1-number'),
               controller: startValController,
               label: Text(
                 operatorFilter == QueryOperator.between ? 'Mulai' : 'Nilai',
@@ -535,7 +542,7 @@ class _NumberFilterFieldState extends State<NumberFilterField> {
             child: SizedBox(
               width: 130,
               child: NumberFormField<double>(
-                key: ValueKey('${widget.name}-value2'),
+                key: ValueKey('${widget.name}-value2-number'),
                 controller: endValController,
                 label: Text('Sampai'),
                 onChanged: (val) {
@@ -550,7 +557,7 @@ class _NumberFilterFieldState extends State<NumberFilterField> {
               startValController.clear();
               endValController.clear();
               operatorController.clear();
-              widget.onChanged(null);
+              controller.setFilterData(null);
             },
             icon: const Icon(Icons.close),
             // color: colorScheme.primary,
@@ -564,13 +571,13 @@ class _NumberFilterFieldState extends State<NumberFilterField> {
     if (start != null &&
         end != null &&
         operatorFilter == QueryOperator.between) {
-      widget.onChanged(
+      controller.setFilterData(
         BetweenFilterData(key: widget.name, values: [start, end]),
       );
     } else if (start != null &&
         operatorFilter != null &&
         operatorFilter != QueryOperator.between) {
-      widget.onChanged(
+      controller.setFilterData(
         ComparisonFilterData(
           key: widget.name,
           operator: operatorFilter!,
@@ -578,7 +585,7 @@ class _NumberFilterFieldState extends State<NumberFilterField> {
         ),
       );
     } else {
-      widget.onChanged(null);
+      controller.setFilterData(null);
     }
   }
 }
@@ -589,18 +596,13 @@ class MoneyTableColumnType extends TableColumnType<Money> {
     Widget? label,
     required String name,
     Key? key,
-    TextEditingController? operatorController,
-    TextEditingController? startValController,
-    TextEditingController? endValController,
-    required ChangeFunc onChanged,
-    FilterData? initialValue,
+    required FilterFormController controller,
   }) {
     return NumberFilterField(
       label: label,
-      onChanged: onChanged,
+      controller: controller,
       name: name,
       key: key,
-      initialValue: initialValue,
     );
   }
 
@@ -635,25 +637,14 @@ class ModelTableColumnType<T extends Model> extends TableColumnType<T>
     Widget? label,
     required String name,
     Key? key,
-    required ChangeFunc onChanged,
-    FilterData? initialValue,
+    required FilterFormController controller,
   }) {
-    return Container(
-      width: 300,
-      constraints: const BoxConstraints(minHeight: 50),
-      child: AsyncDropdownMultiple<T>(
-        key: key,
-        modelClass: modelClass,
-        textOnSearch: (model) => [
-          model.modelValue,
-          if (model.valueDescription != null) model.valueDescription,
-        ].join(' - '),
-        textOnSelected: (model) => model.modelValue,
-        label: label,
-        onChanged: (values) => values.isEmpty
-            ? onChanged(null)
-            : onChanged(ComparisonFilterData(key: name, value: values)),
-      ),
+    return ModelFilterForm(
+      name: name,
+      controller: controller,
+      key: key,
+      modelClass: modelClass,
+      label: label,
     );
   }
 
@@ -701,6 +692,77 @@ class ModelTableColumnType<T extends Model> extends TableColumnType<T>
   TrinaColumnType get trinaColumnType => TrinaColumnType.text();
 }
 
+class ModelFilterForm<T extends Model> extends StatefulWidget {
+  final FilterFormController controller;
+  final String name;
+  final Widget? label;
+  final ModelClass<T> modelClass;
+  const ModelFilterForm({
+    super.key,
+    this.label,
+    required this.modelClass,
+    required this.name,
+    required this.controller,
+  });
+
+  @override
+  State<ModelFilterForm> createState() => _ModelFilterFormState<T>();
+}
+
+class _ModelFilterFormState<T extends Model> extends State<ModelFilterForm<T>> {
+  List<T> selected = [];
+  FilterFormController get controller => widget.controller;
+  @override
+  void initState() {
+    controller.addListener(changeData);
+    changeData();
+    super.initState();
+  }
+
+  void changeData() {
+    final value = controller.value;
+    if (value is ComparisonFilterData) {
+      setState(() {
+        selected = value.value;
+      });
+    } else {
+      setState(() {
+        selected.clear();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 300,
+      constraints: const BoxConstraints(minHeight: 50),
+      child: AsyncDropdownMultiple<T>(
+        selecteds: selected,
+        key: ValueKey('${widget.name}-filter-model-form-1'),
+        modelClass: widget.modelClass,
+        textOnSearch: (model) => [
+          model.modelValue,
+          if (model.valueDescription != null) model.valueDescription,
+        ].join(' - '),
+        textOnSelected: (model) => model.modelValue,
+        label: widget.label,
+        onChanged: (values) {
+          setState(() {
+            selected = values;
+          });
+
+          values.isEmpty
+              ? controller.setFilterData(null)
+              : controller.setFilterData(
+                  ComparisonFilterData(key: widget.name, value: values),
+                );
+        },
+      ),
+    );
+  }
+}
+
 class PercentageTableColumnType extends TableColumnType<Percentage>
     with TextFormatter {
   @override
@@ -708,76 +770,14 @@ class PercentageTableColumnType extends TableColumnType<Percentage>
     Widget? label,
     required String name,
     Key? key,
-    required ChangeFunc onChanged,
-    FilterData? initialValue,
+    required FilterFormController controller,
   }) {
     return NumberFilterField(
       label: label,
-      onChanged: onChanged,
+      controller: controller,
       name: name,
       key: key,
-      initialValue: initialValue,
     );
-    // QueryOperator? operatorFilter;
-    // return SizedBox(
-    //   width: 300,
-    //   height: 50,
-    //   child: Row(
-    //     children: [
-    //       DropdownMenu<QueryOperator>(
-    //         width: 170,
-    //         initialSelection: operatorFilter,
-    //         onSelected: (value) {
-    //           // setState(() {
-    //           if (value != null) {
-    //             operatorFilter = value;
-    //           }
-    //           // });
-    //         },
-    //         inputDecorationTheme: const InputDecorationTheme(
-    //           border: OutlineInputBorder(),
-    //           contentPadding: EdgeInsets.all(12),
-    //         ),
-    //         requestFocusOnTap: false,
-    //         controller: operatorController,
-    //         label: label,
-    //         dropdownMenuEntries: QueryOperator.values
-    //             .map<DropdownMenuEntry<QueryOperator>>(
-    //               (data) => DropdownMenuEntry<QueryOperator>(
-    //                 value: data,
-    //                 label: data.humanize(),
-    //               ),
-    //             )
-    //             .toList(),
-    //       ),
-    //       SizedBox(
-    //         width: 130,
-    //         child: PercentageFormField(
-    //           key: key,
-    //           controller: startValController,
-    //           initialValue: selected,
-    //           label: Text(
-    //             operatorFilter == QueryOperator.between ? 'Mulai' : 'Nilai',
-    //           ),
-    //           onChanged: onChanged,
-    //         ),
-    //       ),
-    //       Visibility(
-    //         visible: operatorFilter == QueryOperator.between,
-    //         child: SizedBox(
-    //           width: 130,
-    //           child: PercentageFormField(
-    //             key: key,
-    //             controller: endValController,
-    //             initialValue: selected,
-    //             label: Text('Sampai'),
-    //             onChanged: onChanged,
-    //           ),
-    //         ),
-    //       ),
-    //     ],
-    //   ),
-    // );
   }
 
   @override
@@ -803,24 +803,13 @@ class BooleanTableColumnType extends TableColumnType<bool> {
     Widget? label,
     required String name,
     Key? key,
-    required ChangeFunc onChanged,
-    FilterData? initialValue,
+    required FilterFormController controller,
   }) {
-    bool? selected;
-    if (initialValue != null && initialValue is ComparisonFilterData) {
-      selected = initialValue.value;
-    }
-    return SizedBox(
-      width: 300,
-      child: CheckboxListTile(
-        value: selected,
-        controlAffinity: ListTileControlAffinity.leading,
-        title: label,
-        tristate: true,
-        onChanged: (val) => val == null
-            ? onChanged(null)
-            : onChanged(ComparisonFilterData(key: name, value: val)),
-      ),
+    return BoolFilterForm(
+      name: name,
+      controller: controller,
+      label: label,
+      key: key,
     );
   }
 
@@ -840,6 +829,61 @@ class BooleanTableColumnType extends TableColumnType<bool> {
   TrinaColumnType get trinaColumnType => TrinaColumnType.select([true, false]);
 }
 
+class BoolFilterForm extends StatefulWidget {
+  final Widget? label;
+  final String name;
+  final FilterFormController controller;
+  const BoolFilterForm({
+    required this.name,
+    super.key,
+    this.label,
+    required this.controller,
+  });
+
+  @override
+  State<BoolFilterForm> createState() => _BoolFilterFormState();
+}
+
+class _BoolFilterFormState extends State<BoolFilterForm> {
+  bool? selected;
+  FilterFormController get controller => widget.controller;
+  @override
+  void initState() {
+    controller.addListener(() {
+      final value = controller.value;
+      if (value == null) {
+        setState(() {
+          selected = null;
+        });
+      } else if (value is ComparisonFilterData) {
+        selected = value.value;
+      }
+    });
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 300,
+      child: CheckboxListTile(
+        value: selected,
+        controlAffinity: ListTileControlAffinity.leading,
+        title: widget.label,
+        tristate: true,
+        onChanged: (val) => setState(() {
+          selected = val;
+          val == null
+              ? controller.setFilterData(null)
+              : controller.setFilterData(
+                  ComparisonFilterData(key: widget.name, value: val),
+                );
+        }),
+      ),
+    );
+  }
+}
+
 class EnumTableColumnType extends TableColumnType<String> with TextFormatter {
   List<String> availableValues;
   EnumTableColumnType({required this.availableValues});
@@ -848,27 +892,36 @@ class EnumTableColumnType extends TableColumnType<String> with TextFormatter {
     Widget? label,
     required String name,
     Key? key,
-    TextEditingController? controller,
-    required ChangeFunc onChanged,
-    FilterData? initialValue,
+    required FilterFormController controller,
   }) {
     String? selected;
-    if (initialValue != null && initialValue is ComparisonFilterData) {
-      selected = initialValue.value.toString();
+    final value = controller.value;
+    if (value != null && value is ComparisonFilterData) {
+      selected = value.value.toString();
     }
+    final dropdownController = TextEditingController(text: selected);
+
+    controller.addListener(() {
+      if (controller.value == null) {
+        dropdownController.clear();
+      } else {
+        dropdownController.text = controller.value?.decoratedValue ?? '';
+      }
+    });
     return DropdownMenu<String?>(
       width: 300,
       key: key,
-      controller: controller,
-      initialSelection: selected,
+      controller: dropdownController,
       inputDecorationTheme: const InputDecorationTheme(
         contentPadding: EdgeInsets.all(12),
         border: OutlineInputBorder(),
       ),
       label: label,
       onSelected: (val) => val == null
-          ? onChanged(null)
-          : onChanged(ComparisonFilterData(key: name, value: val)),
+          ? controller.setFilterData(null)
+          : controller.setFilterData(
+              ComparisonFilterData(key: name, value: val),
+            ),
       dropdownMenuEntries: [
         DropdownMenuEntry<String?>(value: null, label: ''),
         ...availableValues.map<DropdownMenuEntry<String>>(

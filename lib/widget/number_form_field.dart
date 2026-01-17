@@ -35,6 +35,7 @@ class NumberFormField<T extends num> extends StatefulWidget {
 class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
     with TextFormatter {
   TextEditingController? _controller;
+  String? initialValue;
 
   T? _valueFromInput(String input) {
     input = input.replaceAll(',', '');
@@ -58,33 +59,17 @@ class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
 
   @override
   void initState() {
-    if (widget.controller != null) {
-      final val = _valueFromInput(widget.controller?.text ?? '');
-      if (val != null) {
-        _controller = TextEditingController(text: numberFormat(val));
-      } else {
-        _controller = TextEditingController();
-      }
-    }
-    widget.controller?.addListener(() {
-      final val = _valueFromInput(widget.controller?.text ?? '');
-      if (val != null) {
-        _controller!.text = numberFormat(val);
-      } else {
-        _controller!.clear();
-      }
-    });
+    initialValue = widget.initialValue == null
+        ? null
+        : numberFormat(widget.initialValue);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final value = widget.initialValue == null
-        ? null
-        : numberFormat(widget.initialValue);
     return TextFormField(
       enableSuggestions: false,
-      controller: widget.controller == null ? null : _controller,
+      controller: widget.controller,
       readOnly: widget.readOnly,
       focusNode: widget.focusNode,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -119,7 +104,7 @@ class _NumberFormFieldState<T extends num> extends State<NumberFormField<T>>
         hintText: widget.hintText,
         border: const OutlineInputBorder(),
       ),
-      initialValue: value,
+      initialValue: initialValue,
     );
   }
 }

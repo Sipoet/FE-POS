@@ -31,15 +31,12 @@ class _PayslipReportPageState extends State<PayslipReportPage>
   List<TableColumn> tableColumns = [];
   PayslipStatus? _payslipStatus;
   EmployeeStatus? _employeeStatus;
-  DateTimeRange _dateRange = DateTimeRange(
-    start: DateTime.now().copyWith(
-      month: DateTime.now().month - 1,
-      day: 26,
-      hour: 0,
-      minute: 0,
-      second: 0,
-    ),
-    end: DateTime.now().copyWith(day: 25, hour: 23, minute: 59, second: 59),
+  DateTimeRange<Date> _dateRange = DateTimeRange(
+    start: Date.today()
+        .beginningOfMonth()
+        .subtract(Duration(days: 1))
+        .copyWith(day: 26),
+    end: Date.today().copyWith(day: 25),
   );
   final cancelToken = CancelToken();
   @override
@@ -165,7 +162,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         rangeType: DateRangeType(),
-                        initialDateRange: _dateRange,
+                        initialValue: _dateRange,
                         onChanged: (range) => _dateRange = range ?? _dateRange,
                       ),
                     ),

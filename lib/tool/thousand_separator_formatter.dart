@@ -9,10 +9,15 @@ class ThousandSeparatorFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    final formattedValue = _formatter
-        .format(double.tryParse(newValue.text.replaceAll(',', '')) ?? 0);
+    if (newValue.text.isEmpty) {
+      return TextEditingValue(text: '');
+    }
+    final formattedValue = _formatter.format(
+      double.tryParse(newValue.text.replaceAll(',', '')) ?? 0,
+    );
 
-    final selectionOffset = newValue.selection.baseOffset +
+    final selectionOffset =
+        newValue.selection.baseOffset +
         (formattedValue.length - newValue.text.length);
 
     return TextEditingValue(

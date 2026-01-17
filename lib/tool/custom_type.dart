@@ -183,6 +183,10 @@ class Date extends DateTime {
     return '$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
   }
 
+  Date copyWith({int? year, int? month, int? day}) {
+    return Date(year ?? this.year, month ?? this.month, day ?? this.day);
+  }
+
   static Date parsingDateTime(DateTime value) {
     value = value.toLocal();
     return Date(value.year, value.month, value.day);

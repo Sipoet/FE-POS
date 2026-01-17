@@ -218,12 +218,6 @@ class _BookEmployeeAttendanceFormPageState
                         newValue.end,
                       );
                     },
-                    validator: (newValue) {
-                      if (newValue == null) {
-                        return 'harus diisi';
-                      }
-                      return null;
-                    },
                     onChanged: (newValue) {
                       if (newValue == null) {
                         return;
@@ -235,10 +229,16 @@ class _BookEmployeeAttendanceFormPageState
                         newValue.end,
                       );
                     },
-                    initialDateRange: DateTimeRange(
+                    initialValue: DateTimeRange(
                       start: bookEmployeeAttendance.startDate,
                       end: bookEmployeeAttendance.endDate,
                     ),
+                    validator: (newValue) {
+                      if (newValue == null) {
+                        return 'harus diisi';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 10),
                   Offstage(

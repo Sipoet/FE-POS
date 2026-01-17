@@ -154,7 +154,8 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
                 width: 350,
                 child: DateRangeFormField(
                   label: const Text('Tanggal :', style: _filterLabelStyle),
-                  initialDateRange: _dateRange,
+                  rangeType: DateTimeRangeType(),
+                  initialValue: _dateRange,
                   onChanged: (range) => _dateRange =
                       range ??
                       DateTimeRange(start: DateTime.now(), end: DateTime.now()),

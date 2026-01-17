@@ -282,14 +282,15 @@ class _HomePageState extends State<HomePage>
                       fontSize: 16,
                       fontStyle: FontStyle.italic,
                     ),
-                    initialDateRange: controller.range,
-                    controller: pickerController,
+                    rangeType: DateTimeRangeType(),
+                    initialValue: controller.range,
                     onChanged: (DateTimeRange? range) {
                       if (range == null) {
                         return;
                       }
                       controller.changeDate(range);
                     },
+                    controller: pickerController,
                   ),
                 ),
                 IconButton.filled(

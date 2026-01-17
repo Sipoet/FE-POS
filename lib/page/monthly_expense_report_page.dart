@@ -189,10 +189,10 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
               SizedBox(
                 width: 300,
                 child: DateRangeFormField(
-                  onChanged: (range) => _range = range ?? _range,
                   label: Text('Rentang Periode'),
                   rangeType: MonthRangeType(),
-                  initialDateRange: _range,
+                  onChanged: (range) => _range = range ?? _range,
+                  initialValue: _range,
                 ),
               ),
               SizedBox(

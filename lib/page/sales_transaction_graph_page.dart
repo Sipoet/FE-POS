@@ -42,9 +42,9 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
     fontWeight: FontWeight.bold,
   );
 
-  DateTimeRange _dateRange = DateTimeRange(
-    start: DateTime.now().beginningOfMonth(),
-    end: DateTime.now().endOfMonth(),
+  DateTimeRange<Date> _dateRange = DateTimeRange(
+    start: Date.today().beginningOfMonth(),
+    end: Date.today().endOfMonth(),
   );
   final salesReportController = SalesChartController();
   final yearNow = DateTime.now().year;
@@ -421,7 +421,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
                 child: DateRangeFormField(
                   label: Text('Rentang Periode'),
                   rangeType: DateRangeType(),
-                  initialDateRange: _dateRange,
+                  initialValue: _dateRange,
                   onChanged: (range) => _dateRange = range ?? _dateRange,
                   allowClear: false,
                 ),

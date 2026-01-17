@@ -4,6 +4,7 @@ import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
+import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/employee_attendance.dart';
@@ -47,7 +48,7 @@ class _EmployeeAttendanceMassUploadPageState
         clientWidth: 150,
         name: 'date',
         humanizeName: 'Tanggal',
-        type: DateTableColumnType(),
+        type: DateTableColumnType(DateRangeType()),
       ),
       TableColumn(
         clientWidth: 120,

@@ -418,20 +418,20 @@ class _RoleFormPageState extends State<RoleFormPage>
           width: 600,
           child: DateRangeFormField(
             rangeType: DateRangeType(),
-            initialDateRange: DateTimeRange(
+            initialValue: DateTimeRange(
               start: groupWorkSchedule.beginActiveAt,
               end: groupWorkSchedule.endActiveAt,
             ),
-            label: const Text('Jarak Aktif'),
             onChanged: (value) {
               if (value == null) {
-                return value;
+                return;
               }
               groupWorkSchedule.beginActiveAt = Date.parsingDateTime(
                 value.start,
               );
               groupWorkSchedule.endActiveAt = Date.parsingDateTime(value.end);
             },
+            label: const Text('Jarak Aktif'),
           ),
         ),
         SingleChildScrollView(

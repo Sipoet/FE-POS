@@ -22,19 +22,11 @@ class GeneratePayslipFormPage extends StatefulWidget {
 
 class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
     with AutomaticKeepAliveClientMixin, LoadingPopup, DefaultResponse {
-  DateTime startDate = DateTime.now().copyWith(
-    month: DateTime.now().month - 1,
-    day: 26,
-    hour: 0,
-    minute: 0,
-    second: 0,
-  );
-  DateTime endDate = DateTime.now().copyWith(
-    day: 25,
-    hour: 23,
-    minute: 59,
-    second: 59,
-  );
+  Date startDate = Date.today()
+      .beginningOfMonth()
+      .subtract(Duration(days: 1))
+      .copyWith(day: 26);
+  Date endDate = Date.today().copyWith(day: 25);
   final formKey = GlobalKey<FormState>();
   List<String> _employeeIds = [];
   late final Server _server;
@@ -69,13 +61,13 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
         name: 'start_date',
         humanizeName: 'Periode Mulai',
         clientWidth: 150,
-        type: DateTableColumnType(),
+        type: DateTableColumnType(DateRangeType()),
       ),
       TableColumn(
         name: 'end_date',
         humanizeName: 'Periode Akhir',
         clientWidth: 150,
-        type: DateTableColumnType(),
+        type: DateTableColumnType(DateRangeType()),
       ),
       TableColumn(
         name: 'gross_salary',
@@ -162,16 +154,16 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                       DateRangeFormField(
                         focusNode: _focusNode,
                         rangeType: DateRangeType(),
-                        key: const ValueKey('generate_payslip-periode'),
-                        label: const Text('Periode', style: labelStyle),
                         onChanged: (range) {
                           startDate = range!.start;
                           endDate = range.end;
                         },
-                        initialDateRange: DateTimeRange(
+                        initialValue: DateTimeRange<Date>(
                           start: startDate,
                           end: endDate,
                         ),
+                        key: const ValueKey('generate_payslip-periode'),
+                        label: const Text('Periode', style: labelStyle),
                       ),
                       AsyncDropdownMultiple<Employee>(
                         key: const ValueKey('generate_payslip-karyawan'),

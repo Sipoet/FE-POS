@@ -19,7 +19,7 @@ class SalesTransactionReportPage extends StatefulWidget {
 
 class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late DateTimeRange range;
+  late DateTimeRange<Date> range;
   late Server server;
   late Flash flash;
   late List<TableColumn> columns;
@@ -32,14 +32,9 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
   @override
   void initState() {
     final today = Date.today();
-    var now = DateTime.utc(today.year, today.month, today.day);
-    range = DateTimeRange(
-      start: beginningOfDay(now.copyWith(day: 1)),
-      end: endOfDay(
-        now
-            .copyWith(month: now.month + 1, day: 1)
-            .subtract(const Duration(days: 1)),
-      ),
+    range = DateTimeRange<Date>(
+      start: today.beginningOfMonth(),
+      end: today.endOfMonth(),
     );
     flash = Flash();
     server = context.read<Server>();
@@ -79,14 +74,6 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
         .whenComplete(() => stateManager.setShowLoading(false));
   }
 
-  DateTime beginningOfDay(DateTime date) {
-    return date.copyWith(hour: 0, minute: 0, second: 0);
-  }
-
-  DateTime endOfDay(DateTime date) {
-    return date.copyWith(hour: 23, minute: 59, second: 59, millisecond: 999);
-  }
-
   @override
   Widget build(BuildContext context) {
     final padding = MediaQuery.paddingOf(context);
@@ -100,13 +87,13 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
         children: [
           SizedBox(
             width: 350,
-            child: DateRangeFormField(
-              initialDateRange: range,
+            child: DateRangeFormField<Date>(
               rangeType: DateRangeType(),
+              initialValue: range,
               onChanged: (newRange) {
                 range =
                     newRange ??
-                    DateTimeRange(start: DateTime.now(), end: DateTime.now());
+                    DateTimeRange(start: Date.today(), end: Date.today());
                 _refreshTable(range);
               },
             ),

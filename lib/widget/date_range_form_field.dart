@@ -4,17 +4,20 @@ import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:fe_pos/tool/custom_type.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 
-abstract class RangeType {
+abstract class RangeType<T extends DateTime> {
   const RangeType();
-  String displayFormat(DateTimeRange range);
-  Future<DateTimeRange?> showDialog(
-      {required BuildContext context,
-      required ColorScheme colorScheme,
-      String? helpText,
-      DateTimeRange? initialDateRange});
+  String displayFormat(DateTimeRange<T> range);
+  Future<DateTimeRange<T>?> showDialog({
+    required BuildContext context,
+    required ColorScheme colorScheme,
+    String? helpText,
+    DateTimeRange<T>? initialValue,
+  });
+
+  T? convert(dynamic value);
 }
 
-class DateTimeRangeType implements RangeType {
+class DateTimeRangeType implements RangeType<DateTime> {
   const DateTimeRangeType();
 
   @override
@@ -30,41 +33,49 @@ class DateTimeRangeType implements RangeType {
   }
 
   @override
-  Future<DateTimeRange?> showDialog(
-      {required BuildContext context,
-      required ColorScheme colorScheme,
-      String? helpText,
-      DateTimeRange? initialDateRange}) {
+  DateTime? convert(dynamic value) =>
+      value is DateTime ? value : DateTime.tryParse(value.toString());
+
+  @override
+  Future<DateTimeRange?> showDialog({
+    required BuildContext context,
+    required ColorScheme colorScheme,
+    String? helpText,
+    DateTimeRange? initialValue,
+  }) {
     return showBoardDateTimeMultiPicker(
       context: context,
       options: BoardDateTimeOptions(
-          withSecond: false,
-          pickerFormat: PickerFormat.dmy,
-          startDayOfWeek: DateTime.monday,
-          boardTitle: helpText,
-          useAmpm: false,
-          languages: const BoardPickerLanguages(
-              today: 'Hari ini',
-              tomorrow: 'Besok',
-              now: 'Sekarang',
-              locale: 'id')),
-      startDate: initialDateRange?.start,
-      endDate: initialDateRange?.end,
+        withSecond: false,
+        pickerFormat: PickerFormat.dmy,
+        startDayOfWeek: DateTime.monday,
+        boardTitle: helpText,
+        useAmpm: false,
+        languages: const BoardPickerLanguages(
+          today: 'Hari ini',
+          tomorrow: 'Besok',
+          now: 'Sekarang',
+          locale: 'id',
+        ),
+      ),
+      startDate: initialValue?.start,
+      endDate: initialValue?.end,
       showDragHandle: false,
       enableDrag: false,
       pickerType: DateTimePickerType.datetime,
     ).then((dateTimeRange) {
       if (dateTimeRange != null) {
         return DateTimeRange(
-            start: dateTimeRange.start.toLocal(),
-            end: dateTimeRange.end.toLocal());
+          start: dateTimeRange.start.toLocal(),
+          end: dateTimeRange.end.toLocal(),
+        );
       }
       return null;
     });
   }
 }
 
-class DateRangeType implements RangeType {
+class DateRangeType implements RangeType<Date> {
   const DateRangeType();
   @override
   String displayFormat(DateTimeRange range) {
@@ -73,27 +84,40 @@ class DateRangeType implements RangeType {
   }
 
   @override
-  Future<DateTimeRange?> showDialog(
-      {required BuildContext context,
-      required ColorScheme colorScheme,
-      String? helpText,
-      DateTimeRange? initialDateRange}) {
+  Date? convert(dynamic value) =>
+      value is Date ? value : Date.tryParse(value.toString());
+
+  @override
+  Future<DateTimeRange<Date>?> showDialog({
+    required BuildContext context,
+    required ColorScheme colorScheme,
+    String? helpText,
+    DateTimeRange? initialValue,
+  }) {
     return showDateRangePicker(
       context: context,
       locale: const Locale('id', 'ID'),
       fieldStartHintText: 'Mulai',
       fieldEndHintText: 'Akhir',
-      initialDateRange: initialDateRange,
+      initialDateRange: initialValue,
       currentDate: DateTime.now(),
       firstDate: DateTime(1000),
       lastDate: DateTime.now().add(Duration(days: 36500)),
       // useRootNavigator: false,
       initialEntryMode: DatePickerEntryMode.calendar,
-    );
+    ).then((onValue) {
+      if (onValue == null) {
+        return null;
+      }
+      return DateTimeRange<Date>(
+        start: onValue.start.toLocal().toDate(),
+        end: onValue.end.toLocal().toDate(),
+      );
+    });
   }
 }
 
-class MonthRangeType implements RangeType {
+class MonthRangeType implements RangeType<DateTime> {
   const MonthRangeType();
   @override
   String displayFormat(DateTimeRange range) {
@@ -107,17 +131,21 @@ class MonthRangeType implements RangeType {
   }
 
   @override
-  Future<DateTimeRange?> showDialog(
-      {required BuildContext context,
-      required ColorScheme colorScheme,
-      String? helpText,
-      DateTimeRange? initialDateRange}) {
+  DateTime? convert(dynamic value) =>
+      value is DateTime ? value : DateTime.tryParse(value.toString());
+  @override
+  Future<DateTimeRange?> showDialog({
+    required BuildContext context,
+    required ColorScheme colorScheme,
+    String? helpText,
+    DateTimeRange? initialValue,
+  }) {
     return showMonthRangePicker(
-            context: context,
-            headerTitle: helpText == null ? null : Text(helpText),
-            initialRangeDate: initialDateRange?.start,
-            endRangeDate: initialDateRange?.end)
-        .then((value) {
+      context: context,
+      headerTitle: helpText == null ? null : Text(helpText),
+      initialRangeDate: initialValue?.start,
+      endRangeDate: initialValue?.end,
+    ).then((value) {
       if (value == null || value.isEmpty) {
         return null;
       } else {
@@ -149,15 +177,15 @@ class MonthRangeType implements RangeType {
 //   Future<DateTimeRange?> showDialog(BuildContext context) {}
 // }
 
-class DateRangeFormField extends StatefulWidget {
+class DateRangeFormField<T extends DateTime> extends StatefulWidget {
   const DateRangeFormField({
     super.key,
     this.label,
     this.icon,
     this.textStyle,
     this.enabled = true,
-    this.initialDateRange,
-    this.rangeType = const DateTimeRangeType(),
+    this.initialValue,
+    required this.rangeType,
     this.validator,
     this.onSaved,
     this.onChanged,
@@ -167,25 +195,26 @@ class DateRangeFormField extends StatefulWidget {
     this.allowClear = false,
   });
   final Widget? label;
-  final RangeType rangeType;
+  final RangeType<T> rangeType;
   final Widget? icon;
   final String? helpText;
   final TextStyle? textStyle;
-  final DateTimeRange? initialDateRange;
+  final DateTimeRange<T>? initialValue;
   final bool enabled;
   final bool allowClear;
   final FocusNode? focusNode;
-  final Function(DateTimeRange? range)? onChanged;
-  final Function(DateTimeRange? range)? onSaved;
-  final String? Function(DateTimeRange? range)? validator;
-  final DateRangeEditingController? controller;
+  final Function(DateTimeRange<T>? range)? onChanged;
+  final Function(DateTimeRange<T>? range)? onSaved;
+  final String? Function(DateTimeRange<T>? range)? validator;
+  final DateRangeEditingController<T>? controller;
   @override
-  State<DateRangeFormField> createState() => _DateRangeFormFieldState();
+  State<DateRangeFormField> createState() => _DateRangeFormFieldState<T>();
 }
 
-class _DateRangeFormFieldState extends State<DateRangeFormField> {
+class _DateRangeFormFieldState<T extends DateTime>
+    extends State<DateRangeFormField<T>> {
   late final TextEditingController _controller;
-  late DateTimeRange? _dateRange = widget.initialDateRange;
+  late DateTimeRange<T>? _dateRange = widget.initialValue;
   @override
   void initState() {
     _controller = TextEditingController(text: _daterangeFormat());
@@ -209,19 +238,20 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
     final colorScheme = Theme.of(context).colorScheme;
     widget.rangeType
         .showDialog(
-            context: context,
-            colorScheme: colorScheme,
-            initialDateRange: _dateRange,
-            helpText: widget.helpText)
+          context: context,
+          colorScheme: colorScheme,
+          initialValue: _dateRange,
+          helpText: widget.helpText,
+        )
         .then((DateTimeRange? range) {
-      setState(() {
-        _dateRange = range;
-        _controller.text = _daterangeFormat();
-        if (widget.onChanged != null) {
-          widget.onChanged!(_dateRange);
-        }
-      });
-    });
+          setState(() {
+            _dateRange = range as DateTimeRange<T>;
+            _controller.text = _daterangeFormat();
+            if (widget.onChanged != null) {
+              widget.onChanged!(_dateRange);
+            }
+          });
+        });
   }
 
   @override
@@ -238,32 +268,37 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
           ? null
           : (value) => widget.validator!(_dateRange),
       decoration: InputDecoration(
-          contentPadding: const EdgeInsets.all(5),
-          suffix: widget.allowClear
-              ? IconButton(
-                  iconSize: 24,
-                  onPressed: () {
-                    setState(() {
-                      _controller.text = '';
-                      _dateRange = null;
-                    });
-                    if (widget.onChanged != null) {
-                      widget.onChanged!(_dateRange);
-                    }
-                  },
-                  icon: const Icon(Icons.close),
-                )
-              : null,
-          focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                  width: 1,
-                  color: widget.enabled ? colorScheme.outline : Colors.grey)),
-          border: OutlineInputBorder(
-              borderSide: BorderSide(
-                  width: 1,
-                  color: widget.enabled ? colorScheme.outline : Colors.grey)),
-          label: widget.label,
-          icon: widget.icon),
+        contentPadding: const EdgeInsets.all(5),
+        suffix: widget.allowClear
+            ? IconButton(
+                iconSize: 24,
+                onPressed: () {
+                  setState(() {
+                    _controller.text = '';
+                    _dateRange = null;
+                  });
+                  if (widget.onChanged != null) {
+                    widget.onChanged!(_dateRange);
+                  }
+                },
+                icon: const Icon(Icons.close),
+              )
+            : null,
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            width: 1,
+            color: widget.enabled ? colorScheme.outline : Colors.grey,
+          ),
+        ),
+        border: OutlineInputBorder(
+          borderSide: BorderSide(
+            width: 1,
+            color: widget.enabled ? colorScheme.outline : Colors.grey,
+          ),
+        ),
+        label: widget.label,
+        icon: widget.icon,
+      ),
       controller: _controller,
       onTap: () {
         if (!widget.enabled) return;
@@ -273,7 +308,8 @@ class _DateRangeFormFieldState extends State<DateRangeFormField> {
   }
 }
 
-class DateRangeEditingController extends ValueNotifier<DateTimeRange?> {
+class DateRangeEditingController<T extends DateTime>
+    extends ValueNotifier<DateTimeRange<T>?> {
   DateRangeEditingController(super.value);
 
   void clear() {

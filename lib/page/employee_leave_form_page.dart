@@ -25,9 +25,9 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
 
   final _formKey = GlobalKey<FormState>();
   late EmployeeLeave employeeLeave;
-  DateTimeRange _dateRange = DateTimeRange(
-    start: DateTime.now().beginningOfDay(),
-    end: DateTime.now().endOfDay(),
+  DateTimeRange<Date> _dateRange = DateTimeRange<Date>(
+    start: Date.today(),
+    end: Date.today(),
   );
   List<EmployeeLeave> _employeeLeaves = [];
   @override
@@ -260,13 +260,14 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                             employeeLeave.leaveType != LeaveType.changeDay &&
                             employeeLeave.isNewRecord,
                         child: DateRangeFormField(
-                          initialDateRange: _dateRange,
                           enabled: !_isMultipleUpdateForm,
                           rangeType: DateRangeType(),
-                          allowClear: false,
+                          initialValue: _dateRange,
                           onChanged: (range) => setState(() {
                             _dateRange = range ?? _dateRange;
                           }),
+                          allowClear: false,
+
                           label: const Text('Tanggal Cuti', style: labelStyle),
                         ),
                       ),

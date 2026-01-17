@@ -2,6 +2,7 @@ import 'package:fe_pos/model/background_job.dart';
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +35,7 @@ class _BackgroundJobPageState extends State<BackgroundJobPage>
       ),
       TableColumn(clientWidth: 150, name: 'status', humanizeName: 'Status'),
       TableColumn(
-        type: DateTimeTableColumnType(),
+        type: DateTableColumnType(DateTimeRangeType()),
         clientWidth: 180,
         name: 'created_at',
         humanizeName: 'Tgl Buat',
