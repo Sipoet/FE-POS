@@ -5,6 +5,7 @@ import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
+import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/employee_attendance.dart';
@@ -66,7 +67,7 @@ class _EmployeeAttendanceMassUploadPageState
         clientWidth: 100,
         name: 'shift',
         humanizeName: 'Shift',
-        type: NumberTableColumnType(),
+        type: NumberTableColumnType(IntegerType()),
       ),
       TableColumn(
         clientWidth: 120,

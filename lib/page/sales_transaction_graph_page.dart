@@ -9,6 +9,7 @@ import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/model/item.dart';
+import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/sales_performance_chart.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
@@ -186,21 +187,21 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
           TableColumn<HashModel>(
             clientWidth: 180,
             name: 'start_stock',
-            type: NumberTableColumnType(),
+            type: NumberTableColumnType(DoubleType()),
             humanizeName: 'Stok Awal',
           ),
         if (fieldKey == 'sales_through_rate')
           TableColumn<HashModel>(
             clientWidth: 200,
             name: 'increase_period_stock',
-            type: NumberTableColumnType(),
+            type: NumberTableColumnType(DoubleType()),
             humanizeName: 'Tambahan Stok(Periode)',
           ),
         if (fieldKey == 'sales_through_rate')
           TableColumn<HashModel>(
             clientWidth: 180,
             name: 'sales_quantity',
-            type: NumberTableColumnType(),
+            type: NumberTableColumnType(DoubleType()),
             humanizeName: 'Jumlah Penjualan',
           ),
         TableColumn(
@@ -391,7 +392,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   TableColumnType basedValueType() {
     switch (fieldKey) {
       case 'sales_quantity':
-        return NumberTableColumnType();
+        return NumberTableColumnType(DoubleType());
       case 'sales_through_rate':
         return PercentageTableColumnType();
       default:

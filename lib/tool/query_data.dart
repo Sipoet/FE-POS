@@ -84,6 +84,12 @@ abstract class FilterData {
     if (value is TimeOfDay) {
       return value.format24Hour();
     }
+    if (value is Percentage) {
+      return value.value.toString();
+    }
+    if (value is Money) {
+      return value.value.toString();
+    }
     if (value is Model) {
       return value.id.toString();
     }

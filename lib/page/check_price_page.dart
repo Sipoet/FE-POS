@@ -3,6 +3,7 @@ import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
+import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +35,7 @@ class _CheckPricePageState extends State<CheckPricePage>
     TableColumn(clientWidth: 200, name: 'item_name', humanizeName: 'Nama Item'),
     TableColumn(
       clientWidth: 100,
-      type: NumberTableColumnType(),
+      type: NumberTableColumnType(DoubleType()),
       name: 'store_stock',
       humanizeName: 'Stok Toko',
     ),
@@ -58,7 +59,7 @@ class _CheckPricePageState extends State<CheckPricePage>
     TableColumn(clientWidth: 90, name: 'uom', humanizeName: 'Satuan'),
     TableColumn(
       clientWidth: 110,
-      type: NumberTableColumnType(),
+      type: NumberTableColumnType(DoubleType()),
       name: 'warehouse_stock',
       humanizeName: 'Stok Gudang',
     ),

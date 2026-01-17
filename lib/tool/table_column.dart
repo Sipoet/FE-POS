@@ -25,8 +25,9 @@ mixin ColumnTypeFinder {
       case 'number':
       case 'decimal':
       case 'float':
+        return NumberTableColumnType(DoubleType());
       case 'integer':
-        return NumberTableColumnType();
+        return NumberTableColumnType(IntegerType());
       case 'percentage':
         return PercentageTableColumnType();
       case 'boolean':
@@ -398,7 +399,9 @@ class TimeTableColumnType extends TableColumnType<TimeOfDay> {
   TrinaColumnType get trinaColumnType => TrinaColumnType.time();
 }
 
-class NumberTableColumnType extends TableColumnType<double> with TextFormatter {
+class NumberTableColumnType<T> extends TableColumnType<T> with TextFormatter {
+  NumType<T> numType;
+  NumberTableColumnType(this.numType);
   @override
   Widget renderFilter({
     Widget? label,
@@ -406,9 +409,10 @@ class NumberTableColumnType extends TableColumnType<double> with TextFormatter {
     Key? key,
     required FilterFormController controller,
   }) {
-    return NumberFilterField(
+    return NumberFilterField<T>(
       label: label,
       controller: controller,
+      numType: numType,
       name: name,
       key: key,
     );
@@ -416,7 +420,7 @@ class NumberTableColumnType extends TableColumnType<double> with TextFormatter {
 
   @override
   Widget renderCell({
-    required double value,
+    required T value,
     required TableColumn column,
     TabManager? tabManager,
   }) {
@@ -424,33 +428,35 @@ class NumberTableColumnType extends TableColumnType<double> with TextFormatter {
   }
 
   @override
-  double convert(dynamic value) => double.parse(value.toString());
+  T? convert(dynamic value) => numType.convert(value.toString());
 
   @override
   TrinaColumnType get trinaColumnType =>
       TrinaColumnType.number(locale: locale, format: formatNumber);
 }
 
-class NumberFilterField extends StatefulWidget {
+class NumberFilterField<T> extends StatefulWidget {
   final Widget? label;
   final String name;
   final FilterFormController controller;
+  final NumType<T> numType;
   const NumberFilterField({
     super.key,
     required this.controller,
+    required this.numType,
     this.label,
     required this.name,
   });
 
   @override
-  State<NumberFilterField> createState() => _NumberFilterFieldState();
+  State<NumberFilterField> createState() => _NumberFilterFieldState<T>();
 }
 
-class _NumberFilterFieldState extends State<NumberFilterField> {
+class _NumberFilterFieldState<T> extends State<NumberFilterField<T>> {
   QueryOperator? operatorFilter;
 
-  double? start;
-  double? end;
+  T? start;
+  T? end;
   final operatorController = TextEditingController(text: '');
   final startValController = TextEditingController(text: '');
   final endValController = TextEditingController(text: '');
@@ -525,9 +531,10 @@ class _NumberFilterFieldState extends State<NumberFilterField> {
           ),
           SizedBox(
             width: 130,
-            child: NumberFormField<double>(
+            child: NumberFormField<T>(
               key: ValueKey('${widget.name}-value1-number'),
               controller: startValController,
+              numType: widget.numType,
               label: Text(
                 operatorFilter == QueryOperator.between ? 'Mulai' : 'Nilai',
               ),
@@ -541,9 +548,10 @@ class _NumberFilterFieldState extends State<NumberFilterField> {
             visible: operatorFilter == QueryOperator.between,
             child: SizedBox(
               width: 130,
-              child: NumberFormField<double>(
+              child: NumberFormField<T>(
                 key: ValueKey('${widget.name}-value2-number'),
                 controller: endValController,
+                numType: widget.numType,
                 label: Text('Sampai'),
                 onChanged: (val) {
                   end = val;
@@ -598,8 +606,9 @@ class MoneyTableColumnType extends TableColumnType<Money> {
     Key? key,
     required FilterFormController controller,
   }) {
-    return NumberFilterField(
+    return NumberFilterField<Money>(
       label: label,
+      numType: MoneyType(),
       controller: controller,
       name: name,
       key: key,
@@ -772,9 +781,10 @@ class PercentageTableColumnType extends TableColumnType<Percentage>
     Key? key,
     required FilterFormController controller,
   }) {
-    return NumberFilterField(
+    return NumberFilterField<Percentage>(
       label: label,
       controller: controller,
+      numType: PercentageType(),
       name: name,
       key: key,
     );
@@ -794,7 +804,7 @@ class PercentageTableColumnType extends TableColumnType<Percentage>
       value is Percentage ? value : Percentage.tryParse(value.toString());
 
   @override
-  TrinaColumnType get trinaColumnType => TrinaColumnType.text();
+  TrinaColumnType get trinaColumnType => TrinaColumnType.percentage();
 }
 
 class BooleanTableColumnType extends TableColumnType<bool> {

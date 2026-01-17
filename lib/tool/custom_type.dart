@@ -330,10 +330,18 @@ class Percentage {
   }
 
   static Percentage? tryParse(String val) {
+    final isContainPercent = val.contains('%');
     val = val.replaceAll(RegExp('%'), '');
     var parsed = double.tryParse(val);
     if (parsed == null) return null;
+    parsed = isContainPercent ? parsed / 100 : parsed;
     return Percentage(parsed);
+  }
+
+  static Percentage? inputParse(String val) {
+    var parsed = double.tryParse(val);
+    if (parsed == null) return null;
+    return Percentage(parsed / 100);
   }
 
   @override

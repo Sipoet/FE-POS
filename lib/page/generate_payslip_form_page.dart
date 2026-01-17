@@ -8,6 +8,7 @@ import 'package:fe_pos/tool/tab_manager.dart';
 
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
+import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -85,25 +86,25 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
         name: 'work_days',
         humanizeName: 'Hari Kerja',
         clientWidth: 180,
-        type: NumberTableColumnType(),
+        type: NumberTableColumnType(DoubleType()),
       ),
       TableColumn(
         name: 'sick_leave',
         humanizeName: 'Jumlah Sakit(Hari)',
         clientWidth: 180,
-        type: NumberTableColumnType(),
+        type: NumberTableColumnType(IntegerType()),
       ),
       TableColumn(
         name: 'known_absence',
         humanizeName: 'Jumlah Izin(Hari)',
         clientWidth: 180,
-        type: NumberTableColumnType(),
+        type: NumberTableColumnType(IntegerType()),
       ),
       TableColumn(
         name: 'unknown_absence',
         humanizeName: 'Jumlah Alpha/Tanpa kabar(Hari)',
         clientWidth: 180,
-        type: NumberTableColumnType(),
+        type: NumberTableColumnType(IntegerType()),
       ),
       TableColumn(
         name: 'detail',
