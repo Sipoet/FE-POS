@@ -255,217 +255,229 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                 ),
                 Scrollbar(
                   thumbVisibility: true,
+                  trackVisibility: true,
+                  thickness: 8,
                   controller: _scrollController,
                   child: SingleChildScrollView(
                     controller: _scrollController,
                     scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      dataRowMinHeight: 60,
-                      dataRowMaxHeight: 100,
-                      showBottomBorder: true,
-                      columns: [
-                        const DataColumn(
-                          label: Text('Grup', style: labelStyle),
-                        ),
-                        const DataColumn(
-                          label: Text('Tipe Payroll', style: labelStyle),
-                        ),
-                        const DataColumn(
-                          label: Text('formula', style: labelStyle),
-                        ),
-                        const DataColumn(
-                          label: Text('description', style: labelStyle),
-                        ),
-                        const DataColumn(
-                          label: Text('variable1', style: labelStyle),
-                        ),
-                        const DataColumn(
-                          label: Text('variable2', style: labelStyle),
-                        ),
-                        const DataColumn(
-                          label: Text('variable3', style: labelStyle),
-                        ),
-                        const DataColumn(
-                          label: Text('variable4', style: labelStyle),
-                        ),
-                        const DataColumn(
-                          label: Text('variable5', style: labelStyle),
-                        ),
-                        DataColumn(
-                          label: ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                payroll.lines.clear();
-                              });
-                            },
-                            child: const Text('Hapus Semua', style: labelStyle),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 15),
+                      child: DataTable(
+                        dataRowMinHeight: 60,
+                        dataRowMaxHeight: 100,
+                        showBottomBorder: true,
+                        columns: [
+                          const DataColumn(
+                            label: Text('Grup', style: labelStyle),
                           ),
-                        ),
-                      ],
-                      rows: payroll.lines
-                          .map<DataRow>(
-                            (payrollLine) => DataRow(
-                              key: ObjectKey(payrollLine),
-                              cells: [
-                                DataCell(
-                                  DropdownMenu<PayrollGroup>(
-                                    initialSelection: payrollLine.group,
-                                    onSelected: (value) => payrollLine.group =
-                                        value ?? PayrollGroup.earning,
-                                    dropdownMenuEntries: PayrollGroup.values
-                                        .map<DropdownMenuEntry<PayrollGroup>>(
-                                          (value) => DropdownMenuEntry(
-                                            value: value,
-                                            label: value.humanize(),
-                                          ),
-                                        )
-                                        .toList(),
-                                  ),
-                                ),
-                                DataCell(
-                                  AsyncDropdown<PayrollType>(
-                                    modelClass: PayrollTypeClass(),
-                                    allowClear: false,
-                                    selected: payrollLine.payrollType,
-                                    textOnSearch: (payrollType) =>
-                                        payrollType.name,
-                                    onChanged: (payrollType) =>
-                                        payrollLine.payrollType = payrollType,
-                                    onSaved: (payrollType) =>
-                                        payrollLine.payrollType = payrollType,
-                                  ),
-                                ),
-                                DataCell(
-                                  DropdownMenu<PayrollFormula>(
-                                    initialSelection: payrollLine.formula,
-                                    onSelected: (value) => payrollLine.formula =
-                                        value ?? PayrollFormula.basic,
-                                    dropdownMenuEntries: PayrollFormula.values
-                                        .map<DropdownMenuEntry<PayrollFormula>>(
-                                          (value) => DropdownMenuEntry(
-                                            value: value,
-                                            label: value.humanize(),
-                                          ),
-                                        )
-                                        .toList(),
-                                  ),
-                                ),
-                                DataCell(
-                                  SizedBox(
-                                    width: 250,
-                                    child: TextFormField(
-                                      decoration: const InputDecoration(
-                                        border: OutlineInputBorder(),
-                                      ),
-                                      maxLines: 3,
-                                      initialValue: payrollLine.description,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'harus diisi';
-                                        }
-                                        return null;
-                                      },
-                                      onChanged: (value) =>
-                                          payrollLine.description = value,
-                                      onSaved: (value) =>
-                                          payrollLine.description = value ?? '',
-                                      key: ValueKey(
-                                        "${payrollLine.id ?? payrollLine.row}-decription",
-                                      ),
+                          const DataColumn(
+                            label: Text('Tipe Payroll', style: labelStyle),
+                          ),
+                          const DataColumn(
+                            label: Text('formula', style: labelStyle),
+                          ),
+                          const DataColumn(
+                            label: Text('description', style: labelStyle),
+                          ),
+                          const DataColumn(
+                            label: Text('variable1', style: labelStyle),
+                          ),
+                          const DataColumn(
+                            label: Text('variable2', style: labelStyle),
+                          ),
+                          const DataColumn(
+                            label: Text('variable3', style: labelStyle),
+                          ),
+                          const DataColumn(
+                            label: Text('variable4', style: labelStyle),
+                          ),
+                          const DataColumn(
+                            label: Text('variable5', style: labelStyle),
+                          ),
+                          DataColumn(
+                            label: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  payroll.lines.clear();
+                                });
+                              },
+                              child: const Text(
+                                'Hapus Semua',
+                                style: labelStyle,
+                              ),
+                            ),
+                          ),
+                        ],
+                        rows: payroll.lines
+                            .map<DataRow>(
+                              (payrollLine) => DataRow(
+                                key: ObjectKey(payrollLine),
+                                cells: [
+                                  DataCell(
+                                    DropdownMenu<PayrollGroup>(
+                                      initialSelection: payrollLine.group,
+                                      onSelected: (value) => payrollLine.group =
+                                          value ?? PayrollGroup.earning,
+                                      dropdownMenuEntries: PayrollGroup.values
+                                          .map<DropdownMenuEntry<PayrollGroup>>(
+                                            (value) => DropdownMenuEntry(
+                                              value: value,
+                                              label: value.humanize(),
+                                            ),
+                                          )
+                                          .toList(),
                                     ),
                                   ),
-                                ),
-                                DataCell(
-                                  NumberFormField<double>(
-                                    initialValue: payrollLine.variable1,
-                                    onChanged: (value) =>
-                                        payrollLine.variable1 = value,
-                                    onSaved: (value) =>
-                                        payrollLine.variable1 = value,
-                                    key: ValueKey(
-                                      "${payrollLine.id ?? payrollLine.row}-variable1",
+                                  DataCell(
+                                    AsyncDropdown<PayrollType>(
+                                      modelClass: PayrollTypeClass(),
+                                      allowClear: false,
+                                      selected: payrollLine.payrollType,
+                                      textOnSearch: (payrollType) =>
+                                          payrollType.name,
+                                      onChanged: (payrollType) =>
+                                          payrollLine.payrollType = payrollType,
+                                      onSaved: (payrollType) =>
+                                          payrollLine.payrollType = payrollType,
                                     ),
                                   ),
-                                ),
-                                DataCell(
-                                  NumberFormField<double>(
-                                    initialValue: payrollLine.variable2,
-                                    onChanged: (value) =>
-                                        payrollLine.variable2 = value,
-                                    onSaved: (value) =>
-                                        payrollLine.variable2 = value,
-                                    key: ValueKey(
-                                      "${payrollLine.id ?? payrollLine.row}-variable2",
+                                  DataCell(
+                                    DropdownMenu<PayrollFormula>(
+                                      initialSelection: payrollLine.formula,
+                                      onSelected: (value) =>
+                                          payrollLine.formula =
+                                              value ?? PayrollFormula.basic,
+                                      dropdownMenuEntries: PayrollFormula.values
+                                          .map<
+                                            DropdownMenuEntry<PayrollFormula>
+                                          >(
+                                            (value) => DropdownMenuEntry(
+                                              value: value,
+                                              label: value.humanize(),
+                                            ),
+                                          )
+                                          .toList(),
                                     ),
                                   ),
-                                ),
-                                DataCell(
-                                  NumberFormField<double>(
-                                    initialValue: payrollLine.variable3,
-                                    onChanged: (value) =>
-                                        payrollLine.variable3 = value,
-                                    onSaved: (value) =>
-                                        payrollLine.variable3 = value,
-                                    key: ValueKey(
-                                      "${payrollLine.id ?? payrollLine.row}-variable3",
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  NumberFormField<double>(
-                                    initialValue: payrollLine.variable4,
-                                    onChanged: (value) =>
-                                        payrollLine.variable4 = value,
-                                    onSaved: (value) =>
-                                        payrollLine.variable4 = value,
-                                    key: ValueKey(
-                                      "${payrollLine.id ?? payrollLine.row}-variable4",
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  NumberFormField<double>(
-                                    initialValue: payrollLine.variable5,
-                                    onChanged: (value) =>
-                                        payrollLine.variable5 = value,
-                                    onSaved: (value) =>
-                                        payrollLine.variable5 = value,
-                                    key: ValueKey(
-                                      "${payrollLine.id ?? payrollLine.row}-variable5",
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  Row(
-                                    children: [
-                                      Visibility(
-                                        visible: payrollLine.id != null,
-                                        child: IconButton(
-                                          onPressed: () {
-                                            fetchHistoryByRecord(
-                                              'PayrollLine',
-                                              payrollLine.id,
-                                            );
-                                          },
-                                          icon: const Icon(Icons.history),
+                                  DataCell(
+                                    SizedBox(
+                                      width: 250,
+                                      child: TextFormField(
+                                        decoration: const InputDecoration(
+                                          border: OutlineInputBorder(),
+                                        ),
+                                        maxLines: 3,
+                                        initialValue: payrollLine.description,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'harus diisi';
+                                          }
+                                          return null;
+                                        },
+                                        onChanged: (value) =>
+                                            payrollLine.description = value,
+                                        onSaved: (value) =>
+                                            payrollLine.description =
+                                                value ?? '',
+                                        key: ValueKey(
+                                          "${payrollLine.id ?? payrollLine.row}-decription",
                                         ),
                                       ),
-                                      const SizedBox(width: 10),
-                                      IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            payroll.lines.remove(payrollLine);
-                                          });
-                                        },
-                                        icon: const Icon(Icons.close_rounded),
-                                      ),
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          )
-                          .toList(),
+                                  DataCell(
+                                    NumberFormField<double>(
+                                      initialValue: payrollLine.variable1,
+                                      onChanged: (value) =>
+                                          payrollLine.variable1 = value,
+                                      onSaved: (value) =>
+                                          payrollLine.variable1 = value,
+                                      key: ValueKey(
+                                        "${payrollLine.id ?? payrollLine.row}-variable1",
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    NumberFormField<double>(
+                                      initialValue: payrollLine.variable2,
+                                      onChanged: (value) =>
+                                          payrollLine.variable2 = value,
+                                      onSaved: (value) =>
+                                          payrollLine.variable2 = value,
+                                      key: ValueKey(
+                                        "${payrollLine.id ?? payrollLine.row}-variable2",
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    NumberFormField<double>(
+                                      initialValue: payrollLine.variable3,
+                                      onChanged: (value) =>
+                                          payrollLine.variable3 = value,
+                                      onSaved: (value) =>
+                                          payrollLine.variable3 = value,
+                                      key: ValueKey(
+                                        "${payrollLine.id ?? payrollLine.row}-variable3",
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    NumberFormField<double>(
+                                      initialValue: payrollLine.variable4,
+                                      onChanged: (value) =>
+                                          payrollLine.variable4 = value,
+                                      onSaved: (value) =>
+                                          payrollLine.variable4 = value,
+                                      key: ValueKey(
+                                        "${payrollLine.id ?? payrollLine.row}-variable4",
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    NumberFormField<double>(
+                                      initialValue: payrollLine.variable5,
+                                      onChanged: (value) =>
+                                          payrollLine.variable5 = value,
+                                      onSaved: (value) =>
+                                          payrollLine.variable5 = value,
+                                      key: ValueKey(
+                                        "${payrollLine.id ?? payrollLine.row}-variable5",
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Row(
+                                      children: [
+                                        Visibility(
+                                          visible: payrollLine.id != null,
+                                          child: IconButton(
+                                            onPressed: () {
+                                              fetchHistoryByRecord(
+                                                'PayrollLine',
+                                                payrollLine.id,
+                                              );
+                                            },
+                                            icon: const Icon(Icons.history),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        IconButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              payroll.lines.remove(payrollLine);
+                                            });
+                                          },
+                                          icon: const Icon(Icons.close_rounded),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                            .toList(),
+                      ),
                     ),
                   ),
                 ),

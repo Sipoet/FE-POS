@@ -374,130 +374,140 @@ class _PayslipFormPageState extends State<PayslipFormPage>
             ),
             Scrollbar(
               thumbVisibility: true,
+              trackVisibility: true,
+              thickness: 8,
               controller: _scrollController,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 controller: _scrollController,
-                child: DataTable(
-                  dataRowMinHeight: 60,
-                  dataRowMaxHeight: 100,
-                  showBottomBorder: true,
-                  columns: [
-                    const DataColumn(label: Text('Grup', style: labelStyle)),
-                    const DataColumn(
-                      label: Text('Tipe Payslip', style: labelStyle),
-                    ),
-                    const DataColumn(
-                      label: Text('description', style: labelStyle),
-                    ),
-                    const DataColumn(label: Text('amount', style: labelStyle)),
-                    DataColumn(
-                      label: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            payslip.lines.clear();
-                          });
-                        },
-                        child: const Text('Hapus Semua', style: labelStyle),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 15),
+                  child: DataTable(
+                    dataRowMinHeight: 60,
+                    dataRowMaxHeight: 100,
+                    showBottomBorder: true,
+                    columns: [
+                      const DataColumn(label: Text('Grup', style: labelStyle)),
+                      const DataColumn(
+                        label: Text('Tipe Payslip', style: labelStyle),
                       ),
-                    ),
-                  ],
-                  rows: payslip.lines
-                      .map<DataRow>(
-                        (payslipLine) => DataRow(
-                          key: ObjectKey(payslipLine),
-                          cells: [
-                            DataCell(
-                              DropdownMenu<PayrollGroup>(
-                                initialSelection: payslipLine.group,
-                                onSelected: (value) => payslipLine.group =
-                                    value ?? PayrollGroup.earning,
-                                dropdownMenuEntries: PayrollGroup.values
-                                    .map<DropdownMenuEntry<PayrollGroup>>(
-                                      (value) => DropdownMenuEntry(
-                                        value: value,
-                                        label: value.toString(),
-                                      ),
-                                    )
-                                    .toList(),
-                              ),
-                            ),
-                            DataCell(
-                              AsyncDropdown<PayrollType>(
-                                modelClass: PayrollTypeClass(),
-                                allowClear: false,
-                                selected: payslipLine.payrollType,
-                                textOnSearch: (payrollType) => payrollType.name,
-                                onChanged: (payrollType) =>
-                                    payslipLine.payrollType = payrollType,
-                                onSaved: (payrollType) =>
-                                    payslipLine.payrollType = payrollType,
-                              ),
-                            ),
-                            DataCell(
-                              SizedBox(
-                                width: 250,
-                                child: TextFormField(
-                                  decoration: const InputDecoration(
-                                    border: OutlineInputBorder(),
-                                  ),
-                                  maxLines: 3,
-                                  initialValue: payslipLine.description,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'harus diisi';
-                                    }
-                                    return null;
-                                  },
-                                  onChanged: (value) =>
-                                      payslipLine.description = value,
-                                  onSaved: (value) =>
-                                      payslipLine.description = value ?? '',
-                                  key: ValueKey("${payslipLine.id}-decription"),
+                      const DataColumn(
+                        label: Text('description', style: labelStyle),
+                      ),
+                      const DataColumn(
+                        label: Text('amount', style: labelStyle),
+                      ),
+                      DataColumn(
+                        label: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              payslip.lines.clear();
+                            });
+                          },
+                          child: const Text('Hapus Semua', style: labelStyle),
+                        ),
+                      ),
+                    ],
+                    rows: payslip.lines
+                        .map<DataRow>(
+                          (payslipLine) => DataRow(
+                            key: ObjectKey(payslipLine),
+                            cells: [
+                              DataCell(
+                                DropdownMenu<PayrollGroup>(
+                                  initialSelection: payslipLine.group,
+                                  onSelected: (value) => payslipLine.group =
+                                      value ?? PayrollGroup.earning,
+                                  dropdownMenuEntries: PayrollGroup.values
+                                      .map<DropdownMenuEntry<PayrollGroup>>(
+                                        (value) => DropdownMenuEntry(
+                                          value: value,
+                                          label: value.toString(),
+                                        ),
+                                      )
+                                      .toList(),
                                 ),
                               ),
-                            ),
-                            DataCell(
-                              MoneyFormField(
-                                initialValue: payslipLine.amount,
-                                onChanged: (value) => payslipLine.amount =
-                                    value ?? payslipLine.amount,
-                                onSaved: (value) => payslipLine.amount =
-                                    value ?? payslipLine.amount,
-                                key: ValueKey("${payslipLine.id}-amount"),
+                              DataCell(
+                                AsyncDropdown<PayrollType>(
+                                  modelClass: PayrollTypeClass(),
+                                  allowClear: false,
+                                  selected: payslipLine.payrollType,
+                                  textOnSearch: (payrollType) =>
+                                      payrollType.name,
+                                  onChanged: (payrollType) =>
+                                      payslipLine.payrollType = payrollType,
+                                  onSaved: (payrollType) =>
+                                      payslipLine.payrollType = payrollType,
+                                ),
                               ),
-                            ),
-                            DataCell(
-                              Row(
-                                children: [
-                                  Visibility(
-                                    visible: payslipLine.id != null,
-                                    child: IconButton(
-                                      onPressed: () {
-                                        fetchHistoryByRecord(
-                                          'PayslipLine',
-                                          payslipLine.id,
-                                        );
-                                      },
-                                      icon: const Icon(Icons.history),
+                              DataCell(
+                                SizedBox(
+                                  width: 250,
+                                  child: TextFormField(
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                    ),
+                                    maxLines: 3,
+                                    initialValue: payslipLine.description,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'harus diisi';
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (value) =>
+                                        payslipLine.description = value,
+                                    onSaved: (value) =>
+                                        payslipLine.description = value ?? '',
+                                    key: ValueKey(
+                                      "${payslipLine.id}-decription",
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        payslip.lines.remove(payslipLine);
-                                      });
-                                    },
-                                    child: const Text('Hapus'),
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      )
-                      .toList(),
+                              DataCell(
+                                MoneyFormField(
+                                  initialValue: payslipLine.amount,
+                                  onChanged: (value) => payslipLine.amount =
+                                      value ?? payslipLine.amount,
+                                  onSaved: (value) => payslipLine.amount =
+                                      value ?? payslipLine.amount,
+                                  key: ValueKey("${payslipLine.id}-amount"),
+                                ),
+                              ),
+                              DataCell(
+                                Row(
+                                  children: [
+                                    Visibility(
+                                      visible: payslipLine.id != null,
+                                      child: IconButton(
+                                        onPressed: () {
+                                          fetchHistoryByRecord(
+                                            'PayslipLine',
+                                            payslipLine.id,
+                                          );
+                                        },
+                                        icon: const Icon(Icons.history),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          payslip.lines.remove(payslipLine);
+                                        });
+                                      },
+                                      child: const Text('Hapus'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                        .toList(),
+                  ),
                 ),
               ),
             ),

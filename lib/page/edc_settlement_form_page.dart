@@ -475,6 +475,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
         );
   }
 
+  final _scrollController = ScrollController();
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -492,35 +493,46 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
               const SizedBox(height: 10),
               Form(
                 key: _formKey,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: SizedBox(
-                    child: Table(
-                      border: TableBorder.all(width: 2),
-                      columnWidths: const {
-                        0: FixedColumnWidth(250),
-                        1: FixedColumnWidth(250),
-                        2: FixedColumnWidth(250),
-                        3: FixedColumnWidth(250),
-                        4: FixedColumnWidth(250),
-                        5: FixedColumnWidth(250),
-                        6: FixedColumnWidth(100),
-                      },
-                      children:
-                          [
-                            TableRow(
-                              children: _headerTable(),
-                              decoration: const BoxDecoration(),
-                            ),
-                          ] +
-                          edcSettlements
-                              .where(
-                                (edcSettlement) => !edcSettlement.isDestroyed,
-                              )
-                              .map<TableRow>(
-                                (edcSettlement) => _rowForm(edcSettlement),
-                              )
-                              .toList(),
+                child: Scrollbar(
+                  controller: _scrollController,
+                  thumbVisibility: true,
+                  trackVisibility: true,
+                  thickness: 8,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    controller: _scrollController,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: SizedBox(
+                        child: Table(
+                          border: TableBorder.all(width: 2),
+                          columnWidths: const {
+                            0: FixedColumnWidth(250),
+                            1: FixedColumnWidth(250),
+                            2: FixedColumnWidth(250),
+                            3: FixedColumnWidth(250),
+                            4: FixedColumnWidth(250),
+                            5: FixedColumnWidth(250),
+                            6: FixedColumnWidth(100),
+                          },
+                          children:
+                              [
+                                TableRow(
+                                  children: _headerTable(),
+                                  decoration: const BoxDecoration(),
+                                ),
+                              ] +
+                              edcSettlements
+                                  .where(
+                                    (edcSettlement) =>
+                                        !edcSettlement.isDestroyed,
+                                  )
+                                  .map<TableRow>(
+                                    (edcSettlement) => _rowForm(edcSettlement),
+                                  )
+                                  .toList(),
+                        ),
+                      ),
                     ),
                   ),
                 ),

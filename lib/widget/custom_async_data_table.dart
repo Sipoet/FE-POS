@@ -414,7 +414,7 @@ class _CustomAsyncDataTableState<T extends Model>
         ),
         scrollbar: const TrinaGridScrollbarConfig(
           isAlwaysShown: true,
-          // scrollbarThickness: 10,
+          thickness: 8,
         ),
         style: TrinaGridStyleConfig(
           borderColor: colorScheme.outline,

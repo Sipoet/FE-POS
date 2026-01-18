@@ -133,7 +133,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
                       String searchText = '',
                     }) {
                       return server.get(
-                        'accounts',
+                        'ipos/accounts',
                         queryParam: {
                           'search_text': searchText,
                           'filter[kasbank][eq]': 'true',

@@ -381,7 +381,7 @@ class _CheckPricePageState extends State<CheckPricePage>
     _source?.setShowLoading(true);
     _server
         .get(
-          'items/with_discount',
+          'ipos/items/with_discount',
           queryParam: {
             'search_text': finalSearch,
             'page[page]': '1',

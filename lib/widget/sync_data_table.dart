@@ -11,8 +11,8 @@ import 'package:provider/provider.dart';
 typedef OnLoadedCallBack = void Function(TrinaGridStateManager stateManager);
 typedef OnRowCheckedCallback = void Function(TrinaGridOnRowCheckedEvent event);
 typedef OnSelectedCallback = void Function(TrinaGridOnSelectedEvent event);
-typedef OnRowDoubleTapCallback = void Function(
-    TrinaGridOnRowDoubleTapEvent event);
+typedef OnRowDoubleTapCallback =
+    void Function(TrinaGridOnRowDoubleTapEvent event);
 
 class SyncDataTable<T extends Model> extends StatefulWidget {
   final int fixedLeftColumns;
@@ -48,8 +48,8 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
     this.showSummary = false,
     this.showCheckboxColumn = false,
     this.fixedLeftColumns = 0,
-  })  : columns = columns ?? const [],
-        rows = rows ?? const [];
+  }) : columns = columns ?? const [],
+       rows = rows ?? const [];
 
   @override
   State<SyncDataTable<T>> createState() => _SyncDataTableState<T>();
@@ -72,28 +72,30 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
           showFilter: widget.showFilter,
           isFrozen: index < widget.fixedLeftColumns,
         );
-      }).toList()
-        ..add(TrinaColumn(
-            title: ' ',
-            field: 'model',
-            enableFilterMenuItem: false,
-            enableAutoEditing: false,
-            enableColumnDrag: false,
-            enableSorting: false,
-            enableHideColumnMenuItem: false,
-            enableContextMenu: false,
-            enableEditingMode: false,
-            type: TrinaColumnType.text(defaultValue: null),
-            hide: widget.renderAction == null,
-            frozen: TrinaColumnFrozen.end,
-            renderer: widget.renderAction == null
-                ? null
-                : (TrinaColumnRendererContext rendererContext) =>
+      }).toList()..add(
+        TrinaColumn(
+          title: ' ',
+          field: 'model',
+          enableFilterMenuItem: false,
+          enableAutoEditing: false,
+          enableColumnDrag: false,
+          enableSorting: false,
+          enableHideColumnMenuItem: false,
+          enableContextMenu: false,
+          enableEditingMode: false,
+          type: TrinaColumnType.text(defaultValue: null),
+          hide: widget.renderAction == null,
+          frozen: TrinaColumnFrozen.end,
+          renderer: widget.renderAction == null
+              ? null
+              : (TrinaColumnRendererContext rendererContext) =>
                     widget.renderAction!(rendererContext.cell.value as T),
-            width: widget.renderAction == null
-                ? 0
-                : widget.actionColumnWidth ?? TrinaGridSettings.columnWidth,
-            minWidth: 0));
+          width: widget.renderAction == null
+              ? 0
+              : widget.actionColumnWidth ?? TrinaGridSettings.columnWidth,
+          minWidth: 0,
+        ),
+      );
 
   @override
   void initState() {
@@ -135,35 +137,37 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           SizedBox(
-              width: 50,
-              child: SubmenuButton(
-                  controller: _menuController,
-                  menuChildren: [
-                    MenuItemButton(
-                      child: const Text('hide/show column'),
-                      onPressed: () {
-                        _menuController.close();
-                        displayShowHideColumn(stateManager);
-                      },
-                    ),
-                  ],
-                  child: const Icon(Icons.more_vert)))
+            width: 50,
+            child: SubmenuButton(
+              controller: _menuController,
+              menuChildren: [
+                MenuItemButton(
+                  child: const Text('hide/show column'),
+                  onPressed: () {
+                    _menuController.close();
+                    displayShowHideColumn(stateManager);
+                  },
+                ),
+              ],
+              child: const Icon(Icons.more_vert),
+            ),
+          ),
         ],
       ),
       createFooter: (stateManager) {
-        return TrinaPagination(
-          stateManager,
-          pageSizeToMove: 1,
-        );
+        return TrinaPagination(stateManager, pageSizeToMove: 1);
       },
       configuration: TrinaGridConfiguration(
-          scrollbar: const TrinaGridScrollbarConfig(
-            isAlwaysShown: true,
-          ),
-          style: TrinaGridStyleConfig(
-              borderColor: colorScheme.outline,
-              rowColor: colorScheme.secondaryContainer,
-              evenRowColor: colorScheme.onPrimary)),
+        scrollbar: const TrinaGridScrollbarConfig(
+          isAlwaysShown: true,
+          thickness: 8,
+        ),
+        style: TrinaGridStyleConfig(
+          borderColor: colorScheme.outline,
+          rowColor: colorScheme.secondaryContainer,
+          evenRowColor: colorScheme.onPrimary,
+        ),
+      ),
     );
   }
 }
