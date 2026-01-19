@@ -10,6 +10,7 @@ import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/time_form_field.dart';
+import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/role.dart';
 import 'package:provider/provider.dart';
@@ -713,6 +714,153 @@ class _RoleFormPageState extends State<RoleFormPage>
     fontSize: 16,
     fontWeight: FontWeight.bold,
   );
+
+  Widget controllersPanel() {
+    return Column(
+      children: [
+        TextField(
+          onChanged: (val) => setState(() {
+            _searchText = val;
+          }),
+          decoration: InputDecoration(
+            border: OutlineInputBorder(),
+            label: Text('Cari'),
+            suffixIcon: Icon(Icons.search),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            border: BoxBorder.all(color: Colors.black, width: 2),
+          ),
+          height: 250,
+          child: ListView(
+            children: controllerList
+                .where(
+                  (e) =>
+                      _searchText.isEmpty ||
+                      e.label.insensitiveContains(_searchText),
+                )
+                .map<Widget>(
+                  (controllerData) => ListTile(
+                    title: Text(controllerData.label),
+                    selected: currentController == controllerData,
+                    onTap: () {
+                      setState(() {
+                        currentController = controllerData;
+                      });
+
+                      if (currentController != null) {
+                        fetchColumnNames(currentController!);
+                        fetchControllerActions(currentController!);
+                      }
+                    },
+                    selectedColor: Colors.green,
+                    trailing:
+                        currentAction[controllerData.value]?.values.any(
+                              (e) => e,
+                            ) ==
+                            true
+                        ? Icon(Icons.circle, size: 15, color: Colors.green)
+                        : null,
+                  ),
+                )
+                .toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget actionPanel() {
+    return Column(
+      spacing: 15,
+      children: [
+        Text(
+          'Aksi',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        Visibility(
+          visible: currentController != null,
+          child: Wrap(
+            alignment: .start,
+            crossAxisAlignment: .start,
+            children: actionList
+                .map<Widget>(
+                  (actionData) => SizedBox(
+                    width: 200,
+                    child: CheckboxListTile(
+                      value:
+                          currentAction[currentController?.value]?[actionData
+                              .value] ==
+                          true,
+                      title: Text(actionData.label),
+                      onChanged: (val) {
+                        if (currentController == null) {
+                          return;
+                        }
+                        if (currentAction[currentController!.value] == null) {
+                          currentAction[currentController!.value] = {};
+                        }
+                        setState(() {
+                          currentAction[currentController!.value]![actionData
+                                  .value] =
+                              val == true;
+                        });
+                      },
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget columnPanel() {
+    return Column(
+      spacing: 15,
+      children: [
+        Text(
+          'Kolom',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        Wrap(
+          alignment: .start,
+          crossAxisAlignment: .start,
+          children: columnList
+              .map(
+                (column) => SizedBox(
+                  width: 200,
+                  child: CheckboxListTile(
+                    value:
+                        currentColumn[currentController?.className]?[column
+                            .name] ==
+                        true,
+                    title: Text(column.humanizeName),
+                    onChanged: (val) {
+                      if (currentController == null) {
+                        return;
+                      }
+                      if (currentColumn[currentController!.className] == null) {
+                        currentColumn[currentController!.className] = {};
+                      }
+                      setState(() {
+                        currentColumn[currentController!.className]![column
+                                .name] =
+                            val == true;
+                      });
+                    },
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  static const double maxWidthControllerPanel = 300;
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -729,8 +877,7 @@ class _RoleFormPageState extends State<RoleFormPage>
           children: [
             SizedBox(
               height: height,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
+              child: VerticalBodyScroll(
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -764,211 +911,58 @@ class _RoleFormPageState extends State<RoleFormPage>
                             ),
                           ),
                           const SizedBox(height: 10),
-                          const Divider(thickness: 3.0),
-                          const Text(
-                            'Akses Halaman',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Wrap(
-                            alignment: WrapAlignment.start,
-                            runAlignment: WrapAlignment.start,
-                            runSpacing: 15,
-                            spacing: 15,
-                            children: [
-                              Container(
-                                constraints: BoxConstraints(maxWidth: 300),
-                                child: Column(
-                                  children: [
-                                    TextField(
-                                      onChanged: (val) => setState(() {
-                                        _searchText = val;
-                                      }),
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(),
-                                        label: Text('Cari'),
-                                        suffixIcon: Icon(Icons.search),
-                                      ),
-                                    ),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        border: BoxBorder.all(
-                                          color: Colors.black,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      height: 250,
-                                      child: ListView(
-                                        children: controllerList
-                                            .where(
-                                              (e) =>
-                                                  _searchText.isEmpty ||
-                                                  e.label.insensitiveContains(
-                                                    _searchText,
-                                                  ),
-                                            )
-                                            .map<Widget>(
-                                              (controllerData) => ListTile(
-                                                title: Text(
-                                                  controllerData.label,
-                                                ),
-                                                selected:
-                                                    currentController ==
-                                                    controllerData,
-                                                onTap: () {
-                                                  setState(() {
-                                                    currentController =
-                                                        controllerData;
-                                                  });
 
-                                                  if (currentController !=
-                                                      null) {
-                                                    fetchColumnNames(
-                                                      currentController!,
-                                                    );
-                                                    fetchControllerActions(
-                                                      currentController!,
-                                                    );
-                                                  }
-                                                },
-                                                selectedColor: Colors.green,
-                                                trailing:
-                                                    currentAction[controllerData
-                                                                .value]
-                                                            ?.values
-                                                            .any((e) => e) ==
-                                                        true
-                                                    ? Icon(
-                                                        Icons.circle,
-                                                        size: 15,
-                                                        color: Colors.green,
-                                                      )
-                                                    : null,
-                                              ),
-                                            )
-                                            .toList(),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                          Align(
+                            alignment: .centerLeft,
+                            child: const Text(
+                              'Akses Halaman',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
                               ),
-                              Container(
-                                constraints: BoxConstraints(
-                                  minWidth: 450,
-                                  maxWidth: 800,
-                                ),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      'Aksi',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Visibility(
-                                      visible: currentController != null,
-                                      child: Wrap(
-                                        children: actionList
-                                            .map<Widget>(
-                                              (actionData) => SizedBox(
-                                                width: 200,
-                                                child: CheckboxListTile(
-                                                  value:
-                                                      currentAction[currentController
-                                                          ?.value]?[actionData
-                                                          .value] ==
-                                                      true,
-                                                  title: Text(actionData.label),
-                                                  onChanged: (val) {
-                                                    if (currentController ==
-                                                        null) {
-                                                      return;
-                                                    }
-                                                    if (currentAction[currentController!
-                                                            .value] ==
-                                                        null) {
-                                                      currentAction[currentController!
-                                                              .value] =
-                                                          {};
-                                                    }
-                                                    setState(() {
-                                                      currentAction[currentController!
-                                                              .value]![actionData
-                                                              .value] =
-                                                          val == true;
-                                                    });
-                                                  },
-                                                ),
-                                              ),
-                                            )
-                                            .toList(),
-                                      ),
-                                    ),
-                                    const Divider(),
-                                    Text(
-                                      'Kolom',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Wrap(
-                                      children: columnList
-                                          .map(
-                                            (column) => SizedBox(
-                                              width: 200,
-                                              child: CheckboxListTile(
-                                                value:
-                                                    currentColumn[currentController
-                                                        ?.className]?[column
-                                                        .name] ==
-                                                    true,
-                                                title: Text(
-                                                  column.humanizeName,
-                                                ),
-                                                onChanged: (val) {
-                                                  if (currentController ==
-                                                      null) {
-                                                    return;
-                                                  }
-                                                  if (currentColumn[currentController!
-                                                          .className] ==
-                                                      null) {
-                                                    currentColumn[currentController!
-                                                            .className] =
-                                                        {};
-                                                  }
-                                                  setState(() {
-                                                    currentColumn[currentController!
-                                                            .className]![column
-                                                            .name] =
-                                                        val == true;
-                                                  });
-                                                },
-                                              ),
-                                            ),
-                                          )
-                                          .toList(),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: ElevatedButton(
-                              onPressed: () => setState(() {
-                                role.columnAuthorizes.add(
-                                  ColumnAuthorize(table: '', columns: []),
-                                );
-                              }),
-                              child: const Text('Tambah'),
                             ),
                           ),
+                          const Divider(thickness: 3.0),
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              if (constraints.maxWidth > 800) {
+                                return Row(
+                                  mainAxisAlignment: .start,
+                                  spacing: 15,
+                                  children: [
+                                    Container(
+                                      constraints: BoxConstraints(
+                                        maxWidth: maxWidthControllerPanel,
+                                      ),
+                                      child: controllersPanel(),
+                                    ),
+                                    Flexible(
+                                      child: Column(
+                                        mainAxisAlignment: .start,
+                                        crossAxisAlignment: .start,
+                                        children: [
+                                          actionPanel(),
+                                          const Divider(),
+                                          columnPanel(),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              } else {
+                                return Column(
+                                  spacing: 10,
+                                  children: [
+                                    controllersPanel(),
+                                    actionPanel(),
+                                    const Divider(),
+                                    columnPanel(),
+                                  ],
+                                );
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 10),
                           const Text(
                             "Jadwal Kerja",
                             style: TextStyle(

@@ -41,9 +41,12 @@ abstract class Model with ChangeNotifier {
     rawData = {'data': json, 'included': included};
   }
 
-  Future<bool> refresh(Server server) {
+  Future<bool> refresh(Server server, {List<String> include = const []}) {
     return server
-        .get("$path/${id.toString()}")
+        .get(
+          "$path/${id.toString()}",
+          queryParam: {'include': include.join(',')},
+        )
         .then(
           (response) {
             if (response.statusCode == 200) {
