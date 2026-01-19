@@ -12,7 +12,8 @@ import 'package:provider/provider.dart';
 
 class UserFormPage extends StatefulWidget {
   final User user;
-  const UserFormPage({super.key, required this.user});
+  final bool fromProfile;
+  const UserFormPage({super.key, this.fromProfile = false, required this.user});
 
   @override
   State<UserFormPage> createState() => _UserFormPageState();
@@ -137,7 +138,7 @@ class _UserFormPageState extends State<UserFormPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Visibility(
-                    visible: user.id != null,
+                    visible: user.id != null && !widget.fromProfile,
                     child: Row(
                       children: [
                         ElevatedButton.icon(

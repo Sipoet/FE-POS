@@ -11,11 +11,12 @@ import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:tabbed_view/tabbed_view.dart';
 
 class MobileLayout extends StatefulWidget {
-  const MobileLayout(
-      {super.key,
-      required this.menuTree,
-      required this.host,
-      required this.userName});
+  const MobileLayout({
+    super.key,
+    required this.menuTree,
+    required this.host,
+    required this.userName,
+  });
 
   final List<Menu> menuTree;
   final String userName;
@@ -40,8 +41,8 @@ class _MobileLayoutState extends State<MobileLayout>
       appBar: AppBar(
         toolbarHeight:
             MediaQuery.of(context).orientation == Orientation.portrait
-                ? null
-                : 30,
+            ? null
+            : 30,
         title: Tooltip(
           message: message,
           child: Text(
@@ -52,9 +53,7 @@ class _MobileLayoutState extends State<MobileLayout>
           ),
         ),
       ),
-      drawer: LeftMenubar(
-        menuTree: widget.menuTree,
-      ),
+      drawer: LeftMenubar(menuTree: widget.menuTree),
       body: const MobileTab(),
     );
   }
@@ -74,12 +73,12 @@ class _MobileTabState extends State<MobileTab> {
     return TabbedViewTheme(
       data: TabbedViewThemeData.mobile(colorSet: Colors.grey, fontSize: 16),
       child: TabbedView(
-          onTabSelection: (tabIndex) =>
-              tabManager.selectedIndex = tabIndex ?? -1,
-          onTabClose: (tabIndex, tabData) {
-            tabManager.goTo(tabIndex - 1);
-          },
-          controller: tabManager.controller),
+        onTabSelection: (tabIndex) => tabManager.selectedIndex = tabIndex ?? -1,
+        onTabClose: (tabIndex, tabData) {
+          tabManager.goTo(tabIndex - 1);
+        },
+        controller: tabManager.controller,
+      ),
     );
   }
 }
@@ -101,9 +100,11 @@ class _LeftMenubarState extends State<LeftMenubar>
   @override
   void initState() {
     tabManager = context.read<TabManager>();
-    appVersion().then((appVersion) => setState(() {
-          version = appVersion;
-        }));
+    appVersion().then(
+      (appVersion) => setState(() {
+        version = appVersion;
+      }),
+    );
     super.initState();
   }
 
@@ -112,42 +113,49 @@ class _LeftMenubarState extends State<LeftMenubar>
     final menuWidgets = listMenuNested(widget.menuTree);
     final server = context.read<Server>();
     if (!isWeb()) {
-      menuWidgets.add(ListTile(
-        leading: const Icon(Icons.update),
-        onTap: () {
-          checkUpdate(server, isManual: true);
-        },
-        title: const Text('Check Update App'),
-      ));
-      menuWidgets.add(ListTile(
-        leading: const Icon(Icons.document_scanner),
-        onTap: () {
-          openAboutDialog(version);
-        },
-        title: const Text('About'),
-      ));
+      menuWidgets.add(
+        ListTile(
+          leading: const Icon(Icons.update),
+          onTap: () {
+            checkUpdate(server, isManual: true);
+          },
+          title: const Text('Check Update App'),
+        ),
+      );
+      menuWidgets.add(
+        ListTile(
+          leading: const Icon(Icons.document_scanner),
+          onTap: () {
+            openAboutDialog(version);
+          },
+          title: const Text('About'),
+        ),
+      );
     }
-    menuWidgets.add(ListTile(
-      leading: const Icon(Icons.person_2),
-      onTap: () {
-        final server = context.read<Server>();
-        var user = User(username: server.userName);
-        tabManager.addTab('Profilku', UserFormPage(user: user));
-      },
-      title: const Text('Profilku'),
-    ));
-    menuWidgets.add(ListTile(
-      leading: const Icon(Icons.logout),
-      onTap: () {
-        logout(server);
-      },
-      title: const Text('Log Out'),
-    ));
-    return Drawer(
-      child: ListView(
-        children: menuWidgets,
+    menuWidgets.add(
+      ListTile(
+        leading: const Icon(Icons.person_2),
+        onTap: () {
+          final server = context.read<Server>();
+          var user = User(username: server.userName);
+          tabManager.addTab(
+            'Profilku',
+            UserFormPage(user: user, fromProfile: true),
+          );
+        },
+        title: const Text('Profilku'),
       ),
     );
+    menuWidgets.add(
+      ListTile(
+        leading: const Icon(Icons.logout),
+        onTap: () {
+          logout(server);
+        },
+        title: const Text('Log Out'),
+      ),
+    );
+    return Drawer(child: ListView(children: menuWidgets));
   }
 
   List<Widget> listMenuNested(List<Menu> menus) {
@@ -159,15 +167,17 @@ class _LeftMenubarState extends State<LeftMenubar>
       iconStatus[menu.key] = menu.isClosed;
       container.add(decorateMenu(menu));
       if (menu.children.isNotEmpty) {
-        container.add(Visibility(
-          visible: iconStatus[menu.key] == false,
-          child: ListView(
-            padding: const EdgeInsets.only(left: 10),
-            physics: const ClampingScrollPhysics(),
-            shrinkWrap: true,
-            children: listMenuNested(menu.children),
+        container.add(
+          Visibility(
+            visible: iconStatus[menu.key] == false,
+            child: ListView(
+              padding: const EdgeInsets.only(left: 10),
+              physics: const ClampingScrollPhysics(),
+              shrinkWrap: true,
+              children: listMenuNested(menu.children),
+            ),
           ),
-        ));
+        );
       }
     }
     return container;
@@ -197,9 +207,11 @@ class _LeftMenubarState extends State<LeftMenubar>
             iconStatus[menu.key] = menu.isClosed;
           });
         },
-        trailing: Icon(iconStatus[menu.key] == true
-            ? Icons.arrow_drop_down
-            : Icons.arrow_drop_up),
+        trailing: Icon(
+          iconStatus[menu.key] == true
+              ? Icons.arrow_drop_down
+              : Icons.arrow_drop_up,
+        ),
       );
     }
   }
