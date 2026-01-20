@@ -21,7 +21,7 @@ class ItemPage extends StatefulWidget {
 class _ItemPageState extends State<ItemPage> with DefaultResponse {
   late final TrinaGridStateManager _source;
   late final Server server;
-  String _searchText = '';
+
   List<Item> items = [];
   final cancelToken = CancelToken();
   late final Flash flash;
@@ -51,7 +51,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
 
   Future<DataTableResponse<Item>> fetchItems(QueryRequest request) {
     request.include.addAll(['supplier', 'brand', 'item_type']);
-    request.searchText = _searchText;
+
     return ItemClass()
         .finds(server, request)
         .then(
@@ -66,20 +66,6 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
         );
   }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
-  }
-
   void refreshTable() {
     _source.refreshTable();
   }
@@ -91,27 +77,8 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 10, bottom: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _searchText = '';
-                    });
-                    refreshTable();
-                  },
-                  tooltip: 'Reset Table',
-                  icon: const Icon(Icons.refresh),
-                ),
-                SizedBox(
-                  width: 150,
-                  child: TextField(
-                    decoration: const InputDecoration(hintText: 'Search Text'),
-                    onChanged: searchChanged,
-                    onSubmitted: searchChanged,
-                  ),
-                ),
+            child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+
               ],
             ),
           ),

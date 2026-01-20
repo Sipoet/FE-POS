@@ -230,6 +230,8 @@ extension TableStateMananger on TrinaGridStateManager {
     notifyListeners();
   }
 
+  List get models => rows.map((e) => e.cells[modelKey]!.value).toList();
+
   void setModels(Iterable models) {
     if (rows.isNotEmpty) {
       removeAllRows();

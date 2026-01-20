@@ -23,7 +23,7 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
   late final TrinaGridStateManager _source;
   late final Server server;
   final _menuController = MenuController();
-  String _searchText = '';
+
   final cancelToken = CancelToken();
   late Flash flash;
   List<FilterData> _filters = [];
@@ -58,7 +58,7 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
     QueryRequest request,
   ) {
     request.filters = _filters;
-    request.searchText = _searchText;
+
     request.include.add('customer_group');
     return CustomerGroupDiscountClass()
         .finds(server, request)
@@ -128,20 +128,6 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
     );
   }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
-  }
-
   void toggleDiscount() {
     server.post('/customer_group_discounts/toggle_discount').then((response) {
       if (response.statusCode == 200) {
@@ -173,26 +159,6 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Search Text',
-                      ),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(

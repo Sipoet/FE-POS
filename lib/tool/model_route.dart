@@ -7,41 +7,41 @@ class ModelRoute {
   const ModelRoute();
 
   static const Map<String, Widget> _tablePages = {
-    'supplier': SupplierPage(),
-    'item': ItemPage(),
-    'brand': BrandPage(),
-    'item_type': ItemTypePage(),
-    'employee': EmployeePage(),
-    'payroll': PayrollPage(),
-    'payslip': PayslipPage(),
-    'role': RolePage(),
-    'discount': DiscountPage(),
-    'employee_attendance': EmployeeAttendancePage(),
-    'user': UserPage(),
-    'holiday': HolidayPage(),
-    'employee_leave': EmployeeLeavePage(),
-    'payment_provider': PaymentProviderPage(),
-    'payment_type': PaymentTypePage(),
-    'payroll_type': PayrollTypePage(),
+    'Supplier': SupplierPage(),
+    'Item': ItemPage(),
+    'Brand': BrandPage(),
+    'ItemType': ItemTypePage(),
+    'Employee': EmployeePage(),
+    'Payroll': PayrollPage(),
+    'Payslip': PayslipPage(),
+    'Role': RolePage(),
+    'Discount': DiscountPage(),
+    'EmployeeAttendance': EmployeeAttendancePage(),
+    'User': UserPage(),
+    'Holiday': HolidayPage(),
+    'EmployeeLeave': EmployeeLeavePage(),
+    'PaymentProvider': PaymentProviderPage(),
+    'PaymentType': PaymentTypePage(),
+    'PayrollType': PayrollTypePage(),
   };
 
   static const Map<String, Type> _modelList = {
-    'supplier': Supplier,
-    'item': Item,
-    'brand': Brand,
-    'item_type': ItemType,
-    'employee': Employee,
-    'payroll': Payroll,
-    'payslip': Payslip,
-    'role': Role,
-    'discount': Discount,
-    'employee_attendance': EmployeeAttendance,
-    'user': User,
-    'holiday': Holiday,
-    'employee_leave': EmployeeLeave,
-    'payment_provider': PaymentProvider,
-    'payment_type': PaymentType,
-    'payroll_type': PayrollType,
+    'Ipos::Supplier': Supplier,
+    'Ipos::Item': Item,
+    'Ipos::Brand': Brand,
+    'Ipos::ItemType': ItemType,
+    'Employee': Employee,
+    'Payroll': Payroll,
+    'Payslip': Payslip,
+    'Role': Role,
+    'Discount': Discount,
+    'EmployeeAttendance': EmployeeAttendance,
+    'User': User,
+    'Holiday': Holiday,
+    'EmployeeLeave': EmployeeLeave,
+    'PaymentProvider': PaymentProvider,
+    'PaymentType': PaymentType,
+    'PayrollType': PayrollType,
   };
 
   static final Map<String, Widget Function(Model model)> _detailPages = {
@@ -84,6 +84,19 @@ class ModelRoute {
       key: ObjectKey(model),
       payrollType: model as PayrollType,
     ),
+    'Purchase': (model) =>
+        PurchaseFormPage(key: ObjectKey(model), purchase: model as Purchase),
+    'PurchaseOrder': (model) => PurchaseOrderFormPage(
+      key: ObjectKey(model),
+      purchaseOrder: model as PurchaseOrder,
+    ),
+    'PurchaseReturn': (model) => PurchaseReturnFormPage(
+      key: ObjectKey(model),
+      purchaseReturn: model as PurchaseReturn,
+    ),
+    'Transfer': (model) =>
+        TransferFormPage(key: ObjectKey(model), transfer: model as Transfer),
+    'Sale': (model) => SaleFormPage(key: ObjectKey(model), sale: model as Sale),
   };
 
   Type classOf(String className) {

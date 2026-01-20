@@ -22,7 +22,7 @@ class _CashTransactionReportPageState extends State<CashTransactionReportPage>
   late final Server _server;
   late final TrinaGridStateManager _source;
   List<FilterData> _filters = [];
-  String _searchText = '';
+
   @override
   void initState() {
     _server = context.read<Server>();
@@ -32,30 +32,23 @@ class _CashTransactionReportPageState extends State<CashTransactionReportPage>
   }
 
   Future<DataTableResponse<CashTransactionReport>> fetchData(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    request.include = ['detail_account', 'payment_account'];
-    return CashTransactionReportClass().finds(_server, request).then(
-        (value) => DataTableResponse<CashTransactionReport>(
-            models: value.models, totalPage: value.metadata['total_pages']),
-        onError: (error) => defaultErrorResponse(
-            error: error,
-            valueWhenError: DataTableResponse<CashTransactionReport>.empty()));
-  }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      _source.refreshTable();
-    }
+    request.include = ['detail_account', 'payment_account'];
+    return CashTransactionReportClass()
+        .finds(_server, request)
+        .then(
+          (value) => DataTableResponse<CashTransactionReport>(
+            models: value.models,
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) => defaultErrorResponse(
+            error: error,
+            valueWhenError: DataTableResponse<CashTransactionReport>.empty(),
+          ),
+        );
   }
 
   @override
@@ -74,29 +67,7 @@ class _CashTransactionReportPageState extends State<CashTransactionReportPage>
               _source.refreshTable();
             },
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    _searchText = '';
-                  });
-                  _source.refreshTable();
-                },
-                tooltip: 'Reset Table',
-                icon: const Icon(Icons.refresh),
-              ),
-              SizedBox(
-                width: 250,
-                child: TextField(
-                  decoration: const InputDecoration(hintText: 'Search Text'),
-                  onChanged: searchChanged,
-                  onSubmitted: searchChanged,
-                ),
-              ),
-            ],
-          ),
+
           SizedBox(
             height: bodyScreenHeight,
             child: CustomAsyncDataTable<CashTransactionReport>(
@@ -109,7 +80,7 @@ class _CashTransactionReportPageState extends State<CashTransactionReportPage>
               fixedLeftColumns: 1,
               columns: columns,
             ),
-          )
+          ),
         ],
       ),
     );

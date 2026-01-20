@@ -24,7 +24,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
     with AutomaticKeepAliveClientMixin, TextFormatter, DefaultResponse {
   late final TrinaGridStateManager _source;
   late final Server server;
-  String _searchText = '';
+
   List<EmployeeAttendance> employeeAttendances = [];
   final cancelToken = CancelToken();
   late Flash flash;
@@ -60,7 +60,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
     QueryRequest request,
   ) {
     request.filters = _filters;
-    request.searchText = _searchText;
+
     request.include = ['employee'];
     return EmployeeAttendanceClass()
         .finds(server, request)
@@ -140,20 +140,6 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
     );
   }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
-  }
-
   final _menuController = MenuController();
 
   @override
@@ -176,26 +162,6 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Search Text',
-                      ),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(

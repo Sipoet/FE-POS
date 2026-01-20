@@ -4,6 +4,7 @@ import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
+import 'package:fe_pos/widget/mobile_table.dart';
 
 import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
@@ -66,7 +67,7 @@ class _CustomAsyncDataTableState<T extends Model>
     extends State<CustomAsyncDataTable<T>>
     with TrinaTableDecorator<T>, PlatformChecker, TextFormatter {
   late final List<TrinaColumn> columns;
-  late final TrinaGridStateManager _source;
+  TrinaGridStateManager? _source;
   List selectedValues = [];
 
   @override
@@ -139,7 +140,7 @@ class _CustomAsyncDataTableState<T extends Model>
 
   List<FilterData> remoteFilters() {
     List<FilterData> filter = [];
-    for (final row in _source.filterRows) {
+    for (final row in _source?.filterRows ?? []) {
       filter.add(
         ComparisonFilterData(
           key: row.cells['column']!.value,
@@ -221,36 +222,32 @@ class _CustomAsyncDataTableState<T extends Model>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraint) {
+        if (constraint.maxWidth > 480) {
+          return trinaGrid(colorScheme);
+        } else {
+          return MobileTable<T>(
+            columns: widget.columns,
+            fetchData: widget.fetchData,
+            renderAction: widget.renderAction,
+          );
+        }
+      },
+    );
+  }
+
+  String? _searchText;
+  Widget trinaGrid(ColorScheme colorScheme) {
     return TrinaGrid(
       columns: columns,
       rows: <TrinaRow>[],
-      onSorted: (event) {
-        var sorts = <SortData>[];
-        if (!event.column.sort.isNone) {
-          sorts = [
-            SortData(
-              key: event.column.field,
-              isAscending: event.column.sort.isAscending,
-            ),
-          ];
-        }
-        cancelToken?.cancel();
-        cancelToken = CancelToken();
-        var request = QueryRequest(
-          page: 1,
-          filters: remoteFilters(),
-          sorts: sorts,
-          cancelToken: cancelToken,
-        );
-
-        widget.fetchData(request);
-      },
       onLoaded: (TrinaGridOnLoadedEvent event) {
         _source = event.stateManager;
-        _source.setShowColumnFilter(widget.showFilter);
-        _source.setShowColumnFooter(widget.showSummary);
-        _source.columnFooterHeight = 130.0;
-        _source.eventManager!.listener((event) {
+        _source!.setShowColumnFilter(widget.showFilter);
+        _source!.setShowColumnFooter(widget.showSummary);
+        _source!.columnFooterHeight = 130.0;
+        _source!.eventManager!.listener((event) {
           if (event is TrinaGridChangeColumnFilterEvent) {
             final columType = event.column.type;
             if (columType is TrinaColumnTypeModelSelect) {
@@ -265,7 +262,7 @@ class _CustomAsyncDataTableState<T extends Model>
                     .map<String>((item) => item.id.toString())
                     .toList()
                     .join(',');
-                List<TrinaRow> filterRows = _source.filterRows
+                List<TrinaRow> filterRows = _source!.filterRows
                     .where(
                       (filterRow) =>
                           filterRow.cells['column']!.value ==
@@ -275,7 +272,7 @@ class _CustomAsyncDataTableState<T extends Model>
                     )
                     .toList();
                 if (filterRows.isEmpty) {
-                  _source.filterRows.add(
+                  _source!.filterRows.add(
                     FilterHelper.createFilterRow(
                       filterType: TrinaFilterTypeEquals(),
                       filterValue: filterValue,
@@ -287,15 +284,15 @@ class _CustomAsyncDataTableState<T extends Model>
                     value: filterValue,
                   );
                 }
-                _source.setFilterRows(_source.filterRows);
-                _source.refreshTable();
+                _source!.setFilterRows(_source!.filterRows);
+                _source!.refreshTable();
               });
             }
           }
         });
 
         if (widget.onLoaded is Function) {
-          widget.onLoaded!(_source);
+          widget.onLoaded!(_source!);
         }
       },
       noRowsWidget: const Text('Data tidak ditemukan'),
@@ -323,8 +320,24 @@ class _CustomAsyncDataTableState<T extends Model>
         }
       },
       createHeader: (stateManager) => Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: .spaceBetween,
         children: [
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                onSubmitted: (value) {
+                  _searchText = value;
+                  stateManager.refreshTable();
+                },
+                decoration: InputDecoration(
+                  hintText: 'Search',
+                  isDense: true,
+                  prefixIcon: Icon(Icons.search, size: 20),
+                ),
+              ),
+            ),
+          ),
           SizedBox(
             width: 50,
             child: SubmenuButton(
@@ -357,6 +370,7 @@ class _CustomAsyncDataTableState<T extends Model>
             cancelToken = CancelToken();
             var request = QueryRequest(
               page: event.page,
+              searchText: _searchText,
               cancelToken: cancelToken,
             );
             final sortColumn = event.sortColumn;

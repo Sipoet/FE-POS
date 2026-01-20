@@ -22,7 +22,7 @@ class _PurchasePaymentHistoryPageState extends State<PurchasePaymentHistoryPage>
   late final Server _server;
   late final TrinaGridStateManager _source;
   List<FilterData> _filters = [];
-  String _searchText = '';
+
   @override
   void initState() {
     _server = context.read<Server>();
@@ -32,30 +32,23 @@ class _PurchasePaymentHistoryPageState extends State<PurchasePaymentHistoryPage>
   }
 
   Future<DataTableResponse<PurchasePaymentHistory>> fetchData(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    request.include = ['supplier', 'payment_account'];
-    return PurchasePaymentHistoryClass().finds(_server, request).then(
-        (value) => DataTableResponse<PurchasePaymentHistory>(
-            models: value.models, totalPage: value.metadata['total_pages']),
-        onError: (error) => defaultErrorResponse(
-            error: error,
-            valueWhenError: DataTableResponse<PurchasePaymentHistory>.empty()));
-  }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      _source.refreshTable();
-    }
+    request.include = ['supplier', 'payment_account'];
+    return PurchasePaymentHistoryClass()
+        .finds(_server, request)
+        .then(
+          (value) => DataTableResponse<PurchasePaymentHistory>(
+            models: value.models,
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) => defaultErrorResponse(
+            error: error,
+            valueWhenError: DataTableResponse<PurchasePaymentHistory>.empty(),
+          ),
+        );
   }
 
   @override
@@ -73,29 +66,7 @@ class _PurchasePaymentHistoryPageState extends State<PurchasePaymentHistoryPage>
               _source.refreshTable();
             },
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    _searchText = '';
-                  });
-                  _source.refreshTable();
-                },
-                tooltip: 'Reset Table',
-                icon: const Icon(Icons.refresh),
-              ),
-              SizedBox(
-                width: 250,
-                child: TextField(
-                  decoration: const InputDecoration(hintText: 'Search Text'),
-                  onChanged: searchChanged,
-                  onSubmitted: searchChanged,
-                ),
-              ),
-            ],
-          ),
+
           SizedBox(
             height: bodyScreenHeight,
             child: CustomAsyncDataTable<PurchasePaymentHistory>(
@@ -108,7 +79,7 @@ class _PurchasePaymentHistoryPageState extends State<PurchasePaymentHistoryPage>
               fixedLeftColumns: 1,
               columns: columns,
             ),
-          )
+          ),
         ],
       ),
     );

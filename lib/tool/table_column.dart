@@ -180,11 +180,11 @@ class TextTableColumnType extends TableColumnType<String> {
 
   @override
   Widget renderCell({
-    required String value,
+    required dynamic value,
     required TableColumn column,
     TabManager? tabManager,
   }) {
-    return Text(value);
+    return Text(value.toString());
   }
 
   @override
@@ -942,15 +942,18 @@ class EnumTableColumnType extends TableColumnType<String> with TextFormatter {
 
   @override
   Widget renderCell({
-    required String value,
+    required Object value,
     required TableColumn column,
     TabManager? tabManager,
   }) {
-    return Text(value.toTitleCase());
+    String text = convert(value);
+    return Text(text);
   }
 
   @override
-  String convert(dynamic value) => value.toString();
+  String convert(dynamic value) => value is EnumTranslation
+      ? value.humanize()
+      : value.toString().toTitleCase();
 
   @override
   TrinaColumnType get trinaColumnType =>

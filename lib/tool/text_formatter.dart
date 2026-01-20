@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' show TimeOfDay;
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fe_pos/tool/custom_type.dart';
 
@@ -7,6 +7,10 @@ mixin TextFormatter {
     return data.format24Hour();
   }
 
+  static const labelStyle = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.bold,
+  );
   String dateFormat(DateTime date) {
     return DateFormat('dd/MM/y', 'id_ID').format(date);
   }

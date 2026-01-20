@@ -20,16 +20,16 @@ class EmployeePage extends StatefulWidget {
 
 class _EmployeePageState extends State<EmployeePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late TrinaGridStateManager _source;
   late final Server server;
   late final Setting setting;
-  String _searchText = '';
+
   final cancelToken = CancelToken();
   late Flash flash;
   final _menuController = MenuController();
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
-  Map<int, Employee> _selected = {};
+  final Map<int, Employee> _selected = {};
   @override
   bool get wantKeepAlive => true;
 
@@ -56,7 +56,6 @@ class _EmployeePageState extends State<EmployeePage>
 
   Future<DataTableResponse<Employee>> fetchEmployees(QueryRequest request) {
     request.filters = _filters;
-    request.searchText = _searchText;
     request.include = ['payroll', 'role'];
     return EmployeeClass()
         .finds(server, request)
@@ -185,20 +184,6 @@ class _EmployeePageState extends State<EmployeePage>
     );
   }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
-  }
-
   List<Widget> actionButtons(Employee employee, int index) {
     return <Widget>[
       IconButton(
@@ -250,26 +235,6 @@ class _EmployeePageState extends State<EmployeePage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Search Text',
-                      ),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(

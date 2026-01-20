@@ -21,7 +21,7 @@ class _PurchaseReturnPageState extends State<PurchaseReturnPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final TrinaGridStateManager _source;
   late final Server server;
-  String _searchText = '';
+
   List<PurchaseReturn> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
@@ -55,37 +55,31 @@ class _PurchaseReturnPageState extends State<PurchaseReturnPage>
   }
 
   Future<DataTableResponse<PurchaseReturn>> fetchPurchaseReturns(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return PurchaseReturnClass().finds(server, request).then(
-        (value) => DataTableResponse<PurchaseReturn>(
-            models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
-  }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+    return PurchaseReturnClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<PurchaseReturn>(
+            models: value.models,
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void viewRecord(PurchaseReturn purchaseReturn) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Lihat Retur Pembelian ${purchaseReturn.code}',
-          PurchaseReturnFormPage(purchaseReturn: purchaseReturn));
+      tabManager.addTab(
+        'Lihat Retur Pembelian ${purchaseReturn.code}',
+        PurchaseReturnFormPage(purchaseReturn: purchaseReturn),
+      );
     });
   }
 
@@ -109,27 +103,7 @@ class _PurchaseReturnPageState extends State<PurchaseReturnPage>
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                ],
+                children: [],
               ),
             ),
             SizedBox(
@@ -139,10 +113,11 @@ class _PurchaseReturnPageState extends State<PurchaseReturnPage>
                   spacing: 10,
                   children: [
                     IconButton.filled(
-                        onPressed: () {
-                          viewRecord(purchase);
-                        },
-                        icon: const Icon(Icons.search_rounded)),
+                      onPressed: () {
+                        viewRecord(purchase);
+                      },
+                      icon: const Icon(Icons.search_rounded),
+                    ),
                   ],
                 ),
                 onLoaded: (stateManager) {

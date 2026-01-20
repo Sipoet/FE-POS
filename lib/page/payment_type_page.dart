@@ -23,7 +23,6 @@ class _PaymentTypePageState extends State<PaymentTypePage>
   late final Server server;
   late final Setting setting;
 
-  String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
   List<FilterData> _filters = [];
@@ -59,7 +58,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
     QueryRequest request,
   ) {
     request.filters = _filters;
-    request.searchText = _searchText;
+
     return PaymentTypeClass()
         .finds(server, request)
         .then(
@@ -127,20 +126,6 @@ class _PaymentTypePageState extends State<PaymentTypePage>
     );
   }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -162,26 +147,6 @@ class _PaymentTypePageState extends State<PaymentTypePage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Search Text',
-                      ),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(

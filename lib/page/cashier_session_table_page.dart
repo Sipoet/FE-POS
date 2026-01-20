@@ -23,7 +23,7 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse, TextFormatter {
   late final TrinaGridStateManager _source;
   late final Server server;
-  String _searchText = '';
+
   final cancelToken = CancelToken();
   late Flash flash;
   late final TabManager tabManager;
@@ -56,7 +56,7 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
 
   Future<DataTableResponse<CashierSession>> fetchData(QueryRequest request) {
     request.filters = _filters;
-    request.searchText = _searchText;
+
     return CashierSessionClass()
         .finds(server, request)
         .then(
@@ -69,20 +69,6 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
             return DataTableResponse<CashierSession>.empty();
           },
         );
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
   }
 
   void openEdcSettlement(cashierSession) {
@@ -110,34 +96,7 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
                 refreshTable();
               },
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10, bottom: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Search Text',
-                      ),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+
             SizedBox(
               height: bodyScreenHeight - 150,
               child: CustomAsyncDataTable<CashierSession>(

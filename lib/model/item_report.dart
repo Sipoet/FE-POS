@@ -33,42 +33,42 @@ class ItemReport extends Model {
   Percentage limitProfitDiscount;
   int numberOfReturn;
 
-  ItemReport(
-      {super.id,
-      this.itemCode = '',
-      this.itemName = '',
-      this.itemTypeName = '',
-      this.itemTypeDesc = '',
-      this.supplierCode = '',
-      this.supplierName = '',
-      this.brandName,
-      ItemType? itemType,
-      Supplier? supplier,
-      Item? item,
-      Brand? brand,
-      this.storeStock = 0,
-      this.warehouseStock = 0,
-      this.percentageSales = const Percentage(0),
-      this.sellPrice = const Money(0),
-      this.avgBuyPrice = const Money(0),
-      this.numberOfSales = 0,
-      this.salesTotal = const Money(0),
-      this.numberOfPurchase = 0,
-      this.purchaseTotal = const Money(0),
-      this.margin = const Percentage(0),
-      this.limitProfitDiscount = const Percentage(0),
-      this.itemOut = 0,
-      this.cogs = const Money(0),
-      this.lastBuyPrice = const Money(0),
-      this.numberOfReturn = 0,
-      this.stockLeft = 0,
-      this.grossProfit = const Money(0),
-      this.isConsignment = false,
-      this.lastPurchaseDate})
-      : item = item ?? Item(id: itemCode),
-        supplier = supplier ?? Supplier(id: supplierCode),
-        itemType = itemType ?? ItemType(id: itemTypeName),
-        brand = brand ?? Brand(id: brandName);
+  ItemReport({
+    super.id,
+    this.itemCode = '',
+    this.itemName = '',
+    this.itemTypeName = '',
+    this.itemTypeDesc = '',
+    this.supplierCode = '',
+    this.supplierName = '',
+    this.brandName,
+    ItemType? itemType,
+    Supplier? supplier,
+    Item? item,
+    Brand? brand,
+    this.storeStock = 0,
+    this.warehouseStock = 0,
+    this.percentageSales = const Percentage(0),
+    this.sellPrice = const Money(0),
+    this.avgBuyPrice = const Money(0),
+    this.numberOfSales = 0,
+    this.salesTotal = const Money(0),
+    this.numberOfPurchase = 0,
+    this.purchaseTotal = const Money(0),
+    this.margin = const Percentage(0),
+    this.limitProfitDiscount = const Percentage(0),
+    this.itemOut = 0,
+    this.cogs = const Money(0),
+    this.lastBuyPrice = const Money(0),
+    this.numberOfReturn = 0,
+    this.stockLeft = 0,
+    this.grossProfit = const Money(0),
+    this.isConsignment = false,
+    this.lastPurchaseDate,
+  }) : item = item ?? Item(id: itemCode),
+       supplier = supplier ?? Supplier(id: supplierCode),
+       itemType = itemType ?? ItemType(id: itemTypeName),
+       brand = brand ?? Brand(id: brandName);
 
   @override
   String get modelName => 'item_report';
@@ -102,25 +102,33 @@ class ItemReport extends Model {
     purchaseTotal =
         Money.tryParse(attributes['purchase_total']) ?? const Money(0);
     grossProfit = Money.tryParse(attributes['gross_profit']) ?? const Money(0);
-    lastPurchaseDate =
-        DateTime.tryParse(attributes['last_purchase_date'] ?? '');
-    item = ItemClass().findRelationData(
+    lastPurchaseDate = DateTime.tryParse(
+      attributes['last_purchase_date'] ?? '',
+    );
+    item =
+        ItemClass().findRelationData(
           relation: json['relationships']?['item'],
           included: included,
         ) ??
         Item(id: itemCode, code: itemCode, name: itemName);
-    itemType = ItemTypeClass().findRelationData(
+    itemType =
+        ItemTypeClass().findRelationData(
           relation: json['relationships']?['item_type'],
           included: included,
         ) ??
         ItemType(
-            id: itemTypeName, name: itemTypeName, description: itemTypeDesc);
-    brand = BrandClass().findRelationData(
+          id: itemTypeName,
+          name: itemTypeName,
+          description: itemTypeDesc,
+        );
+    brand =
+        BrandClass().findRelationData(
           relation: json['relationships']?['brand'],
           included: included,
         ) ??
         Brand(id: brandName, name: brandName ?? '');
-    supplier = SupplierClass().findRelationData(
+    supplier =
+        SupplierClass().findRelationData(
           relation: json['relationships']?['supplier'],
           included: included,
         ) ??
@@ -129,40 +137,42 @@ class ItemReport extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'item_code': itemCode,
-        'item_name': itemName,
-        'item': item,
-        'supplier': supplier,
-        'item_type': itemType,
-        'brand': brand,
-        'item_type_name': itemTypeName,
-        'item_type_desc': itemTypeDesc,
-        'supplier_code': supplierCode,
-        'supplier_name': supplierName,
-        'store_stock': storeStock,
-        'margin': margin,
-        'limit_profit_discount': limitProfitDiscount,
-        'is_consignment': isConsignment,
-        'warehouse_stock': warehouseStock,
-        'brand_name': brandName,
-        'percentage_sales': percentageSales,
-        'sell_price': sellPrice,
-        'avg_buy_price': avgBuyPrice,
-        'last_buy_price': lastBuyPrice,
-        'number_of_sales': numberOfSales,
-        'sales_total': salesTotal,
-        'number_of_purchase': numberOfPurchase,
-        'purchase_total': purchaseTotal,
-        'last_purchase_date': lastPurchaseDate,
-        'item_out': itemOut,
-        'gross_profit': grossProfit,
-        'stock_left': stockLeft,
-        'cogs': cogs,
-        'qty_return': numberOfReturn
-      };
+    'item_code': itemCode,
+    'item_name': itemName,
+    'item': item,
+    'supplier': supplier,
+    'item_type': itemType,
+    'brand': brand,
+    'item_type_name': itemTypeName,
+    'item_type_desc': itemTypeDesc,
+    'supplier_code': supplierCode,
+    'supplier_name': supplierName,
+    'store_stock': storeStock,
+    'margin': margin,
+    'limit_profit_discount': limitProfitDiscount,
+    'is_consignment': isConsignment,
+    'warehouse_stock': warehouseStock,
+    'brand_name': brandName,
+    'percentage_sales': percentageSales,
+    'sell_price': sellPrice,
+    'avg_buy_price': avgBuyPrice,
+    'last_buy_price': lastBuyPrice,
+    'number_of_sales': numberOfSales,
+    'sales_total': salesTotal,
+    'number_of_purchase': numberOfPurchase,
+    'purchase_total': purchaseTotal,
+    'last_purchase_date': lastPurchaseDate,
+    'item_out': itemOut,
+    'gross_profit': grossProfit,
+    'stock_left': stockLeft,
+    'cogs': cogs,
+    'qty_return': numberOfReturn,
+  };
 
   @override
   String get modelValue => itemCode;
+  @override
+  String get valueDescription => itemName;
 }
 
 class ItemReportClass extends ModelClass<ItemReport> {

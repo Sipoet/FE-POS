@@ -21,7 +21,7 @@ class _SalePageState extends State<SalePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final TrinaGridStateManager _source;
   late final Server server;
-  String _searchText = '';
+
   List<Sale> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
@@ -53,35 +53,28 @@ class _SalePageState extends State<SalePage>
 
   Future<DataTableResponse<Sale>> fetchSales(QueryRequest request) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return SaleClass().finds(server, request).then(
-        (value) => DataTableResponse<Sale>(
-            models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
-  }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+    return SaleClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<Sale>(
+            models: value.models,
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void viewRecord(Sale sale) {
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Lihat Penjualan ${sale.code}', SaleFormPage(sale: sale));
+        'Lihat Penjualan ${sale.code}',
+        SaleFormPage(sale: sale),
+      );
     });
   }
 
@@ -105,27 +98,7 @@ class _SalePageState extends State<SalePage>
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                ],
+                children: [],
               ),
             ),
             SizedBox(
@@ -135,10 +108,11 @@ class _SalePageState extends State<SalePage>
                   spacing: 10,
                   children: [
                     IconButton.filled(
-                        onPressed: () {
-                          viewRecord(sale);
-                        },
-                        icon: const Icon(Icons.search_rounded)),
+                      onPressed: () {
+                        viewRecord(sale);
+                      },
+                      icon: const Icon(Icons.search_rounded),
+                    ),
                   ],
                 ),
                 onLoaded: (stateManager) {

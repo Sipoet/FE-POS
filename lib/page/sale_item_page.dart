@@ -22,15 +22,14 @@ class _SaleItemPageState extends State<SaleItemPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final TrinaGridStateManager _source;
   late final Server server;
-  String _searchText = '';
+
   List<SaleItem> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
-  final _menuController = MenuController();
-
+  QueryRequest? queryRequest;
   @override
   bool get wantKeepAlive => true;
 
@@ -56,7 +55,7 @@ class _SaleItemPageState extends State<SaleItemPage>
 
   Future<DataTableResponse<SaleItem>> fetchSaleItems(QueryRequest request) {
     request.filters = _filters;
-    request.searchText = _searchText;
+    queryRequest = request;
     return SaleItemClass()
         .finds(server, request)
         .then(
@@ -71,20 +70,6 @@ class _SaleItemPageState extends State<SaleItemPage>
         );
   }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
-  }
-
   void viewRecord(SaleItem saleItem) {
     var tabManager = context.read<TabManager>();
     setState(() {
@@ -97,12 +82,16 @@ class _SaleItemPageState extends State<SaleItemPage>
 
   void download() {
     flash.show(const Text('Dalam proses.'), ToastificationType.info);
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'include': 'item,sale',
-      'sort': 'kodeitem',
-      'report_type': 'xlsx',
-    };
+    queryRequest ??= QueryRequest(
+      filters: _filters,
+      include: ['item', 'sale'],
+      sorts: [SortData(key: 'kodeitem', isAscending: true)],
+    );
+    queryRequest!.include = ['item', 'sale'];
+    queryRequest!.sorts = [SortData(key: 'kodeitem', isAscending: true)];
+    queryRequest!.filters = _filters;
+    Map<String, dynamic> param = queryRequest!.toQueryParam();
+    param['report_type'] = 'xlsx';
     for (final filterData in _filters) {
       final entry = filterData.toEntryJson();
       param[entry.key] = entry.value;
@@ -176,52 +165,12 @@ class _SaleItemPageState extends State<SaleItemPage>
                 _filters = value;
                 refreshTable();
               },
+              onDownload: (value) {
+                _filters = value;
+                download();
+              },
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10, bottom: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Search Text',
-                      ),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                  SizedBox(
-                    width: 50,
-                    child: SubmenuButton(
-                      controller: _menuController,
-                      menuChildren: [
-                        MenuItemButton(
-                          leadingIcon: const Icon(Icons.download),
-                          child: const Text('Download Excel'),
-                          onPressed: () {
-                            _menuController.close();
-                            download();
-                          },
-                        ),
-                      ],
-                      child: const Icon(Icons.table_rows_rounded),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<SaleItem>(

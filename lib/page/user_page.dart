@@ -21,7 +21,7 @@ class _UserPageState extends State<UserPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final TrinaGridStateManager _source;
   late final Server server;
-  String _searchText = '';
+
   final cancelToken = CancelToken();
   late Flash flash;
   final _menuController = MenuController();
@@ -54,7 +54,7 @@ class _UserPageState extends State<UserPage>
 
   Future<DataTableResponse<User>> fetchUsers(QueryRequest request) {
     request.filters = _filters;
-    request.searchText = _searchText;
+
     request.include.add('role');
     return UserClass()
         .finds(server, request)
@@ -120,20 +120,6 @@ class _UserPageState extends State<UserPage>
     );
   }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
-  }
-
   void _unlockAccess(User user) {
     server
         .post('/users/${user.username}/unlock_access')
@@ -175,26 +161,6 @@ class _UserPageState extends State<UserPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Search Text',
-                      ),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(

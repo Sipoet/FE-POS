@@ -85,6 +85,7 @@ class NumberFormField<T> extends StatefulWidget {
   final Widget? label;
   final TextEditingController? controller;
   final bool readOnly;
+  final bool isDense;
   final FocusNode? focusNode;
   final String? hintText;
   const NumberFormField({
@@ -98,6 +99,7 @@ class NumberFormField<T> extends StatefulWidget {
     this.hintText,
     this.validator,
     this.focusNode,
+    this.isDense = false,
     this.readOnly = false,
     this.controller,
   });
@@ -154,6 +156,9 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
 
   @override
   Widget build(BuildContext context) {
+    InputDecoration decoration = numType
+        .decorateInput(label: widget.label, hintText: widget.hintText)
+        .copyWith(isDense: widget.isDense);
     return TextFormField(
       enableSuggestions: false,
       controller: widget.controller,
@@ -185,10 +190,7 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
             }
           : null,
       inputFormatters: [ThousandSeparatorFormatter()],
-      decoration: numType.decorateInput(
-        label: widget.label,
-        hintText: widget.hintText,
-      ),
+      decoration: decoration,
       initialValue: initialValue,
     );
   }

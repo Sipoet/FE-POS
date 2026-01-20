@@ -1,6 +1,8 @@
+import 'package:collection/collection.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
+import 'package:fe_pos/widget/mobile_table.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 export 'package:trina_grid/trina_grid.dart';
@@ -111,6 +113,46 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+
+    return LayoutBuilder(
+      builder: (context, constraint) {
+        if (constraint.maxWidth > 480) {
+          return trinaGrid(colorScheme);
+        } else {
+          int rowsLength = widget.rows.length;
+          List<T> models = widget.rows;
+          debugPrint('===rowsLength: $rowsLength');
+          return Visibility(
+            visible: rowsLength > 0,
+            child: MobileTable<T>(
+              columns: widget.columns,
+              fetchData: (QueryRequest queryRequest) {
+                if (rowsLength == 0) {
+                  return DataTableResponse<T>.empty();
+                }
+                int totalPage =
+                    (rowsLength.toDouble() / queryRequest.limit.toDouble())
+                        .ceil();
+                int startIndex = (queryRequest.limit - 1) * queryRequest.page;
+                int endIndex = [
+                  startIndex + queryRequest.limit,
+                  rowsLength - 1,
+                ].min;
+                final pagedModel = models.sublist(startIndex, endIndex);
+                return DataTableResponse<T>(
+                  models: pagedModel,
+                  totalPage: totalPage,
+                );
+              },
+              renderAction: widget.renderAction,
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  Widget trinaGrid(ColorScheme colorScheme) {
     return TrinaGrid(
       columns: columns,
       rows: rows,

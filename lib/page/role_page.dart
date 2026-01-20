@@ -23,7 +23,6 @@ class _RolePageState extends State<RolePage>
   late final Server server;
   late final Setting setting;
 
-  String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
   List<FilterData> _filters = [];
@@ -56,7 +55,7 @@ class _RolePageState extends State<RolePage>
 
   Future<DataTableResponse<Role>> fetchRoles(QueryRequest request) {
     request.filters = _filters;
-    request.searchText = _searchText;
+
     return RoleClass()
         .finds(server, request)
         .then(
@@ -118,20 +117,6 @@ class _RolePageState extends State<RolePage>
     );
   }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -153,26 +138,6 @@ class _RolePageState extends State<RolePage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Search Text',
-                      ),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(

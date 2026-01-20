@@ -17,7 +17,7 @@ class BrandPage extends StatefulWidget {
 class _BrandPageState extends State<BrandPage> with DefaultResponse {
   late final TrinaGridStateManager _source;
   late final Server server;
-  String _searchText = '';
+
   List<Brand> brands = [];
   final cancelToken = CancelToken();
   late Flash flash;
@@ -44,27 +44,18 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
   }
 
   Future<DataTableResponse<Brand>> fetchBrands(QueryRequest request) {
-    return BrandClass().finds(server, request).then(
-        (value) => DataTableResponse<Brand>(
+    return BrandClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<Brand>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   @override
@@ -78,27 +69,7 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                ],
+                children: [],
               ),
             ),
             SizedBox(

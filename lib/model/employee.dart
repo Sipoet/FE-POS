@@ -323,7 +323,9 @@ class Employee extends Model {
   };
 
   @override
-  String get modelValue => "$code - $name";
+  String get modelValue => code;
+  @override
+  String get valueDescription => name;
 }
 
 class EmployeeClass extends ModelClass<Employee> {
