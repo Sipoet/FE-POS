@@ -243,9 +243,9 @@ class _DateRangeFormFieldState<T extends DateTime>
           initialValue: _dateRange,
           helpText: widget.helpText,
         )
-        .then((DateTimeRange? range) {
+        .then((DateTimeRange<T>? range) {
           setState(() {
-            _dateRange = range as DateTimeRange<T>;
+            _dateRange = range;
             _controller.text = _daterangeFormat();
             if (widget.onChanged != null) {
               widget.onChanged!(_dateRange);
@@ -269,7 +269,7 @@ class _DateRangeFormFieldState<T extends DateTime>
           : (value) => widget.validator!(_dateRange),
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.all(5),
-        suffix: widget.allowClear
+        suffix: widget.allowClear && _dateRange != null
             ? IconButton(
                 iconSize: 24,
                 onPressed: () {

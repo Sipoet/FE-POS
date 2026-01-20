@@ -1,3 +1,4 @@
+import 'package:provider/provider.dart';
 import 'package:trina_grid/trina_grid.dart';
 import 'package:fe_pos/model/all_model.dart';
 import 'package:fe_pos/tool/model_route.dart';
@@ -146,9 +147,7 @@ class TextTableColumnType extends TableColumnType<String> {
     final textController = TextEditingController(
       text: controller.value?.decoratedValue,
     );
-    debugPrint('==render filter');
     controller.addListener(() {
-      debugPrint('==value text berubah ${controller.value?.decoratedValue}');
       if (controller.value == null) {
         textController.clear();
       } else {
@@ -721,9 +720,12 @@ class ModelFilterForm<T extends Model> extends StatefulWidget {
 class _ModelFilterFormState<T extends Model> extends State<ModelFilterForm<T>> {
   List<T> selected = [];
   FilterFormController get controller => widget.controller;
+  final dropdownController = MultipleDropdownController<T>([]);
+  late final Server server;
   @override
   void initState() {
     controller.addListener(changeData);
+    server = context.read<Server>();
     changeData();
     super.initState();
   }
@@ -732,11 +734,11 @@ class _ModelFilterFormState<T extends Model> extends State<ModelFilterForm<T>> {
     final value = controller.value;
     if (value is ComparisonFilterData) {
       setState(() {
-        selected = value.value;
+        dropdownController.value = value.value;
       });
     } else {
       setState(() {
-        selected.clear();
+        dropdownController.clear();
       });
     }
   }
@@ -748,6 +750,7 @@ class _ModelFilterFormState<T extends Model> extends State<ModelFilterForm<T>> {
       constraints: const BoxConstraints(minHeight: 50),
       child: AsyncDropdownMultiple<T>(
         selecteds: selected,
+        controller: dropdownController,
         key: ValueKey('${widget.name}-filter-model-form-1'),
         modelClass: widget.modelClass,
         textOnSearch: (model) => [
@@ -757,10 +760,6 @@ class _ModelFilterFormState<T extends Model> extends State<ModelFilterForm<T>> {
         textOnSelected: (model) => model.modelValue,
         label: widget.label,
         onChanged: (values) {
-          setState(() {
-            selected = values;
-          });
-
           values.isEmpty
               ? controller.setFilterData(null)
               : controller.setFilterData(

@@ -11,6 +11,33 @@ import 'package:flutter_sortable_wrap/flutter_sortable_wrap.dart';
 import 'package:provider/provider.dart';
 export 'package:fe_pos/model/server.dart';
 
+class MultipleDropdownController<T> extends ValueNotifier<List<T>> {
+  MultipleDropdownController(super.value);
+
+  void remove(T val, {bool notify = true}) {
+    value.remove(val);
+    if (notify) notifyListeners();
+  }
+
+  void removeAt(int index, {bool notify = true}) {
+    value.removeAt(index);
+    if (notify) notifyListeners();
+  }
+
+  void switchIndex(index1, index2) {
+    T item = value[index1];
+    value.removeAt(index1);
+    value.insert(index2, item);
+    notifyListeners();
+  }
+
+  int get valueLength => value.length;
+  void clear({bool notify = true}) {
+    value.clear();
+    if (notify) notifyListeners();
+  }
+}
+
 typedef DropdownText<T> = String Function(T model);
 typedef DropdownValidator<T> = String? Function(List<T>? models);
 
@@ -32,17 +59,19 @@ class AsyncDropdownMultiple<T extends Model> extends StatefulWidget {
     required this.textOnSearch,
     this.textOnSelected,
     this.compareValue,
+    this.controller,
     required this.modelClass,
-    this.selecteds = const [],
+    this.selecteds,
   });
 
   final String? path;
+  final MultipleDropdownController<T>? controller;
   final ModelClass<T> modelClass;
   final String? attributeKey;
   final Duration delayedSearch;
   final int recordLimit;
   final double? width;
-  final List<T> selecteds;
+  final List<T>? selecteds;
   final int selectedDisplayLimit;
   final FocusNode? focusNode;
   final void Function(List<T> models)? onChanged;
@@ -70,9 +99,13 @@ class _AsyncDropdownMultipleState<T extends Model>
   late final Server server;
   CancelToken _cancelToken = CancelToken();
   late final String Function(T) textFormat;
+  late final MultipleDropdownController<T> controller;
 
   @override
   void initState() {
+    controller =
+        widget.controller ??
+        MultipleDropdownController<T>(widget.selecteds ?? []);
     server = context.read<Server>();
     _focusNode = widget.focusNode ?? FocusNode();
 
@@ -121,12 +154,20 @@ class _AsyncDropdownMultipleState<T extends Model>
     var colorScheme = Theme.of(context).colorScheme;
     return DropdownSearch<T>.multiSelection(
       items: (a, b) => getData(a, b),
-      onChanged: widget.onChanged,
+      onChanged: (value) {
+        setState(() {
+          controller.value = value;
+        });
+        if (widget.onChanged != null) {
+          widget.onChanged!(controller.value);
+        }
+      },
+
       onSaved: widget.onSaved,
       validator: widget.validator,
       compareFn: compareResult,
       itemAsString: widget.textOnSearch,
-      selectedItems: widget.selecteds,
+      selectedItems: controller.value,
       onBeforePopupOpening: (selItems) {
         return Future.delayed(Duration.zero, () {
           if (_focusNode.canRequestFocus) {
@@ -139,8 +180,8 @@ class _AsyncDropdownMultipleState<T extends Model>
         clearButtonProps: ClearButtonProps(isVisible: true),
       ),
       dropdownBuilder: (context, selectedItems) {
-        debugPrint('masuk dropdown builder');
-        pills = selectedItems.mapIndexed<Widget>((index, item) {
+        controller.value = selectedItems;
+        pills = controller.value.mapIndexed<Widget>((index, item) {
           if (index >= widget.selectedDisplayLimit) {
             return SizedBox();
           }
@@ -166,18 +207,16 @@ class _AsyncDropdownMultipleState<T extends Model>
                 ),
                 IconButton(
                   onPressed: () {
-                    debugPrint('item ${item.id.toString()} pressed remove');
-
                     setState(() {
-                      final result = selectedItems.remove(item);
+                      final result = controller.value.remove(item);
                       if (result == false) {
                         debugPrint(
                           'item ${item.id.toString()} failed to remove.',
                         );
                       }
-                      selectedItems = selectedItems;
+
                       if (widget.onChanged != null) {
-                        widget.onChanged!(selectedItems);
+                        widget.onChanged!(controller.value);
                       }
                     });
                   },
@@ -190,16 +229,14 @@ class _AsyncDropdownMultipleState<T extends Model>
         return SortableWrap(
           onSorted: (int oldIndex, int newIndex) {
             setState(() {
-              var item = selectedItems[oldIndex];
-              selectedItems.removeAt(oldIndex);
-              selectedItems.insert(newIndex, item);
+              controller.switchIndex(oldIndex, newIndex);
             });
           },
           spacing: 10,
           runSpacing: 15,
           children: [
             ...pills,
-            if (selectedItems.length > widget.selectedDisplayLimit)
+            if (controller.valueLength > widget.selectedDisplayLimit)
               IgnorePointer(
                 ignoring: true,
                 child: Text(
