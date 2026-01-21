@@ -164,8 +164,8 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                     }),
                   ),
                   SizedBox(
-                    height: 200,
-                    width: 300,
+                    height: 300,
+                    width: 330,
                     child: ListView(
                       children: widget.columns
                           .where(
@@ -232,7 +232,7 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                   ),
                   Wrap(
                     spacing: 10,
-                    runSpacing: 10,
+                    runSpacing: 15,
                     children: [
                       ElevatedButton(
                         child: const Text("Submit"),
