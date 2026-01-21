@@ -73,7 +73,7 @@ class EmployeeAttendance extends Model {
   }
 
   @override
-  String get modelValue => "${employee.modelValue}(${date.format()})";
+  String get modelValue => "${employee.modelValue} (${date.format()})";
 }
 
 class EmployeeAttendanceClass extends ModelClass<EmployeeAttendance> {

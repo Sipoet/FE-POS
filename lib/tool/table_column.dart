@@ -371,11 +371,17 @@ class TimeTableColumnType extends TableColumnType<TimeOfDay> {
 
   @override
   Widget renderCell({
-    TimeOfDay? value,
+    Object? value,
     required TableColumn column,
     TabManager? tabManager,
   }) {
-    return Text(value?.format24Hour() ?? '');
+    if (value is TimeOfDay) {
+      return Text(value.format24Hour());
+    } else if (value is DateTime) {
+      return Text(TimeOfDay.fromDateTime(value).format24Hour());
+    } else {
+      return Text(value.toString());
+    }
   }
 
   @override
@@ -616,11 +622,17 @@ class MoneyTableColumnType extends TableColumnType<Money> {
 
   @override
   Widget renderCell({
-    required Money value,
+    Object? value,
     required TableColumn column,
     TabManager? tabManager,
   }) {
-    return Text(value.format());
+    if (value is Money) {
+      return Text(value.format());
+    } else if (value is num) {
+      return Text(Money.parse(value).format());
+    } else {
+      return Text(value.toString());
+    }
   }
 
   @override

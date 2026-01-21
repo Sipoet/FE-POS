@@ -169,7 +169,8 @@ class Payslip extends Model {
   }
 
   @override
-  String get modelValue => id.toString();
+  String get modelValue =>
+      '${employee.code} - ${startDate.format(pattern: 'MMMM y')}';
 }
 
 class PayslipClass extends ModelClass<Payslip> {
