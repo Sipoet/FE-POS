@@ -1,12 +1,14 @@
 import 'package:fe_pos/model/purchase_item.dart';
 export 'package:fe_pos/model/purchase_item.dart';
 import 'package:fe_pos/model/model.dart';
+import 'package:fe_pos/model/purchase_order.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
 class Purchase extends Model {
   String code;
   String? orderCode;
   String userName;
+  PurchaseOrder? purchaseOrder;
   List<PurchaseItem> purchaseItems;
   DateTime datetime;
   DateTime? noteDate;
@@ -36,6 +38,7 @@ class Purchase extends Model {
     this.supplierCode = '',
     this.orderCode,
     this.noteDate,
+    this.purchaseOrder,
     this.subtotal = const Money(0),
     this.grandtotal = const Money(0),
     this.discountAmount = const Money(0),
@@ -64,6 +67,7 @@ class Purchase extends Model {
   Map<String, dynamic> toMap() => {
     'user1': userName,
     'tanggal': datetime,
+    'supplier': supplier,
     'note_date': noteDate,
     'keterangan': description,
     'totalitem': totalItem,
@@ -76,6 +80,7 @@ class Purchase extends Model {
     'jmlkk': creditCardAmount,
     'jmlemoney': emoneyAmount,
     'payment_type': paymentMethodType,
+    'purchase_order': purchaseOrder,
     'ppn': taxType,
     'pajak': taxAmount,
     'bank_code': bankCode,
@@ -107,6 +112,10 @@ class Purchase extends Model {
             relation: json['relationships']['supplier'],
           ) ??
           supplier;
+      purchaseOrder = PurchaseOrderClass().findRelationData(
+        included: included,
+        relation: json['relationships']['purchase_order'],
+      );
     }
     id = json['id'];
     userName = attributes['user1'];

@@ -57,7 +57,7 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
   ) {
     request.filters = _filters;
 
-    request.include.addAll(['supplier']);
+    request.include.addAll(['supplier', 'purchase']);
     return PurchaseOrderClass()
         .finds(server, request)
         .then(

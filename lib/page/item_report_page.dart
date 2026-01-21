@@ -27,7 +27,8 @@ class _ItemReportPageState extends State<ItemReportPage>
   late Flash flash;
   late final List<TableColumn> columns;
   List<ItemReport> _itemReports = [];
-  List<FilterData> _filters = [];
+  final QueryRequest queryRequest = QueryRequest();
+
   @override
   void initState() {
     server = context.read<Server>();
@@ -40,13 +41,10 @@ class _ItemReportPageState extends State<ItemReportPage>
   @override
   bool get wantKeepAlive => true;
 
-  void _displayReport() async {
+  void _displayReport() {
     _source?.setShowLoading(true);
-    final sortData = SortData(
-      key: _source?.getSortedColumn?.field ?? 'item_code',
-      isAscending: _source?.getSortedColumn?.sort.isAscending ?? true,
-    );
-    _requestReport(page: 1, limit: 2000, sortData: sortData)
+
+    _requestReport(page: 1, limit: 2000)
         .then((response) {
           try {
             if (response.statusCode != 200) {
@@ -72,7 +70,7 @@ class _ItemReportPageState extends State<ItemReportPage>
         .whenComplete(() => _source?.setShowLoading(false));
   }
 
-  void _downloadReport() async {
+  void _downloadReport() {
     flash.show(const Text('Dalam proses.'), ToastificationType.info);
     _reportType = 'xlsx';
     _requestReport(limit: null).then(
@@ -81,23 +79,12 @@ class _ItemReportPageState extends State<ItemReportPage>
     );
   }
 
-  Future _requestReport({
-    int page = 1,
-    int? limit = 10,
-    SortData? sortData,
-  }) async {
-    String orderKey = sortData?.key ?? 'item_code';
-    Map<String, dynamic> param = {
-      'page[page]': page.toString(),
-      'page[limit]': (limit ?? '').toString(),
-      'report_type': _reportType ?? 'json',
-      'include': 'item,supplier,brand,item_type',
-      'sort': '${sortData?.isAscending == false ? '-' : ''}$orderKey',
-    };
-    for (final filterData in _filters) {
-      final entry = filterData.toEntryJson();
-      param[entry.key] = entry.value;
-    }
+  Future _requestReport({int page = 1, int? limit}) {
+    queryRequest.page = page;
+    queryRequest.limit = 20;
+    Map<String, dynamic> param = queryRequest.toQueryParam();
+    param['report_type'] = _reportType ?? 'json';
+    param['page[limit]'] = limit?.toString();
     return server.get(
       'item_reports',
       queryParam: param,
@@ -146,11 +133,11 @@ class _ItemReportPageState extends State<ItemReportPage>
           TableFilterForm(
             showCanopy: false,
             onSubmit: (filter) {
-              _filters = filter;
+              queryRequest.filters = filter;
               _displayReport();
             },
             onDownload: (filter) {
-              _filters = filter;
+              queryRequest.filters = filter;
               _downloadReport();
             },
             columns: columns,
@@ -164,6 +151,12 @@ class _ItemReportPageState extends State<ItemReportPage>
               isPaginated: true,
               rows: _itemReports,
               columns: columns,
+              onQueryChanged: (queryRequest1) {
+                queryRequest.searchText = queryRequest1.searchText;
+                queryRequest.sorts = queryRequest1.sorts;
+
+                _displayReport();
+              },
               onLoaded: (stateManager) => _source = stateManager,
               fixedLeftColumns: 1,
             ),

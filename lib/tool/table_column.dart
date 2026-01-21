@@ -180,11 +180,11 @@ class TextTableColumnType extends TableColumnType<String> {
 
   @override
   Widget renderCell({
-    required dynamic value,
+    Object? value,
     required TableColumn column,
     TabManager? tabManager,
   }) {
-    return Text(value.toString());
+    return Text(value?.toString() ?? '');
   }
 
   @override
@@ -658,18 +658,26 @@ class ModelTableColumnType<T extends Model> extends TableColumnType<T>
 
   @override
   Widget renderCell({
-    required T value,
+    Object? value,
     required TableColumn column,
     TabManager? tabManager,
   }) {
-    return InkWell(
-      onTap: () => _openModelDetailPage(
-        tableColumn: column,
-        value: value,
-        tabManager: tabManager,
-      ),
-      child: Text(value.modelValue, textAlign: TextAlign.left),
-    );
+    if (value is T) {
+      return InkWell(
+        onTap: () => _openModelDetailPage(
+          tableColumn: column,
+          value: value,
+          tabManager: tabManager,
+        ),
+        child: Text(
+          value.modelValue,
+          style: TextStyle(fontStyle: .italic, decoration: .underline),
+          textAlign: TextAlign.left,
+        ),
+      );
+    } else {
+      return Text(value.toString(), textAlign: TextAlign.left);
+    }
   }
 
   void _openModelDetailPage({
@@ -680,16 +688,17 @@ class ModelTableColumnType<T extends Model> extends TableColumnType<T>
     if (tabManager == null) {
       return;
     }
+    Widget? detailPage = route.detailPageOf(value);
+    if (detailPage == null) {
+      return;
+    }
     if (isDesktop()) {
       tabManager.setSafeAreaContent(
         "${tableColumn.humanizeName} ${value.id}",
-        route.detailPageOf(value),
+        detailPage,
       );
     } else {
-      tabManager.addTab(
-        "${tableColumn.humanizeName} ${value.id}",
-        route.detailPageOf(value),
-      );
+      tabManager.addTab("${tableColumn.humanizeName} ${value.id}", detailPage);
     }
   }
 

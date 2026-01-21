@@ -58,7 +58,7 @@ class _PurchaseReturnPageState extends State<PurchaseReturnPage>
     QueryRequest request,
   ) {
     request.filters = _filters;
-
+    request.include = ['supplier'];
     return PurchaseReturnClass()
         .finds(server, request)
         .then(

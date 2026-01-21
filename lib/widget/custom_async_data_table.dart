@@ -331,7 +331,7 @@ class _CustomAsyncDataTableState<T extends Model>
                   stateManager.refreshTable();
                 },
                 decoration: InputDecoration(
-                  hintText: 'Search',
+                  hintText: 'Cari',
                   isDense: true,
                   prefixIcon: Icon(Icons.search, size: 20),
                 ),

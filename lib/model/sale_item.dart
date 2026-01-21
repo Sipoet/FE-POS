@@ -67,6 +67,8 @@ class SaleItem extends Model {
   @override
   Map<String, dynamic> toMap() => {
     'kodeitem': itemCode,
+    'item_code': itemCode,
+    'item': item,
     'jumlah': quantity,
     'nobaris': row,
     'harga': price,
@@ -96,7 +98,7 @@ class SaleItem extends Model {
   @override
   String get modelName => 'sale_item';
   @override
-  String get path => 'ipos/sales_items';
+  String get path => 'ipos/sale_items';
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {

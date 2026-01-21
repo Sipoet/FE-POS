@@ -97,6 +97,14 @@ class ModelRoute {
     'Transfer': (model) =>
         TransferFormPage(key: ObjectKey(model), transfer: model as Transfer),
     'Sale': (model) => SaleFormPage(key: ObjectKey(model), sale: model as Sale),
+    'ConsignmentIn': (model) => ConsignmentInFormPage(
+      key: ObjectKey(model),
+      consignmentIn: model as ConsignmentIn,
+    ),
+    'ConsignmentInOrder': (model) => ConsignmentInOrderFormPage(
+      key: ObjectKey(model),
+      consignmentInOrder: model as ConsignmentInOrder,
+    ),
   };
 
   Type classOf(String className) {
@@ -107,11 +115,12 @@ class ModelRoute {
     return _tablePages[className]!;
   }
 
-  Widget detailPageOf(Model model) {
-    return _detailPages[model.runtimeType.toString()]!.call(model);
+  Widget? detailPageOf(Model model) {
+    return _detailPages[model.runtimeType.toString()]?.call(model);
   }
 
   ModelClass modelClassOf(String className) {
+    debugPrint('model class of $className');
     return _modelClasses[className]!;
   }
 
@@ -144,5 +153,7 @@ class ModelRoute {
     'Ipos::SaleItem': SaleItemClass(),
     'Ipos::Transfer': TransferClass(),
     'Ipos::TransferItem': TransferItemClass(),
+    'Ipos::ConsignmentIn': ConsignmentInClass(),
+    'Ipos::ConsignmentInOrder': ConsignmentInOrderClass(),
   });
 }

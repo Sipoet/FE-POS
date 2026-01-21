@@ -24,6 +24,8 @@ export 'package:fe_pos/model/book_employee_attendance.dart';
 export 'package:fe_pos/model/book_payslip_line.dart';
 export 'package:fe_pos/model/purchase.dart';
 export 'package:fe_pos/model/purchase_order.dart';
+export 'package:fe_pos/model/consignment_in.dart';
+export 'package:fe_pos/model/consignment_in_order.dart';
 export 'package:fe_pos/model/purchase_item.dart';
 export 'package:fe_pos/model/purchase_return.dart';
 export 'package:fe_pos/model/sale.dart';

@@ -141,7 +141,7 @@ class BetweenFilterData extends FilterData {
 
 class QueryRequest {
   int page;
-  int limit;
+  int? limit;
   List<FilterData> filters;
   List<SortData> sorts;
   List<String> fields;
@@ -151,7 +151,7 @@ class QueryRequest {
 
   QueryRequest({
     this.page = 1,
-    this.limit = 10,
+    this.limit,
     this.cancelToken,
     this.searchText,
     List<String>? fields,
@@ -166,7 +166,7 @@ class QueryRequest {
   Map<String, String?> toQueryParam() {
     Map<String, String?> result = {
       'page[page]': page.toString(),
-      'page[limit]': limit.toString(),
+      if (limit != null) 'page[limit]': limit.toString(),
       'search_text': searchText,
       'field': fields.join(','),
       'include': include.join(','),

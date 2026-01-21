@@ -57,7 +57,7 @@ class _ConsignmentInOrderPageState extends State<ConsignmentInOrderPage>
     QueryRequest request,
   ) {
     request.filters = _filters;
-
+    request.include.add('supplier');
     return ConsignmentInOrderClass()
         .finds(server, request)
         .then(

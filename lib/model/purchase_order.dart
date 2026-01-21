@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/purchase.dart';
 import 'package:fe_pos/model/purchase_order_item.dart';
 export 'package:fe_pos/model/purchase_order_item.dart';
 import 'package:fe_pos/model/model.dart';
@@ -5,8 +6,9 @@ export 'package:fe_pos/tool/custom_type.dart';
 
 class PurchaseOrder extends Model {
   String code;
-  String? orderCode;
+  String? purchaseCode;
   String userName;
+  Purchase? purchase;
   List<PurchaseOrderItem> purchaseItems;
   DateTime datetime;
   DateTime deliveredDate;
@@ -34,7 +36,7 @@ class PurchaseOrder extends Model {
     this.totalItem = 0,
     this.code = '',
     this.supplierCode = '',
-    this.orderCode,
+    this.purchaseCode,
     this.subtotal = const Money(0),
     this.grandtotal = const Money(0),
     this.discountAmount = const Money(0),
@@ -46,6 +48,7 @@ class PurchaseOrder extends Model {
     this.taxAmount = const Money(0),
     this.paymentMethodType = 'non',
     this.location = '',
+    this.purchase,
     this.destLocation = '',
     this.bankCode,
     this.taxType = '',
@@ -68,6 +71,7 @@ class PurchaseOrder extends Model {
     'keterangan': description,
     'totalitem': totalItem,
     'subtotal': subtotal,
+    'supplier': supplier,
     'totalakhir': grandtotal,
     'potnomfaktur': discountAmount,
     'biayalain': otherCost,
@@ -80,7 +84,8 @@ class PurchaseOrder extends Model {
     'pajak': taxAmount,
     'bank_code': bankCode,
     'notransaksi': code,
-    'notrsorder': orderCode,
+    'notrsorder': purchaseCode,
+    'purchase': purchase,
     'kodekantor': location,
     'kantortujuan': destLocation,
     'kodesupel': supplierCode,
@@ -108,6 +113,10 @@ class PurchaseOrder extends Model {
             relation: json['relationships']['supplier'],
           ) ??
           supplier;
+      purchase = PurchaseClass().findRelationData(
+        included: included,
+        relation: json['relationships']['purchase'],
+      );
     }
     id = json['id'];
     userName = attributes['user1'];
@@ -128,7 +137,7 @@ class PurchaseOrder extends Model {
     taxType = attributes['ppn'];
     taxAmount = Money.tryParse(attributes['pajak']) ?? const Money(0);
     code = attributes['notransaksi'];
-    orderCode = attributes['notrsorder'];
+    purchaseCode = attributes['notrsorder'];
     location = attributes['kodekantor'];
     destLocation = attributes['kantortujuan'];
     bankCode = attributes['bank_code'];

@@ -92,11 +92,6 @@ class _SaleItemPageState extends State<SaleItemPage>
     queryRequest!.filters = _filters;
     Map<String, dynamic> param = queryRequest!.toQueryParam();
     param['report_type'] = 'xlsx';
-    for (final filterData in _filters) {
-      final entry = filterData.toEntryJson();
-      param[entry.key] = entry.value;
-    }
-
     try {
       server
           .get(

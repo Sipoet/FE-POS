@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
@@ -32,6 +31,7 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
   final bool showFilter;
   final bool isPaginated;
   final Widget Function(T model)? renderAction;
+  final void Function(QueryRequest queryRequest)? onQueryChanged;
 
   const SyncDataTable({
     super.key,
@@ -40,6 +40,7 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
     this.renderAction,
     this.actionColumnWidth,
     this.showFilter = true,
+    this.onQueryChanged,
     List<TableColumn>? columns,
     List<T>? rows,
     this.isPaginated = false,
@@ -62,6 +63,8 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
   List<TrinaRow> get rows => widget.rows
       .map<TrinaRow>((row) => decorateRow(model: row, tableColumns: columns))
       .toList();
+  final _menuController = MenuController();
+  QueryRequest queryRequest = QueryRequest(limit: 20);
 
   List<TrinaColumn> get columns =>
       widget.columns.asMap().entries.map<TrinaColumn>((entry) {
@@ -109,7 +112,6 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
     stateManager.showSetColumnsPopup(context);
   }
 
-  final _menuController = MenuController();
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -119,33 +121,11 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
         if (constraint.maxWidth > 480) {
           return trinaGrid(colorScheme);
         } else {
-          int rowsLength = widget.rows.length;
-          List<T> models = widget.rows;
-          debugPrint('===rowsLength: $rowsLength');
-          return Visibility(
-            visible: rowsLength > 0,
-            child: MobileTable<T>(
-              columns: widget.columns,
-              fetchData: (QueryRequest queryRequest) {
-                if (rowsLength == 0) {
-                  return DataTableResponse<T>.empty();
-                }
-                int totalPage =
-                    (rowsLength.toDouble() / queryRequest.limit.toDouble())
-                        .ceil();
-                int startIndex = (queryRequest.limit - 1) * queryRequest.page;
-                int endIndex = [
-                  startIndex + queryRequest.limit,
-                  rowsLength - 1,
-                ].min;
-                final pagedModel = models.sublist(startIndex, endIndex);
-                return DataTableResponse<T>(
-                  models: pagedModel,
-                  totalPage: totalPage,
-                );
-              },
-              renderAction: widget.renderAction,
-            ),
+          return MobileTable<T>(
+            columns: widget.columns,
+            rows: widget.rows,
+            onQueryChanged: widget.onQueryChanged,
+            renderAction: widget.renderAction,
           );
         }
       },
@@ -176,8 +156,26 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
       onRowDoubleTap: widget.onRowDoubleTap,
       onRowChecked: widget.onRowChecked,
       createHeader: (stateManager) => Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: .spaceBetween,
         children: [
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: widget.onQueryChanged == null
+                  ? SizedBox()
+                  : TextField(
+                      onSubmitted: (value) {
+                        queryRequest.searchText = value;
+                        widget.onQueryChanged!(queryRequest);
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Cari',
+                        isDense: true,
+                        prefixIcon: Icon(Icons.search, size: 20),
+                      ),
+                    ),
+            ),
+          ),
           SizedBox(
             width: 50,
             child: SubmenuButton(
@@ -186,8 +184,15 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
                 MenuItemButton(
                   child: const Text('hide/show column'),
                   onPressed: () {
-                    _menuController.close();
                     displayShowHideColumn(stateManager);
+                    _menuController.close();
+                  },
+                ),
+                MenuItemButton(
+                  child: const Text('Refresh Data'),
+                  onPressed: () {
+                    stateManager.refreshTable();
+                    _menuController.close();
                   },
                 ),
               ],

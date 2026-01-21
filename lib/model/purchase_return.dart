@@ -64,6 +64,7 @@ class PurchaseReturn extends Model {
   Map<String, dynamic> toMap() => {
     'user1': userName,
     'tanggal': datetime,
+    'supplier': supplier,
     'keterangan': description,
     'totalitem': totalItem,
     'subtotal': subtotal,
