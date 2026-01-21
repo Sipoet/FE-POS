@@ -58,7 +58,9 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
 
   @override
   Widget build(BuildContext context) {
-    final models = queryResponse?.models ?? paginatedRows();
+    final models = widget.fetchData == null
+        ? paginatedRows()
+        : queryResponse?.models ?? [];
     return Column(
       children: [
         Row(
@@ -104,24 +106,21 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
             child: Text('Data tidak ditemukan'),
           ),
         ),
-        Visibility(
-          visible: models.isNotEmpty,
-          child: Expanded(
-            child: ListView(
-              controller: scrollController,
-              children: models
-                  .map<Widget>(
-                    (model) => ModelCard(
-                      model: model,
-                      columns: widget.columns,
-                      tabManager: tabManager,
-                      action: widget.renderAction == null
-                          ? null
-                          : widget.renderAction!(model),
-                    ),
-                  )
-                  .toList(),
-            ),
+        Expanded(
+          child: ListView(
+            controller: scrollController,
+            children: models
+                .map<Widget>(
+                  (model) => ModelCard(
+                    model: model,
+                    columns: widget.columns,
+                    tabManager: tabManager,
+                    action: widget.renderAction == null
+                        ? null
+                        : widget.renderAction!(model),
+                  ),
+                )
+                .toList(),
           ),
         ),
         SizedBox(height: 10),
@@ -165,7 +164,7 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                     }),
                   ),
                   SizedBox(
-                    height: 300,
+                    height: 200,
                     width: 300,
                     child: ListView(
                       children: widget.columns
@@ -177,52 +176,55 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                                 ),
                           )
                           .map<Widget>((column) {
-                            return Row(
-                              mainAxisSize: .max,
-                              crossAxisAlignment: .start,
-                              mainAxisAlignment: .spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 5),
-                                  child: Flexible(
-                                    child: Text(
-                                      column.humanizeName,
-                                      overflow: .fade,
+                            return Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  mainAxisSize: .min,
+                                  crossAxisAlignment: .start,
+                                  mainAxisAlignment: .spaceBetween,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        column.humanizeName,
+                                        overflow: .fade,
+                                      ),
                                     ),
-                                  ),
+                                    IconButton(
+                                      onPressed: () {
+                                        setstateDialog(() {
+                                          if (sorts[column.name] == null) {
+                                            sorts[column.name] = SortData(
+                                              key: column.name,
+                                              isAscending: true,
+                                            );
+                                          } else if (sorts[column.name]!
+                                              .isAscending) {
+                                            sorts[column.name] = SortData(
+                                              key: column.name,
+                                              isAscending: false,
+                                            );
+                                          } else {
+                                            sorts.remove(column.name);
+                                          }
+                                        });
+                                      },
+                                      icon: sorts[column.name] == null
+                                          ? Icon(Icons.unfold_more)
+                                          : sorts[column.name]!.isAscending
+                                          ? Icon(
+                                              Icons.arrow_drop_up,
+                                              color: Colors.green,
+                                            )
+                                          : Icon(
+                                              Icons.arrow_drop_down,
+                                              color: Colors.green,
+                                            ),
+                                    ),
+                                  ],
                                 ),
-                                IconButton(
-                                  onPressed: () {
-                                    setstateDialog(() {
-                                      if (sorts[column.name] == null) {
-                                        sorts[column.name] = SortData(
-                                          key: column.name,
-                                          isAscending: true,
-                                        );
-                                      } else if (sorts[column.name]!
-                                          .isAscending) {
-                                        sorts[column.name] = SortData(
-                                          key: column.name,
-                                          isAscending: false,
-                                        );
-                                      } else {
-                                        sorts.remove(column.name);
-                                      }
-                                    });
-                                  },
-                                  icon: sorts[column.name] == null
-                                      ? Icon(Icons.unfold_more)
-                                      : sorts[column.name]!.isAscending
-                                      ? Icon(
-                                          Icons.arrow_drop_up,
-                                          color: Colors.green,
-                                        )
-                                      : Icon(
-                                          Icons.arrow_drop_down,
-                                          color: Colors.green,
-                                        ),
-                                ),
-                              ],
+                              ),
                             );
                           })
                           .toList(),
@@ -289,8 +291,8 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
     );
     setState(() {
       if (queryResponse != null) {
-        queryResponse?.models = response.models;
-        queryResponse?.totalPage = response.totalPage;
+        queryResponse!.models = response.models;
+        queryResponse!.totalPage = response.totalPage;
       } else {
         queryResponse = response;
       }

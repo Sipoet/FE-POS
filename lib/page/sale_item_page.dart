@@ -55,6 +55,7 @@ class _SaleItemPageState extends State<SaleItemPage>
 
   Future<DataTableResponse<SaleItem>> fetchSaleItems(QueryRequest request) {
     request.filters = _filters;
+    request.include = ['item', 'sale'];
     queryRequest = request;
     return SaleItemClass()
         .finds(server, request)
