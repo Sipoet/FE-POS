@@ -8,25 +8,28 @@ class DateType with TextFormatter {
     return dateFormat(date);
   }
 
-  Future<DateTime?> showDialog(
-      {required BuildContext context,
-      required ColorScheme colorScheme,
-      String? helpText,
-      DateTime? initialDate}) {
+  Future<DateTime?> showDialog({
+    required BuildContext context,
+    required ColorScheme colorScheme,
+    String? helpText,
+    DateTime? initialDate,
+  }) {
     return showBoardDateTimePicker(
       context: context,
       showDragHandle: false,
       enableDrag: false,
       options: BoardDateTimeOptions(
-          pickerFormat: PickerFormat.dmy,
-          startDayOfWeek: DateTime.monday,
-          boardTitle: helpText,
-          useAmpm: false,
-          languages: const BoardPickerLanguages(
-              today: 'Hari ini',
-              tomorrow: 'Besok',
-              now: 'Sekarang',
-              locale: 'id')),
+        pickerFormat: PickerFormat.dmy,
+        startDayOfWeek: DateTime.monday,
+        boardTitle: helpText,
+        useAmpm: false,
+        languages: const BoardPickerLanguages(
+          today: 'Hari ini',
+          tomorrow: 'Besok',
+          now: 'Sekarang',
+          locale: 'id',
+        ),
+      ),
       initialDate: initialDate,
       pickerType: DateTimePickerType.date,
     );
@@ -41,25 +44,28 @@ class DateTimeType with TextFormatter implements DateType {
   }
 
   @override
-  Future<DateTime?> showDialog(
-      {required BuildContext context,
-      required ColorScheme colorScheme,
-      String? helpText,
-      DateTime? initialDate}) {
+  Future<DateTime?> showDialog({
+    required BuildContext context,
+    required ColorScheme colorScheme,
+    String? helpText,
+    DateTime? initialDate,
+  }) {
     return showBoardDateTimePicker(
       context: context,
       showDragHandle: false,
       enableDrag: false,
       options: BoardDateTimeOptions(
-          pickerFormat: PickerFormat.dmy,
-          startDayOfWeek: DateTime.monday,
-          boardTitle: helpText,
-          useAmpm: false,
-          languages: const BoardPickerLanguages(
-              today: 'Hari ini',
-              tomorrow: 'Besok',
-              now: 'Sekarang',
-              locale: 'id')),
+        pickerFormat: PickerFormat.dmy,
+        startDayOfWeek: DateTime.monday,
+        boardTitle: helpText,
+        useAmpm: false,
+        languages: const BoardPickerLanguages(
+          today: 'Hari ini',
+          tomorrow: 'Besok',
+          now: 'Sekarang',
+          locale: 'id',
+        ),
+      ),
       initialDate: initialDate,
       pickerType: DateTimePickerType.datetime,
     );
@@ -74,25 +80,28 @@ class TimeType with TextFormatter implements DateType {
   }
 
   @override
-  Future<DateTime?> showDialog(
-      {required BuildContext context,
-      required ColorScheme colorScheme,
-      String? helpText,
-      DateTime? initialDate}) {
+  Future<DateTime?> showDialog({
+    required BuildContext context,
+    required ColorScheme colorScheme,
+    String? helpText,
+    DateTime? initialDate,
+  }) {
     return showBoardDateTimePicker(
       context: context,
       showDragHandle: false,
       enableDrag: false,
       options: BoardDateTimeOptions(
-          pickerFormat: PickerFormat.dmy,
-          startDayOfWeek: DateTime.monday,
-          boardTitle: helpText,
-          useAmpm: false,
-          languages: const BoardPickerLanguages(
-              today: 'Hari ini',
-              tomorrow: 'Besok',
-              now: 'Sekarang',
-              locale: 'id')),
+        pickerFormat: PickerFormat.dmy,
+        startDayOfWeek: DateTime.monday,
+        boardTitle: helpText,
+        useAmpm: false,
+        languages: const BoardPickerLanguages(
+          today: 'Hari ini',
+          tomorrow: 'Besok',
+          now: 'Sekarang',
+          locale: 'id',
+        ),
+      ),
       initialDate: initialDate,
       pickerType: DateTimePickerType.time,
     );
@@ -107,25 +116,28 @@ class DateFormField extends StatefulWidget {
   final DateTime? lastDate;
   final bool allowClear;
   final DateType dateType;
+  final bool? readOnly;
   final FocusNode? focusNode;
   final DateEditingController? controller;
   final void Function(DateTime?)? onSaved;
   final void Function(DateTime? date)? onChanged;
   final String? Function(DateTime?)? validator;
-  const DateFormField(
-      {super.key,
-      this.label,
-      this.dateType = const DateType(),
-      this.firstDate,
-      this.controller,
-      this.lastDate,
-      this.helpText,
-      this.onSaved,
-      this.focusNode,
-      this.onChanged,
-      this.validator,
-      this.allowClear = false,
-      this.initialValue});
+  const DateFormField({
+    super.key,
+    this.label,
+    this.dateType = const DateType(),
+    this.firstDate,
+    this.controller,
+    this.lastDate,
+    this.helpText,
+    this.onSaved,
+    this.readOnly,
+    this.focusNode,
+    this.onChanged,
+    this.validator,
+    this.allowClear = false,
+    this.initialValue,
+  });
 
   @override
   State<DateFormField> createState() => _DateFormFieldState();
@@ -144,8 +156,9 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
     widget.controller?.addListener(() {
       setState(() {
         _datetime = widget.controller?.value;
-        _controller.text =
-            _datetime == null ? '' : dateType.displayFormat(_datetime!);
+        _controller.text = _datetime == null
+            ? ''
+            : dateType.displayFormat(_datetime!);
       });
     });
     writeToTextField();
@@ -158,23 +171,23 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
   void _openDialog() {
     dateType
         .showDialog(
-      context: context,
-      colorScheme: Theme.of(context).colorScheme,
-      initialDate: _datetime?.toLocal(),
-      helpText: widget.helpText,
-    )
+          context: context,
+          colorScheme: Theme.of(context).colorScheme,
+          initialDate: _datetime?.toLocal(),
+          helpText: widget.helpText,
+        )
         .then((date) {
-      if (date == null) {
-        return;
-      }
-      setState(() {
-        _datetime = date;
-        writeToTextField();
-        if (widget.onChanged != null) {
-          widget.onChanged!(_datetime);
-        }
-      });
-    });
+          if (date == null) {
+            return;
+          }
+          setState(() {
+            _datetime = date;
+            writeToTextField();
+            if (widget.onChanged != null) {
+              widget.onChanged!(_datetime);
+            }
+          });
+        });
   }
 
   void writeToTextField() {
@@ -189,6 +202,9 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
   Widget build(BuildContext context) {
     return TextFormField(
       onTap: () {
+        if (widget.readOnly == true) {
+          return;
+        }
         _openDialog();
       },
       focusNode: widget.focusNode,
@@ -218,7 +234,8 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
                     widget.onChanged!(_datetime);
                   }
                 },
-                icon: const Icon(Icons.close))
+                icon: const Icon(Icons.close),
+              )
             : null,
       ),
       controller: _controller,

@@ -6,6 +6,7 @@ import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
+import 'package:fe_pos/widget/date_form_field.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 
 import 'package:flutter/material.dart';
@@ -208,7 +209,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
     };
     try {
       final response = await _server.post(
-        'purchase_orders/code/update_price',
+        'ipos/purchase_orders/code/update_price',
         body: dataParams,
       );
       hideLoadingPopup();
@@ -347,42 +348,38 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                             ),
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 10),
-                              child: TextFormField(
-                                decoration: InputDecoration(
-                                  labelText: setting.columnName(
+                              child: DateFormField(
+                                label: Text(
+                                  setting.columnName(
                                     'ipos::PurchaseOrder',
                                     'tanggal',
                                   ),
-                                  labelStyle: labelStyle,
-                                  border: const OutlineInputBorder(),
+                                  style: labelStyle,
                                 ),
+                                dateType: DateTimeType(),
                                 readOnly: true,
-                                initialValue: dateTimeLocalFormat(
-                                  purchaseOrder.datetime,
-                                ),
+                                initialValue: purchaseOrder.datetime.toLocal(),
                               ),
                             ),
                           ),
                           Visibility(
                             visible: setting.canShow(
                               'ipos::PurchaseOrder',
-                              'tglkirim',
+                              'tanggalkirim',
                             ),
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 10),
-                              child: TextFormField(
-                                decoration: InputDecoration(
-                                  labelText: setting.columnName(
+                              child: DateFormField(
+                                label: Text(
+                                  setting.columnName(
                                     'ipos::PurchaseOrder',
-                                    'tglkirim',
+                                    'tanggalkirim',
                                   ),
-                                  labelStyle: labelStyle,
-                                  border: const OutlineInputBorder(),
+                                  style: labelStyle,
                                 ),
                                 readOnly: true,
-                                initialValue: dateTimeLocalFormat(
-                                  purchaseOrder.deliveredDate,
-                                ),
+                                initialValue: purchaseOrder.deliveredDate
+                                    ?.toLocal(),
                               ),
                             ),
                           ),

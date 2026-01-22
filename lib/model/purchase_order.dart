@@ -11,7 +11,7 @@ class PurchaseOrder extends Model {
   Purchase? purchase;
   List<PurchaseOrderItem> purchaseItems;
   DateTime datetime;
-  DateTime deliveredDate;
+  DateTime? deliveredDate;
   String description;
   double totalItem;
   Money subtotal;
@@ -57,12 +57,11 @@ class PurchaseOrder extends Model {
     super.createdAt,
     super.updatedAt,
     DateTime? datetime,
-    DateTime? deliveredDate,
+    this.deliveredDate,
     List<PurchaseOrderItem>? purchaseItems,
   }) : purchaseItems = purchaseItems ?? <PurchaseOrderItem>[],
        datetime = datetime ?? DateTime.now(),
-       supplier = supplier ?? Supplier(),
-       deliveredDate = deliveredDate ?? DateTime.now();
+       supplier = supplier ?? Supplier();
 
   @override
   Map<String, dynamic> toMap() => {
@@ -121,7 +120,7 @@ class PurchaseOrder extends Model {
     id = json['id'];
     userName = attributes['user1'];
     datetime = DateTime.parse(attributes['tanggal']);
-    deliveredDate = DateTime.parse(attributes['tanggalkirim']);
+    deliveredDate = DateTime.tryParse(attributes['tanggalkirim'] ?? '');
     description = attributes['keterangan'];
     totalItem = double.parse(attributes['totalitem']);
     subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);

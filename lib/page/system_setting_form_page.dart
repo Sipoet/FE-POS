@@ -46,7 +46,7 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
   void fetchSystemSetting() {
     showLoadingPopup();
     _server
-        .get('systemSettings/${systemSetting.id}')
+        .get('system_settings/${systemSetting.id}')
         .then((response) {
           if (mounted && response.statusCode == 200) {
             systemSetting.setFromJson(

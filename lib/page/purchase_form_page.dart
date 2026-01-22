@@ -207,7 +207,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
     };
     try {
       final response = await _server.post(
-        'purchases/code/update_price',
+        'ipos/purchases/code/update_price',
         body: dataParams,
       );
       hideLoadingPopup();

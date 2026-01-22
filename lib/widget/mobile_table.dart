@@ -153,7 +153,7 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
           builder: (BuildContext context, setstateDialog) => AlertDialog(
             title: const Text("Urutkan Berdasarkan:"),
             content: SizedBox(
-              height: 460,
+              height: 480,
               child: Column(
                 spacing: 15,
                 children: [
