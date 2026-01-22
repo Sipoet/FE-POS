@@ -120,7 +120,6 @@ class ModelRoute {
   }
 
   ModelClass modelClassOf(String className) {
-    debugPrint('model class of $className');
     return _modelClasses[className]!;
   }
 

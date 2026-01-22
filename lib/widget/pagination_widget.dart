@@ -42,93 +42,136 @@ class _PaginationWidgetState extends State<PaginationWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: .max,
-      mainAxisAlignment: .spaceEvenly,
-      children: [
-        IconButton(
-          tooltip: 'First page',
-          disabledColor: Colors.grey.shade300,
-          onPressed: page <= 1
-              ? null
-              : () {
-                  setState(() {
-                    page = 1;
-                  });
-
-                  fetchModels();
-                },
-          icon: Icon(Icons.first_page),
-        ),
-        IconButton(
-          tooltip: 'Previous page',
-          disabledColor: Colors.grey.shade300,
-          onPressed: page <= 1
-              ? null
-              : () {
-                  setState(() {
-                    page -= 1;
-                    if (page < 1) {
-                      page = 1;
-                      return;
-                    }
-                  });
-
-                  fetchModels();
-                },
-          icon: Icon(Icons.keyboard_arrow_left),
-        ),
-        Text('Page:'),
-        SizedBox(
-          width: 50,
-          child: NumberFormField<int>(
-            controller: controller,
-            isDense: true,
-            onChanged: (value) {
-              if (value == null) {
-                controller.setValue(page);
-                return;
-              }
-              if (value > 0 && value <= totalPage) {
-                page = value;
-                fetchModels();
-              }
-            },
-          ),
-        ),
-        Text('of $totalPage pages'),
-        IconButton(
-          tooltip: 'Next page',
-          disabledColor: Colors.grey.shade300,
-          onPressed: page >= totalPage
-              ? null
-              : () {
-                  setState(() {
-                    page += 1;
-                    if (page > totalPage) {
-                      page = totalPage;
-                      return;
-                    }
-                  });
-
-                  fetchModels();
-                },
-          icon: Icon(Icons.keyboard_arrow_right),
-        ),
-        IconButton(
-          tooltip: 'Last page',
-          disabledColor: Colors.grey.shade300,
-          onPressed: page >= totalPage
-              ? null
-              : () {
-                  setState(() {
-                    page = totalPage;
-                  });
-                  fetchModels();
-                },
-          icon: Icon(Icons.last_page),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 320) {
+          return Column(
+            children: [
+              Row(
+                mainAxisAlignment: .spaceBetween,
+                children: [firstButton, prevButton, nextButton, lastButton],
+              ),
+              Row(
+                spacing: 5,
+                mainAxisAlignment: .center,
+                children: [
+                  Text('Page:'),
+                  pageField,
+                  Text('of $totalPage pages'),
+                ],
+              ),
+            ],
+          );
+        } else if (constraints.maxWidth < 800) {
+          return Row(
+            mainAxisAlignment: .spaceAround,
+            children: [
+              firstButton,
+              prevButton,
+              Text('Page:'),
+              pageField,
+              Text('of $totalPage pages'),
+              nextButton,
+              lastButton,
+            ],
+          );
+        } else {
+          return Row(
+            mainAxisAlignment: .spaceAround,
+            children: [
+              firstButton,
+              prevButton,
+              Text('Page:'),
+              pageField,
+              Text('of $totalPage pages'),
+              nextButton,
+              lastButton,
+            ],
+          );
+        }
+      },
     );
   }
+
+  Widget get pageField => SizedBox(
+    width: 50,
+    child: NumberFormField<int>(
+      controller: controller,
+      isDense: true,
+      onChanged: (value) {
+        if (value == null) {
+          controller.setValue(page);
+          return;
+        }
+        if (value > 0 && value <= totalPage) {
+          page = value;
+          fetchModels();
+        }
+      },
+    ),
+  );
+  Widget get firstButton => IconButton(
+    tooltip: 'First page',
+    disabledColor: Colors.grey.shade300,
+    onPressed: page <= 1
+        ? null
+        : () {
+            setState(() {
+              page = 1;
+            });
+
+            fetchModels();
+          },
+    icon: Icon(Icons.first_page),
+  );
+  Widget get prevButton => IconButton(
+    tooltip: 'Previous page',
+    disabledColor: Colors.grey.shade300,
+    onPressed: page <= 1
+        ? null
+        : () {
+            setState(() {
+              page -= 1;
+              if (page < 1) {
+                page = 1;
+                return;
+              }
+            });
+
+            fetchModels();
+          },
+    icon: Icon(Icons.keyboard_arrow_left),
+  );
+  Widget get nextButton => IconButton(
+    tooltip: 'Next page',
+    disabledColor: Colors.grey.shade300,
+    onPressed: page >= totalPage
+        ? null
+        : () {
+            setState(() {
+              page += 1;
+              if (page > totalPage) {
+                page = totalPage;
+                return;
+              }
+            });
+
+            fetchModels();
+          },
+    icon: Icon(Icons.keyboard_arrow_right),
+  );
+
+  Widget get lastButton => IconButton(
+    tooltip: 'Last page',
+    disabledColor: Colors.grey.shade300,
+    onPressed: page >= totalPage
+        ? null
+        : () {
+            setState(() {
+              page = totalPage;
+            });
+            fetchModels();
+          },
+    icon: Icon(Icons.last_page),
+  );
 }

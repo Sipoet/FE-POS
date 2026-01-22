@@ -66,6 +66,27 @@ enum QueryOperator implements EnumTranslation {
         return 'antara';
     }
   }
+
+  String shortName() {
+    switch (this) {
+      case equals:
+        return '=';
+      case contains:
+        return 'ilike';
+      case not:
+        return 'not';
+      case lessThan:
+        return '<';
+      case lessThanOrEqualTo:
+        return '<=';
+      case greaterThan:
+        return '>';
+      case greaterThanOrEqualTo:
+        return '>=';
+      case between:
+        return '<=>';
+    }
+  }
 }
 
 abstract class FilterData {

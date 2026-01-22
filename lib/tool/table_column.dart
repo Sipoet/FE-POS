@@ -503,80 +503,188 @@ class _NumberFilterFieldState<T> extends State<NumberFilterField<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 50,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          DropdownMenu<QueryOperator>(
-            key: ValueKey('${widget.name}-operator'),
-            width: 170,
-            initialSelection: operatorFilter,
-            onSelected: (value) {
-              setState(() {
-                operatorFilter = value;
-              });
-              checkChanged();
-            },
-            inputDecorationTheme: const InputDecorationTheme(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.all(12),
-            ),
-            requestFocusOnTap: false,
-            controller: operatorController,
-            label: widget.label,
-            dropdownMenuEntries: QueryOperator.values
-                .map<DropdownMenuEntry<QueryOperator>>(
-                  (data) => DropdownMenuEntry<QueryOperator>(
-                    value: data,
-                    label: data.humanize(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 550) {
+          double numWidth = constraints.maxWidth < 230 ? 50 : 90;
+          return SizedBox(
+            height: 120,
+            child: Wrap(
+              crossAxisAlignment: .start,
+              alignment: .spaceBetween,
+              runSpacing: 10,
+              spacing: 10,
+              children: [
+                DropdownMenu<QueryOperator>(
+                  key: ValueKey('${widget.name}-operator'),
+                  width: 300,
+                  initialSelection: operatorFilter,
+                  onSelected: (value) {
+                    setState(() {
+                      operatorFilter = value;
+                    });
+                    checkChanged();
+                  },
+                  inputDecorationTheme: const InputDecorationTheme(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.all(12),
                   ),
-                )
-                .toList(),
-          ),
-          SizedBox(
-            width: 130,
-            child: NumberFormField<T>(
-              key: ValueKey('${widget.name}-value1-number'),
-              controller: startValController,
-              numType: widget.numType,
-              label: Text(
-                operatorFilter == QueryOperator.between ? 'Mulai' : 'Nilai',
-              ),
-              onChanged: (val) {
-                start = val;
-                checkChanged();
-              },
+                  requestFocusOnTap: false,
+                  controller: operatorController,
+                  label: widget.label,
+                  dropdownMenuEntries: QueryOperator.values
+                      .map<DropdownMenuEntry<QueryOperator>>(
+                        (data) => DropdownMenuEntry<QueryOperator>(
+                          value: data,
+                          label: data.humanize(),
+                        ),
+                      )
+                      .toList(),
+                ),
+                SizedBox(
+                  width: numWidth,
+                  child: NumberFormField<T>(
+                    key: ValueKey('${widget.name}-value1-number'),
+                    controller: startValController,
+                    numType: widget.numType,
+                    label: Text(
+                      operatorFilter == QueryOperator.between
+                          ? 'Mulai'
+                          : 'Nilai',
+                    ),
+                    onChanged: (val) {
+                      start = val;
+                      checkChanged();
+                    },
+                  ),
+                ),
+                Visibility(
+                  visible: operatorFilter == QueryOperator.between,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text('-', style: TextStyle(fontSize: 16)),
+                  ),
+                ),
+                Visibility(
+                  visible: operatorFilter == QueryOperator.between,
+                  child: SizedBox(
+                    width: numWidth,
+                    child: NumberFormField<T>(
+                      key: ValueKey('${widget.name}-value2-number'),
+                      controller: endValController,
+                      numType: widget.numType,
+                      label: Text('Sampai'),
+                      onChanged: (val) {
+                        end = val;
+                        checkChanged();
+                      },
+                    ),
+                  ),
+                ),
+                IconButton.filled(
+                  onPressed: () {
+                    startValController.clear();
+                    endValController.clear();
+                    operatorController.clear();
+                    controller.setFilterData(null);
+                  },
+                  icon: const Icon(Icons.close),
+                  // color: colorScheme.primary,
+                ),
+              ],
             ),
-          ),
-          Visibility(
-            visible: operatorFilter == QueryOperator.between,
-            child: SizedBox(
-              width: 130,
-              child: NumberFormField<T>(
-                key: ValueKey('${widget.name}-value2-number'),
-                controller: endValController,
-                numType: widget.numType,
-                label: Text('Sampai'),
-                onChanged: (val) {
-                  end = val;
-                  checkChanged();
-                },
-              ),
+          );
+        } else {
+          final numWidth = 120.0;
+          return SizedBox(
+            height: 50,
+            child: Row(
+              spacing: 10,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownMenu<QueryOperator>(
+                  key: ValueKey('${widget.name}-operator'),
+                  width: 200,
+                  initialSelection: operatorFilter,
+                  onSelected: (value) {
+                    setState(() {
+                      operatorFilter = value;
+                    });
+                    checkChanged();
+                  },
+                  inputDecorationTheme: const InputDecorationTheme(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.all(12),
+                  ),
+                  requestFocusOnTap: false,
+                  controller: operatorController,
+                  label: widget.label,
+                  dropdownMenuEntries: QueryOperator.values
+                      .map<DropdownMenuEntry<QueryOperator>>(
+                        (data) => DropdownMenuEntry<QueryOperator>(
+                          value: data,
+                          label: constraints.maxWidth < 400
+                              ? data.shortName()
+                              : data.humanize(),
+                        ),
+                      )
+                      .toList(),
+                ),
+                SizedBox(
+                  width: numWidth,
+                  child: NumberFormField<T>(
+                    key: ValueKey('${widget.name}-value1-number'),
+                    controller: startValController,
+                    numType: widget.numType,
+                    label: Text(
+                      operatorFilter == QueryOperator.between
+                          ? 'Mulai'
+                          : 'Nilai',
+                    ),
+                    onChanged: (val) {
+                      start = val;
+                      checkChanged();
+                    },
+                  ),
+                ),
+                Visibility(
+                  visible: operatorFilter == QueryOperator.between,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text('-', style: TextStyle(fontSize: 16)),
+                  ),
+                ),
+                Visibility(
+                  visible: operatorFilter == QueryOperator.between,
+                  child: SizedBox(
+                    width: numWidth,
+                    child: NumberFormField<T>(
+                      key: ValueKey('${widget.name}-value2-number'),
+                      controller: endValController,
+                      numType: widget.numType,
+                      label: Text('Sampai'),
+                      onChanged: (val) {
+                        end = val;
+                        checkChanged();
+                      },
+                    ),
+                  ),
+                ),
+                IconButton.filled(
+                  onPressed: () {
+                    startValController.clear();
+                    endValController.clear();
+                    operatorController.clear();
+                    controller.setFilterData(null);
+                  },
+                  icon: const Icon(Icons.close),
+                  // color: colorScheme.primary,
+                ),
+              ],
             ),
-          ),
-          IconButton.filled(
-            onPressed: () {
-              startValController.clear();
-              endValController.clear();
-              operatorController.clear();
-              controller.setFilterData(null);
-            },
-            icon: const Icon(Icons.close),
-            // color: colorScheme.primary,
-          ),
-        ],
-      ),
+          );
+        }
+      },
     );
   }
 

@@ -149,13 +149,22 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
           sorts[sort.key] = sort;
         }
         String searchSortText = '';
+        final columns = widget.columns
+            .where(
+              (column) =>
+                  column.canSort && searchSortText.isEmpty ||
+                  column.humanizeName.insensitiveContains(searchSortText),
+            )
+            .toList();
         return StatefulBuilder(
           builder: (BuildContext context, setstateDialog) => AlertDialog(
             title: const Text("Urutkan Berdasarkan:"),
-            content: SizedBox(
-              height: 480,
+            content: Container(
+              width: 350,
+              height: 400,
               child: Column(
                 spacing: 15,
+                mainAxisSize: .min,
                 children: [
                   TextField(
                     decoration: InputDecoration(hintText: 'Cari'),
@@ -163,104 +172,91 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                       searchSortText = val;
                     }),
                   ),
-                  SizedBox(
-                    height: 300,
-                    width: 330,
-                    child: ListView(
-                      children: widget.columns
-                          .where(
-                            (column) =>
-                                column.canSort && searchSortText.isEmpty ||
-                                column.humanizeName.insensitiveContains(
-                                  searchSortText,
-                                ),
-                          )
-                          .map<Widget>((column) {
-                            return Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  mainAxisSize: .min,
-                                  crossAxisAlignment: .start,
-                                  mainAxisAlignment: .spaceBetween,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(
-                                        column.humanizeName,
-                                        overflow: .fade,
-                                      ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () {
-                                        setstateDialog(() {
-                                          if (sorts[column.name] == null) {
-                                            sorts[column.name] = SortData(
-                                              key: column.name,
-                                              isAscending: true,
-                                            );
-                                          } else if (sorts[column.name]!
-                                              .isAscending) {
-                                            sorts[column.name] = SortData(
-                                              key: column.name,
-                                              isAscending: false,
-                                            );
-                                          } else {
-                                            sorts.remove(column.name);
-                                          }
-                                        });
-                                      },
-                                      icon: sorts[column.name] == null
-                                          ? Icon(Icons.unfold_more)
-                                          : sorts[column.name]!.isAscending
-                                          ? Icon(
-                                              Icons.arrow_drop_up,
-                                              color: Colors.green,
-                                            )
-                                          : Icon(
-                                              Icons.arrow_drop_down,
-                                              color: Colors.green,
-                                            ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          })
-                          .toList(),
+                  Expanded(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      primary: true,
+                      itemCount: columns.length,
+                      separatorBuilder: (context, index) => SizedBox(height: 3),
+                      itemBuilder: (context, index) {
+                        final column = columns[index];
+                        return Card(
+                          borderOnForeground: false,
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(width: 1, color: Colors.grey),
+                            borderRadius: BorderRadius.all(Radius.circular(6)),
+                          ),
+                          child: ListTile(
+                            dense: true,
+                            subtitle: Text(
+                              column.humanizeName,
+                              overflow: .fade,
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            onTap: () {
+                              setstateDialog(() {
+                                if (sorts[column.name] == null) {
+                                  sorts[column.name] = SortData(
+                                    key: column.name,
+                                    isAscending: true,
+                                  );
+                                } else if (sorts[column.name]!.isAscending) {
+                                  sorts[column.name] = SortData(
+                                    key: column.name,
+                                    isAscending: false,
+                                  );
+                                } else {
+                                  sorts.remove(column.name);
+                                }
+                              });
+                            },
+                            trailing: sorts[column.name] == null
+                                ? Icon(Icons.unfold_more)
+                                : sorts[column.name]!.isAscending
+                                ? Icon(Icons.arrow_drop_up, color: Colors.green)
+                                : Icon(
+                                    Icons.arrow_drop_down,
+                                    color: Colors.green,
+                                  ),
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 15,
-                    children: [
-                      ElevatedButton(
-                        child: const Text("Submit"),
-                        onPressed: () {
-                          queryRequest.value.sorts = sorts.values.toList();
-                          queryRequest.notify();
-                          navigator.pop(true);
-                        },
-                      ),
-                      ElevatedButton(
-                        child: const Text("Reset"),
-                        onPressed: () {
-                          setstateDialog(() {
-                            sorts.clear();
-                          });
-                        },
-                      ),
-                      ElevatedButton(
-                        child: const Text("Kembali"),
-                        onPressed: () {
-                          navigator.pop(false);
-                        },
-                      ),
-                    ],
                   ),
                 ],
               ),
             ),
+
+            actions: [
+              ElevatedButton(
+                child: const Text("Submit"),
+                onPressed: () {
+                  queryRequest.value.sorts = sorts.values.toList();
+                  queryRequest.notify();
+                  navigator.pop(true);
+                },
+              ),
+              ElevatedButton(
+                child: const Text("Reset"),
+                onPressed: () {
+                  setstateDialog(() {
+                    sorts.clear();
+                  });
+                },
+              ),
+              ElevatedButton(
+                child: const Text("Kembali"),
+                onPressed: () {
+                  navigator.pop(false);
+                },
+              ),
+            ],
+            elevation: 5,
+            actionsAlignment: .spaceAround,
+            actionsPadding: EdgeInsets.only(bottom: 20, left: 10, right: 10),
+            actionsOverflowAlignment: .end,
+            actionsOverflowButtonSpacing: 5,
+            actionsOverflowDirection: .down,
           ),
         );
       },
