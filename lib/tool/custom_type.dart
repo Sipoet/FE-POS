@@ -3,7 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:pluralize/pluralize.dart';
 
 final plurale = Pluralize()
-  ..addSingularRule(RegExp(r'leaves', caseSensitive: false), 'leave');
+  ..addSingularRule(RegExp(r'leaves', caseSensitive: false), 'leave')
+  ..addSingularRule(RegExp(r'ipos', caseSensitive: false), 'ipos');
 
 extension StringExt on String {
   String toSnakeCase() => unclassify().toLowerCase().replaceAll(' ', '_');
@@ -25,8 +26,16 @@ extension StringExt on String {
   ).split(' ').map<String>((str) => str.toCapitalize()).join(' ');
   String toSingularize() => plurale.singular(this);
   String toPluralize() => plurale.plural(this);
-  String toClassify() =>
-      toSingularize().toTitleCase().replaceAll(RegExp(r'[_\s]'), '');
+  String toClassify() {
+    return this
+        .split('/')
+        .map(
+          (e) =>
+              e.toSingularize().toTitleCase().replaceAll(RegExp(r'[_\s]'), ''),
+        )
+        .join('::');
+  }
+
   bool insensitiveContains(String text) =>
       toLowerCase().contains(text.toLowerCase());
 }
