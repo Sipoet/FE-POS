@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
@@ -9,7 +10,8 @@ export 'package:fe_pos/tool/table_decorator.dart';
 import 'package:trina_grid/trina_grid.dart';
 import 'package:provider/provider.dart';
 
-typedef OnLoadedCallBack = void Function(TrinaGridStateManager stateManager);
+typedef OnLoadedCallBack<T extends Model> =
+    void Function(TableController<T> stateManager);
 typedef OnRowCheckedCallback = void Function(TrinaGridOnRowCheckedEvent event);
 typedef OnSelectedCallback = void Function(TrinaGridOnSelectedEvent event);
 typedef OnRowDoubleTapCallback =
@@ -23,7 +25,7 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
   final List<T> rows;
   final List<TableColumn> columns;
   final Map<String, List<Enum>> enums;
-  final OnLoadedCallBack? onLoaded;
+  final OnLoadedCallBack<T>? onLoaded;
   final OnRowCheckedCallback? onRowChecked;
   final OnSelectedCallback? onSelected;
   final OnRowDoubleTapCallback? onRowDoubleTap;
@@ -64,7 +66,10 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
       .map<TrinaRow>((row) => decorateRow(model: row, tableColumns: columns))
       .toList();
   final _menuController = MenuController();
-  QueryRequest queryRequest = QueryRequest(limit: 20);
+  late final TableController<T> controller;
+  late final MobileTableController<T> mobileController;
+  bool isLoaded = false;
+  bool isMobileLayout = false;
 
   List<TrinaColumn> get columns =>
       widget.columns.asMap().entries.map<TrinaColumn>((entry) {
@@ -105,6 +110,54 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
   @override
   void initState() {
     tabManager = context.read<TabManager>();
+    controller = TableController(
+      columns: widget.columns,
+      models: widget.rows,
+      trinaController: TrinaGridStateManager(
+        columns: columns,
+        rows: rows,
+        gridFocusNode: FocusNode(),
+        scroll: TrinaGridScrollController(),
+      ),
+    );
+    mobileController = MobileTableController(
+      currentPage: controller.queryRequest.page,
+      searchText: controller.queryRequest.searchText,
+      sorts: controller.queryRequest.sorts,
+      models: controller.models,
+    );
+    controller.addListener(() {
+      mobileController.currentPage = controller.queryRequest.page;
+      mobileController.searchText = controller.queryRequest.searchText;
+      mobileController.sorts = controller.queryRequest.sorts;
+      mobileController.models = paginatedRows(
+        models: controller.models,
+        page: mobileController.currentPage,
+        limit: controller.rowsPerPage,
+      );
+      mobileController.totalPage =
+          (controller.models.length.toDouble() /
+                  controller.rowsPerPage.toDouble())
+              .ceil();
+      debugPrint('controller changed');
+      if (widget.onQueryChanged != null) {
+        widget.onQueryChanged!(controller.queryRequest);
+      }
+
+      mobileController.notifyChanged();
+    });
+    mobileController.addListener(() {
+      debugPrint('mobile controller changed');
+      controller.page = mobileController.currentPage;
+      controller.searchText = mobileController.searchText;
+      controller.sorts = mobileController.sorts;
+      mobileController.models = paginatedRows(
+        models: controller.models,
+        page: mobileController.currentPage,
+        limit: controller.rowsPerPage,
+      );
+      mobileController.notifyChanged();
+    });
     super.initState();
   }
 
@@ -114,17 +167,29 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('sync build models ${controller.models.length}');
     final colorScheme = Theme.of(context).colorScheme;
-
+    if (widget.rows.length != controller.models.length) {
+      debugPrint(
+        'tidak sama widget ${widget.rows.length}, controller ${controller.models.length}',
+      );
+    }
     return LayoutBuilder(
       builder: (context, constraint) {
         if (constraint.maxWidth > 480) {
+          isMobileLayout = false;
+          controller.isMobileLayout = false;
           return trinaGrid(colorScheme);
         } else {
+          isMobileLayout = true;
+          controller.isMobileLayout = true;
+          if (!isLoaded && widget.onLoaded != null) {
+            isLoaded = true;
+            widget.onLoaded!(controller);
+          }
           return MobileTable<T>(
+            controller: mobileController,
             columns: widget.columns,
-            rows: widget.rows,
-            onQueryChanged: widget.onQueryChanged,
             renderAction: widget.renderAction,
           );
         }
@@ -132,10 +197,20 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
     );
   }
 
+  List<T> paginatedRows({
+    required List<T> models,
+    int page = 1,
+    int limit = 10,
+  }) {
+    int start = (page - 1) * limit;
+    int end = [page * limit, models.length].min;
+    return models.sublist(start, end);
+  }
+
   Widget trinaGrid(ColorScheme colorScheme) {
     return TrinaGrid(
-      columns: columns,
-      rows: rows,
+      columns: controller.trinaColumns,
+      rows: controller.trinaController.rows,
       onLoaded: (TrinaGridOnLoadedEvent event) {
         final stateManager = event.stateManager;
         stateManager.setShowColumnFilter(widget.showFilter);
@@ -143,8 +218,23 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
         setState(() {
           stateManager.columnFooterHeight = 150.0;
         });
-        if (widget.onLoaded is Function) {
-          widget.onLoaded!(stateManager);
+        controller.trinaController = stateManager;
+        if (!isLoaded && widget.onLoaded != null) {
+          isLoaded = true;
+          widget.onLoaded!(controller);
+        }
+      },
+      onSorted: (event) {
+        event.column.field;
+        if (event.column.sort == .none) {
+          controller.sorts = [];
+        } else {
+          controller.sorts = [
+            SortData(
+              key: event.column.field,
+              isAscending: event.column.sort == .ascending,
+            ),
+          ];
         }
       },
       noRowsWidget: const Text('Data tidak ditemukan'),
@@ -163,11 +253,16 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
               padding: const EdgeInsets.all(8.0),
               child: widget.onQueryChanged == null
                   ? SizedBox()
-                  : TextField(
-                      onSubmitted: (value) {
-                        queryRequest.searchText = value;
-                        widget.onQueryChanged!(queryRequest);
+                  : TextFormField(
+                      onFieldSubmitted: (value) {
+                        controller.searchText = value;
                       },
+                      onChanged: (value) {
+                        if (value.isEmpty) {
+                          controller.searchText = '';
+                        }
+                      },
+                      initialValue: controller.queryRequest.searchText,
                       decoration: InputDecoration(
                         hintText: 'Cari',
                         isDense: true,

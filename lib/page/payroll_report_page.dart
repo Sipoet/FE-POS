@@ -20,7 +20,7 @@ class PayrollReportPage extends StatefulWidget {
 
 class _PayrollReportPageState extends State<PayrollReportPage>
     with LoadingPopup, DefaultResponse, ColumnTypeFinder {
-  TrinaGridStateManager? tableStateManager;
+  TableController? tableStateManager;
   List<PayrollType> payrollTypes = [];
   List<Employee> employees = [];
   List<TableColumn> tableColumns = [];
@@ -214,7 +214,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
               const Divider(),
               SizedBox(
                 height: bodyScreenHeight,
-                child: SyncDataTable(
+                child: SyncDataTable<PayrollReport>(
                   columns: tableColumns,
                   showSummary: true,
                   showFilter: true,

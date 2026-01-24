@@ -19,7 +19,7 @@ class SalePage extends StatefulWidget {
 
 class _SalePageState extends State<SalePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
   List<Sale> items = [];

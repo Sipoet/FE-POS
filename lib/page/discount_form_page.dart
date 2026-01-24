@@ -42,7 +42,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final TextEditingController _discount4Controller;
   late final TextEditingController _codeController;
   late final TabController _tabController;
-  TrinaGridStateManager? _source;
+  TableController? _source;
   late final Server server;
   dynamic discount1;
   Percentage? discount2;

@@ -19,7 +19,7 @@ class ConsignmentInPage extends StatefulWidget {
 
 class _ConsignmentInPageState extends State<ConsignmentInPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
   List<ConsignmentIn> items = [];
@@ -56,7 +56,7 @@ class _ConsignmentInPageState extends State<ConsignmentInPage>
     QueryRequest request,
   ) {
     request.filters = _filters;
-    request.include.addAll(['supplier', 'consignment_in_order']);
+    request.includeAddAll(['supplier', 'consignment_in_order']);
     return ConsignmentInClass()
         .finds(server, request)
         .then(

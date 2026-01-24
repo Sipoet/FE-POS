@@ -23,11 +23,10 @@ class _ItemReportPageState extends State<ItemReportPage>
   late Server server;
   String? _reportType;
   double minimumColumnWidth = 150;
-  TrinaGridStateManager? _source;
+  late final TableController<ItemReport> _source;
   late Flash flash;
   late final List<TableColumn> columns;
-  List<ItemReport> _itemReports = [];
-  final QueryRequest queryRequest = QueryRequest();
+  // List<ItemReport> itemReports = [];
 
   @override
   void initState() {
@@ -42,32 +41,33 @@ class _ItemReportPageState extends State<ItemReportPage>
   bool get wantKeepAlive => true;
 
   void _displayReport() {
-    _source?.setShowLoading(true);
+    _source.setShowLoading(true);
 
     _requestReport(page: 1, limit: 2000)
         .then((response) {
           try {
             if (response.statusCode != 200) {
               setState(() {
-                _itemReports = [];
-                _source?.setModels(_itemReports);
+                //   itemReports = [];
+                _source.setModels([]);
               });
               return;
             }
             var data = response.data;
             final initClass = ItemReportClass();
             setState(() {
-              _itemReports = data['data'].map<ItemReport>((row) {
+              final itemReports = data['data'].map<ItemReport>((row) {
                 return initClass.fromJson(row);
               }).toList();
-              _source?.setModels(_itemReports);
+              _source.setModels(itemReports);
+              debugPrint('report page models ${itemReports.length}');
             });
           } catch (error, stackTrace) {
             debugPrint(error.toString());
             debugPrint(stackTrace.toString());
           }
         }, onError: ((error, stackTrace) => defaultErrorResponse(error: error)))
-        .whenComplete(() => _source?.setShowLoading(false));
+        .whenComplete(() => _source.setShowLoading(false));
   }
 
   void _downloadReport() {
@@ -80,11 +80,12 @@ class _ItemReportPageState extends State<ItemReportPage>
   }
 
   Future _requestReport({int page = 1, int? limit}) {
-    queryRequest.page = page;
-    queryRequest.limit = 20;
-    Map<String, dynamic> param = queryRequest.toQueryParam();
+    _source.queryRequest.page = page;
+    _source.queryRequest.limit = limit;
+    Map<String, dynamic> param = _source.queryRequest.toQueryParam();
     param['report_type'] = _reportType ?? 'json';
     param['page[limit]'] = limit?.toString();
+    debugPrint('request report ${param.toString()}');
     return server.get(
       'item_reports',
       queryParam: param,
@@ -133,11 +134,11 @@ class _ItemReportPageState extends State<ItemReportPage>
           TableFilterForm(
             showCanopy: false,
             onSubmit: (filter) {
-              queryRequest.filters = filter;
+              _source.queryRequest.filters = filter;
               _displayReport();
             },
             onDownload: (filter) {
-              queryRequest.filters = filter;
+              _source.queryRequest.filters = filter;
               _downloadReport();
             },
             columns: columns,
@@ -149,12 +150,9 @@ class _ItemReportPageState extends State<ItemReportPage>
               showFilter: false,
               showSummary: true,
               isPaginated: true,
-              rows: _itemReports,
+              // rows: itemReports,
               columns: columns,
-              onQueryChanged: (queryRequest1) {
-                queryRequest.searchText = queryRequest1.searchText;
-                queryRequest.sorts = queryRequest1.sorts;
-
+              onQueryChanged: (queryRequest) {
                 _displayReport();
               },
               onLoaded: (stateManager) => _source = stateManager,

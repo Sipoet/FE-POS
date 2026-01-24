@@ -7,21 +7,21 @@ import 'package:fe_pos/tool/table_decorator.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/model_card.dart';
 import 'package:fe_pos/widget/pagination_widget.dart';
+import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class MobileTable<T extends Model> extends StatefulWidget {
-  final FutureOr<DataTableResponse<T>> Function(QueryRequest)? fetchData;
   final Widget Function(T model)? renderAction;
   final List<TableColumn> columns;
+  // final void Function() onChanged;
+  final MobileTableController<T> controller;
   final List<T>? rows;
-  final void Function(QueryRequest queryRequest)? onQueryChanged;
   const MobileTable({
     super.key,
     required this.columns,
-    this.fetchData,
+    required this.controller,
     required this.renderAction,
-    this.onQueryChanged,
     this.rows,
   });
 
@@ -31,53 +31,47 @@ class MobileTable<T extends Model> extends StatefulWidget {
 
 class _MobileTableState<T extends Model> extends State<MobileTable<T>>
     with TextFormatter, LoadingPopup {
-  final QueryNotifier queryRequest = QueryNotifier(QueryRequest(limit: 20));
   DataTableResponse<T>? queryResponse;
   late final TabManager tabManager;
   final pageController = TextEditingController();
   final scrollController = ScrollController();
+  MobileTableController<T> get controller => widget.controller;
   @override
   void initState() {
     tabManager = context.read<TabManager>();
+
     Future.delayed(Duration.zero, refreshTable);
-    queryRequest.addListener(() {
-      if (widget.onQueryChanged != null) {
-        widget.onQueryChanged!(queryRequest.value);
+    controller.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+    controller.loader.addListener(() {
+      if (mounted) {
+        setState(() {});
       }
     });
     super.initState();
   }
 
-  List<T> paginatedRows() {
-    final page = queryRequest.value.page;
-    final limit = queryRequest.value.limit ?? 20;
-    int start = (page - 1) * limit;
-    int end = [page * limit, widget.rows!.length].min;
-    return widget.rows!.sublist(start, end);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final models = widget.fetchData == null
-        ? paginatedRows()
-        : queryResponse?.models ?? [];
     return Column(
       children: [
         Row(
           mainAxisAlignment: .spaceBetween,
           children: [
             Flexible(
-              child: TextField(
-                onSubmitted: (value) {
-                  queryRequest.value.searchText = value;
-                  queryRequest.notify();
-                  refreshTable();
+              child: TextFormField(
+                onFieldSubmitted: (value) {
+                  controller.searchText = value;
+                  debugPrint('search change');
+                  controller.notifyChanged();
                 },
+                initialValue: controller.searchText,
                 onChanged: (value) {
                   if (value.isEmpty) {
-                    queryRequest.value.searchText = null;
-                    queryRequest.notify();
-                    refreshTable();
+                    controller.searchText = '';
                   }
                 },
                 decoration: InputDecoration(
@@ -90,9 +84,7 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
               onPressed: openSortDialog,
               icon: Icon(
                 Icons.sort_outlined,
-                color: queryRequest.value.sorts.isNotEmpty
-                    ? Colors.green
-                    : null,
+                color: controller.sorts.isNotEmpty ? Colors.green : null,
               ),
             ),
             IconButton(onPressed: refreshTable, icon: Icon(Icons.refresh)),
@@ -100,16 +92,23 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
         ),
         const SizedBox(height: 10),
         Visibility(
-          visible: models.isEmpty,
+          visible: controller.models.isEmpty && !controller.loader.value,
           child: Padding(
             padding: const EdgeInsets.only(top: 15),
             child: Text('Data tidak ditemukan'),
           ),
         ),
+        Visibility(
+          visible: controller.loader.value,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 50),
+            child: loadingWidget(),
+          ),
+        ),
         Expanded(
           child: ListView(
             controller: scrollController,
-            children: models
+            children: controller.models
                 .map<Widget>(
                   (model) => ModelCard(
                     model: model,
@@ -125,13 +124,13 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
         ),
         SizedBox(height: 10),
         Visibility(
-          visible: models.isNotEmpty,
+          visible: controller.models.isNotEmpty,
           child: PaginationWidget(
-            totalPage: queryResponse?.totalPage ?? 1,
-            initialPage: queryRequest.value.page,
+            totalPage: controller.totalPage,
+            initialPage: controller.currentPage,
             onPageChanged: (page) {
-              queryRequest.value.page = page;
-              fetchModels();
+              controller.currentPage = page;
+              controller.notifyChanged();
             },
           ),
         ),
@@ -145,7 +144,7 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
       builder: (BuildContext context) {
         final navigator = Navigator.of(context);
         Map<String, SortData> sorts = {};
-        for (final sort in queryRequest.value.sorts) {
+        for (final sort in controller.sorts) {
           sorts[sort.key] = sort;
         }
         String searchSortText = '';
@@ -159,7 +158,7 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
         return StatefulBuilder(
           builder: (BuildContext context, setstateDialog) => AlertDialog(
             title: const Text("Urutkan Berdasarkan:"),
-            content: Container(
+            content: SizedBox(
               width: 350,
               height: 400,
               child: Column(
@@ -231,8 +230,7 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
               ElevatedButton(
                 child: const Text("Submit"),
                 onPressed: () {
-                  queryRequest.value.sorts = sorts.values.toList();
-                  queryRequest.notify();
+                  controller.sorts = sorts.values.toList();
                   navigator.pop(true);
                 },
               ),
@@ -266,51 +264,106 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
   }
 
   void refreshTable() {
-    queryRequest.value.page = 1;
-    fetchModels();
-  }
-
-  void fetchModels() async {
-    debugPrint(
-      "fetch search text ${queryRequest.value.searchText} page ${queryRequest.value.page} limit ${queryRequest.value.limit}",
-    );
-    if (widget.fetchData == null) {
-      return;
-    }
-    showLoadingPopup();
-
-    pageController.setValue(queryRequest.value.page);
-
-    final response = await widget.fetchData!(queryRequest.value);
-    debugPrint(
-      'masuk response  search ${queryRequest.value.searchText} response ${queryResponse?.models.length}',
-    );
     setState(() {
-      if (queryResponse != null) {
-        queryResponse!.models = response.models;
-        queryResponse!.totalPage = response.totalPage;
-      } else {
-        queryResponse = response;
-      }
-      scrollController.jumpTo(0);
+      controller.currentPage = 1;
+      controller.notifyChanged(force: true);
     });
-
-    hideLoadingPopup();
   }
 }
 
-class QueryNotifier extends ChangeNotifier {
-  QueryRequest _value;
+final listFormula = ListEquality();
 
-  QueryNotifier(this._value);
-  set value(QueryRequest val) {
-    _value = val;
-    notifyListeners();
+extension ListEqual on List {
+  bool equal(List a) {
+    return listFormula.equals(this, a);
+  }
+}
+
+class MobileTableController<T extends Model> extends ChangeNotifier {
+  int _currentPage;
+  int _totalPage;
+  List<T> _models;
+  String _searchText;
+
+  ValueNotifier<bool> loader = ValueNotifier<bool>(false);
+  List<SortData> _sorts;
+  bool _isValueChanged = false;
+  MobileTableController({
+    int currentPage = 1,
+    int totalPage = 1,
+    String searchText = '',
+    List<T>? models,
+    List<SortData>? sorts,
+  }) : _models = models ?? [],
+       _sorts = sorts ?? [],
+       _currentPage = currentPage,
+       _totalPage = totalPage,
+       _searchText = searchText;
+
+  set currentPage(int value) {
+    if (_currentPage != value) {
+      _currentPage = value;
+      _isValueChanged = true;
+    }
   }
 
-  QueryRequest get value => _value;
+  set totalPage(int value) {
+    if (_totalPage != value) {
+      _totalPage = value;
+      _isValueChanged = true;
+    }
+  }
 
-  void notify() {
-    notifyListeners();
+  set sorts(List<SortData> value) {
+    if (!_sorts.equals(value)) {
+      debugPrint(
+        '_sorts change from ${_sorts.map<String>((e) => e.toString()).join(',')} to ${value.map<String>((e) => e.toString()).join(',')}',
+      );
+      _sorts = value;
+      _isValueChanged = true;
+    }
+  }
+
+  set models(List<T> value) {
+    if (!(_models
+        .map<String>((e) => e.modelValue)
+        .toList()
+        .equals(value.map<String>((e) => e.modelValue).toList()))) {
+      debugPrint('_models change from ${models.length} to ${value.length}');
+      _models = value;
+      _isValueChanged = true;
+    }
+  }
+
+  void showLoading() {
+    loader.value = true;
+  }
+
+  void hideLoading() {
+    loader.value = false;
+  }
+
+  set searchText(String value) {
+    if (_searchText != value) {
+      _searchText = value;
+      _isValueChanged = true;
+    }
+  }
+
+  int get currentPage => _currentPage;
+  int get totalPage => _totalPage;
+  List<T> get models => _models;
+  String get searchText => _searchText;
+
+  List<SortData> get sorts => _sorts;
+
+  void notifyChanged({bool force = false}) {
+    if (_isValueChanged) {
+      _isValueChanged = false;
+      debugPrint('notify pressed');
+      notifyListeners();
+    } else if (force) {
+      notifyListeners();
+    }
   }
 }

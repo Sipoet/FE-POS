@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/tool/table_column.dart';
@@ -266,7 +267,7 @@ extension TableStateMananger on TrinaGridStateManager {
   }
 
   void refreshTable() {
-    eventManager!.addEvent(
+    eventManager?.addEvent(
       TrinaGridChangeColumnSortEvent(
         column: columns.first,
         oldSort: TrinaColumnSort.none,
@@ -401,5 +402,182 @@ class DataTableResponse<T extends Model> {
 extension TrinaRowExt on TrinaRow {
   T modelOf<T extends Model>() {
     return cells[modelKey]?.value as T;
+  }
+}
+
+class TableController<T extends Model> extends ChangeNotifier {
+  TrinaGridStateManager trinaController;
+  List<T> models = [];
+  List<TableColumn> columns = [];
+  QueryRequest queryRequest;
+  bool isMobileLayout = false;
+  // table rows per page
+  int rowsPerPage;
+
+  List<TrinaColumn> get trinaColumns => trinaController.columns.toList();
+  TrinaDeco get decorator => TrinaDeco();
+
+  TableController({
+    TrinaGridStateManager? trinaController,
+    this.rowsPerPage = 10,
+    QueryRequest? queryRequest,
+    List<T>? models,
+    List<TableColumn>? columns,
+  }) : models = models ?? [],
+       columns = columns ?? [],
+       trinaController =
+           trinaController ??
+           TrinaGridStateManager(
+             columns: [],
+             rows: [],
+             gridFocusNode: FocusNode(),
+             scroll: TrinaGridScrollController(),
+           ),
+       queryRequest = queryRequest ?? QueryRequest();
+
+  void setModels(List<T> value) {
+    if (models
+        .map<String>((e) => e.modelValue)
+        .toList()
+        .equals(value.map<String>((e) => e.modelValue).toList())) {
+      return;
+    }
+    models = value;
+    trinaController.setModels(value);
+    notifyListeners();
+  }
+
+  set searchText(String value) {
+    if (queryRequest.searchText == value) {
+      return;
+    }
+    queryRequest.searchText = value;
+    notifyListeners();
+  }
+
+  set include(List<String> value) {
+    final a = queryRequest.include.toSet();
+    final b = value.toSet();
+    if (a.containsAll(b) && b.containsAll(a)) {
+      return;
+    }
+    queryRequest.include = value;
+    notifyListeners();
+  }
+
+  set page(int value) {
+    if (queryRequest.page == value) {
+      return;
+    }
+    queryRequest.page = value;
+    trinaController.setPage(value);
+    notifyListeners();
+  }
+
+  set sorts(List<SortData> value) {
+    if (queryRequest.sorts.equals(value)) {
+      return;
+    }
+    queryRequest.sorts = value;
+    for (final sort in queryRequest.sorts) {
+      debugPrint('sort set ${sort.toString()}');
+      sortByFieldName(sort.key, isAscending: sort.isAscending);
+    }
+
+    notifyListeners();
+  }
+
+  K? modelFromCheckEvent<K extends Model>(TrinaGridOnRowCheckedEvent event) =>
+      event.row?.cells[modelKey]?.value as K;
+
+  void appendModel(model) {
+    models.add(model);
+    trinaController.appendRows([
+      decorator.decorateRow(model: model, tableColumns: trinaColumns),
+    ]);
+    notifyListeners();
+  }
+
+  void setTableColumns(
+    List<TableColumn> tableColumns, {
+    int fixedLeftColumns = 0,
+    bool showFilter = false,
+    required TabManager tabManager,
+  }) {
+    columns = tableColumns;
+    trinaController.setTableColumns(
+      columns,
+      fixedLeftColumns: fixedLeftColumns,
+      showFilter: showFilter,
+      tabManager: tabManager,
+    );
+    // notifyListeners();
+  }
+
+  void refreshTable() {
+    if (!isMobileLayout) {
+      trinaController.eventManager?.addEvent(
+        TrinaGridChangeColumnSortEvent(
+          column: trinaController.columns.first,
+          oldSort: TrinaColumnSort.none,
+        ),
+      );
+    }
+
+    notifyListeners();
+  }
+
+  void sortByFieldName(String fieldName, {bool isAscending = true}) {
+    final column = findColumn(fieldName);
+    if (column == null) {
+      debugPrint('field $fieldName tidak ditemukan');
+      return;
+    }
+    if (isAscending) {
+      sortAscending(column);
+    } else {
+      sortDescending(column);
+    }
+  }
+
+  TableColumn? findColumn(fieldName) {
+    return columns.firstWhereOrNull((e) => e.name == fieldName);
+  }
+
+  TrinaColumn? findTrinaColumn(String fieldName) {
+    return trinaColumns.firstWhereOrNull((e) => e.field == fieldName);
+  }
+
+  void sortAscending(TableColumn column) {
+    final trinaColumn = findTrinaColumn(column.name);
+    if (trinaColumn != null) {
+      trinaController.sortAscending(trinaColumn);
+    }
+    queryRequest.sorts = [SortData(key: column.name, isAscending: true)];
+    notifyListeners();
+  }
+
+  void sortDescending(TableColumn column) {
+    final trinaColumn = findTrinaColumn(column.name);
+    if (trinaColumn != null) {
+      trinaController.sortDescending(trinaColumn);
+    }
+    queryRequest.sorts = [SortData(key: column.name, isAscending: false)];
+    notifyListeners();
+  }
+
+  ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
+  void setShowLoading(bool result) {
+    isLoading.value = result;
+    trinaController.setShowLoading(result);
+    // notifyListeners();
+  }
+
+  void removeAllRows({bool notify = true}) {
+    models.clear();
+    trinaController.removeAllRows(notify: notify);
+    if (notify) {
+      notifyListeners();
+    }
   }
 }

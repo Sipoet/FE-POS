@@ -22,7 +22,7 @@ class PayslipPage extends StatefulWidget {
 
 class _PayslipPageState extends State<PayslipPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
   List<Payslip> payslips = [];
   final cancelToken = CancelToken();

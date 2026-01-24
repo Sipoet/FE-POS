@@ -23,7 +23,7 @@ class _CheckPricePageState extends State<CheckPricePage>
   late final Server _server;
   bool _isLoading = false;
   final _controller = TextEditingController();
-  TrinaGridStateManager? _source;
+  TableController? _source;
   List<ItemWithDiscount> models = [];
   final List<TableColumn> _columns = [
     TableColumn(
@@ -357,7 +357,7 @@ class _CheckPricePageState extends State<CheckPricePage>
                         .toList(),
                   );
                 } else {
-                  return SyncDataTable(
+                  return SyncDataTable<ItemWithDiscount>(
                     showFilter: false,
                     columns: _columns,
                     onLoaded: (stateManager) => _source = stateManager,

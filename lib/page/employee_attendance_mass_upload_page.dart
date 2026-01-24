@@ -32,7 +32,7 @@ class _EmployeeAttendanceMassUploadPageState
         TextFormatter,
         DefaultResponse {
   late Server _server;
-  TrinaGridStateManager? _source;
+  TableController? _source;
   late final List<TableColumn> _columns;
   final _focusNode = FocusNode();
 

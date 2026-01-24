@@ -21,7 +21,7 @@ class EmployeeLeavePage extends StatefulWidget {
 
 class _EmployeeLeavePageState extends State<EmployeeLeavePage>
     with AutomaticKeepAliveClientMixin, TextFormatter, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
   final cancelToken = CancelToken();
@@ -59,7 +59,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
   ) {
     request.filters = _filters;
 
-    request.include.add('employee');
+    request.includeAdd('employee');
     return EmployeeLeaveClass()
         .finds(server, request)
         .then(

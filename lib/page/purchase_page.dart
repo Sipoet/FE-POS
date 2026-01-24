@@ -19,7 +19,7 @@ class PurchasePage extends StatefulWidget {
 
 class _PurchasePageState extends State<PurchasePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController<Purchase> _source;
   late final Server server;
 
   List<Purchase> items = [];
@@ -54,7 +54,7 @@ class _PurchasePageState extends State<PurchasePage>
   Future<DataTableResponse<Purchase>> fetchPurchases(QueryRequest request) {
     request.filters = _filters;
 
-    request.include.addAll(['purchase_order', 'supplier']);
+    request.includeAddAll(['purchase_order', 'supplier']);
     return PurchaseClass()
         .finds(server, request)
         .then(

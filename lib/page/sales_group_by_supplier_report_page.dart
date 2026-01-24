@@ -30,7 +30,7 @@ class _SalesGroupBySupplierReportPageState
   );
   late Server server;
   String? _reportType;
-  late TrinaGridStateManager _source;
+  late TableController _source;
   late Flash flash;
   List _brands = [];
   List _suppliers = [];

@@ -19,7 +19,7 @@ class PurchaseOrderPage extends StatefulWidget {
 
 class _PurchaseOrderPageState extends State<PurchaseOrderPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
   List<PurchaseOrder> items = [];
@@ -57,7 +57,7 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
   ) {
     request.filters = _filters;
 
-    request.include.addAll(['supplier', 'purchase']);
+    request.includeAddAll(['supplier', 'purchase']);
     return PurchaseOrderClass()
         .finds(server, request)
         .then(

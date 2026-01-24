@@ -22,7 +22,7 @@ class EmployeeAttendancePage extends StatefulWidget {
 
 class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
     with AutomaticKeepAliveClientMixin, TextFormatter, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
   List<EmployeeAttendance> employeeAttendances = [];

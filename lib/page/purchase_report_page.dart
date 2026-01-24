@@ -24,7 +24,7 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
   String? _reportType;
   bool _isDisplayTable = false;
   double minimumColumnWidth = 150;
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late Flash flash;
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];

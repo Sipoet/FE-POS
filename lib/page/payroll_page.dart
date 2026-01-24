@@ -19,7 +19,7 @@ class PayrollPage extends StatefulWidget {
 
 class _PayrollPageState extends State<PayrollPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
   late final Setting setting;
   final cancelToken = CancelToken();

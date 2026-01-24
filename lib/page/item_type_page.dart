@@ -16,7 +16,7 @@ class ItemTypePage extends StatefulWidget {
 }
 
 class _ItemTypePageState extends State<ItemTypePage> with DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
   final cancelToken = CancelToken();

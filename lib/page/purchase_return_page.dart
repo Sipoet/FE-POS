@@ -19,7 +19,7 @@ class PurchaseReturnPage extends StatefulWidget {
 
 class _PurchaseReturnPageState extends State<PurchaseReturnPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
   List<PurchaseReturn> items = [];

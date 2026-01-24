@@ -33,7 +33,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
   late final Server _server;
   late final Flash flash;
   final _focusNode = FocusNode();
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final List<TableColumn> _columns;
   @override
   bool get wantKeepAlive => true;

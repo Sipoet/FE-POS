@@ -11,6 +11,14 @@ class SortData {
   String toString() {
     return "${isAscending ? '' : '-'}$key";
   }
+
+  // @override
+  // bool operator ==(other) {
+  //   if (other is SortData) {
+  //     other.toString() == toString();
+  //   }
+  //   return false;
+  // }
 }
 
 enum QueryOperator implements EnumTranslation {
@@ -167,19 +175,19 @@ class QueryRequest {
   List<SortData> sorts;
   List<String> fields;
   CancelToken? cancelToken;
-  String? searchText;
-  List<String> include;
+  String searchText;
+  Set<String> _include;
 
   QueryRequest({
     this.page = 1,
     this.limit,
     this.cancelToken,
-    this.searchText,
+    this.searchText = '',
     List<String>? fields,
     List<String>? include,
     List<FilterData>? filters,
     List<SortData>? sorts,
-  }) : include = include ?? [],
+  }) : _include = (include ?? []).toSet(),
        filters = filters ?? [],
        sorts = sorts ?? [],
        fields = fields ?? [];
@@ -190,7 +198,7 @@ class QueryRequest {
       if (limit != null) 'page[limit]': limit.toString(),
       'search_text': searchText,
       'field': fields.join(','),
-      'include': include.join(','),
+      'include': _include.join(','),
     };
     for (final filter in filters) {
       final entry = filter.toEntryJson();
@@ -199,6 +207,17 @@ class QueryRequest {
     result['sort'] = sorts.map((sort) => sort.toString()).join(',');
 
     return result;
+  }
+
+  set include(List<String> value) => _include = value.toSet();
+  List<String> get include => _include.toList();
+
+  void includeAdd(String value) {
+    _include.add(value);
+  }
+
+  void includeAddAll(List<String> value) {
+    _include.addAll(value);
   }
 }
 

@@ -26,15 +26,11 @@ extension StringExt on String {
   ).split(' ').map<String>((str) => str.toCapitalize()).join(' ');
   String toSingularize() => plurale.singular(this);
   String toPluralize() => plurale.plural(this);
-  String toClassify() {
-    return this
-        .split('/')
-        .map(
-          (e) =>
-              e.toSingularize().toTitleCase().replaceAll(RegExp(r'[_\s]'), ''),
-        )
-        .join('::');
-  }
+  String toClassify() => split('/')
+      .map(
+        (e) => e.toSingularize().toTitleCase().replaceAll(RegExp(r'[_\s]'), ''),
+      )
+      .join('::');
 
   bool insensitiveContains(String text) =>
       toLowerCase().contains(text.toLowerCase());

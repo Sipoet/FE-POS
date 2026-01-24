@@ -18,7 +18,7 @@ class SystemSettingPage extends StatefulWidget {
 
 class _SystemSettingPageState extends State<SystemSettingPage>
     with DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
   final cancelToken = CancelToken();

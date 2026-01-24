@@ -20,7 +20,7 @@ class EmployeePage extends StatefulWidget {
 
 class _EmployeePageState extends State<EmployeePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late TrinaGridStateManager _source;
+  late TableController _source;
   late final Server server;
   late final Setting setting;
 

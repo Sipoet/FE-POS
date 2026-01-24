@@ -19,7 +19,7 @@ class TransferPage extends StatefulWidget {
 
 class _TransferPageState extends State<TransferPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
   List<Transfer> items = [];

@@ -19,7 +19,7 @@ class ItemPage extends StatefulWidget {
 }
 
 class _ItemPageState extends State<ItemPage> with DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
   List<Item> items = [];
@@ -50,7 +50,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
   }
 
   Future<DataTableResponse<Item>> fetchItems(QueryRequest request) {
-    request.include.addAll(['supplier', 'brand', 'item_type']);
+    request.includeAddAll(['supplier', 'brand', 'item_type']);
 
     return ItemClass()
         .finds(server, request)

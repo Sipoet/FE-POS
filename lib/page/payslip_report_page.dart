@@ -26,7 +26,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
         LoadingPopup,
         ColumnTypeFinder {
   final formKey = GlobalKey<FormState>();
-  TrinaGridStateManager? tableStateManager;
+  TableController? tableStateManager;
   List<PayrollType> payrollTypes = [];
   List<TableColumn> tableColumns = [];
   PayslipStatus? _payslipStatus;
@@ -252,7 +252,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
               const Divider(),
               SizedBox(
                 height: 500,
-                child: SyncDataTable(
+                child: SyncDataTable<PayslipReport>(
                   columns: tableColumns,
                   showSummary: true,
                   showFilter: true,

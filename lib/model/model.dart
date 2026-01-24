@@ -39,6 +39,7 @@ abstract class Model with ChangeNotifier {
     createdAt = DateTime.tryParse(attributes?['created_at'] ?? '');
     updatedAt = DateTime.tryParse(attributes?['updated_at'] ?? '');
     rawData = {'data': json, 'included': included};
+    notifyListeners();
   }
 
   Future<bool> refresh(Server server, {List<String> include = const []}) {
@@ -115,6 +116,9 @@ abstract class Model with ChangeNotifier {
 
   String get modelValue => id.toString();
   String? get valueDescription => null;
+
+  String get valueWithDescription =>
+      [modelValue, valueDescription].where((e) => e != null).join(' - ');
 
   bool get isNewRecord => id == null;
 }

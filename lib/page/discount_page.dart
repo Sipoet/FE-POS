@@ -29,7 +29,7 @@ class _DiscountPageState extends State<DiscountPage>
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
   final _controller = MenuController();
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   @override
   bool get wantKeepAlive => true;
 

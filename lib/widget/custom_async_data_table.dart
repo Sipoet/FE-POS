@@ -14,7 +14,8 @@ import 'package:trina_grid/trina_grid.dart';
 import 'package:provider/provider.dart';
 export 'package:trina_grid/trina_grid.dart';
 
-typedef OnLoadedCallBack = void Function(TrinaGridStateManager stateManager);
+typedef OnLoadedCallBack<T extends Model> =
+    void Function(TableController<T> stateManager);
 typedef OnRowCheckedCallback = void Function(TrinaGridOnRowCheckedEvent event);
 typedef OnSelectedCallback = void Function(TrinaGridOnSelectedEvent event);
 typedef OnRowDoubleTapCallback =
@@ -29,7 +30,7 @@ class CustomAsyncDataTable<T extends Model> extends StatefulWidget {
   final List<TableColumn> columns;
   final Future<DataTableResponse<T>> Function(QueryRequest) fetchData;
   final Map<String, List<Enum>> enums;
-  final OnLoadedCallBack? onLoaded;
+  final OnLoadedCallBack<T>? onLoaded;
   final OnRowCheckedCallback? onRowChecked;
   final OnSelectedCallback? onSelected;
   final OnRowDoubleTapCallback? onRowDoubleTap;
@@ -67,8 +68,10 @@ class _CustomAsyncDataTableState<T extends Model>
     extends State<CustomAsyncDataTable<T>>
     with TrinaTableDecorator<T>, PlatformChecker, TextFormatter {
   late final List<TrinaColumn> columns;
-  TrinaGridStateManager? _source;
+  late final TableController<T> controller;
+  late final MobileTableController<T> mobileController;
   List selectedValues = [];
+  Map<String, List<HashModel>> selectedItems = {};
 
   @override
   void initState() {
@@ -110,9 +113,69 @@ class _CustomAsyncDataTableState<T extends Model>
             minWidth: 0,
           ),
         );
-
+    controller = TableController(
+      columns: widget.columns,
+      trinaController: TrinaGridStateManager(
+        columns: columns,
+        rows: [],
+        gridFocusNode: FocusNode(),
+        scroll: TrinaGridScrollController(),
+      ),
+    );
+    mobileController = MobileTableController(
+      currentPage: controller.queryRequest.page,
+      searchText: controller.queryRequest.searchText,
+      sorts: controller.queryRequest.sorts,
+      models: controller.models,
+    );
+    controller.addListener(() {
+      mobileController.currentPage = controller.queryRequest.page;
+      mobileController.searchText = controller.queryRequest.searchText;
+      mobileController.sorts = controller.queryRequest.sorts;
+      mobileController.models = controller.models;
+      debugPrint('controller changed');
+      if (inMobileLayout) {
+        mobileFetchData();
+      }
+    });
+    mobileController.addListener(() {
+      controller.page = mobileController.currentPage;
+      controller.searchText = mobileController.searchText;
+      controller.sorts = mobileController.sorts;
+      debugPrint('mobile controller change');
+      if (inMobileLayout) {
+        mobileFetchData();
+      }
+    });
     super.initState();
   }
+
+  void mobileFetchData() {
+    debugPrint(
+      'queryRequest params: ${controller.queryRequest.toQueryParam().toString()}',
+    );
+    mobileController.showLoading();
+    widget
+        .fetchData(controller.queryRequest)
+        .then((response) {
+          updateMobileController(response);
+          debugPrint(
+            'mobile notify models ${mobileController.models.length}  -  ${response.models.length}',
+          );
+          mobileController.notifyChanged();
+        })
+        .whenComplete(mobileController.hideLoading);
+  }
+
+  void updateMobileController(DataTableResponse<T> response) {
+    mobileController.totalPage = response.totalPage;
+    mobileController.models = response.models;
+    mobileController.currentPage = controller.queryRequest.page;
+    mobileController.searchText = controller.queryRequest.searchText;
+    mobileController.sorts = controller.queryRequest.sorts;
+  }
+
+  bool inMobileLayout = false;
 
   bool _containsCheckedValue(Map<String, dynamic> row) {
     return selectedValues.contains(row[widget.primaryKey]);
@@ -140,7 +203,7 @@ class _CustomAsyncDataTableState<T extends Model>
 
   List<FilterData> remoteFilters() {
     List<FilterData> filter = [];
-    for (final row in _source?.filterRows ?? []) {
+    for (final row in controller.trinaController.filterRows) {
       filter.add(
         ComparisonFilterData(
           key: row.cells['column']!.value,
@@ -152,7 +215,6 @@ class _CustomAsyncDataTableState<T extends Model>
     return filter;
   }
 
-  Map<String, List<HashModel>> selectedItems = {};
   Future<List<HashModel>?> showRemoteOptions({
     required String path,
     required String attributeKey,
@@ -225,11 +287,19 @@ class _CustomAsyncDataTableState<T extends Model>
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraint) {
         if (constraint.maxWidth > 480) {
+          inMobileLayout = false;
+          controller.isMobileLayout = false;
           return trinaGrid(colorScheme);
         } else {
+          inMobileLayout = true;
+          controller.isMobileLayout = true;
+          if (!isLoaded && widget.onLoaded != null) {
+            isLoaded = true;
+            widget.onLoaded!(controller);
+          }
           return MobileTable<T>(
+            controller: mobileController,
             columns: widget.columns,
-            fetchData: widget.fetchData,
             renderAction: widget.renderAction,
           );
         }
@@ -237,17 +307,18 @@ class _CustomAsyncDataTableState<T extends Model>
     );
   }
 
-  String? _searchText;
+  bool isLoaded = false;
+
   Widget trinaGrid(ColorScheme colorScheme) {
     return TrinaGrid(
-      columns: columns,
-      rows: <TrinaRow>[],
+      columns: controller.trinaColumns,
+      rows: controller.trinaController.rows,
       onLoaded: (TrinaGridOnLoadedEvent event) {
-        _source = event.stateManager;
-        _source!.setShowColumnFilter(widget.showFilter);
-        _source!.setShowColumnFooter(widget.showSummary);
-        _source!.columnFooterHeight = 130.0;
-        _source!.eventManager!.listener((event) {
+        final source = event.stateManager;
+        source.setShowColumnFilter(widget.showFilter);
+        source.setShowColumnFooter(widget.showSummary);
+        source.columnFooterHeight = 130.0;
+        source.eventManager!.listener((event) {
           if (event is TrinaGridChangeColumnFilterEvent) {
             final columType = event.column.type;
             if (columType is TrinaColumnTypeModelSelect) {
@@ -262,7 +333,7 @@ class _CustomAsyncDataTableState<T extends Model>
                     .map<String>((item) => item.id.toString())
                     .toList()
                     .join(',');
-                List<TrinaRow> filterRows = _source!.filterRows
+                List<TrinaRow> filterRows = source.filterRows
                     .where(
                       (filterRow) =>
                           filterRow.cells['column']!.value ==
@@ -272,7 +343,7 @@ class _CustomAsyncDataTableState<T extends Model>
                     )
                     .toList();
                 if (filterRows.isEmpty) {
-                  _source!.filterRows.add(
+                  source.filterRows.add(
                     FilterHelper.createFilterRow(
                       filterType: TrinaFilterTypeEquals(),
                       filterValue: filterValue,
@@ -284,20 +355,35 @@ class _CustomAsyncDataTableState<T extends Model>
                     value: filterValue,
                   );
                 }
-                _source!.setFilterRows(_source!.filterRows);
-                _source!.refreshTable();
+                source.setFilterRows(source.filterRows);
+                source.refreshTable();
               });
             }
           }
         });
+        controller.trinaController = source;
 
-        if (widget.onLoaded is Function) {
-          widget.onLoaded!(_source!);
+        if (!isLoaded && widget.onLoaded != null) {
+          isLoaded = true;
+          widget.onLoaded!(controller);
         }
       },
       noRowsWidget: const Text('Data tidak ditemukan'),
       onChanged: (TrinaGridOnChangedEvent event) {
         debugPrint("onchanged ${event.toString()}");
+      },
+      onSorted: (event) {
+        event.column.field;
+        if (event.column.sort == .none) {
+          controller.queryRequest.sorts = [];
+        } else {
+          controller.queryRequest.sorts = [
+            SortData(
+              key: event.column.field,
+              isAscending: event.column.sort == .ascending,
+            ),
+          ];
+        }
       },
       mode: TrinaGridMode.selectWithOneTap,
       onSelected: widget.onSelected,
@@ -327,8 +413,14 @@ class _CustomAsyncDataTableState<T extends Model>
               padding: const EdgeInsets.all(8.0),
               child: TextField(
                 onSubmitted: (value) {
-                  _searchText = value;
+                  controller.searchText = value;
                   stateManager.refreshTable();
+                },
+                onChanged: (value) {
+                  if (value.isEmpty) {
+                    controller.searchText = '';
+                    stateManager.refreshTable();
+                  }
                 },
                 decoration: InputDecoration(
                   hintText: 'Cari',
@@ -368,11 +460,10 @@ class _CustomAsyncDataTableState<T extends Model>
           fetch: (event) async {
             cancelToken?.cancel();
             cancelToken = CancelToken();
-            var request = QueryRequest(
-              page: event.page,
-              searchText: _searchText,
-              cancelToken: cancelToken,
-            );
+
+            var request = controller.queryRequest;
+            request.page = event.page;
+            request.cancelToken = cancelToken;
             final sortColumn = event.sortColumn;
 
             if (sortColumn != null) {
@@ -384,9 +475,12 @@ class _CustomAsyncDataTableState<T extends Model>
               ];
             }
             request.filters = remoteFilters();
+            controller.queryRequest = request;
+            debugPrint('desktop fetch');
             return widget.fetchData(request).then((
               DataTableResponse<T> response,
             ) {
+              updateMobileController(response);
               return TrinaLazyPaginationResponse(
                 rows: response.models
                     .map<TrinaRow>(

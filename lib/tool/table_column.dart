@@ -280,7 +280,7 @@ class DateTableColumnType<T extends DateTime> extends TableColumnType<T> {
     required TableColumn column,
     TabManager? tabManager,
   }) {
-    return Text(value?.format() ?? '');
+    return Text(value?.toLocal().format() ?? '');
   }
 
   @override
@@ -425,11 +425,16 @@ class NumberTableColumnType<T> extends TableColumnType<T> with TextFormatter {
 
   @override
   Widget renderCell({
-    required T value,
+    Object? value,
     required TableColumn column,
     TabManager? tabManager,
   }) {
-    return Text(numberFormat(value));
+    if (value is T) {
+      return Text(numberFormat(value));
+    } else {
+      final newValue = convert(value);
+      return Text(numberFormat(newValue));
+    }
   }
 
   @override
@@ -790,7 +795,7 @@ class ModelTableColumnType<T extends Model> extends TableColumnType<T>
           tabManager: tabManager,
         ),
         child: Text(
-          value.modelValue,
+          value.valueWithDescription,
           style: TextStyle(fontStyle: .italic, decoration: .underline),
           textAlign: TextAlign.left,
         ),

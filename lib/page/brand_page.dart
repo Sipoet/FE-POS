@@ -15,7 +15,7 @@ class BrandPage extends StatefulWidget {
 }
 
 class _BrandPageState extends State<BrandPage> with DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
   List<Brand> brands = [];

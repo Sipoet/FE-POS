@@ -20,7 +20,7 @@ class BookEmployeeAttendancePage extends StatefulWidget {
 
 class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
   final cancelToken = CancelToken();
@@ -51,7 +51,7 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
   ) {
     request.filters = _filters;
 
-    request.include.add('employee');
+    request.includeAdd('employee');
     return BookEmployeeAttendanceClass()
         .finds(server, request)
         .then(

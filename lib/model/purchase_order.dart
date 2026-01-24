@@ -89,6 +89,7 @@ class PurchaseOrder extends Model {
     'kantortujuan': destLocation,
     'kodesupel': supplierCode,
     'tanggalkirim': deliveredDate,
+    'supplier_name': supplierName,
   };
 
   String get supplierName => supplier.name;

@@ -19,7 +19,7 @@ class PaymentTypePage extends StatefulWidget {
 
 class _PaymentTypePageState extends State<PaymentTypePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
   late final Setting setting;
 

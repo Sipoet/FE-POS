@@ -20,7 +20,7 @@ class CustomerGroupDiscountPage extends StatefulWidget {
 
 class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
   final _menuController = MenuController();
 
@@ -59,7 +59,7 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
   ) {
     request.filters = _filters;
 
-    request.include.add('customer_group');
+    request.includeAdd('customer_group');
     return CustomerGroupDiscountClass()
         .finds(server, request)
         .then(

@@ -19,7 +19,7 @@ class UserPage extends StatefulWidget {
 
 class _UserPageState extends State<UserPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
   final cancelToken = CancelToken();
@@ -55,7 +55,7 @@ class _UserPageState extends State<UserPage>
   Future<DataTableResponse<User>> fetchUsers(QueryRequest request) {
     request.filters = _filters;
 
-    request.include.add('role');
+    request.includeAdd('role');
     return UserClass()
         .finds(server, request)
         .then(

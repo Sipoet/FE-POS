@@ -20,7 +20,7 @@ class _CashTransactionReportPageState extends State<CashTransactionReportPage>
     with DefaultResponse {
   late final List<TableColumn> columns;
   late final Server _server;
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   List<FilterData> _filters = [];
 
   @override
