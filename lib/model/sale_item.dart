@@ -1,6 +1,6 @@
-import 'package:fe_pos/model/item.dart';
 export 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/model/model.dart';
+import 'package:fe_pos/model/sale.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
 class SaleItem extends Model {
@@ -31,6 +31,7 @@ class SaleItem extends Model {
   String? itemTypeName;
   String? itemName;
   DateTime transactionDate;
+  Sale? sale;
   SaleItem({
     Item? item,
     super.id,
@@ -46,6 +47,7 @@ class SaleItem extends Model {
     this.itemTypeName,
     this.brandName,
     this.supplierCode,
+    this.sale,
     DateTime? transactionDate,
     this.subtotal = const Money(0),
     this.discountAmount1 = 0,
@@ -92,6 +94,7 @@ class SaleItem extends Model {
     'supplier_code': supplierCode,
     'brand_name': brandName,
     'item_name': itemName,
+    'sale': sale,
     'transaction_date': transactionDate,
   };
 
@@ -112,6 +115,13 @@ class SaleItem extends Model {
             relation: json['relationships']?['item'],
           ) ??
           Item();
+      sale =
+          SaleClass().findRelationData(
+            included: included,
+            relation: json['relationships']?['sale'],
+          ) ??
+          Sale(code: attributes['notransaksi']);
+
       promoItem = ItemClass().findRelationData(
         included: included,
         relation: json['relationships']?['promo_item'],

@@ -1,3 +1,4 @@
+import 'package:async/async.dart';
 import 'package:fe_pos/model/hash_model.dart';
 
 import 'package:fe_pos/tool/platform_checker.dart';
@@ -72,7 +73,7 @@ class _CustomAsyncDataTableState<T extends Model>
   late final MobileTableController<T> mobileController;
   List selectedValues = [];
   Map<String, List<HashModel>> selectedItems = {};
-
+  CancelableOperation? searchOperation;
   @override
   void initState() {
     server = context.read<Server>();
@@ -417,10 +418,15 @@ class _CustomAsyncDataTableState<T extends Model>
                   stateManager.refreshTable();
                 },
                 onChanged: (value) {
-                  if (value.isEmpty) {
-                    controller.searchText = '';
-                    stateManager.refreshTable();
-                  }
+                  searchOperation?.cancel();
+                  searchOperation = CancelableOperation<String>.fromFuture(
+                    Future<String>.delayed(Durations.long1, () => value),
+                    onCancel: () => debugPrint('search cancel'),
+                  );
+                  searchOperation!.value.then((value) {
+                    controller.searchText = value;
+                    controller.refreshTable();
+                  });
                 },
                 decoration: InputDecoration(
                   hintText: 'Cari',

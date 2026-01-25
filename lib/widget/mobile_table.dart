@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:async/async.dart';
 import 'package:collection/collection.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -36,6 +36,7 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
   final pageController = TextEditingController();
   final scrollController = ScrollController();
   MobileTableController<T> get controller => widget.controller;
+  CancelableOperation<String>? searchOperation;
   @override
   void initState() {
     tabManager = context.read<TabManager>();
@@ -65,14 +66,21 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
               child: TextFormField(
                 onFieldSubmitted: (value) {
                   controller.searchText = value;
-                  debugPrint('search change');
+                  controller.currentPage = 1;
                   controller.notifyChanged();
                 },
                 initialValue: controller.searchText,
                 onChanged: (value) {
-                  if (value.isEmpty) {
-                    controller.searchText = '';
-                  }
+                  searchOperation?.cancel();
+                  searchOperation = CancelableOperation<String>.fromFuture(
+                    Future<String>.delayed(Durations.long1, () => value),
+                    onCancel: () => debugPrint('search cancel'),
+                  );
+                  searchOperation!.value.then((value) {
+                    controller.searchText = value;
+                    controller.currentPage = 1;
+                    controller.notifyChanged();
+                  });
                 },
                 decoration: InputDecoration(
                   hintText: 'Search',
@@ -266,6 +274,7 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
   void refreshTable() {
     setState(() {
       controller.currentPage = 1;
+      controller.models.clear();
       controller.notifyChanged(force: true);
     });
   }
@@ -345,6 +354,7 @@ class MobileTableController<T extends Model> extends ChangeNotifier {
 
   set searchText(String value) {
     if (_searchText != value) {
+      debugPrint('search change from $_searchText to $value');
       _searchText = value;
       _isValueChanged = true;
     }

@@ -1,6 +1,8 @@
-import 'package:fe_pos/model/item.dart';
+import 'package:fe_pos/model/consignment_in.dart';
 export 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/model/model.dart';
+import 'package:fe_pos/model/purchase.dart';
+import 'package:fe_pos/model/purchase_return.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
 class PurchaseItem extends Model {
@@ -29,6 +31,11 @@ class PurchaseItem extends Model {
   double? warehouseStock;
   double? storeStock;
   double? numberOfSales;
+  Purchase? purchase;
+  PurchaseReturn? purchaseReturn;
+  ConsignmentIn? consignmentIn;
+  String? purchaseType;
+  DateTime? transactionDate;
   PurchaseItem({
     Item? item,
     super.id,
@@ -44,9 +51,12 @@ class PurchaseItem extends Model {
     this.numberOfSales = 0.0,
     super.createdAt,
     super.updatedAt,
+    this.transactionDate,
     this.itemTypeName,
     this.brandName,
+    this.purchaseType,
     this.supplierCode,
+    this.purchaseReturn,
     this.subtotal = const Money(0),
     this.discountAmount1 = 0,
     this.discountPercentage2 = const Percentage(0),
@@ -57,6 +67,7 @@ class PurchaseItem extends Model {
     this.orderQuantity = 0,
     this.productionCode,
     this.expiredDate,
+    this.purchase,
     this.cogs = const Money(0),
   }) : item = item ?? Item();
 
@@ -69,6 +80,8 @@ class PurchaseItem extends Model {
     'nobaris': row,
     'harga': price,
     'satuan': uom,
+    'item': item,
+    'purchase': purchase ?? purchaseReturn ?? consignmentIn,
     'subtotal': subtotal,
     'potongan': discountAmount1,
     'potongan2': discountPercentage2,
@@ -92,6 +105,7 @@ class PurchaseItem extends Model {
     'item_type_name': itemTypeName,
     'supplier_code': supplierCode,
     'brand_name': brandName,
+    'transaction_date': transactionDate,
   };
   Money get sellPrice => item.sellPrice;
 
@@ -110,6 +124,18 @@ class PurchaseItem extends Model {
             relation: json['relationships']?['item'],
           ) ??
           Item();
+      purchase = PurchaseClass().findRelationData(
+        included: included,
+        relation: json['relationships']?['purchase'],
+      );
+      purchaseReturn = PurchaseReturnClass().findRelationData(
+        included: included,
+        relation: json['relationships']?['purchase_return'],
+      );
+      consignmentIn = ConsignmentInClass().findRelationData(
+        included: included,
+        relation: json['relationships']?['consignment_in'],
+      );
     }
     itemCode = attributes['kodeitem'];
     row = attributes['nobaris'];
@@ -135,10 +161,32 @@ class PurchaseItem extends Model {
     supplierCode = attributes['supplier_code'];
     brandName = attributes['brand_name'];
     purchaseCode = attributes['notransaksi'];
+    purchaseType = attributes['purchase_type'];
+    transactionDate = DateTime.tryParse(attributes['transaction_date'] ?? '');
+  }
+
+  String get purchaseTypeName {
+    switch (purchaseType) {
+      case 'BL':
+        return 'Beli';
+      case 'RB':
+        return 'Retur';
+      case 'IM':
+        return 'Item Masuk';
+      case 'RKI':
+        return 'Konsinyasi Retur';
+      case 'KI':
+        return 'Konsinyasi';
+      default:
+        return '';
+    }
   }
 
   @override
-  String get modelValue => id.toString();
+  String get modelValue => "$purchaseCode-$itemCode";
+
+  @override
+  String? get valueDescription => purchaseTypeName;
 }
 
 class PurchaseItemClass extends ModelClass<PurchaseItem> {

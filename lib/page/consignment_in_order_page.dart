@@ -57,7 +57,7 @@ class _ConsignmentInOrderPageState extends State<ConsignmentInOrderPage>
     QueryRequest request,
   ) {
     request.filters = _filters;
-    request.includeAdd('supplier');
+    request.include = ['supplier', 'consignment_in'];
     return ConsignmentInOrderClass()
         .finds(server, request)
         .then(
@@ -121,7 +121,7 @@ class _ConsignmentInOrderPageState extends State<ConsignmentInOrderPage>
                 ),
                 onLoaded: (stateManager) {
                   _source = stateManager;
-                  _source.sortDescending(_source.columns[2]);
+                  _source.sortDescending(_source.columns[1]);
                 },
                 columns: columns,
                 fetchData: fetchData,

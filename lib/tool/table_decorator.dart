@@ -451,6 +451,7 @@ class TableController<T extends Model> extends ChangeNotifier {
     if (queryRequest.searchText == value) {
       return;
     }
+    debugPrint('search change from ${queryRequest.searchText} to $value');
     queryRequest.searchText = value;
     notifyListeners();
   }

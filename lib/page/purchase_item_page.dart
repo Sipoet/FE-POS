@@ -55,7 +55,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
     QueryRequest request,
   ) {
     request.filters = _filters;
-
+    request.include = ['item', 'purchase'];
     return PurchaseItemClass()
         .finds(server, request)
         .then(
@@ -121,7 +121,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
                 ),
                 onLoaded: (stateManager) {
                   _source = stateManager;
-                  _source.sortDescending(_source.columns[0]);
+                  _source.sortDescending(_source.columns[1]);
                 },
                 columns: columns,
                 fetchData: fetchPurchaseItems,

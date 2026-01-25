@@ -184,7 +184,7 @@ class _SaleItemPageState extends State<SaleItemPage>
                 ),
                 onLoaded: (stateManager) {
                   _source = stateManager;
-                  _source.sortDescending(_source.columns[0]);
+                  _source.sortDescending(_source.columns[1]);
                 },
                 fetchData: fetchSaleItems,
                 columns: columns,

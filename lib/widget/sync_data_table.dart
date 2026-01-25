@@ -1,3 +1,4 @@
+import 'package:async/async.dart';
 import 'package:collection/collection.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -70,6 +71,7 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
   late final MobileTableController<T> mobileController;
   bool isLoaded = false;
   bool isMobileLayout = false;
+  CancelableOperation? searchOperation;
 
   List<TrinaColumn> get columns =>
       widget.columns.asMap().entries.map<TrinaColumn>((entry) {
@@ -256,11 +258,22 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
                   : TextFormField(
                       onFieldSubmitted: (value) {
                         controller.searchText = value;
+                        controller.page = 1;
                       },
                       onChanged: (value) {
-                        if (value.isEmpty) {
-                          controller.searchText = '';
-                        }
+                        searchOperation?.cancel();
+                        searchOperation =
+                            CancelableOperation<String>.fromFuture(
+                              Future<String>.delayed(
+                                Durations.long1,
+                                () => value,
+                              ),
+                              onCancel: () => debugPrint('search cancel'),
+                            );
+                        searchOperation!.value.then((value) {
+                          controller.searchText = value;
+                          controller.page = 1;
+                        });
                       },
                       initialValue: controller.queryRequest.searchText,
                       decoration: InputDecoration(
