@@ -228,6 +228,19 @@ abstract class ModelClass<T extends Model> {
             );
           },
           onError: (error) {
+            if (error is DioException) {
+              switch (error.type) {
+                case DioExceptionType.badResponse:
+                case DioExceptionType.connectionError:
+                case DioExceptionType.sendTimeout:
+                  throw 'Gagal Koneksi Server. Periksa Koneksi internet anda';
+                case DioExceptionType.connectionTimeout:
+                case DioExceptionType.receiveTimeout:
+                  throw 'Server Sibuk. Cobalah lagi beberapa saat';
+                default:
+                  throw 'koneksi error';
+              }
+            }
             debugPrint(error.toString());
             return QueryResponse();
           },

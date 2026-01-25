@@ -1,5 +1,6 @@
 import 'package:async/async.dart';
 import 'package:fe_pos/model/hash_model.dart';
+import 'package:fe_pos/tool/default_response.dart';
 
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
@@ -67,7 +68,11 @@ class CustomAsyncDataTable<T extends Model> extends StatefulWidget {
 
 class _CustomAsyncDataTableState<T extends Model>
     extends State<CustomAsyncDataTable<T>>
-    with TrinaTableDecorator<T>, PlatformChecker, TextFormatter {
+    with
+        TrinaTableDecorator<T>,
+        PlatformChecker,
+        TextFormatter,
+        DefaultResponse {
   late final List<TrinaColumn> columns;
   late final TableController<T> controller;
   late final MobileTableController<T> mobileController;
@@ -164,7 +169,7 @@ class _CustomAsyncDataTableState<T extends Model>
             'mobile notify models ${mobileController.models.length}  -  ${response.models.length}',
           );
           mobileController.notifyChanged();
-        })
+        }, onError: (error) => defaultErrorResponse(error: error))
         .whenComplete(mobileController.hideLoading);
   }
 
@@ -483,23 +488,27 @@ class _CustomAsyncDataTableState<T extends Model>
             request.filters = remoteFilters();
             controller.queryRequest = request;
             debugPrint('desktop fetch');
-            return widget.fetchData(request).then((
-              DataTableResponse<T> response,
-            ) {
-              updateMobileController(response);
-              return TrinaLazyPaginationResponse(
-                rows: response.models
-                    .map<TrinaRow>(
-                      (model) => decorateRow(
-                        isChecked: _containsCheckedValue(model.toMap()),
-                        model: model,
-                        tableColumns: columns,
-                      ),
-                    )
-                    .toList(),
-                totalPage: response.totalPage,
-              );
-            });
+            return widget.fetchData(request).then(
+              (DataTableResponse<T> response) {
+                updateMobileController(response);
+                return TrinaLazyPaginationResponse(
+                  rows: response.models
+                      .map<TrinaRow>(
+                        (model) => decorateRow(
+                          isChecked: _containsCheckedValue(model.toMap()),
+                          model: model,
+                          tableColumns: columns,
+                        ),
+                      )
+                      .toList(),
+                  totalPage: response.totalPage,
+                );
+              },
+              onError: (error) => defaultErrorResponse(
+                error: error,
+                valueWhenError: DataTableResponse<T>.empty(),
+              ),
+            );
           },
           stateManager: stateManager,
         );

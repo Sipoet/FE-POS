@@ -153,7 +153,7 @@ class _AsyncDropdownMultipleState<T extends Model>
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
     return DropdownSearch<T>.multiSelection(
-      items: (a, b) => getData(a, b),
+      items: getData,
       onChanged: (value) {
         setState(() {
           controller.value = value;
@@ -162,14 +162,13 @@ class _AsyncDropdownMultipleState<T extends Model>
           widget.onChanged!(controller.value);
         }
       },
-
       onSaved: widget.onSaved,
       validator: widget.validator,
       compareFn: compareResult,
       itemAsString: widget.textOnSearch,
       selectedItems: controller.value,
       onBeforePopupOpening: (selItems) {
-        return Future.delayed(Duration.zero, () {
+        return Future.delayed(Durations.long1, () {
           if (_focusNode.canRequestFocus) {
             _focusNode.requestFocus();
           }
@@ -283,40 +282,42 @@ class _AsyncDropdownMultipleState<T extends Model>
     );
   }
 
-  Future<List<T>> getData(String filter, LoadProps? prop) async {
+  Future<List<T>> getData(String filter, LoadProps? prop) {
     int page = (prop!.skip / widget.recordLimit).round() + 1;
     if (widget.path == null && widget.request == null) {
-      final response = await widget.modelClass.finds(
-        server,
-        QueryRequest(
-          cancelToken: _cancelToken,
-          searchText: filter,
-          page: page,
-          limit: widget.recordLimit,
-        ),
-      );
-      return response.models;
+      return widget.modelClass
+          .finds(
+            server,
+            QueryRequest(
+              cancelToken: _cancelToken,
+              searchText: filter,
+              page: page,
+              limit: widget.recordLimit,
+            ),
+          )
+          .then((response) => response.models);
     }
-    var response =
-        await request(
+    return request(
           page: page,
           limit: widget.recordLimit,
           searchText: filter,
           cancelToken: _cancelToken,
-        ).onError(
-          (error, stackTrace) => {
-            defaultErrorResponse(error: error, valueWhenError: []),
-          },
+        )
+        .then((response) {
+          if (response.statusCode == 200) {
+            Map responseBody = response.data;
+            return convertToOptions(
+              responseBody['data'],
+              responseBody['included'] ?? [],
+            );
+          } else {
+            throw 'cant connect to server';
+          }
+        })
+        .onError(
+          (error, stackTrace) =>
+              defaultErrorResponse(error: error, valueWhenError: []),
         );
-    if (response.statusCode == 200) {
-      Map responseBody = response.data;
-      return convertToOptions(
-        responseBody['data'],
-        responseBody['included'] ?? [],
-      );
-    } else {
-      throw 'cant connect to server';
-    }
   }
 
   List<T> convertToOptions(List list, List relationships) {
@@ -441,7 +442,7 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
   Widget build(BuildContext context) {
     final textFormat = widget.textOnSelected ?? widget.textOnSearch;
     return DropdownSearch<T>(
-      items: (a, b) => getData(a, b),
+      items: getData,
       onChanged: widget.onChanged,
       onSaved: widget.onSaved,
       validator: widget.validator,
@@ -449,7 +450,7 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
       itemAsString: widget.textOnSearch,
       selectedItem: widget.selected,
       onBeforePopupOpening: (selItems) {
-        return Future.delayed(Duration.zero, () {
+        return Future.delayed(Durations.long4, () {
           if (_focusNode.canRequestFocus) {
             _focusNode.requestFocus();
           }
@@ -497,19 +498,20 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
     );
   }
 
-  Future<List<T>> getData(String filter, LoadProps? prop) async {
+  Future<List<T>> getData(String filter, LoadProps? prop) {
     int page = (prop!.skip / widget.recordLimit).round() + 1;
     if (widget.path == null && widget.request == null) {
-      final response = await widget.modelClass.finds(
-        server,
-        QueryRequest(
-          cancelToken: _cancelToken,
-          searchText: filter,
-          page: page,
-          limit: widget.recordLimit,
-        ),
-      );
-      return response.models;
+      return widget.modelClass
+          .finds(
+            server,
+            QueryRequest(
+              cancelToken: _cancelToken,
+              searchText: filter,
+              page: page,
+              limit: widget.recordLimit,
+            ),
+          )
+          .then((response) => response.models);
     }
     return request(
       page: page,

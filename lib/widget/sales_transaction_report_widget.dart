@@ -77,18 +77,24 @@ class _SalesTransactionReportWidgetState
           },
           cancelToken: cancelToken,
         )
-        .then((response) {
-          if (response.statusCode == 200) {
-            var data = response.data['data'];
-            data['start_time'] = _dateRange.start.toIso8601String();
-            data['end_time'] = _dateRange.end.toIso8601String();
-            setState(() {
-              salesTransactionReport = SalesTransactionReportClass().fromJson(
-                data,
-              );
-            });
-          }
-        }, onError: (error, stack) => defaultErrorResponse(error: error))
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              var data = response.data['data'];
+              data['start_time'] = _dateRange.start.toIso8601String();
+              data['end_time'] = _dateRange.end.toIso8601String();
+              setState(() {
+                salesTransactionReport = SalesTransactionReportClass().fromJson(
+                  data,
+                );
+              });
+            }
+          },
+          onError: (error, stack) {
+            defaultErrorResponse(error: error);
+            salesTransactionReport = SalesTransactionReport(range: _dateRange);
+          },
+        )
         .whenComplete(() {
           if (_controller.isAnimating) _controller.reset();
         });
