@@ -1,4 +1,3 @@
-import 'package:fe_pos/model/item_report.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -111,7 +110,7 @@ class _EmployeeAttendanceMassUploadPageState
                 const SizedBox(height: 10),
                 SizedBox(
                   height: bodyScreenHeight,
-                  child: SyncDataTable<ItemReport>(
+                  child: SyncDataTable<EmployeeAttendance>(
                     columns: _columns,
                     onLoaded: (stateManager) => _source = stateManager,
                     showFilter: true,

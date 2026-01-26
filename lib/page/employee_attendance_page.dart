@@ -168,8 +168,8 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
                       controller: _menuController,
                       menuChildren: [
                         if (setting.isAuthorize(
-                          'employeeAttendance',
-                          'mass_upload',
+                          'employee_attendances',
+                          'massUpload',
                         ))
                           MenuItemButton(
                             child: const Text('Upload Absensi Karyawan'),
@@ -179,8 +179,8 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
                             },
                           ),
                         if (setting.isAuthorize(
-                          'employeeAttendance',
-                          'mass_update_allow_overtime',
+                          'employee_attendances',
+                          'massUpdateAllowOvertime',
                         ))
                           MenuItemButton(
                             child: const Text(

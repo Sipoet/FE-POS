@@ -190,7 +190,7 @@ class Employee extends Model {
   Religion religion;
   String? imageCode;
   String code;
-  int shift;
+  int? shift;
   List<WorkSchedule> schedules;
   List<EmployeeDayOff> employeeDayOffs;
   EmployeeMaritalStatus maritalStatus;
@@ -212,7 +212,7 @@ class Employee extends Model {
     this.contactNumber,
     this.address,
     this.bank,
-    this.shift = 1,
+    this.shift,
     this.imageCode,
     this.taxNumber,
     this.bankAccount,
