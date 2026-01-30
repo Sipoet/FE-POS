@@ -227,12 +227,12 @@ class ContactTableColumnType extends TextTableColumnType with PlatformChecker {
                 child: Row(
                   mainAxisAlignment: .spaceEvenly,
                   children: [
-                    IconButton(
+                    IconButton.filledTonal(
                       onPressed: () => launchUrl(callUrl),
                       tooltip: 'telepon $contact',
                       icon: Icon(Icons.call),
                     ),
-                    IconButton(
+                    IconButton.filledTonal(
                       onPressed: () => launchUrl(whatsappUrl),
                       tooltip: 'whatsapp $contact',
                       icon: Icon(PhosphorIcons.whatsappLogo(.bold), size: 30),
