@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:trina_grid/trina_grid.dart';
 import 'package:fe_pos/model/all_model.dart';
@@ -5,7 +6,7 @@ import 'package:fe_pos/tool/model_route.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 import 'package:fe_pos/widget/number_form_field.dart';
 
 import 'package:fe_pos/widget/time_form_field.dart';
@@ -23,6 +24,10 @@ mixin ColumnTypeFinder {
       case 'text':
       case 'string':
         return TextTableColumnType();
+      case 'tel':
+      case 'wa':
+      case 'contact':
+        return ContactTableColumnType();
       case 'number':
       case 'decimal':
       case 'float':
@@ -192,6 +197,102 @@ class TextTableColumnType extends TableColumnType<String> {
 
   @override
   TrinaColumnType get trinaColumnType => TrinaColumnType.text();
+}
+
+class ContactTableColumnType extends TextTableColumnType with PlatformChecker {
+  @override
+  Widget renderCell({
+    Object? value,
+    required TableColumn column,
+    TabManager? tabManager,
+  }) {
+    if (value is String && value.trim().isNotEmpty) {
+      return Wrap(
+        spacing: 5,
+        runSpacing: 5,
+        children: value.split(',').map<Widget>((contact) {
+          String globalContact = convertToGlobalContact(contact);
+          Uri whatsappUrl = uriForWhatsapp(globalContact);
+          Uri callUrl = uriForCall(globalContact);
+          debugPrint(
+            'wa: ${whatsappUrl.toString()} tel: ${callUrl.toString()}',
+          );
+          return PopupMenuButton(
+            elevation: 5,
+            position: .under,
+            tooltip: 'Opsi',
+
+            itemBuilder: (context) => [
+              PopupMenuWidget(
+                child: Row(
+                  mainAxisAlignment: .spaceEvenly,
+                  children: [
+                    IconButton(
+                      onPressed: () => launchUrl(callUrl),
+                      tooltip: 'telepon $contact',
+                      icon: Icon(Icons.call),
+                    ),
+                    IconButton(
+                      onPressed: () => launchUrl(whatsappUrl),
+                      tooltip: 'whatsapp $contact',
+                      icon: Icon(PhosphorIcons.whatsappLogo(.bold), size: 30),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            child: Text(
+              contact,
+              style: TextStyle(fontStyle: .italic, decoration: .underline),
+            ),
+          );
+        }).toList(),
+      );
+    }
+    return SizedBox();
+  }
+
+  String convertToGlobalContact(String contact) =>
+      contact.trim().replaceAll(' ', '').replaceAll(RegExp(r'^0'), '62');
+
+  Uri uriForWhatsapp(String contact) {
+    if (!isWeb()) {
+      return Uri(
+        scheme: 'whatsapp',
+        host: "send",
+        queryParameters: {'phone': contact},
+      );
+    }
+    return Uri(scheme: 'https', host: 'wa.me', path: contact);
+  }
+
+  Uri uriForCall(String contact) {
+    return Uri(scheme: 'tel', path: contact);
+  }
+}
+
+class PopupMenuWidget<T> extends PopupMenuEntry<T> {
+  const PopupMenuWidget({super.key, this.height = 30, required this.child});
+
+  final Widget child;
+
+  @override
+  final double height;
+
+  bool get enabled => false;
+
+  @override
+  State<PopupMenuWidget> createState() => _PopupMenuWidgetState();
+
+  @override
+  bool represents(T? value) {
+    return false;
+  }
+}
+
+class _PopupMenuWidgetState extends State<PopupMenuWidget> {
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class ActionTableColumnType<T extends Model> extends TableColumnType<T> {

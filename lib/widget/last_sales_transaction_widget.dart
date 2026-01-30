@@ -263,7 +263,13 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
                               padding: const EdgeInsets.all(8.0),
                               child: InkWell(
                                 onTap: () => _openSaleDetail(sale),
-                                child: Text(sale.code),
+                                child: Text(
+                                  sale.code,
+                                  style: TextStyle(
+                                    fontStyle: .italic,
+                                    decoration: .underline,
+                                  ),
+                                ),
                               ),
                             ),
                           ),

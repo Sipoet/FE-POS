@@ -44,7 +44,7 @@ class _PaginationWidgetState extends State<PaginationWidget> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (constraints.maxWidth < 320) {
+        if (constraints.maxWidth < 340) {
           return Column(
             children: [
               Row(

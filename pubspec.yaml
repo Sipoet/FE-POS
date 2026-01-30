@@ -63,6 +63,8 @@ dependencies:
   pluralize: ^0.0.8
   month_picker_dialog: ^6.5.0
   async: ^2.13.0
+  url_launcher: ^6.3.2
+  phosphor_flutter: ^2.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
