@@ -157,6 +157,8 @@ class SaleItem extends Model {
 
   @override
   String get modelValue => id.toString();
+
+  Money get totalDiscount => subtotal - (quantity * price.value);
 }
 
 class SaleItemClass extends ModelClass<SaleItem> {

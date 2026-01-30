@@ -48,7 +48,10 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
     flash = Flash();
     setting = context.read<Setting>();
     _server = context.read<Server>();
-    _columns = setting.tableColumn('ipos::PurchaseItem');
+    _columns = setting.tableColumn('ipos::PurchaseItem')
+      ..removeWhere(
+        (column) => ['purchase', 'transaction_date'].contains(column.name),
+      );
     if (purchase.id != null) {
       Future.delayed(Duration.zero, () => fetchPurchase());
     }

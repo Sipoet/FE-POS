@@ -3,6 +3,7 @@ import 'package:fe_pos/model/sales_transaction_report.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/widget/last_item_sales_transaction_widget.dart';
 import 'package:fe_pos/widget/last_sales_transaction_widget.dart';
 import 'package:fe_pos/widget/period_sales_goal.dart';
 import 'package:fe_pos/widget/sales_traffic_report_widget.dart';
@@ -52,22 +53,23 @@ class _HomePageState extends State<HomePage>
     ];
     if (setting.isAuthorize('ipos/sale_items', 'transactionReport')) {
       _panels += [
+        LastItemSalesTransactionWidget(controller: controller, limit: 5),
         ItemSalesTransactionReportWidget(
-          key: const ValueKey('brand'),
+          key: const ValueKey('brandSalesTransactionReport'),
           controller: controller,
           groupKey: 'brand',
           limit: '5',
           label: 'Merek Terjual Terbanyak',
         ),
         ItemSalesTransactionReportWidget(
-          key: const ValueKey('item_type'),
+          key: const ValueKey('itemTypeSalesTransactionReport'),
           controller: controller,
           groupKey: 'item_type',
           limit: '5',
           label: 'Departemen Terjual Terbanyak',
         ),
         ItemSalesTransactionReportWidget(
-          key: const ValueKey('supplier'),
+          key: const ValueKey('supplierSalesTransactionReport'),
           groupKey: 'supplier',
           controller: controller,
           limit: '5',

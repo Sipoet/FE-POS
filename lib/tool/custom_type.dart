@@ -247,11 +247,13 @@ class Money {
     return value.compareTo(other.value);
   }
 
-  Money operator *(var other) {
+  Money operator *(Object other) {
     if (other is Money) {
       return Money(value * other.value, symbol: symbol);
-    } else {
+    } else if (other is num) {
       return Money(value * other, symbol: symbol);
+    } else {
+      throw 'not supported power ${other.toString()}';
     }
   }
 

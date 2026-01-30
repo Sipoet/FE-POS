@@ -48,7 +48,10 @@ class _ConsignmentInFormPageState extends State<ConsignmentInFormPage>
     flash = Flash();
     setting = context.read<Setting>();
     _server = context.read<Server>();
-    _columns = setting.tableColumn('ipos::PurchaseItem');
+    _columns = setting.tableColumn('ipos::PurchaseItem')
+      ..removeWhere(
+        (column) => ['purchase', 'transaction_date'].contains(column.name),
+      );
     if (consignmentIn.id != null) {
       Future.delayed(Duration.zero, () => fetchConsignmentIn());
     }

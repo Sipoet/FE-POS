@@ -123,7 +123,7 @@ class PurchaseItem extends Model {
             included: included,
             relation: json['relationships']?['item'],
           ) ??
-          Item();
+          Item(id: attributes['kodeitem'], code: attributes['kodeitem']);
       purchase = PurchaseClass().findRelationData(
         included: included,
         relation: json['relationships']?['purchase'],
