@@ -401,6 +401,7 @@ class TimeTableColumnType extends TableColumnType<TimeOfDay> {
     Key? key,
     required FilterFormController controller,
   }) {
+    //   return Placeholder();
     TimeOfDay? start;
     TimeOfDay? end;
 
@@ -421,52 +422,55 @@ class TimeTableColumnType extends TableColumnType<TimeOfDay> {
         endController.text = value.values.last.format24Hour();
       }
     });
-    return Column(
-      children: [
-        if (label != null) label,
-        Row(
-          children: [
-            SizedBox(
-              width: 150,
-              height: 50,
-              child: TimeFormField(
-                key: key,
-                controller: startController,
-                label: Text('Dari'),
-                onChanged: (time) {
-                  start = time;
-                  if (start != null && end != null) {
-                    controller.setFilterData(
-                      BetweenFilterData(key: name, values: [start, end]),
-                    );
-                  } else {
-                    controller.setFilterData(null);
-                  }
-                },
+    return SizedBox(
+      width: 305,
+      child: Column(
+        children: [
+          if (label != null) label,
+          Row(
+            children: [
+              SizedBox(
+                width: 150,
+                height: 50,
+                child: TimeFormField(
+                  key: key,
+                  controller: startController,
+                  label: Text('Dari'),
+                  onChanged: (time) {
+                    start = time;
+                    if (start != null && end != null) {
+                      controller.setFilterData(
+                        BetweenFilterData(key: name, values: [start, end]),
+                      );
+                    } else {
+                      controller.setFilterData(null);
+                    }
+                  },
+                ),
               ),
-            ),
-            SizedBox(
-              width: 150,
-              height: 50,
-              child: TimeFormField(
-                key: key,
-                controller: endController,
-                label: Text('Sampai'),
-                onChanged: (time) {
-                  end = time;
-                  if (start != null && end != null) {
-                    controller.setFilterData(
-                      BetweenFilterData(key: name, values: [start, end]),
-                    );
-                  } else {
-                    controller.setFilterData(null);
-                  }
-                },
+              SizedBox(
+                width: 150,
+                height: 50,
+                child: TimeFormField(
+                  key: key,
+                  controller: endController,
+                  label: Text('Sampai'),
+                  onChanged: (time) {
+                    end = time;
+                    if (start != null && end != null) {
+                      controller.setFilterData(
+                        BetweenFilterData(key: name, values: [start, end]),
+                      );
+                    } else {
+                      controller.setFilterData(null);
+                    }
+                  },
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 

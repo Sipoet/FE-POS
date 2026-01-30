@@ -32,6 +32,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
         DefaultResponse {
   late Flash flash;
   final codeInputWidget = TextEditingController();
+  final scrollController = ScrollController();
   final ImagePicker _picker = ImagePicker();
   final _formKey = GlobalKey<FormState>();
   Employee get employee => widget.employee;
@@ -227,617 +228,644 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
         child: Center(
-          child: Container(
-            constraints: BoxConstraints.loose(const Size.fromWidth(600)),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Visibility(
-                    visible: employee.id != null,
-                    child: ElevatedButton.icon(
-                      onPressed: () =>
-                          fetchHistoryByRecord('Employee', employee.id),
-                      label: const Text('Riwayat'),
-                      icon: const Icon(Icons.history),
-                    ),
-                  ),
-                  const Divider(),
-                  Visibility(
-                    visible: setting.canShow('employee', 'code'),
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'Nama di Mesin Absensi Karyawan',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder(),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                Container(
+                  constraints: BoxConstraints(maxWidth: 500),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Visibility(
+                        visible: employee.id != null,
+                        child: ElevatedButton.icon(
+                          onPressed: () =>
+                              fetchHistoryByRecord('Employee', employee.id),
+                          label: const Text('Riwayat'),
+                          icon: const Icon(Icons.history),
+                        ),
                       ),
-                      onSaved: (newValue) {
-                        employee.code = newValue.toString();
-                      },
-                      onChanged: (newValue) {
-                        employee.code = newValue.toString();
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Harus diisi';
-                        }
-                        return null;
-                      },
-                      controller: codeInputWidget,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Visibility(
-                    visible: setting.canShow('employee', 'name'),
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'Nama Karyawan',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder(),
-                      ),
-                      initialValue: employee.name,
-                      onSaved: (newValue) {
-                        employee.name = newValue.toString();
-                      },
-                      validator: (newValue) {
-                        if (newValue == null || newValue.isEmpty) {
-                          return 'harus diisi';
-                        }
-                        return null;
-                      },
-                      onChanged: (newValue) {
-                        employee.name = newValue.toString();
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Visibility(
-                    visible: setting.canShow('employee', 'user_code'),
-                    child: AsyncDropdown<HashModel>(
-                      label: const Text('User', style: labelStyle),
-                      path: 'ipos/users',
-                      textOnSearch: (value) => value.id.toString(),
-                      attributeKey: 'name',
-                      onChanged: (userCode) {
-                        employee.userCode = userCode?.id;
-                      },
-                      modelClass: HashModelClass(),
-                      selected: employee.userCode == null
-                          ? null
-                          : HashModel(id: employee.userCode),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Visibility(
-                    visible:
-                        setting.isAuthorize('roles', 'read') &&
-                        setting.canShow('employee', 'role'),
-                    child: Flexible(
-                      child: AsyncDropdown<Role>(
-                        attributeKey: 'name',
-                        label: const Text('Jabatan :', style: labelStyle),
-                        onChanged: (role) {
-                          employee.role = role ?? Role(name: '');
-                        },
-                        allowClear: false,
-                        textOnSearch: (role) => role.name,
-                        modelClass: RoleClass(),
-                        selected: employee.role,
-                        validator: (role) {
-                          if (role == null) {
-                            return 'harus diisi';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                  ),
-                  Visibility(
-                    visible: setting.canShow('employee', 'status'),
-                    child: const Text('Status:', style: labelStyle),
-                  ),
-                  Visibility(
-                    visible: setting.canShow('employee', 'status'),
-                    child: RadioGroup(
-                      groupValue: employee.status,
-                      onChanged: (value) {
-                        setState(() {
-                          employee.status = value ?? EmployeeStatus.inactive;
-                        });
-                      },
-                      child: Wrap(
-                        children: [
-                          RadioListTile<EmployeeStatus>(
-                            title: const Text('Inactive'),
-                            value: EmployeeStatus.inactive,
+                      const Divider(),
+                      Visibility(
+                        visible: setting.canShow('employee', 'code'),
+                        child: TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'Nama di Mesin Absensi Karyawan',
+                            labelStyle: labelStyle,
+                            border: OutlineInputBorder(),
                           ),
-                          RadioListTile<EmployeeStatus>(
-                            title: const Text('Active'),
-                            value: EmployeeStatus.active,
+                          onSaved: (newValue) {
+                            employee.code = newValue.toString();
+                          },
+                          onChanged: (newValue) {
+                            employee.code = newValue.toString();
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Harus diisi';
+                            }
+                            return null;
+                          },
+                          controller: codeInputWidget,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: setting.canShow('employee', 'name'),
+                        child: TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'Nama Karyawan',
+                            labelStyle: labelStyle,
+                            border: OutlineInputBorder(),
                           ),
-                        ],
+                          initialValue: employee.name,
+                          onSaved: (newValue) {
+                            employee.name = newValue.toString();
+                          },
+                          validator: (newValue) {
+                            if (newValue == null || newValue.isEmpty) {
+                              return 'harus diisi';
+                            }
+                            return null;
+                          },
+                          onChanged: (newValue) {
+                            employee.name = newValue.toString();
+                          },
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Visibility(
-                    visible:
-                        setting.isAuthorize('payrolls', 'read') &&
-                        setting.canShow('employee', 'payroll'),
-                    child: AsyncDropdown<Payroll>(
-                      label: const Text('Payroll', style: labelStyle),
-                      textOnSearch: (payroll) => payroll.name,
-                      attributeKey: 'name',
-                      onChanged: (payroll) {
-                        employee.payroll = payroll;
-                      },
-                      modelClass: PayrollClass(),
-                      selected: employee.payroll,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  DropdownMenu<Religion>(
-                    width: 200,
-                    menuHeight: 200,
-                    label: Text('Agama'),
-                    initialSelection: employee.religion,
-                    onSelected: (value) =>
-                        employee.religion = value ?? employee.religion,
-                    dropdownMenuEntries: Religion.values
-                        .map<DropdownMenuEntry<Religion>>(
-                          (religion) => DropdownMenuEntry<Religion>(
-                            value: religion,
-                            label: religion.humanize(),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: setting.canShow('employee', 'user_code'),
+                        child: AsyncDropdown<HashModel>(
+                          label: const Text('User', style: labelStyle),
+                          path: 'ipos/users',
+                          textOnSearch: (value) => value.id.toString(),
+                          attributeKey: 'name',
+                          onChanged: (userCode) {
+                            employee.userCode = userCode?.id;
+                          },
+                          modelClass: HashModelClass(),
+                          selected: employee.userCode == null
+                              ? null
+                              : HashModel(id: employee.userCode),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible:
+                            setting.isAuthorize('roles', 'read') &&
+                            setting.canShow('employee', 'role'),
+                        child: Flexible(
+                          child: AsyncDropdown<Role>(
+                            attributeKey: 'name',
+                            label: const Text('Jabatan :', style: labelStyle),
+                            onChanged: (role) {
+                              employee.role = role ?? Role(name: '');
+                            },
+                            allowClear: false,
+                            textOnSearch: (role) => role.name,
+                            modelClass: RoleClass(),
+                            selected: employee.role,
+                            validator: (role) {
+                              if (role == null) {
+                                return 'harus diisi';
+                              }
+                              return null;
+                            },
                           ),
-                        )
-                        .toList(),
-                  ),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'Email Karyawan',
-                      labelStyle: labelStyle,
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) return null;
-                      return isValidEmail(value) ? null : 'Email tidak valid';
-                    },
-                    keyboardType: TextInputType.emailAddress,
-                    initialValue: employee.email,
-                    onSaved: (newValue) {
-                      employee.email = newValue.toString();
-                    },
-                    onChanged: (newValue) {
-                      employee.email = newValue.toString();
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  Visibility(
-                    visible: setting.canShow('employee', 'start_working_date'),
-                    child: DateFormField(
-                      label: const Text(
-                        'Tanggal Mulai Kerja',
-                        style: labelStyle,
+                        ),
                       ),
-                      helpText: 'Tanggal Mulai Kerja',
-                      dateType: DateType(),
-                      onSaved: (newValue) {
-                        if (newValue == null) {
-                          return;
-                        }
-                        employee.startWorkingDate = Date.parsingDateTime(
-                          newValue,
-                        );
-                      },
-                      validator: (newValue) {
-                        if (newValue == null) {
-                          return 'harus diisi';
-                        }
-                        return null;
-                      },
-                      onChanged: (newValue) {
-                        if (newValue == null) {
-                          return;
-                        }
-                        employee.startWorkingDate = Date.parsingDateTime(
-                          newValue,
-                        );
-                      },
-                      firstDate: DateTime(2023),
-                      lastDate: DateTime.now().add(const Duration(days: 31)),
-                      initialValue: employee.startWorkingDate,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Visibility(
-                    visible: setting.canShow('employee', 'end_working_date'),
-                    child: DateFormField(
-                      label: const Text(
-                        'Tanggal terakhir Kerja',
-                        style: labelStyle,
+                      Visibility(
+                        visible: setting.canShow('employee', 'status'),
+                        child: const Text('Status:', style: labelStyle),
                       ),
-                      helpText: 'Tanggal terakhir Kerja',
-                      dateType: DateType(),
-                      onSaved: (newValue) {
-                        employee.endWorkingDate = newValue == null
-                            ? null
-                            : Date.parsingDateTime(newValue);
-                      },
-                      validator: (newValue) {
-                        if (newValue != null &&
-                            newValue.isBefore(employee.startWorkingDate)) {
-                          return 'harus lebih besar dari Tanggal mulai kerja';
-                        }
-                        return null;
-                      },
-                      allowClear: true,
-                      onChanged: (newValue) {
-                        employee.endWorkingDate = newValue == null
-                            ? null
-                            : Date.parsingDateTime(newValue);
-                      },
-                      initialValue: employee.endWorkingDate,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Visibility(
-                    visible: setting.canShow('employee', 'id_number'),
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'No KTP',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder(),
-                      ),
-                      initialValue: employee.idNumber,
-                      onSaved: (newValue) {
-                        employee.idNumber = newValue.toString();
-                      },
-                      validator: (newValue) {
-                        if (newValue == null) {
-                          return 'harus diisi';
-                        }
-                        return null;
-                      },
-                      onChanged: (newValue) {
-                        employee.idNumber = newValue.toString();
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Visibility(
-                    visible: setting.canShow('employee', 'bank'),
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'Bank',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder(),
-                      ),
-                      initialValue: employee.bank,
-                      onSaved: (newValue) {
-                        employee.bank = newValue.toString();
-                      },
-                      onChanged: (newValue) {
-                        employee.bank = newValue.toString();
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Visibility(
-                    visible: setting.canShow('employee', 'bank_account'),
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'Rekening Bank',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder(),
-                      ),
-                      initialValue: employee.bankAccount,
-                      onSaved: (newValue) {
-                        employee.bankAccount = newValue.toString();
-                      },
-                      onChanged: (newValue) {
-                        employee.bankAccount = newValue.toString();
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Visibility(
-                    visible: setting.canShow('employee', 'bank_register_name'),
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'Bank Atas Nama',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder(),
-                      ),
-                      initialValue: employee.bankRegisterName,
-                      onSaved: (newValue) {
-                        employee.bankRegisterName = newValue.toString();
-                      },
-                      onChanged: (newValue) {
-                        employee.bankRegisterName = newValue.toString();
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Visibility(
-                    visible: setting.canShow('employee', 'contact_number'),
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'Kontak',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder(),
-                      ),
-                      initialValue: employee.contactNumber,
-                      keyboardType: TextInputType.phone,
-                      onSaved: (newValue) {
-                        employee.contactNumber = newValue.toString();
-                      },
-                      onChanged: (newValue) {
-                        employee.contactNumber = newValue.toString();
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Visibility(
-                    visible: setting.canShow('employee', 'address'),
-                    child: TextFormField(
-                      maxLines: 4,
-                      decoration: const InputDecoration(
-                        labelText: 'Alamat',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder(),
-                      ),
-                      initialValue: employee.address,
-                      onSaved: (newValue) {
-                        employee.address = newValue.toString();
-                      },
-                      onChanged: (newValue) {
-                        employee.address = newValue.toString();
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Visibility(
-                    visible: setting.canShow('employee', 'marital_status'),
-                    child: DropdownMenu<EmployeeMaritalStatus>(
-                      initialSelection: employee.maritalStatus,
-                      onSelected: ((value) => employee.maritalStatus =
-                          value ?? EmployeeMaritalStatus.single),
-                      dropdownMenuEntries: EmployeeMaritalStatus.values
-                          .map<DropdownMenuEntry<EmployeeMaritalStatus>>(
-                            (maritalStatus) => DropdownMenuEntry(
-                              value: maritalStatus,
-                              label: maritalStatus.humanize(),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Visibility(
-                    visible: setting.canShow('employee', 'tax_number'),
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'NPWP',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder(),
-                      ),
-                      initialValue: employee.taxNumber,
-                      onSaved: (newValue) {
-                        employee.taxNumber = newValue.toString();
-                      },
-                      onChanged: (newValue) {
-                        employee.taxNumber = newValue.toString();
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Visibility(
-                    visible: setting.canShow('employee', 'description'),
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'Deskripsi',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder(),
-                      ),
-                      initialValue: employee.description,
-                      maxLines: 4,
-                      onSaved: (newValue) {
-                        employee.description = newValue.toString();
-                      },
-                      onChanged: (newValue) {
-                        employee.description = newValue.toString();
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton.icon(
-                    onPressed: pickImage,
-                    label: const Text('Pilih gambar.'),
-                    icon: const Icon(Icons.image),
-                  ),
-                  const SizedBox(height: 10),
-                  if (_imageBytes != null)
-                    Image.memory(
-                      _imageBytes!,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Text('error load image');
-                      },
-                      width: 150,
-                      height: 200,
-                    ),
-                  Visibility(
-                    visible: setting.canShow('employeeDayOff', 'day_of_week'),
-                    child: const Text(
-                      "Jadwal Libur Mingguan",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-
-                  Visibility(
-                    visible: setting.canShow('employeeDayOff', 'day_of_week'),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        dataRowMinHeight: 60,
-                        dataRowMaxHeight: 100,
-                        showBottomBorder: true,
-                        columns: [
-                          const DataColumn(
-                            label: Text('Hari', style: labelStyle),
-                          ),
-                          const DataColumn(
-                            label: Text('Minggu Aktif', style: labelStyle),
-                          ),
-                          DataColumn(
-                            label: ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  employee.schedules.clear();
-                                });
-                              },
-                              child: const Text(
-                                'hapus semua',
-                                style: labelStyle,
+                      Visibility(
+                        visible: setting.canShow('employee', 'status'),
+                        child: RadioGroup(
+                          groupValue: employee.status,
+                          onChanged: (value) {
+                            setState(() {
+                              employee.status =
+                                  value ?? EmployeeStatus.inactive;
+                            });
+                          },
+                          child: Wrap(
+                            children: [
+                              RadioListTile<EmployeeStatus>(
+                                title: const Text('Inactive'),
+                                value: EmployeeStatus.inactive,
                               ),
-                            ),
+                              RadioListTile<EmployeeStatus>(
+                                title: const Text('Active'),
+                                value: EmployeeStatus.active,
+                              ),
+                            ],
                           ),
-                        ],
-                        rows: employee.employeeDayOffs
-                            .map<DataRow>(
-                              (employeeDayOff) => DataRow(
-                                cells: [
-                                  DataCell(
-                                    DropdownMenu<int>(
-                                      initialSelection:
-                                          employeeDayOff.dayOfWeek,
-                                      onSelected: ((value) =>
-                                          employeeDayOff.dayOfWeek =
-                                              value ?? 0),
-                                      dropdownMenuEntries: const [
-                                        DropdownMenuEntry(
-                                          value: 1,
-                                          label: 'Senin',
-                                        ),
-                                        DropdownMenuEntry(
-                                          value: 2,
-                                          label: 'Selasa',
-                                        ),
-                                        DropdownMenuEntry(
-                                          value: 3,
-                                          label: 'Rabu',
-                                        ),
-                                        DropdownMenuEntry(
-                                          value: 4,
-                                          label: 'Kamis',
-                                        ),
-                                        DropdownMenuEntry(
-                                          value: 5,
-                                          label: 'Jumat',
-                                        ),
-                                        DropdownMenuEntry(
-                                          value: 6,
-                                          label: 'Sabtu',
-                                        ),
-                                        DropdownMenuEntry(
-                                          value: 7,
-                                          label: 'Minggu',
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  DataCell(
-                                    DropdownMenu<ActiveWeekDayOff>(
-                                      initialSelection:
-                                          employeeDayOff.activeWeek,
-                                      onSelected: ((value) =>
-                                          employeeDayOff.activeWeek =
-                                              value ??
-                                              ActiveWeekDayOff.allWeek),
-                                      dropdownMenuEntries: ActiveWeekDayOff
-                                          .values
-                                          .map<
-                                            DropdownMenuEntry<ActiveWeekDayOff>
-                                          >(
-                                            (activeWeek) => DropdownMenuEntry(
-                                              value: activeWeek,
-                                              label: activeWeek.humanize(),
-                                            ),
-                                          )
-                                          .toList(),
-                                    ),
-                                  ),
-                                  DataCell(
-                                    Row(
-                                      children: [
-                                        Visibility(
-                                          visible: employeeDayOff.id != null,
-                                          child: IconButton(
-                                            onPressed: () {
-                                              fetchHistoryByRecord(
-                                                'EmployeeDayOff',
-                                                employeeDayOff.id,
-                                              );
-                                            },
-                                            icon: const Icon(Icons.history),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        ElevatedButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              employee.employeeDayOffs.remove(
-                                                employeeDayOff,
-                                              );
-                                            });
-                                          },
-                                          child: const Text('Hapus'),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible:
+                            setting.isAuthorize('payrolls', 'read') &&
+                            setting.canShow('employee', 'payroll'),
+                        child: AsyncDropdown<Payroll>(
+                          label: const Text('Payroll', style: labelStyle),
+                          textOnSearch: (payroll) => payroll.name,
+                          attributeKey: 'name',
+                          onChanged: (payroll) {
+                            employee.payroll = payroll;
+                          },
+                          modelClass: PayrollClass(),
+                          selected: employee.payroll,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownMenu<Religion>(
+                        width: 200,
+                        menuHeight: 200,
+                        label: Text('Agama'),
+                        initialSelection: employee.religion,
+                        onSelected: (value) =>
+                            employee.religion = value ?? employee.religion,
+                        dropdownMenuEntries: Religion.values
+                            .map<DropdownMenuEntry<Religion>>(
+                              (religion) => DropdownMenuEntry<Religion>(
+                                value: religion,
+                                label: religion.humanize(),
                               ),
                             )
                             .toList(),
                       ),
-                    ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Email Karyawan',
+                          labelStyle: labelStyle,
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty)
+                            return null;
+                          return isValidEmail(value)
+                              ? null
+                              : 'Email tidak valid';
+                        },
+                        keyboardType: TextInputType.emailAddress,
+                        initialValue: employee.email,
+                        onSaved: (newValue) {
+                          employee.email = newValue.toString();
+                        },
+                        onChanged: (newValue) {
+                          employee.email = newValue.toString();
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: setting.canShow(
+                          'employee',
+                          'start_working_date',
+                        ),
+                        child: DateFormField(
+                          label: const Text(
+                            'Tanggal Mulai Kerja',
+                            style: labelStyle,
+                          ),
+                          helpText: 'Tanggal Mulai Kerja',
+                          dateType: DateType(),
+                          onSaved: (newValue) {
+                            if (newValue == null) {
+                              return;
+                            }
+                            employee.startWorkingDate = Date.parsingDateTime(
+                              newValue,
+                            );
+                          },
+                          validator: (newValue) {
+                            if (newValue == null) {
+                              return 'harus diisi';
+                            }
+                            return null;
+                          },
+                          onChanged: (newValue) {
+                            if (newValue == null) {
+                              return;
+                            }
+                            employee.startWorkingDate = Date.parsingDateTime(
+                              newValue,
+                            );
+                          },
+                          firstDate: DateTime(2023),
+                          lastDate: DateTime.now().add(
+                            const Duration(days: 31),
+                          ),
+                          initialValue: employee.startWorkingDate,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: setting.canShow(
+                          'employee',
+                          'end_working_date',
+                        ),
+                        child: DateFormField(
+                          label: const Text(
+                            'Tanggal terakhir Kerja',
+                            style: labelStyle,
+                          ),
+                          helpText: 'Tanggal terakhir Kerja',
+                          dateType: DateType(),
+                          onSaved: (newValue) {
+                            employee.endWorkingDate = newValue == null
+                                ? null
+                                : Date.parsingDateTime(newValue);
+                          },
+                          validator: (newValue) {
+                            if (newValue != null &&
+                                newValue.isBefore(employee.startWorkingDate)) {
+                              return 'harus lebih besar dari Tanggal mulai kerja';
+                            }
+                            return null;
+                          },
+                          allowClear: true,
+                          onChanged: (newValue) {
+                            employee.endWorkingDate = newValue == null
+                                ? null
+                                : Date.parsingDateTime(newValue);
+                          },
+                          initialValue: employee.endWorkingDate,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: setting.canShow('employee', 'id_number'),
+                        child: TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'No KTP',
+                            labelStyle: labelStyle,
+                            border: OutlineInputBorder(),
+                          ),
+                          initialValue: employee.idNumber,
+                          onSaved: (newValue) {
+                            employee.idNumber = newValue.toString();
+                          },
+                          validator: (newValue) {
+                            if (newValue == null) {
+                              return 'harus diisi';
+                            }
+                            return null;
+                          },
+                          onChanged: (newValue) {
+                            employee.idNumber = newValue.toString();
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: setting.canShow('employee', 'bank'),
+                        child: TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'Bank',
+                            labelStyle: labelStyle,
+                            border: OutlineInputBorder(),
+                          ),
+                          initialValue: employee.bank,
+                          onSaved: (newValue) {
+                            employee.bank = newValue.toString();
+                          },
+                          onChanged: (newValue) {
+                            employee.bank = newValue.toString();
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: setting.canShow('employee', 'bank_account'),
+                        child: TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'Rekening Bank',
+                            labelStyle: labelStyle,
+                            border: OutlineInputBorder(),
+                          ),
+                          initialValue: employee.bankAccount,
+                          onSaved: (newValue) {
+                            employee.bankAccount = newValue.toString();
+                          },
+                          onChanged: (newValue) {
+                            employee.bankAccount = newValue.toString();
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: setting.canShow(
+                          'employee',
+                          'bank_register_name',
+                        ),
+                        child: TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'Bank Atas Nama',
+                            labelStyle: labelStyle,
+                            border: OutlineInputBorder(),
+                          ),
+                          initialValue: employee.bankRegisterName,
+                          onSaved: (newValue) {
+                            employee.bankRegisterName = newValue.toString();
+                          },
+                          onChanged: (newValue) {
+                            employee.bankRegisterName = newValue.toString();
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: setting.canShow('employee', 'contact_number'),
+                        child: TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'Kontak',
+                            labelStyle: labelStyle,
+                            border: OutlineInputBorder(),
+                          ),
+                          initialValue: employee.contactNumber,
+                          keyboardType: TextInputType.phone,
+                          onSaved: (newValue) {
+                            employee.contactNumber = newValue.toString();
+                          },
+                          onChanged: (newValue) {
+                            employee.contactNumber = newValue.toString();
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: setting.canShow('employee', 'address'),
+                        child: TextFormField(
+                          maxLines: 4,
+                          decoration: const InputDecoration(
+                            labelText: 'Alamat',
+                            labelStyle: labelStyle,
+                            border: OutlineInputBorder(),
+                          ),
+                          initialValue: employee.address,
+                          onSaved: (newValue) {
+                            employee.address = newValue.toString();
+                          },
+                          onChanged: (newValue) {
+                            employee.address = newValue.toString();
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: setting.canShow('employee', 'marital_status'),
+                        child: DropdownMenu<EmployeeMaritalStatus>(
+                          initialSelection: employee.maritalStatus,
+                          onSelected: ((value) => employee.maritalStatus =
+                              value ?? EmployeeMaritalStatus.single),
+                          dropdownMenuEntries: EmployeeMaritalStatus.values
+                              .map<DropdownMenuEntry<EmployeeMaritalStatus>>(
+                                (maritalStatus) => DropdownMenuEntry(
+                                  value: maritalStatus,
+                                  label: maritalStatus.humanize(),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: setting.canShow('employee', 'tax_number'),
+                        child: TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'NPWP',
+                            labelStyle: labelStyle,
+                            border: OutlineInputBorder(),
+                          ),
+                          initialValue: employee.taxNumber,
+                          onSaved: (newValue) {
+                            employee.taxNumber = newValue.toString();
+                          },
+                          onChanged: (newValue) {
+                            employee.taxNumber = newValue.toString();
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible: setting.canShow('employee', 'description'),
+                        child: TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'Deskripsi',
+                            labelStyle: labelStyle,
+                            border: OutlineInputBorder(),
+                          ),
+                          initialValue: employee.description,
+                          maxLines: 4,
+                          onSaved: (newValue) {
+                            employee.description = newValue.toString();
+                          },
+                          onChanged: (newValue) {
+                            employee.description = newValue.toString();
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      ElevatedButton.icon(
+                        onPressed: pickImage,
+                        label: const Text('Pilih gambar.'),
+                        icon: const Icon(Icons.image),
+                      ),
+                      const SizedBox(height: 10),
+                      if (_imageBytes != null)
+                        Image.memory(
+                          _imageBytes!,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Text('error load image');
+                          },
+                          width: 150,
+                          height: 200,
+                        ),
+                    ],
                   ),
-                  Visibility(
-                    visible: setting.canShow('employeeDayOff', 'day_of_week'),
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 10, bottom: 10),
-                      child: ElevatedButton(
-                        onPressed: () => setState(() {
-                          employee.employeeDayOffs.add(EmployeeDayOff());
-                        }),
-                        child: const Text('Tambah libur'),
+                ),
+                Visibility(
+                  visible: setting.canShow('employeeDayOff', 'day_of_week'),
+                  child: const Text(
+                    "Jadwal Libur Mingguan",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Visibility(
+                  visible: setting.canShow('employeeDayOff', 'day_of_week'),
+                  child: Scrollbar(
+                    controller: scrollController,
+                    thumbVisibility: true,
+                    trackVisibility: true,
+                    thickness: 8,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      controller: scrollController,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 15.0),
+                        child: DataTable(
+                          dataRowMinHeight: 60,
+                          dataRowMaxHeight: 100,
+                          showBottomBorder: true,
+                          columns: [
+                            const DataColumn(
+                              label: Text('Hari', style: labelStyle),
+                            ),
+                            const DataColumn(
+                              label: Text('Minggu Aktif', style: labelStyle),
+                            ),
+                            DataColumn(
+                              label: ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    employee.schedules.clear();
+                                  });
+                                },
+                                child: const Text(
+                                  'hapus semua',
+                                  style: labelStyle,
+                                ),
+                              ),
+                            ),
+                          ],
+                          rows: employee.employeeDayOffs
+                              .map<DataRow>(
+                                (employeeDayOff) => DataRow(
+                                  cells: [
+                                    DataCell(
+                                      DropdownMenu<int>(
+                                        initialSelection:
+                                            employeeDayOff.dayOfWeek,
+                                        onSelected: ((value) =>
+                                            employeeDayOff.dayOfWeek =
+                                                value ?? 0),
+                                        dropdownMenuEntries: const [
+                                          DropdownMenuEntry(
+                                            value: 1,
+                                            label: 'Senin',
+                                          ),
+                                          DropdownMenuEntry(
+                                            value: 2,
+                                            label: 'Selasa',
+                                          ),
+                                          DropdownMenuEntry(
+                                            value: 3,
+                                            label: 'Rabu',
+                                          ),
+                                          DropdownMenuEntry(
+                                            value: 4,
+                                            label: 'Kamis',
+                                          ),
+                                          DropdownMenuEntry(
+                                            value: 5,
+                                            label: 'Jumat',
+                                          ),
+                                          DropdownMenuEntry(
+                                            value: 6,
+                                            label: 'Sabtu',
+                                          ),
+                                          DropdownMenuEntry(
+                                            value: 7,
+                                            label: 'Minggu',
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    DataCell(
+                                      DropdownMenu<ActiveWeekDayOff>(
+                                        initialSelection:
+                                            employeeDayOff.activeWeek,
+                                        onSelected: ((value) =>
+                                            employeeDayOff.activeWeek =
+                                                value ??
+                                                ActiveWeekDayOff.allWeek),
+                                        dropdownMenuEntries: ActiveWeekDayOff
+                                            .values
+                                            .map<
+                                              DropdownMenuEntry<
+                                                ActiveWeekDayOff
+                                              >
+                                            >(
+                                              (activeWeek) => DropdownMenuEntry(
+                                                value: activeWeek,
+                                                label: activeWeek.humanize(),
+                                              ),
+                                            )
+                                            .toList(),
+                                      ),
+                                    ),
+                                    DataCell(
+                                      Row(
+                                        children: [
+                                          Visibility(
+                                            visible: employeeDayOff.id != null,
+                                            child: IconButton(
+                                              onPressed: () {
+                                                fetchHistoryByRecord(
+                                                  'EmployeeDayOff',
+                                                  employeeDayOff.id,
+                                                );
+                                              },
+                                              icon: const Icon(Icons.history),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                employee.employeeDayOffs.remove(
+                                                  employeeDayOff,
+                                                );
+                                              });
+                                            },
+                                            child: const Text('Hapus'),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                              .toList(),
+                        ),
                       ),
                     ),
                   ),
-                  Padding(
+                ),
+                Visibility(
+                  visible: setting.canShow('employeeDayOff', 'day_of_week'),
+                  child: Padding(
                     padding: const EdgeInsets.only(top: 10, bottom: 10),
                     child: ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          flash.show(
-                            const Text('Loading'),
-                            ToastificationType.info,
-                          );
-                          _submit();
-                        }
-                      },
-                      child: const Text('submit'),
+                      onPressed: () => setState(() {
+                        employee.employeeDayOffs.add(EmployeeDayOff());
+                      }),
+                      child: const Text('Tambah libur'),
                     ),
                   ),
-                ],
-              ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, bottom: 10),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        flash.show(
+                          const Text('Loading'),
+                          ToastificationType.info,
+                        );
+                        _submit();
+                      }
+                    },
+                    child: const Text('submit'),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
