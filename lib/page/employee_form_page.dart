@@ -407,8 +407,10 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           border: OutlineInputBorder(),
                         ),
                         validator: (value) {
-                          if (value == null || value.trim().isEmpty)
+                          if (value == null || value.trim().isEmpty) {
                             return null;
+                          }
+
                           return isValidEmail(value)
                               ? null
                               : 'Email tidak valid';

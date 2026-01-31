@@ -26,7 +26,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
         LoadingPopup,
         ColumnTypeFinder {
   final formKey = GlobalKey<FormState>();
-  TableController? tableStateManager;
+  TableController<PayslipReport>? tableStateManager;
   List<PayrollType> payrollTypes = [];
   List<TableColumn> tableColumns = [];
   PayslipStatus? _payslipStatus;

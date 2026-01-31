@@ -23,7 +23,7 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
   final List<Widget>? actions;
   final bool showCheckboxColumn;
   final bool showSummary;
-  final List<T> rows;
+  final List<T>? rows;
   final List<TableColumn> columns;
   final Map<String, List<Enum>> enums;
   final OnLoadedCallBack<T>? onLoaded;
@@ -45,7 +45,7 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
     this.showFilter = true,
     this.onQueryChanged,
     List<TableColumn>? columns,
-    List<T>? rows,
+    this.rows,
     this.isPaginated = false,
     this.enums = const {},
     this.onRowChecked,
@@ -54,8 +54,7 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
     this.showSummary = false,
     this.showCheckboxColumn = false,
     this.fixedLeftColumns = 0,
-  }) : columns = columns ?? const [],
-       rows = rows ?? const [];
+  }) : columns = columns ?? const [];
 
   @override
   State<SyncDataTable<T>> createState() => _SyncDataTableState<T>();
@@ -63,7 +62,7 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
 
 class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
     with TrinaTableDecorator<T>, PlatformChecker, TextFormatter {
-  List<TrinaRow> get rows => widget.rows
+  List<TrinaRow>? get rows => (widget.rows ?? [])
       .map<TrinaRow>((row) => decorateRow(model: row, tableColumns: columns))
       .toList();
   final _menuController = MenuController();
@@ -114,10 +113,10 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
     tabManager = context.read<TabManager>();
     controller = TableController(
       columns: widget.columns,
-      models: widget.rows,
+      models: widget.rows ?? [],
       trinaController: TrinaGridStateManager(
         columns: columns,
-        rows: rows,
+        rows: rows ?? [],
         gridFocusNode: FocusNode(),
         scroll: TrinaGridScrollController(),
       ),
@@ -171,11 +170,7 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
   Widget build(BuildContext context) {
     debugPrint('sync build models ${controller.models.length}');
     final colorScheme = Theme.of(context).colorScheme;
-    if (widget.rows.length != controller.models.length) {
-      debugPrint(
-        'tidak sama widget ${widget.rows.length}, controller ${controller.models.length}',
-      );
-    }
+
     return LayoutBuilder(
       builder: (context, constraint) {
         if (constraint.maxWidth > 480) {

@@ -491,7 +491,8 @@ class TableController<T extends Model> extends ChangeNotifier {
   K? modelFromCheckEvent<K extends Model>(TrinaGridOnRowCheckedEvent event) =>
       event.row?.cells[modelKey]?.value as K;
 
-  void appendModel(model) {
+  void appendModel(T model) {
+    models = models.toList();
     models.add(model);
     trinaController.appendRows([
       decorator.decorateRow(model: model, tableColumns: trinaColumns),
@@ -575,6 +576,7 @@ class TableController<T extends Model> extends ChangeNotifier {
   }
 
   void removeAllRows({bool notify = true}) {
+    models = models.toList();
     models.clear();
     trinaController.removeAllRows(notify: notify);
     if (notify) {
