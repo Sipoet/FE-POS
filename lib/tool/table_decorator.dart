@@ -436,13 +436,11 @@ class TableController<T extends Model> extends ChangeNotifier {
        queryRequest = queryRequest ?? QueryRequest();
 
   void setModels(List<T> value) {
-    if (models
-        .map<String>((e) => e.modelValue)
-        .toList()
-        .equals(value.map<String>((e) => e.modelValue).toList())) {
+    if (models.equals(value)) {
       return;
     }
-    models = value;
+    models.clear();
+    models.addAll(value);
     trinaController.setModels(value);
     notifyListeners();
   }
