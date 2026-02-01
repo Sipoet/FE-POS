@@ -152,7 +152,7 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
 
   @override
   void initState() {
-    _datetime = widget.initialValue;
+    _datetime = widget.initialValue ?? widget.controller?.value;
     widget.controller?.addListener(() {
       setState(() {
         _datetime = widget.controller?.value;

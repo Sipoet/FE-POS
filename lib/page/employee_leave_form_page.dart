@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/date_form_field.dart';
 import 'package:fe_pos/model/employee_leave.dart';
 import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import 'package:provider/provider.dart';
 
@@ -35,15 +36,27 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
   late final Server server;
   late final TabManager _tabManager;
   final _descriptionController = TextEditingController();
+  final _dateBeforeController = DateEditingController(null);
+  final _dateAfterController = DateEditingController(null);
   bool _isMultipleUpdateForm = false;
   @override
   void initState() {
     employeeLeave = widget.employeeLeave;
     _descriptionController.text = employeeLeave.description ?? '';
+    _dateAfterController.value = employeeLeave.date;
+    _dateBeforeController.value = employeeLeave.changeDate;
     server = context.read<Server>();
     _tabManager = context.read<TabManager>();
     flash = Flash();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    _dateAfterController.dispose();
+    _dateBeforeController.dispose();
+    super.dispose();
   }
 
   void _submit() async {
@@ -95,6 +108,8 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
           setState(() {
             employeeLeave = empLeave;
             _descriptionController.text = employeeLeave.description ?? '';
+            _dateAfterController.value = employeeLeave.date;
+            _dateBeforeController.value = employeeLeave.changeDate;
           });
 
           _tabManager.changeTabHeader(
@@ -152,12 +167,12 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
 
   void _removeEmployeeLeave(EmployeeLeave empLeave) {
     showConfirmDialog(
-      message: "Apakah Yakin Hapus tgl ${empLeave.date.format()}",
+      message: "Apakah Yakin Hapus tgl ${empLeave.date?.format()}",
       onSubmit: () {
         empLeave.destroy(server).then((bool isDestroyed) {
           if (isDestroyed) {
             flash.show(
-              Text('Sukses hapus tanggal ${empLeave.date.format()}'),
+              Text('Sukses hapus tanggal ${empLeave.date?.format()}'),
               ToastificationType.success,
             );
             setState(() {
@@ -165,7 +180,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
             });
           } else {
             flash.showBanner(
-              title: 'Gagal hapus tanggal ${empLeave.date.format()}',
+              title: 'Gagal hapus tanggal ${empLeave.date?.format()}',
               messageType: ToastificationType.error,
               description: empLeave.errors.join(','),
             );
@@ -235,12 +250,14 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                       ),
                       const SizedBox(height: 10),
                       DropdownMenu<LeaveType>(
+                        width: 250,
                         label: const Text('Tipe Cuti', style: labelStyle),
                         onSelected: (value) => setState(() {
                           employeeLeave.leaveType =
                               value ?? LeaveType.annualLeave;
                           if (employeeLeave.leaveType != LeaveType.changeDay) {
                             employeeLeave.changeDate = null;
+                            _dateBeforeController.value = null;
                             employeeLeave.changeShift = null;
                           }
                         }),
@@ -259,6 +276,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                         visible:
                             employeeLeave.leaveType != LeaveType.changeDay &&
                             employeeLeave.isNewRecord,
+                        maintainState: true,
                         child: DateRangeFormField(
                           enabled: !_isMultipleUpdateForm,
                           rangeType: DateRangeType(),
@@ -275,79 +293,107 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                         visible:
                             !employeeLeave.isNewRecord ||
                             employeeLeave.leaveType == LeaveType.changeDay,
-                        child: DateFormField(
-                          dateType: DateType(),
-                          helpText: 'Tanggal Cuti',
-                          label: const Text('Tanggal Cuti', style: labelStyle),
-                          onSaved: (newValue) {
-                            if (newValue == null) {
-                              return;
-                            }
-                            employeeLeave.date = Date.parsingDateTime(newValue);
-                          },
-                          validator: (newValue) {
-                            if (newValue == null) {
-                              return 'harus diisi';
-                            }
-                            return null;
-                          },
-                          onChanged: (newValue) {
-                            if (newValue == null) {
-                              return;
-                            }
-                            employeeLeave.date = Date.parsingDateTime(newValue);
-                          },
-                          firstDate: DateTime(2023),
-                          lastDate: DateTime.now().add(
-                            const Duration(days: 31),
+                        maintainState: true,
+                        child: SizedBox(
+                          width: 250,
+                          child: DateFormField(
+                            controller: _dateAfterController,
+                            dateType: DateType(),
+                            helpText: 'Tanggal Cuti',
+                            label: const Text(
+                              'Tanggal Cuti',
+                              style: labelStyle,
+                            ),
+                            onSaved: (newValue) {
+                              if (newValue == null) {
+                                return;
+                              }
+                              employeeLeave.date = Date.parsingDateTime(
+                                newValue,
+                              );
+                            },
+                            validator: (newValue) {
+                              if (newValue == null) {
+                                return 'harus diisi';
+                              }
+                              return null;
+                            },
+                            onChanged: (newValue) {
+                              if (newValue == null) {
+                                return;
+                              }
+                              employeeLeave.date = Date.parsingDateTime(
+                                newValue,
+                              );
+                            },
                           ),
-                          initialValue: employeeLeave.date,
                         ),
                       ),
                       const SizedBox(height: 10),
                       Visibility(
                         visible: employeeLeave.leaveType == LeaveType.changeDay,
+                        maintainState: true,
                         child: Column(
                           children: [
-                            DateFormField(
-                              label: const Text(
-                                'Tanggal Ganti Hari',
-                                style: labelStyle,
-                              ),
-                              dateType: DateType(),
-                              helpText: 'Tanggal Ganti Hari',
-                              onSaved: (newValue) {
-                                if (newValue == null) {
-                                  employeeLeave.changeDate = null;
-                                  return;
-                                }
-                                employeeLeave.changeDate = Date.parsingDateTime(
-                                  newValue,
-                                );
-                              },
-                              validator: (newValue) {
-                                if (newValue == null &&
-                                    employeeLeave.leaveType ==
-                                        LeaveType.changeDay) {
-                                  return 'harus diisi';
-                                }
-                                return null;
-                              },
-                              onChanged: (newValue) {
-                                if (newValue == null) {
-                                  employeeLeave.changeDate = null;
-                                  return;
-                                }
-                                employeeLeave.changeDate = Date.parsingDateTime(
-                                  newValue,
-                                );
-                              },
-                              firstDate: DateTime(2023),
-                              lastDate: DateTime.now().add(
-                                const Duration(days: 31),
-                              ),
-                              initialValue: employeeLeave.changeDate,
+                            Row(
+                              mainAxisSize: .max,
+                              mainAxisAlignment: .start,
+                              spacing: 15,
+                              children: [
+                                SizedBox(
+                                  width: 250,
+                                  child: DateFormField(
+                                    controller: _dateBeforeController,
+                                    label: const Text(
+                                      'Tanggal diganti',
+                                      style: labelStyle,
+                                    ),
+                                    dateType: DateType(),
+                                    helpText: 'Tanggal diganti Hari',
+                                    onSaved: (newValue) {
+                                      if (newValue == null) {
+                                        employeeLeave.changeDate = null;
+                                        return;
+                                      }
+                                      employeeLeave.changeDate =
+                                          Date.parsingDateTime(newValue);
+                                    },
+                                    validator: (newValue) {
+                                      if (newValue == null &&
+                                          employeeLeave.leaveType ==
+                                              LeaveType.changeDay) {
+                                        return 'harus diisi';
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (newValue) {
+                                      if (newValue == null) {
+                                        employeeLeave.changeDate = null;
+                                        return;
+                                      }
+                                      employeeLeave.changeDate =
+                                          Date.parsingDateTime(newValue);
+                                    },
+                                  ),
+                                ),
+                                IconButton.filledTonal(
+                                  onPressed: () {
+                                    final date = employeeLeave.date?.toDate();
+                                    setState(() {
+                                      employeeLeave.date =
+                                          employeeLeave.changeDate;
+                                      employeeLeave.changeDate = date;
+                                      _dateAfterController.value =
+                                          employeeLeave.date;
+                                      _dateBeforeController.value =
+                                          employeeLeave.changeDate;
+                                    });
+                                  },
+                                  icon: Icon(PhosphorIcons.swap()),
+                                ),
+                              ],
                             ),
+
                             const SizedBox(height: 10),
                             TextFormField(
                               keyboardType: TextInputType.number,
@@ -424,6 +470,10 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                                       .initModel();
                                   _descriptionController.text =
                                       employeeLeave.description ?? '';
+                                  _dateAfterController.value =
+                                      employeeLeave.date;
+                                  _dateBeforeController.value =
+                                      employeeLeave.changeDate;
                                   _employeeLeaves.clear();
                                   _isMultipleUpdateForm = false;
                                   _tabManager.changeTabHeader(
@@ -478,7 +528,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                             TableCell(
                               child: Padding(
                                 padding: const EdgeInsets.all(10),
-                                child: Text(row.date.format()),
+                                child: Text(row.date?.format() ?? ''),
                               ),
                             ),
                             TableCell(
@@ -505,6 +555,10 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
                                         employeeLeave = row;
                                         _descriptionController.text =
                                             employeeLeave.description ?? '';
+                                        _dateAfterController.value =
+                                            employeeLeave.date;
+                                        _dateBeforeController.value =
+                                            employeeLeave.changeDate;
                                         _tabManager.changeTabHeader(
                                           widget,
                                           'Edit Cuti Karyawan ${employeeLeave.id}',

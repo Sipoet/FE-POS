@@ -62,7 +62,7 @@ enum LeaveType implements EnumTranslation {
 }
 
 class EmployeeLeave extends Model with SaveNDestroyModel {
-  Date date;
+  Date? date;
   LeaveType leaveType;
   Employee employee;
   String? description;
@@ -71,7 +71,7 @@ class EmployeeLeave extends Model with SaveNDestroyModel {
 
   EmployeeLeave({
     this.leaveType = LeaveType.annualLeave,
-    Date? date,
+    this.date,
     Employee? employee,
     super.createdAt,
     super.updatedAt,
@@ -79,8 +79,7 @@ class EmployeeLeave extends Model with SaveNDestroyModel {
     this.changeShift,
     this.description,
     super.id,
-  }) : employee = employee ?? EmployeeClass().initModel(),
-       date = date ?? Date.today();
+  }) : employee = employee ?? EmployeeClass().initModel();
 
   @override
   Map<String, dynamic> toMap() => {
@@ -122,7 +121,7 @@ class EmployeeLeave extends Model with SaveNDestroyModel {
 
   @override
   String get modelValue =>
-      description ?? "${employee.modelValue} (${date.format()})";
+      description ?? "${employee.modelValue} (${date?.format()})";
 }
 
 class EmployeeLeaveClass extends ModelClass<EmployeeLeave> {

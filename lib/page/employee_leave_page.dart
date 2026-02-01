@@ -113,7 +113,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
   void destroyRecord(EmployeeLeave employeeLeave) {
     showConfirmDialog(
       message:
-          'Apakah anda yakin hapus ${employeeLeave.employee.name} tanggal ${dateFormat(employeeLeave.date)}?',
+          'Apakah anda yakin hapus ${employeeLeave.employee.name} tanggal ${employeeLeave.date?.format()}?',
       onSubmit: () {
         server
             .delete('/employee_leaves/${employeeLeave.id}')
