@@ -27,7 +27,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
   );
   late Server server;
   String? _reportType;
-  late final TableController _source;
+  late final SyncTableController _source;
   DateTimeRange _dateRange = DateTimeRange(
     start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
     end: DateTime.now().copyWith(hour: 23, minute: 59, second: 59),

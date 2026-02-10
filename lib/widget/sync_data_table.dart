@@ -12,7 +12,7 @@ import 'package:trina_grid/trina_grid.dart';
 import 'package:provider/provider.dart';
 
 typedef OnLoadedCallBack<T extends Model> =
-    void Function(TableController<T> stateManager);
+    void Function(SyncTableController<T> stateManager);
 typedef OnRowCheckedCallback = void Function(TrinaGridOnRowCheckedEvent event);
 typedef OnSelectedCallback = void Function(TrinaGridOnSelectedEvent event);
 typedef OnRowDoubleTapCallback =
@@ -66,8 +66,7 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
       .map<TrinaRow>((row) => decorateRow(model: row, tableColumns: columns))
       .toList();
   final _menuController = MenuController();
-  late final TableController<T> controller;
-  late final MobileTableController<T> mobileController;
+  late final SyncTableController<T> controller;
   bool isLoaded = false;
   bool isMobileLayout = false;
   CancelableOperation? searchOperation;
@@ -111,7 +110,7 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
   @override
   void initState() {
     tabManager = context.read<TabManager>();
-    controller = TableController(
+    controller = SyncTableController(
       columns: widget.columns,
       models: widget.rows ?? [],
       trinaController: TrinaGridStateManager(
@@ -121,43 +120,13 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
         scroll: TrinaGridScrollController(),
       ),
     );
-    mobileController = MobileTableController(
-      currentPage: controller.queryRequest.page,
-      searchText: controller.queryRequest.searchText,
-      sorts: controller.queryRequest.sorts,
-      models: controller.models,
-    );
+    controller.initMobileController();
     controller.addListener(() {
-      mobileController.currentPage = controller.queryRequest.page;
-      mobileController.searchText = controller.queryRequest.searchText;
-      mobileController.sorts = controller.queryRequest.sorts;
-      mobileController.models = paginatedRows(
-        models: controller.models,
-        page: mobileController.currentPage,
-        limit: controller.rowsPerPage,
-      );
-      mobileController.totalPage =
-          (controller.models.length.toDouble() /
-                  controller.rowsPerPage.toDouble())
-              .ceil();
       debugPrint('controller changed');
-      if (widget.onQueryChanged != null) {
+      if (widget.onQueryChanged != null && controller.searchTextChanged) {
         widget.onQueryChanged!(controller.queryRequest);
+        controller.searchTextChanged = false;
       }
-
-      mobileController.notifyChanged();
-    });
-    mobileController.addListener(() {
-      debugPrint('mobile controller changed');
-      controller.page = mobileController.currentPage;
-      controller.searchText = mobileController.searchText;
-      controller.sorts = mobileController.sorts;
-      mobileController.models = paginatedRows(
-        models: controller.models,
-        page: mobileController.currentPage,
-        limit: controller.rowsPerPage,
-      );
-      mobileController.notifyChanged();
     });
     super.initState();
   }
@@ -185,7 +154,7 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
             widget.onLoaded!(controller);
           }
           return MobileTable<T>(
-            controller: mobileController,
+            controller: controller.mobileController,
             columns: widget.columns,
             renderAction: widget.renderAction,
           );
@@ -319,5 +288,230 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
         ),
       ),
     );
+  }
+}
+
+class SyncTableController<T extends Model> extends ChangeNotifier {
+  TrinaGridStateManager trinaController;
+  late MobileTableController<T> mobileController;
+  List<T> models = [];
+  List<TableColumn> columns = [];
+  QueryRequest queryRequest;
+  bool isMobileLayout = false;
+  bool searchTextChanged = false;
+  // table rows per page
+  int rowsPerPage;
+
+  List<TrinaColumn> get trinaColumns => trinaController.columns.toList();
+  TrinaDeco get decorator => TrinaDeco();
+
+  SyncTableController({
+    TrinaGridStateManager? trinaController,
+    this.rowsPerPage = 10,
+    QueryRequest? queryRequest,
+    List<T>? models,
+    List<TableColumn>? columns,
+  }) : models = models ?? [],
+       columns = columns ?? [],
+       trinaController =
+           trinaController ??
+           TrinaGridStateManager(
+             columns: [],
+             rows: [],
+             gridFocusNode: FocusNode(),
+             scroll: TrinaGridScrollController(),
+           ),
+       queryRequest = queryRequest ?? QueryRequest();
+  void initMobileController() {
+    mobileController = MobileTableController(models: models)
+      ..addListener(() {
+        page = mobileController.currentPage;
+        searchText = mobileController.searchText;
+        sorts = mobileController.sorts;
+      });
+  }
+
+  void setModels(List<T> value) {
+    if (models.equals(value)) {
+      return;
+    }
+    models.clear();
+    models.addAll(value);
+    trinaController.setModels(value);
+    _refreshMobileModel();
+    notifyListeners();
+  }
+
+  set searchText(String value) {
+    if (queryRequest.searchText == value) {
+      return;
+    }
+    debugPrint('search change from ${queryRequest.searchText} to $value');
+    queryRequest.searchText = value;
+    searchTextChanged = true;
+    mobileController.searchText = value;
+
+    notifyListeners();
+  }
+
+  set include(List<String> value) {
+    final a = queryRequest.include.toSet();
+    final b = value.toSet();
+    if (a.containsAll(b) && b.containsAll(a)) {
+      return;
+    }
+    queryRequest.include = value;
+    notifyListeners();
+  }
+
+  set page(int value) {
+    if (queryRequest.page == value) {
+      return;
+    }
+    queryRequest.page = value;
+    trinaController.setPage(value);
+    mobileController.currentPage = value;
+    _refreshMobileModel();
+    notifyListeners();
+  }
+
+  void _refreshMobileModel() {
+    mobileController.totalPage =
+        (models.length.toDouble() / rowsPerPage.toDouble()).ceil();
+    mobileController.models = paginatedRows(
+      models: models,
+      page: mobileController.currentPage,
+      limit: rowsPerPage,
+    );
+  }
+
+  set sorts(List<SortData> value) {
+    if (queryRequest.sorts.equals(value)) {
+      return;
+    }
+    queryRequest.sorts = value;
+    for (final sort in queryRequest.sorts) {
+      debugPrint('sort set ${sort.toString()}');
+      sortByFieldName(sort.key, isAscending: sort.isAscending);
+    }
+
+    notifyListeners();
+  }
+
+  K? modelFromCheckEvent<K extends Model>(TrinaGridOnRowCheckedEvent event) =>
+      event.row?.cells[modelKey]?.value as K;
+
+  void appendModel(T model) {
+    models = models.toList();
+    models.add(model);
+    trinaController.appendRows([
+      decorator.decorateRow(model: model, tableColumns: trinaColumns),
+    ]);
+    mobileController.addModel(model);
+    _refreshMobileModel();
+    notifyListeners();
+  }
+
+  void setTableColumns(
+    List<TableColumn> tableColumns, {
+    int fixedLeftColumns = 0,
+    bool showFilter = false,
+    required TabManager tabManager,
+  }) {
+    columns = tableColumns;
+    trinaController.setTableColumns(
+      columns,
+      fixedLeftColumns: fixedLeftColumns,
+      showFilter: showFilter,
+      tabManager: tabManager,
+    );
+    // notifyListeners();
+  }
+
+  void refreshTable() {
+    if (isMobileLayout) {
+      mobileController.notifyChanged(force: true);
+    } else {
+      trinaController.eventManager?.addEvent(
+        TrinaGridChangeColumnSortEvent(
+          column: trinaController.columns.first,
+          oldSort: TrinaColumnSort.none,
+        ),
+      );
+    }
+    notifyListeners();
+  }
+
+  void sortByFieldName(String fieldName, {bool isAscending = true}) {
+    final column = findColumn(fieldName);
+    if (column == null) {
+      debugPrint('field $fieldName tidak ditemukan');
+      return;
+    }
+    if (isAscending) {
+      sortAscending(column);
+    } else {
+      sortDescending(column);
+    }
+  }
+
+  TableColumn? findColumn(fieldName) {
+    return columns.firstWhereOrNull((e) => e.name == fieldName);
+  }
+
+  TrinaColumn? findTrinaColumn(String fieldName) {
+    return trinaColumns.firstWhereOrNull((e) => e.field == fieldName);
+  }
+
+  void sortAscending(TableColumn column) {
+    final trinaColumn = findTrinaColumn(column.name);
+    if (trinaColumn != null) {
+      trinaController.sortAscending(trinaColumn);
+    }
+
+    queryRequest.sorts = [SortData(key: column.name, isAscending: true)];
+    mobileController.sorts = queryRequest.sorts;
+    _refreshMobileModel();
+    notifyListeners();
+  }
+
+  void sortDescending(TableColumn column) {
+    final trinaColumn = findTrinaColumn(column.name);
+    if (trinaColumn != null) {
+      trinaController.sortDescending(trinaColumn);
+    }
+    queryRequest.sorts = [SortData(key: column.name, isAscending: false)];
+    mobileController.sorts = queryRequest.sorts;
+    _refreshMobileModel();
+    notifyListeners();
+  }
+
+  List<T> paginatedRows({
+    required List<T> models,
+    int page = 1,
+    int limit = 10,
+  }) {
+    int start = (page - 1) * limit;
+    int end = [page * limit, models.length].min;
+    return models.sublist(start, end);
+  }
+
+  ValueNotifier<bool> isLoading = ValueNotifier<bool>(false);
+  void setShowLoading(bool result) {
+    isLoading.value = result;
+    trinaController.setShowLoading(result);
+    mobileController.loader.value = result;
+    // notifyListeners();
+  }
+
+  void removeAllRows({bool notify = true}) {
+    models = models.toList();
+    models.clear();
+    trinaController.removeAllRows(notify: notify);
+    _refreshMobileModel();
+
+    if (notify) {
+      notifyListeners();
+    }
   }
 }

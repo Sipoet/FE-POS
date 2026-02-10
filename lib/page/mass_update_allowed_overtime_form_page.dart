@@ -29,7 +29,7 @@ class _MassUpdateAllowedOvertimeFormPageState
   DateTime _dateTime = DateTime.now();
   bool _allowOvertime = true;
   int? _shift;
-  late final TableController _source;
+  late final SyncTableController _source;
   late final Flash flash;
   late final Setting setting;
 

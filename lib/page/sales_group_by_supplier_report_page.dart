@@ -30,7 +30,7 @@ class _SalesGroupBySupplierReportPageState
   );
   late Server server;
   String? _reportType;
-  late TableController _source;
+  late SyncTableController _source;
   late Flash flash;
   List _brands = [];
   List _suppliers = [];

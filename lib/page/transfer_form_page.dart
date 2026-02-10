@@ -33,7 +33,7 @@ class _TransferFormPageState extends State<TransferFormPage>
   Transfer get transfer => widget.transfer;
   late final Server _server;
   late final Setting setting;
-  late final TableController _source;
+  late final SyncTableController _source;
   late final List<TableColumn> _columns;
   @override
   bool get wantKeepAlive => true;

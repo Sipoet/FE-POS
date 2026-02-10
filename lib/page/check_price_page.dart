@@ -23,7 +23,7 @@ class _CheckPricePageState extends State<CheckPricePage>
   late final Server _server;
   bool _isLoading = false;
   final _controller = TextEditingController();
-  TableController? _source;
+  SyncTableController? _source;
   List<ItemWithDiscount> models = [];
   final List<TableColumn> _columns = [
     TableColumn(

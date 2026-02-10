@@ -23,7 +23,7 @@ class _ItemReportPageState extends State<ItemReportPage>
   late Server server;
   String? _reportType;
   double minimumColumnWidth = 150;
-  late final TableController<ItemReport> _source;
+  late final SyncTableController<ItemReport> _source;
   late Flash flash;
   late final List<TableColumn> columns;
   // List<ItemReport> itemReports = [];

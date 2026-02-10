@@ -65,7 +65,9 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
   double get bodyScreenHeight {
     final padding = MediaQuery.of(context).padding;
     final size = MediaQuery.of(context).size;
-    double tableHeight = size.height - padding.top - padding.bottom - 250;
+    double headerHeight = size.width > 800 ? 200 : 120;
+    double tableHeight =
+        size.height - padding.top - padding.bottom - headerHeight;
     return tableHeight < 400 ? 400.0 : tableHeight;
   }
 

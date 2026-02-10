@@ -114,20 +114,24 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
           ),
         ),
         Expanded(
-          child: ListView(
-            controller: scrollController,
-            children: controller.models
-                .map<Widget>(
-                  (model) => ModelCard(
-                    model: model,
-                    columns: widget.columns,
-                    tabManager: tabManager,
-                    action: widget.renderAction == null
-                        ? null
-                        : widget.renderAction!(model),
-                  ),
-                )
-                .toList(),
+          child: Visibility(
+            visible: !controller.loader.value,
+            maintainState: true,
+            child: ListView(
+              controller: scrollController,
+              children: controller.models
+                  .map<Widget>(
+                    (model) => ModelCard(
+                      model: model,
+                      columns: widget.columns,
+                      tabManager: tabManager,
+                      action: widget.renderAction == null
+                          ? null
+                          : widget.renderAction!(model),
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
         ),
         SizedBox(height: 10),
@@ -282,8 +286,8 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
 
 final listFormula = ListEquality();
 
-extension ListEqual on List {
-  bool equal(List a) {
+extension ListEqual<T> on List<T> {
+  bool equal(List<T> a) {
     return listFormula.equals(this, a);
   }
 }
@@ -324,7 +328,7 @@ class MobileTableController<T extends Model> extends ChangeNotifier {
   }
 
   set sorts(List<SortData> value) {
-    if (!_sorts.equals(value)) {
+    if (!_sorts.equal(value)) {
       debugPrint(
         '_sorts change from ${_sorts.map<String>((e) => e.toString()).join(',')} to ${value.map<String>((e) => e.toString()).join(',')}',
       );
@@ -341,6 +345,13 @@ class MobileTableController<T extends Model> extends ChangeNotifier {
       debugPrint('_models change from ${models.length} to ${value.length}');
       _models = value;
       _isValueChanged = true;
+    }
+  }
+
+  void addModel(T model, {bool notify = true}) {
+    _models.add(model);
+    if (notify) {
+      notifyListeners();
     }
   }
 

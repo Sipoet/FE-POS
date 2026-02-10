@@ -33,7 +33,7 @@ class _SaleFormPageState extends State<SaleFormPage>
   Sale get sale => widget.sale;
   late final Server _server;
   late final Setting setting;
-  late final TableController _source;
+  late final SyncTableController _source;
   late final List<TableColumn> _columns;
   @override
   bool get wantKeepAlive => true;

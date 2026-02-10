@@ -20,7 +20,7 @@ class PayrollReportPage extends StatefulWidget {
 
 class _PayrollReportPageState extends State<PayrollReportPage>
     with LoadingPopup, DefaultResponse, ColumnTypeFinder {
-  TableController? tableStateManager;
+  SyncTableController? tableStateManager;
   List<PayrollType> payrollTypes = [];
   List<Employee> employees = [];
   List<TableColumn> tableColumns = [];

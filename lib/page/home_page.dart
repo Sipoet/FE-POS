@@ -3,6 +3,7 @@ import 'package:fe_pos/model/sales_transaction_report.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/tool/default_response.dart';
+
 import 'package:fe_pos/widget/last_item_sales_transaction_widget.dart';
 import 'package:fe_pos/widget/last_sales_transaction_widget.dart';
 import 'package:fe_pos/widget/period_sales_goal.dart';
@@ -211,6 +212,7 @@ class _HomePageState extends State<HomePage>
   }
 
   final textController = BoardDateTimeTextController();
+
   @override
   Widget build(BuildContext context) {
     super.build(context);

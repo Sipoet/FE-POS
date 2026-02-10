@@ -31,7 +31,7 @@ class _EmployeeAttendanceMassUploadPageState
         TextFormatter,
         DefaultResponse {
   late Server _server;
-  TableController? _source;
+  SyncTableController? _source;
   late final List<TableColumn> _columns;
   final _focusNode = FocusNode();
 

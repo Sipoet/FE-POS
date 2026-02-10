@@ -19,7 +19,7 @@ class _BackgroundJobPageState extends State<BackgroundJobPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late List<TableColumn> _columns;
   List<BackgroundJob> records = [];
-  TableController? stateManager;
+  SyncTableController? stateManager;
   late final Server _server;
   final flash = Flash();
   @override
