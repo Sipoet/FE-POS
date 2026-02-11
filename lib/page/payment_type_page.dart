@@ -19,10 +19,10 @@ class PaymentTypePage extends StatefulWidget {
 
 class _PaymentTypePageState extends State<PaymentTypePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
+  late final Setting setting;
 
-  String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
   List<FilterData> _filters = [];
@@ -35,7 +35,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    final setting = context.read<Setting>();
+    setting = context.read<Setting>();
 
     columns = setting.tableColumn('paymentType');
 
@@ -55,16 +55,22 @@ class _PaymentTypePageState extends State<PaymentTypePage>
   }
 
   Future<DataTableResponse<PaymentType>> fetchPaymentTypes(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return PaymentTypeClass().finds(server, request).then(
-        (value) => DataTableResponse<PaymentType>(
+
+    return PaymentTypeClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<PaymentType>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void addForm() {
@@ -73,9 +79,12 @@ class _PaymentTypePageState extends State<PaymentTypePage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Tipe Pembayaran Baru',
-          PaymentTypeFormPage(
-              key: ObjectKey(paymentType), paymentType: paymentType));
+        'Tipe Pembayaran Baru',
+        PaymentTypeFormPage(
+          key: ObjectKey(paymentType),
+          paymentType: paymentType,
+        ),
+      );
     });
   }
 
@@ -83,42 +92,38 @@ class _PaymentTypePageState extends State<PaymentTypePage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Edit Tipe Pembayaran ${paymentType.name}',
-          PaymentTypeFormPage(
-              key: ObjectKey(paymentType), paymentType: paymentType));
+        'Edit Tipe Pembayaran ${paymentType.name}',
+        PaymentTypeFormPage(
+          key: ObjectKey(paymentType),
+          paymentType: paymentType,
+        ),
+      );
     });
   }
 
   void destroyRecord(PaymentType paymentType) {
     showConfirmDialog(
-        message: 'Apakah anda yakin hapus ${paymentType.name}?',
-        onSubmit: () {
-          server.delete('/payment_types/${paymentType.id}').then((response) {
-            if (response.statusCode == 200) {
-              flash.showBanner(
-                  messageType: ToastificationType.success,
-                  title: 'Sukses Hapus',
-                  description: 'Sukses Hapus paymentType ${paymentType.name}');
-              refreshTable();
-            }
-          }, onError: (error) {
-            defaultErrorResponse(error: error);
-          });
-        });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+      message: 'Apakah anda yakin hapus ${paymentType.name}?',
+      onSubmit: () {
+        server
+            .delete('/payment_types/${paymentType.id}')
+            .then(
+              (response) {
+                if (response.statusCode == 200) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses Hapus',
+                    description: 'Sukses Hapus paymentType ${paymentType.name}',
+                  );
+                  refreshTable();
+                }
+              },
+              onError: (error) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
   @override
@@ -142,34 +147,19 @@ class _PaymentTypePageState extends State<PaymentTypePage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
-                    child: SubmenuButton(menuChildren: [
-                      MenuItemButton(
-                        child: const Text('Tambah PaymentType'),
-                        onPressed: () => addForm(),
-                      ),
-                    ], child: const Icon(Icons.table_rows_rounded)),
-                  )
+                    child: SubmenuButton(
+                      menuChildren: [
+                        if (setting.isAuthorize('payment_types', 'create'))
+                          MenuItemButton(
+                            child: const Text('Tambah PaymentType'),
+                            onPressed: () => addForm(),
+                          ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -179,18 +169,22 @@ class _PaymentTypePageState extends State<PaymentTypePage>
                 renderAction: (paymentType) => Row(
                   spacing: 10,
                   children: [
-                    IconButton(
+                    if (setting.isAuthorize('payment_types', 'update'))
+                      IconButton(
                         onPressed: () {
                           editForm(paymentType);
                         },
                         tooltip: 'Edit PaymentType',
-                        icon: const Icon(Icons.edit)),
-                    IconButton(
+                        icon: const Icon(Icons.edit),
+                      ),
+                    if (setting.isAuthorize('payment_types', 'destroy'))
+                      IconButton(
                         onPressed: () {
                           destroyRecord(paymentType);
                         },
                         tooltip: 'Hapus PaymentType',
-                        icon: const Icon(Icons.delete)),
+                        icon: const Icon(Icons.delete),
+                      ),
                   ],
                 ),
                 onLoaded: (stateManager) => _source = stateManager,

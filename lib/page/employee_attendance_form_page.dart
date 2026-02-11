@@ -13,8 +13,10 @@ import 'package:provider/provider.dart';
 
 class EmployeeAttendanceFormPage extends StatefulWidget {
   final EmployeeAttendance employeeAttendance;
-  const EmployeeAttendanceFormPage(
-      {super.key, required this.employeeAttendance});
+  const EmployeeAttendanceFormPage({
+    super.key,
+    required this.employeeAttendance,
+  });
 
   @override
   State<EmployeeAttendanceFormPage> createState() =>
@@ -44,153 +46,147 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
     const labelStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
 
     return SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-          child: Center(
-            child: Container(
-              constraints: BoxConstraints.loose(const Size.fromWidth(600)),
-              alignment: Alignment.center,
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Flexible(
-                      child: AsyncDropdown<Employee>(
-                        key: const ValueKey('employeeSelect'),
-                        path: '/employees',
-                        attributeKey: 'name',
-                        textOnSearch: (employee) =>
-                            "${employee.code} - ${employee.name}",
-                        modelClass: EmployeeClass(),
-                        label: const Text(
-                          'Nama Karyawan :',
-                          style: labelStyle,
-                        ),
-                        onSaved: (employee) {
-                          employeeAttendance.employee = employee ?? Employee();
-                        },
-                        selected: employeeAttendance.employee,
-                        validator: (value) {
-                          if (employeeAttendance.employee.id == null) {
-                            return 'harus diisi';
-                          }
-                          return null;
-                        },
+      scrollDirection: Axis.vertical,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+        child: Center(
+          child: Container(
+            constraints: BoxConstraints.loose(const Size.fromWidth(600)),
+            alignment: Alignment.center,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Flexible(
+                    child: AsyncDropdown<Employee>(
+                      key: const ValueKey('employeeSelect'),
+                      attributeKey: 'name',
+                      textOnSearch: (employee) =>
+                          "${employee.code} - ${employee.name}",
+                      modelClass: EmployeeClass(),
+                      label: const Text('Nama Karyawan :', style: labelStyle),
+                      onSaved: (employee) {
+                        employeeAttendance.employee = employee ?? Employee();
+                      },
+                      selected: employeeAttendance.employee,
+                      validator: (value) {
+                        if (employeeAttendance.employee.id == null) {
+                          return 'harus diisi';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: DateFormField(
+                      initialValue: employeeAttendance.date,
+                      label: const Text('Tanggal', style: labelStyle),
+                      helpText: 'Tanggal',
+                      dateType: DateType(),
+                      onSaved: (value) {
+                        if (value != null) {
+                          employeeAttendance.date = value.toDate();
+                          employeeAttendance.startTime = employeeAttendance
+                              .startTime
+                              .copyWith(
+                                year: value.year,
+                                month: value.month,
+                                day: value.day,
+                              );
+                          employeeAttendance.endTime = employeeAttendance
+                              .endTime
+                              .copyWith(
+                                year: value.year,
+                                month: value.month,
+                                day: value.day,
+                              );
+                        }
+                      },
+                    ),
+                  ),
+                  TimeFormField(
+                    label: const Text('Jam Masuk', style: labelStyle),
+                    helpText: 'Jam Masuk',
+                    onSaved: (value) {
+                      if (value != null) {
+                        employeeAttendance.startTime = employeeAttendance
+                            .startTime
+                            .copyWith(hour: value.hour, minute: value.minute);
+                      }
+                    },
+                    initialValue: employeeAttendance.startWork,
+                  ),
+                  const SizedBox(height: 10),
+                  TimeFormField(
+                    label: const Text('Jam Keluar', style: labelStyle),
+                    helpText: 'Jam Keluar',
+                    onSaved: (value) {
+                      if (value != null) {
+                        employeeAttendance.endTime = employeeAttendance.endTime
+                            .copyWith(hour: value.hour, minute: value.minute);
+                      }
+                    },
+                    initialValue: employeeAttendance.endWork,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: TextFormField(
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      onSaved: (value) {
+                        setState(() {
+                          employeeAttendance.shift =
+                              int.tryParse(value ?? '') ?? 0;
+                        });
+                      },
+                      initialValue: employeeAttendance.shift.toString(),
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        label: Text('Shift', style: labelStyle),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: DateFormField(
-                        initialValue: employeeAttendance.date,
-                        label: const Text('Tanggal', style: labelStyle),
-                        helpText: 'Tanggal',
-                        dateType: DateType(),
-                        onSaved: (value) {
-                          if (value != null) {
-                            employeeAttendance.date = value.toDate();
-                            employeeAttendance.startTime =
-                                employeeAttendance.startTime.copyWith(
-                                    year: value.year,
-                                    month: value.month,
-                                    day: value.day);
-                            employeeAttendance.endTime =
-                                employeeAttendance.endTime.copyWith(
-                                    year: value.year,
-                                    month: value.month,
-                                    day: value.day);
-                          }
-                        },
-                      ),
+                  ),
+                  CheckboxListTile(
+                    title: const Text('Terlambat?'),
+                    value: employeeAttendance.isLate,
+                    onChanged: (val) => setState(() {
+                      employeeAttendance.isLate = val ?? false;
+                    }),
+                  ),
+                  CheckboxListTile(
+                    title: const Text('Boleh Overtime?'),
+                    value: employeeAttendance.allowOvertime,
+                    onChanged: (val) => setState(() {
+                      employeeAttendance.allowOvertime = val ?? false;
+                    }),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10, bottom: 10),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          _formKey.currentState!.save();
+                          flash.show(
+                            const Text('Loading'),
+                            ToastificationType.info,
+                          );
+                          _submit();
+                        }
+                      },
+                      child: const Text('submit'),
                     ),
-                    TimeFormField(
-                        label: const Text(
-                          'Jam Masuk',
-                          style: labelStyle,
-                        ),
-                        helpText: 'Jam Masuk',
-                        onSaved: (value) {
-                          if (value != null) {
-                            employeeAttendance.startTime =
-                                employeeAttendance.startTime.copyWith(
-                                    hour: value.hour, minute: value.minute);
-                          }
-                        },
-                        initialValue: employeeAttendance.startWork),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    TimeFormField(
-                        label: const Text(
-                          'Jam Keluar',
-                          style: labelStyle,
-                        ),
-                        helpText: 'Jam Keluar',
-                        onSaved: (value) {
-                          if (value != null) {
-                            employeeAttendance.endTime =
-                                employeeAttendance.endTime.copyWith(
-                                    hour: value.hour, minute: value.minute);
-                          }
-                        },
-                        initialValue: employeeAttendance.endWork),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: TextFormField(
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        onSaved: (value) {
-                          setState(() {
-                            employeeAttendance.shift =
-                                int.tryParse(value ?? '') ?? 0;
-                          });
-                        },
-                        initialValue: employeeAttendance.shift.toString(),
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          label: Text(
-                            'Shift',
-                            style: labelStyle,
-                          ),
-                        ),
-                      ),
-                    ),
-                    CheckboxListTile(
-                        title: const Text('Terlambat?'),
-                        value: employeeAttendance.isLate,
-                        onChanged: (val) => setState(() {
-                              employeeAttendance.isLate = val ?? false;
-                            })),
-                    CheckboxListTile(
-                        title: const Text('Boleh Overtime?'),
-                        value: employeeAttendance.allowOvertime,
-                        onChanged: (val) => setState(() {
-                              employeeAttendance.allowOvertime = val ?? false;
-                            })),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10, bottom: 10),
-                      child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              _formKey.currentState!.save();
-                              flash.show(const Text('Loading'),
-                                  ToastificationType.info);
-                              _submit();
-                            }
-                          },
-                          child: const Text('submit')),
-                    )
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 
   void _submit() {
@@ -198,36 +194,47 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
       'data': {
         'type': 'employee_attendance',
         'id': employeeAttendance.id,
-        'attributes': employeeAttendance.toJson()
-      }
+        'attributes': employeeAttendance.toJson(),
+      },
     };
     Future request;
     if (employeeAttendance.id == null) {
       request = _server.post('employee_attendances', body: body);
     } else {
-      request = _server.put('employee_attendances/${employeeAttendance.id}',
-          body: body);
+      request = _server.put(
+        'employee_attendances/${employeeAttendance.id}',
+        body: body,
+      );
     }
-    request.then((response) {
-      if ([200, 201].contains(response.statusCode)) {
-        var data = response.data['data'];
-        setState(() {
-          employeeAttendance.id = int.tryParse(data['id']);
-          var tabManager = context.read<TabManager>();
-          tabManager.changeTabHeader(
-              widget, 'Edit Absensi Karyawan ${employeeAttendance.id}');
-        });
+    request.then(
+      (response) {
+        if ([200, 201].contains(response.statusCode)) {
+          var data = response.data['data'];
+          setState(() {
+            employeeAttendance.id = int.tryParse(data['id']);
+            var tabManager = context.read<TabManager>();
+            tabManager.changeTabHeader(
+              widget,
+              'Edit Absensi Karyawan ${employeeAttendance.id}',
+            );
+          });
 
-        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
-      } else if (response.statusCode == 409) {
-        var data = response.data;
-        flash.showBanner(
+          flash.show(
+            const Text('Berhasil disimpan'),
+            ToastificationType.success,
+          );
+        } else if (response.statusCode == 409) {
+          var data = response.data;
+          flash.showBanner(
             title: data['message'],
             description: data['errors'].join('\n'),
-            messageType: ToastificationType.error);
-      }
-    }, onError: (error, stackTrace) {
-      defaultErrorResponse(error: error);
-    });
+            messageType: ToastificationType.error,
+          );
+        }
+      },
+      onError: (error, stackTrace) {
+        defaultErrorResponse(error: error);
+      },
+    );
   }
 }

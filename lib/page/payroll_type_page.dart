@@ -19,10 +19,9 @@ class PayrollTypePage extends StatefulWidget {
 
 class _PayrollTypePageState extends State<PayrollTypePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
-  String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
   List<FilterData> _filters = [];
@@ -55,16 +54,22 @@ class _PayrollTypePageState extends State<PayrollTypePage>
   }
 
   Future<DataTableResponse<PayrollType>> fetchPayrollTypes(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return PayrollTypeClass().finds(server, request).then(
-        (value) => DataTableResponse<PayrollType>(
+
+    return PayrollTypeClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<PayrollType>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void addForm() {
@@ -73,9 +78,12 @@ class _PayrollTypePageState extends State<PayrollTypePage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'New Payroll Type',
-          PayrollTypeFormPage(
-              key: ObjectKey(payrollType), payrollType: payrollType));
+        'New Payroll Type',
+        PayrollTypeFormPage(
+          key: ObjectKey(payrollType),
+          payrollType: payrollType,
+        ),
+      );
     });
   }
 
@@ -83,42 +91,38 @@ class _PayrollTypePageState extends State<PayrollTypePage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Edit Payroll Type ${payrollType.name}',
-          PayrollTypeFormPage(
-              key: ObjectKey(payrollType), payrollType: payrollType));
+        'Edit Payroll Type ${payrollType.name}',
+        PayrollTypeFormPage(
+          key: ObjectKey(payrollType),
+          payrollType: payrollType,
+        ),
+      );
     });
   }
 
   void destroyRecord(PayrollType payrollType) {
     showConfirmDialog(
-        message: 'Apakah anda yakin hapus ${payrollType.name}?',
-        onSubmit: () {
-          server.delete('/payroll_types/${payrollType.id}').then((response) {
-            if (response.statusCode == 200) {
-              flash.showBanner(
-                  messageType: ToastificationType.success,
-                  title: 'Sukses Hapus',
-                  description: 'Sukses Hapus payrollType ${payrollType.name}');
-              refreshTable();
-            }
-          }, onError: (error) {
-            defaultErrorResponse(error: error);
-          });
-        });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+      message: 'Apakah anda yakin hapus ${payrollType.name}?',
+      onSubmit: () {
+        server
+            .delete('/payroll_types/${payrollType.id}')
+            .then(
+              (response) {
+                if (response.statusCode == 200) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses Hapus',
+                    description: 'Sukses Hapus payrollType ${payrollType.name}',
+                  );
+                  refreshTable();
+                }
+              },
+              onError: (error) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
   @override
@@ -142,34 +146,18 @@ class _PayrollTypePageState extends State<PayrollTypePage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
-                    child: SubmenuButton(menuChildren: [
-                      MenuItemButton(
-                        child: const Text('Tambah Tipe Payroll'),
-                        onPressed: () => addForm(),
-                      ),
-                    ], child: const Icon(Icons.table_rows_rounded)),
-                  )
+                    child: SubmenuButton(
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah Tipe Payroll'),
+                          onPressed: () => addForm(),
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -179,17 +167,19 @@ class _PayrollTypePageState extends State<PayrollTypePage>
                 renderAction: (payrollType) => Row(
                   children: [
                     IconButton(
-                        onPressed: () {
-                          editForm(payrollType);
-                        },
-                        tooltip: 'Edit Tipe Payroll',
-                        icon: const Icon(Icons.edit)),
+                      onPressed: () {
+                        editForm(payrollType);
+                      },
+                      tooltip: 'Edit Tipe Payroll',
+                      icon: const Icon(Icons.edit),
+                    ),
                     IconButton(
-                        onPressed: () {
-                          destroyRecord(payrollType);
-                        },
-                        tooltip: 'Hapus Tipe Payroll',
-                        icon: const Icon(Icons.delete)),
+                      onPressed: () {
+                        destroyRecord(payrollType);
+                      },
+                      tooltip: 'Hapus Tipe Payroll',
+                      icon: const Icon(Icons.delete),
+                    ),
                   ],
                 ),
                 onLoaded: (stateManager) => _source = stateManager,

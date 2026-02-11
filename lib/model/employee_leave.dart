@@ -4,7 +4,7 @@ export 'package:fe_pos/model/employee.dart';
 
 export 'package:fe_pos/tool/custom_type.dart';
 
-enum LeaveType {
+enum LeaveType implements EnumTranslation {
   sickLeave,
   annualLeave,
   changeDay,
@@ -42,6 +42,7 @@ enum LeaveType {
     }
   }
 
+  @override
   String humanize() {
     if (this == LeaveType.sickLeave) {
       return 'Cuti Sakit';
@@ -61,37 +62,36 @@ enum LeaveType {
 }
 
 class EmployeeLeave extends Model with SaveNDestroyModel {
-  Date date;
+  Date? date;
   LeaveType leaveType;
   Employee employee;
   String? description;
   Date? changeDate;
   int? changeShift;
 
-  EmployeeLeave(
-      {this.leaveType = LeaveType.annualLeave,
-      Date? date,
-      Employee? employee,
-      super.createdAt,
-      super.updatedAt,
-      this.changeDate,
-      this.changeShift,
-      this.description,
-      super.id})
-      : employee = employee ?? EmployeeClass().initModel(),
-        date = date ?? Date.today();
+  EmployeeLeave({
+    this.leaveType = LeaveType.annualLeave,
+    this.date,
+    Employee? employee,
+    super.createdAt,
+    super.updatedAt,
+    this.changeDate,
+    this.changeShift,
+    this.description,
+    super.id,
+  }) : employee = employee ?? EmployeeClass().initModel();
 
   @override
   Map<String, dynamic> toMap() => {
-        'employee.name': employee.name,
-        'employee_id': employee.id,
-        'employee': employee,
-        'date': date,
-        'description': description,
-        'change_date': changeDate,
-        'change_shift': changeShift,
-        'leave_type': leaveType,
-      };
+    'employee.name': employee.name,
+    'employee_id': employee.id,
+    'employee': employee,
+    'date': date,
+    'description': description,
+    'change_date': changeDate,
+    'change_shift': changeShift,
+    'leave_type': leaveType,
+  };
 
   @override
   String get modelName => 'employee_leave';
@@ -101,7 +101,8 @@ class EmployeeLeave extends Model with SaveNDestroyModel {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];
 
-    employee = EmployeeClass().findRelationData(
+    employee =
+        EmployeeClass().findRelationData(
           included: included,
           relation: json['relationships']['employee'],
         ) ??
@@ -109,7 +110,9 @@ class EmployeeLeave extends Model with SaveNDestroyModel {
 
     id = int.parse(json['id']);
     date = Date.parse(attributes['date']);
-    leaveType = LeaveType.fromString(attributes['leave_type'] ?? '');
+    if (attributes['leave_type'] != null) {
+      leaveType = LeaveType.fromString(attributes['leave_type'] ?? '');
+    }
     employee = employee;
     description = attributes['description'];
     changeDate = Date.tryParse(attributes['change_date'] ?? '');
@@ -118,7 +121,7 @@ class EmployeeLeave extends Model with SaveNDestroyModel {
 
   @override
   String get modelValue =>
-      description ?? "${employee.modelValue} (${date.format()})";
+      description ?? "${employee.modelValue} (${date?.format()})";
 }
 
 class EmployeeLeaveClass extends ModelClass<EmployeeLeave> {

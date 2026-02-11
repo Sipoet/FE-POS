@@ -31,8 +31,10 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
   bool _displaySummary = false;
   final _focusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
-  final _headerStyle =
-      const TextStyle(fontWeight: FontWeight.bold, fontSize: 16);
+  final _headerStyle = const TextStyle(
+    fontWeight: FontWeight.bold,
+    fontSize: 16,
+  );
   @override
   bool get wantKeepAlive => true;
 
@@ -50,125 +52,157 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
 
   void fetchEdcSettlement() {
     showLoadingPopup();
-    server.get('cashier_sessions/${cashierSession.id}/edc_settlements',
-        queryParam: {
-          'include': 'payment_type,payment_provider,cashier_session',
-          'fields[payment_type]': 'name',
-          'fields[payment_provider]': 'name',
-          'page[page]': '1',
-          'page[limit]': '999999',
-        }).then((response) {
-      if (response.statusCode == 200) {
-        final jsonData = response.data['data'];
-        setState(() {
-          edcSettlements = jsonData
-              .map<EdcSettlement>((json) => EdcSettlementClass()
-                  .fromJson(json, included: response.data['included'] ?? []))
-              .toList();
-        });
-      }
-    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => hideLoadingPopup());
+    server
+        .get(
+          'cashier_sessions/${cashierSession.id}/edc_settlements',
+          queryParam: {
+            'include': 'payment_type,payment_provider,cashier_session',
+            'fields[payment_type]': 'name',
+            'fields[payment_provider]': 'name',
+            'page[page]': '1',
+            'page[limit]': '999999',
+          },
+        )
+        .then((response) {
+          if (response.statusCode == 200) {
+            final jsonData = response.data['data'];
+            setState(() {
+              edcSettlements = jsonData
+                  .map<EdcSettlement>(
+                    (json) => EdcSettlementClass().fromJson(
+                      json,
+                      included: response.data['included'] ?? [],
+                    ),
+                  )
+                  .toList();
+            });
+          }
+        }, onError: (error) => defaultErrorResponse(error: error))
+        .whenComplete(() => hideLoadingPopup());
   }
 
   List<TableCell> _headerTable() {
     List<TableCell> header = [
       TableCell(
-          child: Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: Text(
-          setting.columnName('edcSettlement', 'payment_provider_id'),
-          style: _headerStyle,
+        child: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: Text(
+            setting.columnName('edcSettlement', 'payment_provider_id'),
+            style: _headerStyle,
+          ),
         ),
-      )),
+      ),
       TableCell(
-          child: Padding(
-        padding: const EdgeInsets.all(5),
-        child: Text(setting.columnName('edcSettlement', 'payment_type_id'),
-            style: _headerStyle),
-      )),
+        child: Padding(
+          padding: const EdgeInsets.all(5),
+          child: Text(
+            setting.columnName('edcSettlement', 'payment_type_id'),
+            style: _headerStyle,
+          ),
+        ),
+      ),
       TableCell(
-          child: Padding(
-        padding: const EdgeInsets.all(5),
-        child: Text(setting.columnName('edcSettlement', 'amount'),
-            style: _headerStyle),
-      )),
+        child: Padding(
+          padding: const EdgeInsets.all(5),
+          child: Text(
+            setting.columnName('edcSettlement', 'amount'),
+            style: _headerStyle,
+          ),
+        ),
+      ),
       TableCell(
-          child: Padding(
-        padding: const EdgeInsets.all(5),
-        child: Text(setting.columnName('edcSettlement', 'terminal_id'),
-            style: _headerStyle),
-      )),
+        child: Padding(
+          padding: const EdgeInsets.all(5),
+          child: Text(
+            setting.columnName('edcSettlement', 'terminal_id'),
+            style: _headerStyle,
+          ),
+        ),
+      ),
       TableCell(
-          child: Padding(
-        padding: const EdgeInsets.all(5),
-        child: Text(setting.columnName('edcSettlement', 'merchant_id'),
-            style: _headerStyle),
-      )),
+        child: Padding(
+          padding: const EdgeInsets.all(5),
+          child: Text(
+            setting.columnName('edcSettlement', 'merchant_id'),
+            style: _headerStyle,
+          ),
+        ),
+      ),
       TableCell(
-          child: Padding(
-        padding: const EdgeInsets.all(5),
-        child: Text('Action', style: _headerStyle),
-      )),
+        child: Padding(
+          padding: const EdgeInsets.all(5),
+          child: Text('Action', style: _headerStyle),
+        ),
+      ),
     ];
     if (setting.canShow('edcSettlement', 'status')) {
       header.insert(
         header.length - 1,
         TableCell(
-            child: Padding(
-          padding: const EdgeInsets.all(5),
-          child: Text(setting.columnName('edcSettlement', 'status'),
-              style: _headerStyle),
-        )),
+          child: Padding(
+            padding: const EdgeInsets.all(5),
+            child: Text(
+              setting.columnName('edcSettlement', 'status'),
+              style: _headerStyle,
+            ),
+          ),
+        ),
       );
     }
     return header;
   }
 
   TableRow _rowForm(EdcSettlement edcSettlement) {
-    final textController =
-        TextEditingController(text: edcSettlement.merchantId.toString());
+    final textController = TextEditingController(
+      text: edcSettlement.merchantId.toString(),
+    );
     List<TableCell> rows = [
       TableCell(
-          child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: AsyncDropdown<PaymentProvider>(
-          allowClear: false,
-          textOnSearch: (paymentProvider) => paymentProvider.name,
-          selected: edcSettlement.paymentProvider,
-          modelClass: PaymentProviderClass(),
-          request: (
-              {int page = 1,
-              int limit = 20,
-              String searchText = '',
-              required CancelToken cancelToken}) {
-            return server.get('payment_providers',
-                queryParam: {
-                  'page[page]': page.toString(),
-                  'page[limit]': limit.toString(),
-                  'search_text': searchText,
-                  'filter[status][eq]': PaymentProviderStatus.active.toString(),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: AsyncDropdown<PaymentProvider>(
+            allowClear: false,
+            textOnSearch: (paymentProvider) => paymentProvider.name,
+            selected: edcSettlement.paymentProvider,
+            modelClass: PaymentProviderClass(),
+            request:
+                ({
+                  int page = 1,
+                  int limit = 20,
+                  String searchText = '',
+                  required CancelToken cancelToken,
+                }) {
+                  return server.get(
+                    'payment_providers',
+                    queryParam: {
+                      'page[page]': page.toString(),
+                      'page[limit]': limit.toString(),
+                      'search_text': searchText,
+                      'filter[status][eq]': PaymentProviderStatus.active
+                          .toString(),
+                    },
+                    cancelToken: cancelToken,
+                  );
                 },
-                cancelToken: cancelToken);
-          },
-          validator: (value) {
-            if (value == null) {
-              return 'harus diisi';
-            }
-            return null;
-          },
-          onChanged: (paymentProvider) {
-            setState(() {
-              edcSettlement.paymentProvider =
-                  paymentProvider ?? PaymentProvider();
-            });
-          },
+            validator: (value) {
+              if (value == null) {
+                return 'harus diisi';
+              }
+              return null;
+            },
+            onChanged: (paymentProvider) {
+              setState(() {
+                edcSettlement.paymentProvider =
+                    paymentProvider ?? PaymentProvider();
+              });
+            },
+          ),
         ),
-      )),
+      ),
       TableCell(
-          child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: AsyncDropdown<PaymentType>(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: AsyncDropdown<PaymentType>(
             allowClear: false,
             textOnSearch: (paymentType) => paymentType.name,
             selected: edcSettlement.paymentType,
@@ -182,101 +216,116 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
               }
               return null;
             },
-            path: 'payment_types'),
-      )),
-      TableCell(
-          child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: MoneyFormField(
-          initialValue: edcSettlement.amount,
-          onChanged: (value) {
-            edcSettlement.amount = value ?? const Money(0);
-          },
+          ),
         ),
-      )),
+      ),
       TableCell(
-          child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: AsyncDropdown<PaymentProviderEdc>(
-          textOnSearch: (data) => data.terminalId,
-          allowClear: false,
-          selected: PaymentProviderEdc(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: MoneyFormField(
+            initialValue: edcSettlement.amount,
+            onChanged: (value) {
+              edcSettlement.amount = value ?? const Money(0);
+            },
+          ),
+        ),
+      ),
+      TableCell(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: AsyncDropdown<PaymentProviderEdc>(
+            textOnSearch: (data) => data.terminalId,
+            allowClear: false,
+            selected: PaymentProviderEdc(
               terminalId: edcSettlement.terminalId,
-              merchantId: edcSettlement.merchantId),
-          modelClass: PaymentProviderEdcClass(),
-          onChanged: (data) {
-            setState(() {
-              edcSettlement.terminalId = data?.terminalId ?? '';
-              edcSettlement.merchantId = data?.merchantId ?? '';
-              textController.text = edcSettlement.merchantId;
-            });
-          },
-          validator: (value) {
-            if (value == null) {
-              return 'harus diisi';
-            }
-            return null;
-          },
-          request: (
-              {int page = 1,
-              int limit = 20,
-              String searchText = '',
-              required CancelToken cancelToken}) {
-            final paymentProviderId =
-                edcSettlement.paymentProviderId.toString();
-            return server.get('payment_provider_edcs',
-                queryParam: {
-                  'page[page]': page.toString(),
-                  'page[limit]': limit.toString(),
-                  'search_text': searchText,
-                  'filter[payment_provider_id][eq]': paymentProviderId,
+              merchantId: edcSettlement.merchantId,
+            ),
+            modelClass: PaymentProviderEdcClass(),
+            onChanged: (data) {
+              setState(() {
+                edcSettlement.terminalId = data?.terminalId ?? '';
+                edcSettlement.merchantId = data?.merchantId ?? '';
+                textController.text = edcSettlement.merchantId;
+              });
+            },
+            validator: (value) {
+              if (value == null) {
+                return 'harus diisi';
+              }
+              return null;
+            },
+            request:
+                ({
+                  int page = 1,
+                  int limit = 20,
+                  String searchText = '',
+                  required CancelToken cancelToken,
+                }) {
+                  final paymentProviderId = edcSettlement.paymentProviderId
+                      .toString();
+                  return server.get(
+                    'payment_provider_edcs',
+                    queryParam: {
+                      'page[page]': page.toString(),
+                      'page[limit]': limit.toString(),
+                      'search_text': searchText,
+                      'filter[payment_provider_id][eq]': paymentProviderId,
+                    },
+                    cancelToken: cancelToken,
+                  );
                 },
-                cancelToken: cancelToken);
-          },
+          ),
         ),
-      )),
+      ),
       TableCell(
-          child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: TextFormField(
-          decoration: const InputDecoration(border: OutlineInputBorder()),
-          controller: textController,
-          readOnly: true,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextFormField(
+            decoration: const InputDecoration(border: OutlineInputBorder()),
+            controller: textController,
+            readOnly: true,
+          ),
         ),
-      )),
+      ),
       TableCell(
-          child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
                 iconSize: 35,
                 onPressed: () => _removeEdcSettlement(edcSettlement),
-                icon: const Icon(Icons.close))
-          ],
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
         ),
-      )),
+      ),
     ];
     if (setting.canShow('edcSettlement', 'status')) {
       rows.insert(
-          rows.length - 1,
-          TableCell(
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: DropdownMenu<EdcSettlementStatus>(
-                width: 220,
-                initialSelection: edcSettlement.status,
-                onSelected: (value) =>
-                    edcSettlement.status = value ?? edcSettlement.status,
-                dropdownMenuEntries: EdcSettlementStatus.values
-                    .map<DropdownMenuEntry<EdcSettlementStatus>>((status) =>
-                        DropdownMenuEntry<EdcSettlementStatus>(
-                            value: status, label: status.humanize()))
-                    .toList(),
-              ),
+        rows.length - 1,
+        TableCell(
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: DropdownMenu<EdcSettlementStatus>(
+              width: 220,
+              initialSelection: edcSettlement.status,
+              onSelected: (value) =>
+                  edcSettlement.status = value ?? edcSettlement.status,
+              dropdownMenuEntries: EdcSettlementStatus.values
+                  .map<DropdownMenuEntry<EdcSettlementStatus>>(
+                    (status) => DropdownMenuEntry<EdcSettlementStatus>(
+                      value: status,
+                      label: status.humanize(),
+                    ),
+                  )
+                  .toList(),
             ),
-          ));
+          ),
+        ),
+      );
     }
     return TableRow(key: ObjectKey(edcSettlement), children: rows);
   }
@@ -309,31 +358,40 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
         'relationships': {
           'edc_settlements': {
             'data': cashierSession.edcSettlements
-                .map<Map>((edcSettlement) => {
-                      'id': edcSettlement.id,
-                      'type': 'edc_settlement',
-                      'attributes': edcSettlement.toJson()
-                    })
-                .toList()
-          }
-        }
+                .map<Map>(
+                  (edcSettlement) => {
+                    'id': edcSettlement.id,
+                    'type': 'edc_settlement',
+                    'attributes': edcSettlement.toJson(),
+                  },
+                )
+                .toList(),
+          },
+        },
       },
     };
     server
-        .put('cashier_sessions/${cashierSession.id.toString()}',
-            body: bodyParam)
+        .put(
+          'cashier_sessions/${cashierSession.id.toString()}',
+          body: bodyParam,
+        )
         .then((response) {
-      if (response.statusCode == 200) {
-        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
-        fetchEdcSettlement();
-      } else {
-        var data = response.data;
-        flash.showBanner(
-            title: data['message'],
-            description: (data['errors'] ?? []).join('\n'),
-            messageType: ToastificationType.error);
-      }
-    }, onError: (error) {}).whenComplete(() => hideLoadingPopup());
+          if (response.statusCode == 200) {
+            flash.show(
+              const Text('Berhasil disimpan'),
+              ToastificationType.success,
+            );
+            fetchEdcSettlement();
+          } else {
+            var data = response.data;
+            flash.showBanner(
+              title: data['message'],
+              description: (data['errors'] ?? []).join('\n'),
+              messageType: ToastificationType.error,
+            );
+          }
+        }, onError: (error) {})
+        .whenComplete(() => hideLoadingPopup());
   }
 
   List<EdcSummary> edcSummaries = [];
@@ -345,32 +403,38 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
       } else {
         color = const Color.fromARGB(255, 100, 21, 15);
       }
-      return TableRow(children: [
-        TableCell(
-            child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(edcSummary.paymentTypeName),
-        )),
-        if (setting.canShow('edcSettlement', 'diff_amount'))
+      return TableRow(
+        children: [
           TableCell(
-              child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(edcSummary.totalInSystem.format()),
-          )),
-        TableCell(
             child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(edcSummary.totalInInput.format()),
-        )),
-        TableCell(
-            child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            edcSummary.status.humanize(),
-            style: TextStyle(color: color),
+              padding: const EdgeInsets.all(8.0),
+              child: Text(edcSummary.paymentTypeName),
+            ),
           ),
-        )),
-      ]);
+          if (setting.canShow('edcSettlement', 'diff_amount'))
+            TableCell(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(edcSummary.totalInSystem.format()),
+              ),
+            ),
+          TableCell(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(edcSummary.totalInInput.format()),
+            ),
+          ),
+          TableCell(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                edcSummary.status.humanize(),
+                style: TextStyle(color: color),
+              ),
+            ),
+          ),
+        ],
+      );
     }).toList();
   }
 
@@ -378,30 +442,40 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
     edcSummaries = [];
     server
         .get(
-            'cashier_sessions/${widget.cashierSession.id}/edc_settlements/check_edc')
-        .then((response) {
-      if (response.statusCode == 200) {
-        final json = response.data;
-        setState(() {
-          _displaySummary = true;
-          for (final row in json['data']) {
-            final attributes = row['attributes'];
-            edcSummaries.add(EdcSummary(
-                paymentTypeName: attributes['payment_type_name'],
-                status: EdcSummaryStatus.fromString(attributes['status']),
-                totalInSystem: Money.tryParse(attributes['total_in_system']) ??
-                    const Money(0),
-                totalInInput: Money.tryParse(attributes['total_in_input']) ??
-                    const Money(0)));
-          }
-        });
-      }
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-      _displaySummary = false;
-    });
+          'cashier_sessions/${widget.cashierSession.id}/edc_settlements/check_edc',
+        )
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              final json = response.data;
+              setState(() {
+                _displaySummary = true;
+                for (final row in json['data']) {
+                  final attributes = row['attributes'];
+                  edcSummaries.add(
+                    EdcSummary(
+                      paymentTypeName: attributes['payment_type_name'],
+                      status: EdcSummaryStatus.fromString(attributes['status']),
+                      totalInSystem:
+                          Money.tryParse(attributes['total_in_system']) ??
+                          const Money(0),
+                      totalInInput:
+                          Money.tryParse(attributes['total_in_input']) ??
+                          const Money(0),
+                    ),
+                  );
+                }
+              });
+            }
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            _displaySummary = false;
+          },
+        );
   }
 
+  final _scrollController = ScrollController();
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -416,50 +490,66 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Tanggal : ${dateFormat(widget.cashierSession.date)}'),
-              const SizedBox(
-                height: 10,
-              ),
+              const SizedBox(height: 10),
               Form(
                 key: _formKey,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: SizedBox(
-                    child: Table(
-                        border: TableBorder.all(width: 2),
-                        columnWidths: const {
-                          0: FixedColumnWidth(250),
-                          1: FixedColumnWidth(250),
-                          2: FixedColumnWidth(250),
-                          3: FixedColumnWidth(250),
-                          4: FixedColumnWidth(250),
-                          5: FixedColumnWidth(250),
-                          6: FixedColumnWidth(100),
-                        },
-                        children: [
-                              TableRow(
+                child: Scrollbar(
+                  controller: _scrollController,
+                  thumbVisibility: true,
+                  trackVisibility: true,
+                  thickness: 8,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    controller: _scrollController,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: SizedBox(
+                        child: Table(
+                          border: TableBorder.all(width: 2),
+                          columnWidths: const {
+                            0: FixedColumnWidth(250),
+                            1: FixedColumnWidth(250),
+                            2: FixedColumnWidth(250),
+                            3: FixedColumnWidth(250),
+                            4: FixedColumnWidth(250),
+                            5: FixedColumnWidth(250),
+                            6: FixedColumnWidth(100),
+                          },
+                          children:
+                              [
+                                TableRow(
                                   children: _headerTable(),
-                                  decoration: const BoxDecoration()),
-                            ] +
-                            edcSettlements
-                                .where((edcSettlement) =>
-                                    !edcSettlement.isDestroyed)
-                                .map<TableRow>(
-                                    (edcSettlement) => _rowForm(edcSettlement))
-                                .toList()),
+                                  decoration: const BoxDecoration(),
+                                ),
+                              ] +
+                              edcSettlements
+                                  .where(
+                                    (edcSettlement) =>
+                                        !edcSettlement.isDestroyed,
+                                  )
+                                  .map<TableRow>(
+                                    (edcSettlement) => _rowForm(edcSettlement),
+                                  )
+                                  .toList(),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: IconButton.filled(
-                    focusNode: _focusNode,
-                    onPressed: () {
-                      setState(() {
-                        edcSettlements.add(EdcSettlement(
-                            cashierSession: widget.cashierSession));
-                      });
-                    },
-                    icon: const Icon(Icons.add)),
+                  focusNode: _focusNode,
+                  onPressed: () {
+                    setState(() {
+                      edcSettlements.add(
+                        EdcSettlement(cashierSession: widget.cashierSession),
+                      );
+                    });
+                  },
+                  icon: const Icon(Icons.add),
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 10),
@@ -467,20 +557,23 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     ElevatedButton(
-                        onPressed: () {
-                          _submitEdcs();
-                        },
-                        child: const Text('Submit')),
-                    const SizedBox(
-                      width: 25,
+                      onPressed: () {
+                        _submitEdcs();
+                      },
+                      child: const Text('Submit'),
                     ),
+                    const SizedBox(width: 25),
                     Visibility(
-                      visible: setting.isAuthorize('edcSettlement', 'checkEdc'),
+                      visible: setting.isAuthorize(
+                        'edc_settlements',
+                        'checkEdc',
+                      ),
                       child: ElevatedButton(
-                          onPressed: () {
-                            _checkEdc();
-                          },
-                          child: const Text('Cek EDC')),
+                        onPressed: () {
+                          _checkEdc();
+                        },
+                        child: const Text('Cek EDC'),
+                      ),
                     ),
                   ],
                 ),
@@ -488,11 +581,13 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
               Visibility(
                 visible: _displaySummary,
                 child: Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Table(
-                      border: TableBorder.all(),
-                      children: [
-                            TableRow(children: [
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Table(
+                    border: TableBorder.all(),
+                    children:
+                        [
+                          TableRow(
+                            children: [
                               TableCell(
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
@@ -503,7 +598,9 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
                                 ),
                               ),
                               if (setting.canShow(
-                                  'edcSettlement', 'diff_amount'))
+                                'edcSettlement',
+                                'diff_amount',
+                              ))
                                 TableCell(
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
@@ -525,17 +622,16 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
                               TableCell(
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    'Status',
-                                    style: _headerStyle,
-                                  ),
+                                  child: Text('Status', style: _headerStyle),
                                 ),
                               ),
-                            ]),
-                          ] +
-                          _summaryRows(),
-                    )),
-              )
+                            ],
+                          ),
+                        ] +
+                        _summaryRows(),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -544,11 +640,12 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
   }
 }
 
-enum EdcSummaryStatus {
+enum EdcSummaryStatus implements EnumTranslation {
   same,
   lesser,
   greater;
 
+  @override
   String humanize() {
     switch (this) {
       case same:
@@ -579,9 +676,10 @@ class EdcSummary {
   Money totalInSystem;
   Money totalInInput;
   EdcSummaryStatus status;
-  EdcSummary(
-      {required this.paymentTypeName,
-      required this.totalInSystem,
-      required this.totalInInput,
-      required this.status});
+  EdcSummary({
+    required this.paymentTypeName,
+    required this.totalInSystem,
+    required this.totalInInput,
+    required this.status,
+  });
 }

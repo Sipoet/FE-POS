@@ -20,10 +20,10 @@ class CustomerGroupDiscountPage extends StatefulWidget {
 
 class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
   final _menuController = MenuController();
-  String _searchText = '';
+
   final cancelToken = CancelToken();
   late Flash flash;
   List<FilterData> _filters = [];
@@ -55,16 +55,23 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
   }
 
   Future<DataTableResponse<CustomerGroupDiscount>> fetchCustomerGroupDiscounts(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return CustomerGroupDiscountClass().finds(server, request).then(
-        (value) => DataTableResponse<CustomerGroupDiscount>(
+
+    request.includeAdd('customer_group');
+    return CustomerGroupDiscountClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<CustomerGroupDiscount>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void addForm() {
@@ -73,10 +80,12 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Tambah Customer Group Discount',
-          CustomerGroupDiscountFormPage(
-              key: ObjectKey(customerGroupDiscount),
-              customerGroupDiscount: customerGroupDiscount));
+        'Tambah Customer Group Discount',
+        CustomerGroupDiscountFormPage(
+          key: ObjectKey(customerGroupDiscount),
+          customerGroupDiscount: customerGroupDiscount,
+        ),
+      );
     });
   }
 
@@ -84,58 +93,49 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Edit Customer Group Discount ${customerGroupDiscount.id}',
-          CustomerGroupDiscountFormPage(
-              key: ObjectKey(customerGroupDiscount),
-              customerGroupDiscount: customerGroupDiscount));
+        'Edit Customer Group Discount ${customerGroupDiscount.id}',
+        CustomerGroupDiscountFormPage(
+          key: ObjectKey(customerGroupDiscount),
+          customerGroupDiscount: customerGroupDiscount,
+        ),
+      );
     });
   }
 
   void destroyRecord(CustomerGroupDiscount customerGroupDiscount) {
     showConfirmDialog(
-        message: 'Apakah anda yakin hapus ${customerGroupDiscount.id}?',
-        onSubmit: () {
-          server
-              .delete('/customer_group_discounts/${customerGroupDiscount.id}')
-              .then((response) {
-            if (response.statusCode == 200) {
-              flash.showBanner(
-                  messageType: ToastificationType.success,
-                  title: 'Sukses Hapus',
-                  description:
-                      'Sukses Hapus customer Group Discount ${customerGroupDiscount.id}');
-              refreshTable();
-            }
-          }, onError: (error) {
-            defaultErrorResponse(error: error);
-          });
-        });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+      message: 'Apakah anda yakin hapus ${customerGroupDiscount.id}?',
+      onSubmit: () {
+        server
+            .delete('/customer_group_discounts/${customerGroupDiscount.id}')
+            .then(
+              (response) {
+                if (response.statusCode == 200) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses Hapus',
+                    description:
+                        'Sukses Hapus customer Group Discount ${customerGroupDiscount.id}',
+                  );
+                  refreshTable();
+                }
+              },
+              onError: (error) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
   void toggleDiscount() {
-    server.post('/customer_group_discounts/toggle_discount').then(
-      (response) {
-        if (response.statusCode == 200) {
-          flash.show(const Text('Sedang diproses'), ToastificationType.info);
-        } else {
-          flash.show(const Text('Gagal diproses'), ToastificationType.error);
-        }
-      },
-    );
+    server.post('/customer_group_discounts/toggle_discount').then((response) {
+      if (response.statusCode == 200) {
+        flash.show(const Text('Sedang diproses'), ToastificationType.info);
+      } else {
+        flash.show(const Text('Gagal diproses'), ToastificationType.error);
+      }
+    });
   }
 
   @override
@@ -159,47 +159,29 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(
-                        controller: _menuController,
-                        menuChildren: [
-                          MenuItemButton(
-                            child: const Text('Tambah Customer Group Discount'),
-                            onPressed: () {
-                              _menuController.close();
-                              addForm();
-                            },
-                          ),
-                          MenuItemButton(
-                            child: const Text('Toggle Diskon'),
-                            onPressed: () {
-                              _menuController.close();
-                              toggleDiscount();
-                            },
-                          ),
-                        ],
-                        child: const Icon(Icons.table_rows_rounded)),
-                  )
+                      controller: _menuController,
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah Customer Group Discount'),
+                          onPressed: () {
+                            _menuController.close();
+                            addForm();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('Toggle Diskon'),
+                          onPressed: () {
+                            _menuController.close();
+                            toggleDiscount();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -211,17 +193,19 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
                   spacing: 10,
                   children: [
                     IconButton(
-                        onPressed: () {
-                          editForm(customerGroupDiscount);
-                        },
-                        tooltip: 'Edit CustomerGroupDiscount',
-                        icon: const Icon(Icons.edit)),
+                      onPressed: () {
+                        editForm(customerGroupDiscount);
+                      },
+                      tooltip: 'Edit CustomerGroupDiscount',
+                      icon: const Icon(Icons.edit),
+                    ),
                     IconButton(
-                        onPressed: () {
-                          destroyRecord(customerGroupDiscount);
-                        },
-                        tooltip: 'Hapus CustomerGroupDiscount',
-                        icon: const Icon(Icons.delete)),
+                      onPressed: () {
+                        destroyRecord(customerGroupDiscount);
+                      },
+                      tooltip: 'Hapus CustomerGroupDiscount',
+                      icon: const Icon(Icons.delete),
+                    ),
                   ],
                 ),
                 columns: columns,

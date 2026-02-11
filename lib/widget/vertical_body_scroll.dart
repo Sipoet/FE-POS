@@ -9,10 +9,12 @@ class VerticalBodyScroll extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scrollbar(
       thumbVisibility: true,
-      thickness: 10,
+      trackVisibility: true,
+      thickness: 8,
       controller: scrollController,
       child: SingleChildScrollView(
         controller: scrollController,
+        scrollDirection: Axis.vertical,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(5, 10, 25, 10),
           child: child,

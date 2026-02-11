@@ -19,9 +19,9 @@ class PurchasePage extends StatefulWidget {
 
 class _PurchasePageState extends State<PurchasePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController<Purchase> _source;
   late final Server server;
-  String _searchText = '';
+
   List<Purchase> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
@@ -53,35 +53,29 @@ class _PurchasePageState extends State<PurchasePage>
 
   Future<DataTableResponse<Purchase>> fetchPurchases(QueryRequest request) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return PurchaseClass().finds(server, request).then(
-        (value) => DataTableResponse<Purchase>(
-            models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
-  }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+    request.includeAddAll(['purchase_order', 'supplier']);
+    return PurchaseClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<Purchase>(
+            models: value.models,
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void viewRecord(Purchase purchase) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Lihat Pembelian ${purchase.code}',
-          PurchaseFormPage(purchase: purchase));
+      tabManager.addTab(
+        'Lihat Pembelian ${purchase.code}',
+        PurchaseFormPage(purchase: purchase),
+      );
     });
   }
 
@@ -105,27 +99,7 @@ class _PurchasePageState extends State<PurchasePage>
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                ],
+                children: [],
               ),
             ),
             SizedBox(
@@ -135,15 +109,16 @@ class _PurchasePageState extends State<PurchasePage>
                   spacing: 10,
                   children: [
                     IconButton.filled(
-                        onPressed: () {
-                          viewRecord(purchase);
-                        },
-                        icon: const Icon(Icons.search_rounded)),
+                      onPressed: () {
+                        viewRecord(purchase);
+                      },
+                      icon: const Icon(Icons.search_rounded),
+                    ),
                   ],
                 ),
                 onLoaded: (stateManager) {
                   _source = stateManager;
-                  _source.sortDescending(_source.columns[2]);
+                  _source.sortDescending(_source.columns[4]);
                 },
                 columns: columns,
                 fetchData: fetchPurchases,

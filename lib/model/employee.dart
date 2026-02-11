@@ -10,7 +10,7 @@ import 'package:fe_pos/model/work_schedule.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/model/work_schedule.dart';
 
-enum Religion {
+enum Religion implements EnumTranslation {
   buddhism,
   catholic,
   christian,
@@ -60,6 +60,7 @@ enum Religion {
     }
   }
 
+  @override
   String humanize() {
     switch (this) {
       case catholic:
@@ -80,7 +81,7 @@ enum Religion {
   }
 }
 
-enum EmployeeStatus {
+enum EmployeeStatus implements EnumTranslation {
   active,
   inactive;
 
@@ -94,7 +95,7 @@ enum EmployeeStatus {
     return '';
   }
 
-  factory EmployeeStatus.convertFromString(String value) {
+  factory EmployeeStatus.fromString(String value) {
     if (value == 'active') {
       return active;
     } else if (value == 'inactive') {
@@ -103,6 +104,7 @@ enum EmployeeStatus {
     throw '$value is not valid employee status';
   }
 
+  @override
   String humanize() {
     if (this == active) {
       return 'Aktif';
@@ -113,7 +115,7 @@ enum EmployeeStatus {
   }
 }
 
-enum EmployeeMaritalStatus {
+enum EmployeeMaritalStatus implements EnumTranslation {
   single,
   married,
   married1Child,
@@ -136,7 +138,7 @@ enum EmployeeMaritalStatus {
     return '';
   }
 
-  factory EmployeeMaritalStatus.convertFromString(String value) {
+  factory EmployeeMaritalStatus.fromString(String value) {
     if (value == 'single') {
       return single;
     } else if (value == 'married') {
@@ -151,6 +153,7 @@ enum EmployeeMaritalStatus {
     throw '$value is not valid employee marital status';
   }
 
+  @override
   String humanize() {
     if (this == single) {
       return 'single';
@@ -187,43 +190,43 @@ class Employee extends Model {
   Religion religion;
   String? imageCode;
   String code;
-  int shift;
+  int? shift;
   List<WorkSchedule> schedules;
   List<EmployeeDayOff> employeeDayOffs;
   EmployeeMaritalStatus maritalStatus;
   String? userCode;
-  Employee(
-      {super.id,
-      this.code = '',
-      this.name = '',
-      this.userCode,
-      Role? role,
-      this.payroll,
-      this.email,
-      this.religion = Religion.other,
-      this.debt = const Money(0),
-      Date? startWorkingDate,
-      this.endWorkingDate,
-      this.description,
-      this.idNumber,
-      this.contactNumber,
-      this.address,
-      this.bank,
-      this.shift = 1,
-      this.imageCode,
-      this.taxNumber,
-      this.bankAccount,
-      this.bankRegisterName,
-      this.maritalStatus = EmployeeMaritalStatus.single,
-      super.createdAt,
-      super.updatedAt,
-      List<WorkSchedule>? schedules,
-      List<EmployeeDayOff>? employeeDayOffs,
-      this.status = EmployeeStatus.inactive})
-      : schedules = schedules ?? <WorkSchedule>[],
-        startWorkingDate = startWorkingDate ?? Date.today(),
-        role = role ?? Role(),
-        employeeDayOffs = employeeDayOffs ?? <EmployeeDayOff>[];
+  Employee({
+    super.id,
+    this.code = '',
+    this.name = '',
+    this.userCode,
+    Role? role,
+    this.payroll,
+    this.email,
+    this.religion = Religion.other,
+    this.debt = const Money(0),
+    Date? startWorkingDate,
+    this.endWorkingDate,
+    this.description,
+    this.idNumber,
+    this.contactNumber,
+    this.address,
+    this.bank,
+    this.shift,
+    this.imageCode,
+    this.taxNumber,
+    this.bankAccount,
+    this.bankRegisterName,
+    this.maritalStatus = EmployeeMaritalStatus.single,
+    super.createdAt,
+    super.updatedAt,
+    List<WorkSchedule>? schedules,
+    List<EmployeeDayOff>? employeeDayOffs,
+    this.status = EmployeeStatus.inactive,
+  }) : schedules = schedules ?? <WorkSchedule>[],
+       startWorkingDate = startWorkingDate ?? Date.today(),
+       role = role ?? Role(),
+       employeeDayOffs = employeeDayOffs ?? <EmployeeDayOff>[];
 
   @override
   String get modelName => 'employee';
@@ -237,7 +240,8 @@ class Employee extends Model {
       included: included,
       relation: json['relationships']['payroll'],
     );
-    role = RoleClass().findRelationData(
+    role =
+        RoleClass().findRelationData(
           included: included,
           relation: json['relationships']['role'],
         ) ??
@@ -253,14 +257,20 @@ class Employee extends Model {
       included: included,
     );
     id = int.parse(json['id']);
-    code = attributes['code']?.trim();
-    name = attributes['name']?.trim();
-    maritalStatus = EmployeeMaritalStatus.convertFromString(
-        attributes['marital_status'] ??
-            EmployeeMaritalStatus.single.toString());
+    code = attributes['code']?.trim() ?? '';
+    name = attributes['name']?.trim() ?? '';
+    if (attributes['marital_status'] != null) {
+      maritalStatus = EmployeeMaritalStatus.fromString(
+        attributes['marital_status'] ?? EmployeeMaritalStatus.single.toString(),
+      );
+    }
+
     taxNumber = attributes['tax_number'];
     userCode = attributes['user_code'];
-    status = EmployeeStatus.convertFromString(attributes['status'].toString());
+    if (attributes['status'] != null) {
+      status = EmployeeStatus.fromString(attributes['status'].toString());
+    }
+
     startWorkingDate = Date.parse(attributes['start_working_date']);
     endWorkingDate = Date.tryParse(attributes['end_working_date'] ?? '');
     debt = Money.parse(attributes['debt'] ?? 0);
@@ -273,44 +283,49 @@ class Employee extends Model {
     imageCode = attributes['image_code'];
     shift = attributes['shift'];
     bankRegisterName = attributes['bank_register_name'];
-    religion = Religion.fromString(attributes['religion']);
+    if (attributes['religion'] != null) {
+      religion = Religion.fromString(attributes['religion']);
+    }
+
     email = attributes['email'];
   }
 
   @override
   Map<String, dynamic> toMap() => {
-        'code': code.trim(),
-        'name': name,
-        'role': role,
-        'email': email,
-        'payroll': payroll,
-        'role.name': role.name,
-        'role_id': role.id,
-        'status': status,
-        'description': description,
-        'start_working_date': startWorkingDate,
-        'debt': debt,
-        'end_working_date': endWorkingDate,
-        'id_number': idNumber,
-        'contact_number': contactNumber,
-        'address': address,
-        'bank': bank,
-        'image_code': imageCode,
-        'bank_account': bankAccount,
-        'payroll_id': payroll?.id,
-        'shift': shift,
-        'payroll.name': payroll?.name,
-        'marital_status': maritalStatus,
-        'tax_number': taxNumber,
-        'user_code': userCode,
-        'religion': religion,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-        'bank_register_name': bankRegisterName,
-      };
+    'code': code.trim(),
+    'name': name,
+    'role': role,
+    'email': email,
+    'payroll': payroll,
+    'role.name': role.name,
+    'role_id': role.id,
+    'status': status,
+    'description': description,
+    'start_working_date': startWorkingDate,
+    'debt': debt,
+    'end_working_date': endWorkingDate,
+    'id_number': idNumber,
+    'contact_number': contactNumber,
+    'address': address,
+    'bank': bank,
+    'image_code': imageCode,
+    'bank_account': bankAccount,
+    'payroll_id': payroll?.id,
+    'shift': shift,
+    'payroll.name': payroll?.name,
+    'marital_status': maritalStatus,
+    'tax_number': taxNumber,
+    'user_code': userCode,
+    'religion': religion,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+    'bank_register_name': bankRegisterName,
+  };
 
   @override
-  String get modelValue => "$code - $name";
+  String get modelValue => code;
+  @override
+  String get valueDescription => name;
 }
 
 class EmployeeClass extends ModelClass<Employee> {

@@ -4,12 +4,13 @@ import 'package:fe_pos/tool/text_formatter.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:flutter/material.dart';
 
-enum Period {
+enum Period implements EnumTranslation {
   week,
   day,
   month,
   year;
 
+  @override
   String humanize() {
     switch (this) {
       case week:

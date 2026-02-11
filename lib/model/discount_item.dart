@@ -29,6 +29,7 @@ class DiscountItem extends Model {
   Map<String, dynamic> toMap() => {
         'item_code': itemCode,
         'item.kodeitem': itemCode,
+        'is_exclude': isExclude,
       };
 
   @override

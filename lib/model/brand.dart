@@ -7,15 +7,12 @@ class Brand extends Model {
   Brand({this.description = '', this.name = '', super.id});
 
   @override
-  Map<String, dynamic> toMap() => {
-        'description': description,
-        'name': name,
-      };
+  Map<String, dynamic> toMap() => {'description': description, 'name': name};
 
   @override
   String get modelValue => name;
   @override
-  String get modelName => 'brand';
+  String get path => 'ipos/brands';
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {

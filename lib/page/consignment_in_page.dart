@@ -19,9 +19,9 @@ class ConsignmentInPage extends StatefulWidget {
 
 class _ConsignmentInPageState extends State<ConsignmentInPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
-  String _searchText = '';
+
   List<ConsignmentIn> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
@@ -53,37 +53,31 @@ class _ConsignmentInPageState extends State<ConsignmentInPage>
   }
 
   Future<DataTableResponse<ConsignmentIn>> fetchConsignmentIns(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return ConsignmentInClass().finds(server, request).then(
-        (value) => DataTableResponse<ConsignmentIn>(
+    request.includeAddAll(['supplier', 'consignment_in_order']);
+    return ConsignmentInClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<ConsignmentIn>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void viewRecord(ConsignmentIn consignmentIn) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Lihat Konsinyasi Masuk ${consignmentIn.code}',
-          ConsignmentInFormPage(consignmentIn: consignmentIn));
+      tabManager.addTab(
+        'Lihat Konsinyasi Masuk ${consignmentIn.code}',
+        ConsignmentInFormPage(consignmentIn: consignmentIn),
+      );
     });
   }
 
@@ -106,27 +100,7 @@ class _ConsignmentInPageState extends State<ConsignmentInPage>
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                ],
+                children: [],
               ),
             ),
             SizedBox(
@@ -136,10 +110,11 @@ class _ConsignmentInPageState extends State<ConsignmentInPage>
                   spacing: 10,
                   children: [
                     IconButton.filled(
-                        onPressed: () {
-                          viewRecord(consignmentIn);
-                        },
-                        icon: const Icon(Icons.search_rounded)),
+                      onPressed: () {
+                        viewRecord(consignmentIn);
+                      },
+                      icon: const Icon(Icons.search_rounded),
+                    ),
                   ],
                 ),
                 onLoaded: (stateManager) {

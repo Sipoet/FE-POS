@@ -3,7 +3,7 @@ import 'package:fe_pos/model/role.dart';
 export 'package:fe_pos/model/role.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-enum UserStatus {
+enum UserStatus implements EnumTranslation {
   inactive,
   active;
 
@@ -17,7 +17,7 @@ enum UserStatus {
     return '';
   }
 
-  factory UserStatus.convertFromString(String? value) {
+  factory UserStatus.fromString(String? value) {
     if (value == 'active') {
       return active;
     } else if (value == 'inactive') {
@@ -25,7 +25,7 @@ enum UserStatus {
     }
     throw '$value is not valid employee status';
   }
-
+  @override
   String humanize() {
     if (this == active) {
       return 'Aktif';
@@ -42,14 +42,18 @@ class User extends Model {
   String? password;
   String? passwordConfirmation;
   UserStatus status;
+  DateTime? currentSignInAt;
+  DateTime? lastSignInAt;
   Role role;
-  User(
-      {this.username = '',
-      this.email,
-      super.id,
-      Role? role,
-      this.status = UserStatus.inactive})
-      : role = role ?? Role();
+  User({
+    this.username = '',
+    this.email,
+    super.id,
+    this.lastSignInAt,
+    this.currentSignInAt,
+    Role? role,
+    this.status = UserStatus.inactive,
+  }) : role = role ?? Role();
 
   @override
   Map<String, dynamic> toMap() {
@@ -58,7 +62,10 @@ class User extends Model {
       'email': email,
       'role_id': role.id,
       'role.name': role.name,
-      'status': status
+      'role': role,
+      'current_sign_in_at': currentSignInAt,
+      'last_sign_in_at': lastSignInAt,
+      'status': status,
     };
     if (password != null && password!.isNotEmpty) {
       result['password'] = password;
@@ -74,16 +81,18 @@ class User extends Model {
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    Role? role = RoleClass().findRelationData(
-      included: included,
-      relation: json['relationships']['role'],
-    );
+    role =
+        RoleClass().findRelationData(
+          included: included,
+          relation: json['relationships']['role'],
+        ) ??
+        role;
 
     username = attributes['username'] ?? '';
     email = attributes['email'];
-    // model.status =
-    //     UserStatus.convertFromString(attributes['status']?.toString());
-    role = role ?? role;
+    if (attributes['status'] != null) {
+      status = UserStatus.fromString(attributes['status'].toString());
+    }
   }
 
   @override

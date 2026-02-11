@@ -3,7 +3,7 @@ import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/purchase.dart';
 import 'package:fe_pos/model/purchase_order.dart';
 
-enum PurchaseType {
+enum PurchaseType implements EnumTranslation {
   payment,
   returned,
   dp;
@@ -31,6 +31,7 @@ enum PurchaseType {
     throw '$value is not valid purchase type';
   }
 
+  @override
   String humanize() {
     switch (this) {
       case payment:
@@ -61,50 +62,50 @@ class PurchasePaymentHistory extends Model {
 
   Supplier supplier;
   Purchase? purchase;
-  PurchasePaymentHistory(
-      {super.id,
-      this.code = '',
-      Supplier? supplier,
-      String? supplierCode,
-      this.description,
-      Account? paymentAccount,
-      String? paymentAccountCode,
-      this.purchaseCode,
-      this.purchase,
-      this.purchaseOrder,
-      this.purchaseOrderCode,
-      this.grandTotal = const Money(0),
-      this.paymentAmount = const Money(0),
-      this.discountAmount = const Money(0),
-      this.debtLeft = const Money(0),
-      this.debtTotal = const Money(0),
-      this.invoicedAt,
-      DateTime? stockArrivedAt,
-      DateTime? transactionAt})
-      : transactionAt = transactionAt ?? DateTime.now(),
-        stockArrivedAt = stockArrivedAt ?? DateTime.now(),
-        supplier = supplier ?? Supplier(code: supplierCode ?? ''),
-        paymentAccount =
-            paymentAccount ?? Account(code: paymentAccountCode ?? '');
+  PurchasePaymentHistory({
+    super.id,
+    this.code = '',
+    Supplier? supplier,
+    String? supplierCode,
+    this.description,
+    Account? paymentAccount,
+    String? paymentAccountCode,
+    this.purchaseCode,
+    this.purchase,
+    this.purchaseOrder,
+    this.purchaseOrderCode,
+    this.grandTotal = const Money(0),
+    this.paymentAmount = const Money(0),
+    this.discountAmount = const Money(0),
+    this.debtLeft = const Money(0),
+    this.debtTotal = const Money(0),
+    this.invoicedAt,
+    DateTime? stockArrivedAt,
+    DateTime? transactionAt,
+  }) : transactionAt = transactionAt ?? DateTime.now(),
+       stockArrivedAt = stockArrivedAt ?? DateTime.now(),
+       supplier = supplier ?? Supplier(code: supplierCode ?? ''),
+       paymentAccount =
+           paymentAccount ?? Account(code: paymentAccountCode ?? '');
   @override
   Map<String, dynamic> toMap() => {
-        'transaction_at': transactionAt,
-        'invoiced_at': invoicedAt,
-        'stock_arrived_at': stockArrivedAt,
-        'description': description,
-        'payment_account_code': paymentAccountCode,
-        'payment_account': "${paymentAccount.code} - ${paymentAccount.name}",
-        'discount_amount': discountAmount,
-        'grand_total': grandTotal,
-        'payment_amount': paymentAmount,
-        'purchase_code': purchaseCode,
-        'purchase_order_code': purchaseOrderCode,
-        'code': code,
-        'supplier_code': supplierCode,
-        'supplier': "${supplier.code} - ${supplier.name}",
-        'debt_left': debtLeft,
-        'debt_total': debtTotal,
-      };
+    'transaction_at': transactionAt,
+    'invoiced_at': invoicedAt,
+    'stock_arrived_at': stockArrivedAt,
+    'description': description,
+    'payment_account_code': paymentAccountCode,
+    'payment_account': "${paymentAccount.code} - ${paymentAccount.name}",
+    'discount_amount': discountAmount,
+    'grand_total': grandTotal,
+    'payment_amount': paymentAmount,
+    'purchase_code': purchaseCode,
+    'purchase_order_code': purchaseOrderCode,
+    'code': code,
+    'supplier_code': supplierCode,
+    'supplier': "${supplier.code} - ${supplier.name}",
+    'debt_left': debtLeft,
+    'debt_total': debtTotal,
+  };
 
   String get supplierCode => supplier.code;
   String get paymentAccountCode => paymentAccount.code;
@@ -114,12 +115,14 @@ class PurchasePaymentHistory extends Model {
     var attributes = json['attributes'];
 
     if (included.isNotEmpty) {
-      supplier = SupplierClass().findRelationData(
+      supplier =
+          SupplierClass().findRelationData(
             included: included,
             relation: json['relationships']?['supplier'],
           ) ??
           Supplier(code: attributes['supplier_code'] ?? '');
-      paymentAccount = AccountClass().findRelationData(
+      paymentAccount =
+          AccountClass().findRelationData(
             included: included,
             relation: json['relationships']?['payment_account'],
           ) ??

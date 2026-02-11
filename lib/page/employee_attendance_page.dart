@@ -22,9 +22,9 @@ class EmployeeAttendancePage extends StatefulWidget {
 
 class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
     with AutomaticKeepAliveClientMixin, TextFormatter, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
-  String _searchText = '';
+
   List<EmployeeAttendance> employeeAttendances = [];
   final cancelToken = CancelToken();
   late Flash flash;
@@ -57,27 +57,34 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
   }
 
   Future<DataTableResponse<EmployeeAttendance>> fetchEmployeeAttendances(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
-    request.searchText = _searchText;
+
     request.include = ['employee'];
-    return EmployeeAttendanceClass().finds(server, request).then(
-        (value) => DataTableResponse<EmployeeAttendance>(
+    return EmployeeAttendanceClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<EmployeeAttendance>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void massUploadAttendance() {
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Mass Upload Absensi Karyawan',
-          const EmployeeAttendanceMassUploadPage(
-            key: ObjectKey('EmployeeAttendanceMassUploadFormPage'),
-          ));
+        'Mass Upload Absensi Karyawan',
+        const EmployeeAttendanceMassUploadPage(
+          key: ObjectKey('EmployeeAttendanceMassUploadFormPage'),
+        ),
+      );
     });
   }
 
@@ -85,10 +92,11 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Mass Update Overtime Absensi Karyawan',
-          const MassUpdateAllowedOvertimeFormPage(
-            key: ObjectKey('MassUpdateAllowedOvertimeFormPage'),
-          ));
+        'Mass Update Overtime Absensi Karyawan',
+        const MassUpdateAllowedOvertimeFormPage(
+          key: ObjectKey('MassUpdateAllowedOvertimeFormPage'),
+        ),
+      );
     });
   }
 
@@ -96,47 +104,40 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Edit Absensi Karyawan ${employeeAttendance.id}',
-          EmployeeAttendanceFormPage(
-            employeeAttendance: employeeAttendance,
-            key: const ObjectKey('EmployeeAttendanceFormPage'),
-          ));
+        'Edit Absensi Karyawan ${employeeAttendance.id}',
+        EmployeeAttendanceFormPage(
+          employeeAttendance: employeeAttendance,
+          key: const ObjectKey('EmployeeAttendanceFormPage'),
+        ),
+      );
     });
   }
 
   void destroyRecord(EmployeeAttendance employeeAttendance) {
     showConfirmDialog(
-        message:
-            'Apakah anda yakin hapus ${employeeAttendance.employee.name} tanggal ${dateFormat(employeeAttendance.date)}?',
-        onSubmit: () {
-          server.delete('/employee_attendances/${employeeAttendance.id}').then(
+      message:
+          'Apakah anda yakin hapus ${employeeAttendance.employee.name} tanggal ${dateFormat(employeeAttendance.date)}?',
+      onSubmit: () {
+        server
+            .delete('/employee_attendances/${employeeAttendance.id}')
+            .then(
               (response) {
-            if (response.statusCode == 200) {
-              flash.showBanner(
-                  messageType: ToastificationType.success,
-                  title: 'Sukses Hapus',
-                  description:
-                      'Sukses Hapus employee_attendance ${employeeAttendance.employee.name}');
-              refreshTable();
-            }
-          }, onError: (error) {
-            defaultErrorResponse(error: error);
-          });
-        });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+                if (response.statusCode == 200) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses Hapus',
+                    description:
+                        'Sukses Hapus employee_attendance ${employeeAttendance.employee.name}',
+                  );
+                  refreshTable();
+                }
+              },
+              onError: (error) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
   final _menuController = MenuController();
@@ -161,30 +162,15 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(
-                        controller: _menuController,
-                        menuChildren: [
+                      controller: _menuController,
+                      menuChildren: [
+                        if (setting.isAuthorize(
+                          'employee_attendances',
+                          'massUpload',
+                        ))
                           MenuItemButton(
                             child: const Text('Upload Absensi Karyawan'),
                             onPressed: () {
@@ -192,17 +178,23 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
                               massUploadAttendance();
                             },
                           ),
+                        if (setting.isAuthorize(
+                          'employee_attendances',
+                          'massUpdateAllowOvertime',
+                        ))
                           MenuItemButton(
                             child: const Text(
-                                'Mass Update Overtime Absensi Karyawan'),
+                              'Mass Update Overtime Absensi Karyawan',
+                            ),
                             onPressed: () {
                               _menuController.close();
                               massUpdateAttendance();
                             },
                           ),
-                        ],
-                        child: const Icon(Icons.table_rows_rounded)),
-                  )
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -212,18 +204,22 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
                 renderAction: (employeeAttendance) => Row(
                   spacing: 10,
                   children: [
-                    IconButton(
+                    if (setting.isAuthorize('employee_attendances', 'update'))
+                      IconButton(
                         onPressed: () {
                           editRecord(employeeAttendance);
                         },
                         tooltip: 'Edit Absensi Karyawan',
-                        icon: const Icon(Icons.edit)),
-                    IconButton(
+                        icon: const Icon(Icons.edit),
+                      ),
+                    if (setting.isAuthorize('employee_attendances', 'destroy'))
+                      IconButton(
                         onPressed: () {
                           destroyRecord(employeeAttendance);
                         },
                         tooltip: 'Hapus Absensi Karyawan',
-                        icon: const Icon(Icons.delete)),
+                        icon: const Icon(Icons.delete),
+                      ),
                   ],
                 ),
                 onLoaded: (stateManager) {

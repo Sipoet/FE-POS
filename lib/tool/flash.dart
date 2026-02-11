@@ -4,21 +4,32 @@ export 'package:toastification/toastification.dart';
 
 class Flash extends ChangeNotifier {
   Flash();
-  void show(Widget content, ToastificationType messageType) {
+  void show(
+    Widget content,
+    ToastificationType messageType, {
+    Duration? duration,
+  }) {
     hide();
+    if (messageType == .success && duration == null) {
+      duration = const Duration(seconds: 5);
+    }
     toastification.show(
-      autoCloseDuration: const Duration(seconds: 5),
+      autoCloseDuration: duration,
       title: content,
       type: messageType,
     );
   }
 
-  void showBanner(
-      {String title = '',
-      String description = '',
-      required ToastificationType messageType,
-      Duration? duration}) {
+  void showBanner({
+    String title = '',
+    String description = '',
+    required ToastificationType messageType,
+    Duration? duration,
+  }) {
     hide();
+    if (messageType == .success && duration == null) {
+      duration = const Duration(seconds: 5);
+    }
     toastification.show(
       title: Text(
         title,

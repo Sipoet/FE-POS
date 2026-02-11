@@ -21,9 +21,9 @@ class CashierSessionTablePage extends StatefulWidget {
 
 class _CashierSessionTablePageState extends State<CashierSessionTablePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse, TextFormatter {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
-  String _searchText = '';
+
   final cancelToken = CancelToken();
   late Flash flash;
   late final TabManager tabManager;
@@ -56,37 +56,29 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
 
   Future<DataTableResponse<CashierSession>> fetchData(QueryRequest request) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return CashierSessionClass().finds(server, request).then(
-        (value) => DataTableResponse<CashierSession>(
-            models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse<CashierSession>.empty();
-    });
-  }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+    return CashierSessionClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<CashierSession>(
+            models: value.models,
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse<CashierSession>.empty();
+          },
+        );
   }
 
   void openEdcSettlement(cashierSession) {
     tabManager.addTab(
-        "EDC Settlement ${dateFormat(cashierSession.date)}",
-        EdcSettlementFormPage(
-          key: ObjectKey(cashierSession),
-          cashierSession: cashierSession,
-        ));
+      "EDC Settlement ${dateFormat(cashierSession.date)}",
+      EdcSettlementFormPage(
+        key: ObjectKey(cashierSession),
+        cashierSession: cashierSession,
+      ),
+    );
   }
 
   @override
@@ -104,45 +96,26 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
                 refreshTable();
               },
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10, bottom: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+
             SizedBox(
               height: bodyScreenHeight - 150,
               child: CustomAsyncDataTable<CashierSession>(
                 columns: columns,
-                onLoaded: (stateManager) => _source = stateManager,
-                renderAction: (cashierSession) => Row(spacing: 10, children: [
-                  IconButton.filled(
+                onLoaded: (stateManager) {
+                  _source = stateManager;
+                  _source.sortDescending(_source.columns[0]);
+                },
+                renderAction: (cashierSession) => Row(
+                  spacing: 10,
+                  children: [
+                    IconButton.filled(
                       onPressed: () {
                         openEdcSettlement(cashierSession);
                       },
-                      icon: const Icon(Icons.search)),
-                ]),
+                      icon: const Icon(Icons.search),
+                    ),
+                  ],
+                ),
                 fetchData: fetchData,
                 fixedLeftColumns: 1,
               ),

@@ -19,9 +19,9 @@ class ConsignmentInOrderPage extends StatefulWidget {
 
 class _ConsignmentInOrderPageState extends State<ConsignmentInOrderPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
-  String _searchText = '';
+
   List<ConsignmentInOrder> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
@@ -54,38 +54,31 @@ class _ConsignmentInOrderPageState extends State<ConsignmentInOrderPage>
   }
 
   Future<DataTableResponse<ConsignmentInOrder>> fetchData(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return ConsignmentInOrderClass().finds(server, request).then(
-        (value) => DataTableResponse<ConsignmentInOrder>(
+    request.include = ['supplier', 'consignment_in'];
+    return ConsignmentInOrderClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<ConsignmentInOrder>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse<ConsignmentInOrder>.empty();
-    });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse<ConsignmentInOrder>.empty();
+          },
+        );
   }
 
   void viewRecord(ConsignmentInOrder consignmentInOrder) {
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Lihat Pesanan Konsinyasi Masuk ${consignmentInOrder.code}',
-          ConsignmentInOrderFormPage(consignmentInOrder: consignmentInOrder));
+        'Lihat Pesanan Konsinyasi Masuk ${consignmentInOrder.code}',
+        ConsignmentInOrderFormPage(consignmentInOrder: consignmentInOrder),
+      );
     });
   }
 
@@ -109,27 +102,7 @@ class _ConsignmentInOrderPageState extends State<ConsignmentInOrderPage>
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                ],
+                children: [],
               ),
             ),
             SizedBox(
@@ -139,15 +112,16 @@ class _ConsignmentInOrderPageState extends State<ConsignmentInOrderPage>
                   spacing: 10,
                   children: [
                     IconButton.filled(
-                        onPressed: () {
-                          viewRecord(consignmentInOrder);
-                        },
-                        icon: const Icon(Icons.search_rounded)),
+                      onPressed: () {
+                        viewRecord(consignmentInOrder);
+                      },
+                      icon: const Icon(Icons.search_rounded),
+                    ),
                   ],
                 ),
                 onLoaded: (stateManager) {
                   _source = stateManager;
-                  _source.sortDescending(_source.columns[2]);
+                  _source.sortDescending(_source.columns[1]);
                 },
                 columns: columns,
                 fetchData: fetchData,

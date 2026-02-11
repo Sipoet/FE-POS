@@ -23,11 +23,11 @@ class _ItemReportPageState extends State<ItemReportPage>
   late Server server;
   String? _reportType;
   double minimumColumnWidth = 150;
-  TrinaGridStateManager? _source;
+  late final SyncTableController<ItemReport> _source;
   late Flash flash;
   late final List<TableColumn> columns;
-  List<ItemReport> _itemReports = [];
-  List<FilterData> _filters = [];
+  // List<ItemReport> itemReports = [];
+
   @override
   void initState() {
     server = context.read<Server>();
@@ -40,63 +40,57 @@ class _ItemReportPageState extends State<ItemReportPage>
   @override
   bool get wantKeepAlive => true;
 
-  void _displayReport() async {
-    _source?.setShowLoading(true);
-    final sortData = SortData(
-        key: _source?.getSortedColumn?.field ?? 'item_code',
-        isAscending: _source?.getSortedColumn?.sort.isAscending ?? true);
-    _requestReport(page: 1, limit: 2000, sortData: sortData).then((response) {
-      try {
-        if (response.statusCode != 200) {
-          setState(() {
-            _itemReports = [];
-            _source?.setModels(_itemReports);
-          });
-          return;
-        }
-        var data = response.data;
-        final initClass = ItemReportClass();
-        setState(() {
-          _itemReports = data['data'].map<ItemReport>((row) {
-            return initClass.fromJson(row);
-          }).toList();
-          _source?.setModels(_itemReports);
-        });
-      } catch (error, stackTrace) {
-        debugPrint(error.toString());
-        debugPrint(stackTrace.toString());
-      }
-    },
-        onError: ((error, stackTrace) => defaultErrorResponse(
-            error: error))).whenComplete(() => _source?.setShowLoading(false));
+  void _displayReport() {
+    _source.setShowLoading(true);
+
+    _requestReport(page: 1, limit: 2000)
+        .then((response) {
+          try {
+            if (response.statusCode != 200) {
+              setState(() {
+                //   itemReports = [];
+                _source.setModels([]);
+              });
+              return;
+            }
+            var data = response.data;
+            final initClass = ItemReportClass();
+            setState(() {
+              final itemReports = data['data'].map<ItemReport>((row) {
+                return initClass.fromJson(row);
+              }).toList();
+              _source.setModels(itemReports);
+              debugPrint('report page models ${itemReports.length}');
+            });
+          } catch (error, stackTrace) {
+            debugPrint(error.toString());
+            debugPrint(stackTrace.toString());
+          }
+        }, onError: ((error, stackTrace) => defaultErrorResponse(error: error)))
+        .whenComplete(() => _source.setShowLoading(false));
   }
 
-  void _downloadReport() async {
-    flash.show(
-      const Text('Dalam proses.'),
-      ToastificationType.info,
-    );
+  void _downloadReport() {
+    flash.show(const Text('Dalam proses.'), ToastificationType.info);
     _reportType = 'xlsx';
-    _requestReport(limit: null).then(_downloadResponse,
-        onError: ((error, stackTrace) => defaultErrorResponse(error: error)));
+    _requestReport(limit: null).then(
+      _downloadResponse,
+      onError: ((error, stackTrace) => defaultErrorResponse(error: error)),
+    );
   }
 
-  Future _requestReport(
-      {int page = 1, int? limit = 10, SortData? sortData}) async {
-    String orderKey = sortData?.key ?? 'item_code';
-    Map<String, dynamic> param = {
-      'page[page]': page.toString(),
-      'page[limit]': (limit ?? '').toString(),
-      'report_type': _reportType ?? 'json',
-      'include': 'item,supplier,brand,item_type',
-      'sort': '${sortData?.isAscending == false ? '-' : ''}$orderKey',
-    };
-    for (final filterData in _filters) {
-      final entry = filterData.toEntryJson();
-      param[entry.key] = entry.value;
-    }
-    return server.get('item_reports',
-        queryParam: param, type: _reportType ?? 'json');
+  Future _requestReport({int page = 1, int? limit}) {
+    _source.queryRequest.page = page;
+    _source.queryRequest.limit = limit;
+    Map<String, dynamic> param = _source.queryRequest.toQueryParam();
+    param['report_type'] = _reportType ?? 'json';
+    param['page[limit]'] = limit?.toString();
+    debugPrint('request report ${param.toString()}');
+    return server.get(
+      'item_reports',
+      queryParam: param,
+      type: _reportType ?? 'json',
+    );
   }
 
   void _downloadResponse(response) async {
@@ -110,15 +104,22 @@ class _ItemReportPageState extends State<ItemReportPage>
       return;
     }
     filename = filename.substring(
-        filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
+      filename.indexOf('filename="') + 10,
+      filename.indexOf('xlsx";') + 4,
+    );
     var downloader = const FileSaver();
-    downloader.download(filename, response.data, 'xlsx',
-        onSuccess: (String path) {
-      flash.showBanner(
+    downloader.download(
+      filename,
+      response.data,
+      'xlsx',
+      onSuccess: (String path) {
+        flash.showBanner(
           messageType: ToastificationType.success,
           title: 'Sukses download',
-          description: 'sukses disimpan di $path');
-    });
+          description: 'sukses disimpan di $path',
+        );
+      },
+    );
   }
 
   @override
@@ -131,16 +132,17 @@ class _ItemReportPageState extends State<ItemReportPage>
         spacing: 10,
         children: [
           TableFilterForm(
-              showCanopy: false,
-              onSubmit: (filter) {
-                _filters = filter;
-                _displayReport();
-              },
-              onDownload: (filter) {
-                _filters = filter;
-                _downloadReport();
-              },
-              columns: columns),
+            showCanopy: false,
+            onSubmit: (filter) {
+              _source.queryRequest.filters = filter;
+              _displayReport();
+            },
+            onDownload: (filter) {
+              _source.queryRequest.filters = filter;
+              _downloadReport();
+            },
+            columns: columns,
+          ),
           const Divider(),
           SizedBox(
             height: bodyScreenHeight,
@@ -148,8 +150,11 @@ class _ItemReportPageState extends State<ItemReportPage>
               showFilter: false,
               showSummary: true,
               isPaginated: true,
-              rows: _itemReports,
+              // rows: itemReports,
               columns: columns,
+              onQueryChanged: (queryRequest) {
+                _displayReport();
+              },
               onLoaded: (stateManager) => _source = stateManager,
               fixedLeftColumns: 1,
             ),

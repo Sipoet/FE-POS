@@ -36,14 +36,15 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
 
   void fetchItemType() {
     showLoadingPopup();
-    _server.get('item_types/${itemType.id}').then((response) {
-      if (mounted && response.statusCode == 200) {
-        itemType.setFromJson(response.data['data'],
-            included: response.data['included'] ?? []);
-        _nameController.text = itemType.name;
-        _descriptionController.text = itemType.description;
-      }
-    }).whenComplete(() => hideLoadingPopup());
+    itemType
+        .refresh(_server)
+        .then((isSuccess) {
+          if (mounted && isSuccess) {
+            _nameController.text = itemType.name;
+            _descriptionController.text = itemType.description;
+          }
+        })
+        .whenComplete(() => hideLoadingPopup());
   }
 
   @override
@@ -55,20 +56,20 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
             controller: _nameController,
             readOnly: true,
             decoration: InputDecoration(
-                label: Text(_setting.columnName('itemType', 'name')),
-                border: OutlineInputBorder()),
+              label: Text(_setting.columnName('itemType', 'name')),
+              border: OutlineInputBorder(),
+            ),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           TextFormField(
             controller: _descriptionController,
             readOnly: true,
             minLines: 3,
             maxLines: 5,
             decoration: InputDecoration(
-                label: Text(_setting.columnName('itemType', 'description')),
-                border: OutlineInputBorder()),
+              label: Text(_setting.columnName('itemType', 'description')),
+              border: OutlineInputBorder(),
+            ),
           ),
         ],
       ),

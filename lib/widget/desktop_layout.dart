@@ -13,11 +13,12 @@ import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:tabbed_view/tabbed_view.dart';
 
 class DesktopLayout extends StatefulWidget {
-  const DesktopLayout(
-      {super.key,
-      required this.menuTree,
-      required this.host,
-      required this.userName});
+  const DesktopLayout({
+    super.key,
+    required this.menuTree,
+    required this.host,
+    required this.userName,
+  });
 
   final List<Menu> menuTree;
   final String userName;
@@ -38,9 +39,11 @@ class _DesktopLayoutState extends State<DesktopLayout>
   String version = '';
   @override
   void initState() {
-    appVersion().then((appVersion) => setState(() {
-          version = appVersion;
-        }));
+    appVersion().then(
+      (appVersion) => setState(() {
+        version = appVersion;
+      }),
+    );
 
     super.initState();
   }
@@ -62,46 +65,53 @@ class _DesktopLayoutState extends State<DesktopLayout>
             itemBuilder: (BuildContext context) {
               List<PopupMenuEntry> result = [];
               if (!isWeb()) {
-                result.add(PopupMenuItem(
-                  onTap: () => openAboutDialog(version),
-                  child: Text('About'),
-                ));
-                result.add(PopupMenuItem(
-                  onTap: () => checkUpdate(server, isManual: true),
-                  child: Text('Cek Update App'),
-                ));
+                result.add(
+                  PopupMenuItem(
+                    onTap: () => openAboutDialog(version),
+                    child: Text('About'),
+                  ),
+                );
+                result.add(
+                  PopupMenuItem(
+                    onTap: () => checkUpdate(server, isManual: true),
+                    child: Text('Cek Update App'),
+                  ),
+                );
               }
-              result.add(PopupMenuItem(
-                onTap: () {
-                  final server = context.read<Server>();
-                  var user = User(username: server.userName);
-                  tabManager.addTab('Profilku', UserFormPage(user: user));
-                },
-                child: Row(
-                  children: [
-                    Text('Profile'),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Icon(Icons.person_2),
-                  ],
+              result.add(
+                PopupMenuItem(
+                  onTap: () {
+                    final server = context.read<Server>();
+                    var user = User(username: server.userName);
+                    tabManager.addTab(
+                      'Profilku',
+                      UserFormPage(user: user, fromProfile: true),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Text('Profile'),
+                      SizedBox(width: 10),
+                      Icon(Icons.person_2),
+                    ],
+                  ),
                 ),
-              ));
-              result.add(PopupMenuItem(
-                onTap: () {
-                  final server = context.read<Server>();
-                  logout(server);
-                },
-                child: Row(
-                  children: [
-                    Text('Logout'),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Icon(Icons.logout)
-                  ],
+              );
+              result.add(
+                PopupMenuItem(
+                  onTap: () {
+                    final server = context.read<Server>();
+                    logout(server);
+                  },
+                  child: Row(
+                    children: [
+                      Text('Logout'),
+                      SizedBox(width: 10),
+                      Icon(Icons.logout),
+                    ],
+                  ),
                 ),
-              ));
+              );
               return result;
             },
             icon: Icon(Icons.menu),
@@ -111,21 +121,23 @@ class _DesktopLayoutState extends State<DesktopLayout>
       body: Column(
         spacing: 10,
         children: [
-          TopMenuBar(
-            menuTree: widget.menuTree,
-          ),
+          TopMenuBar(menuTree: widget.menuTree),
           Expanded(
             child: ResizableContainer(
               direction: Axis.horizontal,
               divider: ResizableDivider(
-                  thickness: 5, padding: 5, color: Colors.blueGrey.shade300),
+                thickness: 5,
+                padding: 5,
+                color: Colors.blueGrey.shade300,
+              ),
               children: [
                 ResizableChild(minSize: 500, child: tabViewWidget(tabManager)),
                 if (tabManager.safeAreaContent != null)
                   ResizableChild(
-                      minSize: 350,
-                      maxSize: 800,
-                      child: tabManager.safeAreaContent!),
+                    minSize: 350,
+                    maxSize: 800,
+                    child: tabManager.safeAreaContent!,
+                  ),
               ],
             ),
           ),
@@ -135,19 +147,18 @@ class _DesktopLayoutState extends State<DesktopLayout>
   }
 
   Widget tabViewWidget(TabManager tabManager) => Padding(
-        padding: const EdgeInsets.only(top: 10.0),
-        child: TabbedViewTheme(
-          data:
-              TabbedViewThemeData.classic(colorSet: Colors.grey, fontSize: 16),
-          child: TabbedView(
-              onTabSelection: (tabIndex) =>
-                  tabManager.selectedIndex = tabIndex ?? -1,
-              onTabClose: (tabIndex, tabData) {
-                tabManager.goTo(tabIndex - 1);
-              },
-              controller: tabManager.controller),
-        ),
-      );
+    padding: const EdgeInsets.only(top: 10.0),
+    child: TabbedViewTheme(
+      data: TabbedViewThemeData.classic(colorSet: Colors.grey, fontSize: 16),
+      child: TabbedView(
+        onTabSelection: (tabIndex) => tabManager.selectedIndex = tabIndex ?? -1,
+        onTabClose: (tabIndex, tabData) {
+          tabManager.goTo(tabIndex - 1);
+        },
+        controller: tabManager.controller,
+      ),
+    ),
+  );
 }
 
 class TopMenuBar extends StatefulWidget {
@@ -170,9 +181,10 @@ class _TopMenuBarState extends State<TopMenuBar> with PlatformChecker {
   @override
   Widget build(BuildContext context) {
     return PlutoMenuBar(
-        showBackButton: false,
-        mode: isMobile() ? PlutoMenuBarMode.tap : PlutoMenuBarMode.hover,
-        menus: decorateMenus(widget.menuTree));
+      showBackButton: false,
+      mode: isMobile() ? PlutoMenuBarMode.tap : PlutoMenuBarMode.hover,
+      menus: decorateMenus(widget.menuTree),
+    );
   }
 
   List<PlutoMenuItem> decorateMenus(List<Menu> fromMenus) {
@@ -181,21 +193,25 @@ class _TopMenuBarState extends State<TopMenuBar> with PlatformChecker {
       if (menu.isNotAuthorize()) {
         continue;
       } else if (menu.children.isEmpty) {
-        results.add(PlutoMenuItem(
-          icon: menu.icon,
-          onTap: () {
-            setState(() {
-              tabManager.addTab(menu.label, menu.page);
-            });
-          },
-          title: menu.label,
-        ));
+        results.add(
+          PlutoMenuItem(
+            icon: menu.icon,
+            onTap: () {
+              setState(() {
+                tabManager.addTab(menu.tabTitle, menu.page);
+              });
+            },
+            title: menu.label,
+          ),
+        );
       } else {
-        results.add(PlutoMenuItem(
-          icon: menu.icon,
-          children: decorateMenus(menu.children),
-          title: menu.label,
-        ));
+        results.add(
+          PlutoMenuItem(
+            icon: menu.icon,
+            children: decorateMenus(menu.children),
+            title: menu.label,
+          ),
+        );
       }
     }
     return results;

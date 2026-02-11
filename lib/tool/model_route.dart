@@ -7,41 +7,41 @@ class ModelRoute {
   const ModelRoute();
 
   static const Map<String, Widget> _tablePages = {
-    'supplier': SupplierPage(),
-    'item': ItemPage(),
-    'brand': BrandPage(),
-    'item_type': ItemTypePage(),
-    'employee': EmployeePage(),
-    'payroll': PayrollPage(),
-    'payslip': PayslipPage(),
-    'role': RolePage(),
-    'discount': DiscountPage(),
-    'employee_attendance': EmployeeAttendancePage(),
-    'user': UserPage(),
-    'holiday': HolidayPage(),
-    'employee_leave': EmployeeLeavePage(),
-    'payment_provider': PaymentProviderPage(),
-    'payment_type': PaymentTypePage(),
-    'payroll_type': PayrollTypePage(),
+    'Supplier': SupplierPage(),
+    'Item': ItemPage(),
+    'Brand': BrandPage(),
+    'ItemType': ItemTypePage(),
+    'Employee': EmployeePage(),
+    'Payroll': PayrollPage(),
+    'Payslip': PayslipPage(),
+    'Role': RolePage(),
+    'Discount': DiscountPage(),
+    'EmployeeAttendance': EmployeeAttendancePage(),
+    'User': UserPage(),
+    'Holiday': HolidayPage(),
+    'EmployeeLeave': EmployeeLeavePage(),
+    'PaymentProvider': PaymentProviderPage(),
+    'PaymentType': PaymentTypePage(),
+    'PayrollType': PayrollTypePage(),
   };
 
   static const Map<String, Type> _modelList = {
-    'supplier': Supplier,
-    'item': Item,
-    'brand': Brand,
-    'item_type': ItemType,
-    'employee': Employee,
-    'payroll': Payroll,
-    'payslip': Payslip,
-    'role': Role,
-    'discount': Discount,
-    'employee_attendance': EmployeeAttendance,
-    'user': User,
-    'holiday': Holiday,
-    'employee_leave': EmployeeLeave,
-    'payment_provider': PaymentProvider,
-    'payment_type': PaymentType,
-    'payroll_type': PayrollType,
+    'Ipos::Supplier': Supplier,
+    'Ipos::Item': Item,
+    'Ipos::Brand': Brand,
+    'Ipos::ItemType': ItemType,
+    'Employee': Employee,
+    'Payroll': Payroll,
+    'Payslip': Payslip,
+    'Role': Role,
+    'Discount': Discount,
+    'EmployeeAttendance': EmployeeAttendance,
+    'User': User,
+    'Holiday': Holiday,
+    'EmployeeLeave': EmployeeLeave,
+    'PaymentProvider': PaymentProvider,
+    'PaymentType': PaymentType,
+    'PayrollType': PayrollType,
   };
 
   static final Map<String, Widget Function(Model model)> _detailPages = {
@@ -62,18 +62,49 @@ class ModelRoute {
     'Discount': (model) =>
         DiscountFormPage(key: ObjectKey(model), discount: model as Discount),
     'EmployeeAttendance': (model) => EmployeeAttendanceFormPage(
-        key: ObjectKey(model), employeeAttendance: model as EmployeeAttendance),
+      key: ObjectKey(model),
+      employeeAttendance: model as EmployeeAttendance,
+    ),
     'EmployeeLeave': (model) => EmployeeLeaveFormPage(
-        key: ObjectKey(model), employeeLeave: model as EmployeeLeave),
+      key: ObjectKey(model),
+      employeeLeave: model as EmployeeLeave,
+    ),
     'Holiday': (model) =>
         HolidayFormPage(key: ObjectKey(model), holiday: model as Holiday),
     'User': (model) => UserFormPage(key: ObjectKey(model), user: model as User),
     'PaymentType': (model) => PaymentTypeFormPage(
-        key: ObjectKey(model), paymentType: model as PaymentType),
+      key: ObjectKey(model),
+      paymentType: model as PaymentType,
+    ),
     'PaymentProvider': (model) => PaymentProviderFormPage(
-        key: ObjectKey(model), paymentProvider: model as PaymentProvider),
+      key: ObjectKey(model),
+      paymentProvider: model as PaymentProvider,
+    ),
     'PayrollType': (model) => PayrollTypeFormPage(
-        key: ObjectKey(model), payrollType: model as PayrollType),
+      key: ObjectKey(model),
+      payrollType: model as PayrollType,
+    ),
+    'Purchase': (model) =>
+        PurchaseFormPage(key: ObjectKey(model), purchase: model as Purchase),
+    'PurchaseOrder': (model) => PurchaseOrderFormPage(
+      key: ObjectKey(model),
+      purchaseOrder: model as PurchaseOrder,
+    ),
+    'PurchaseReturn': (model) => PurchaseReturnFormPage(
+      key: ObjectKey(model),
+      purchaseReturn: model as PurchaseReturn,
+    ),
+    'Transfer': (model) =>
+        TransferFormPage(key: ObjectKey(model), transfer: model as Transfer),
+    'Sale': (model) => SaleFormPage(key: ObjectKey(model), sale: model as Sale),
+    'ConsignmentIn': (model) => ConsignmentInFormPage(
+      key: ObjectKey(model),
+      consignmentIn: model as ConsignmentIn,
+    ),
+    'ConsignmentInOrder': (model) => ConsignmentInOrderFormPage(
+      key: ObjectKey(model),
+      consignmentInOrder: model as ConsignmentInOrder,
+    ),
   };
 
   Type classOf(String className) {
@@ -84,7 +115,44 @@ class ModelRoute {
     return _tablePages[className]!;
   }
 
-  Widget detailPageOf(Model model) {
-    return _detailPages[model.runtimeType.toString()]!.call(model);
+  Widget? detailPageOf(Model model) {
+    return _detailPages[model.runtimeType.toString()]?.call(model);
   }
+
+  ModelClass modelClassOf(String className) {
+    return _modelClasses[className]!;
+  }
+
+  static final Map<String, ModelClass> _modelClasses = Map.unmodifiable({
+    'Ipos::Item': ItemClass(),
+    'Ipos::Account': AccountClass(),
+    'PayrollType': PayrollTypeClass(),
+    'Ipos::CustomerGroup': CustomerGroupClass(),
+    'Ipos::Supplier': SupplierClass(),
+    'Ipos::Brand': BrandClass(),
+    'Ipos::ItemType': ItemTypeClass(),
+    'Payroll': PayrollClass(),
+    'Payslip': PayslipClass(),
+    'Employee': EmployeeClass(),
+    'EmployeeLeave': EmployeeLeaveClass(),
+    'EmployeeAttendance': EmployeeAttendanceClass(),
+    'Role': RoleClass(),
+    'Discount': DiscountClass(),
+    'Holiday': HolidayClass(),
+    'User': UserClass(),
+    'PaymentProvider': PaymentProviderClass(),
+    'PaymentType': PaymentTypeClass(),
+    'BookEmployeeAttendance': BookEmployeeAttendanceClass(),
+    'BookPayslipLine': BookPayslipLineClass(),
+    'Ipos::Purchase': PurchaseClass(),
+    'Ipos::PurchaseOrder': PurchaseOrderClass(),
+    'Ipos::PurchaseItem': PurchaseItemClass(),
+    'Ipos::PurchaseReturn': PurchaseReturnClass(),
+    'Ipos::Sale': SaleClass(),
+    'Ipos::SaleItem': SaleItemClass(),
+    'Ipos::Transfer': TransferClass(),
+    'Ipos::TransferItem': TransferItemClass(),
+    'Ipos::ConsignmentIn': ConsignmentInClass(),
+    'Ipos::ConsignmentInOrder': ConsignmentInOrderClass(),
+  });
 }

@@ -20,9 +20,9 @@ class TransferItemPage extends StatefulWidget {
 
 class _TransferItemPageState extends State<TransferItemPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
-  String _searchText = '';
+
   List<TransferItem> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
@@ -55,39 +55,33 @@ class _TransferItemPageState extends State<TransferItemPage>
   }
 
   Future<DataTableResponse<TransferItem>> fetchTransferItems(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return TransferItemClass().finds(server, request).then(
-        (value) => DataTableResponse<TransferItem>(
-            models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
-  }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+    return TransferItemClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<TransferItem>(
+            models: value.models,
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void viewRecord(TransferItem transferItem) {
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Lihat Pembelian ${transferItem.transferCode}',
-          TransferFormPage(
-              transfer: Transfer(code: transferItem.transferCode ?? '')));
+        'Lihat Pembelian ${transferItem.transferCode}',
+        TransferFormPage(
+          transfer: Transfer(code: transferItem.transferCode ?? ''),
+        ),
+      );
     });
   }
 
@@ -107,27 +101,8 @@ class _TransferItemPageState extends State<TransferItemPage>
           ),
           Padding(
             padding: const EdgeInsets.only(left: 10, bottom: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _searchText = '';
-                    });
-                    refreshTable();
-                  },
-                  tooltip: 'Reset Table',
-                  icon: const Icon(Icons.refresh),
-                ),
-                SizedBox(
-                  width: 150,
-                  child: TextField(
-                    decoration: const InputDecoration(hintText: 'Search Text'),
-                    onChanged: searchChanged,
-                    onSubmitted: searchChanged,
-                  ),
-                ),
+            child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+
               ],
             ),
           ),
@@ -138,10 +113,11 @@ class _TransferItemPageState extends State<TransferItemPage>
                 spacing: 10,
                 children: [
                   IconButton.filled(
-                      onPressed: () {
-                        viewRecord(transferItem);
-                      },
-                      icon: const Icon(Icons.search_rounded)),
+                    onPressed: () {
+                      viewRecord(transferItem);
+                    },
+                    icon: const Icon(Icons.search_rounded),
+                  ),
                 ],
               ),
               onLoaded: (stateManager) {

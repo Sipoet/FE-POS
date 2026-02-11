@@ -45,14 +45,17 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
 
   void fetchSystemSetting() {
     showLoadingPopup();
-    _server.get('systemSettings/${systemSetting.id}').then((response) {
-      if (mounted && response.statusCode == 200) {
-        systemSetting.setFromJson(
-          response.data['data'],
-          included: response.data['included'] ?? [],
-        );
-      }
-    }).whenComplete(() => hideLoadingPopup());
+    _server
+        .get('system_settings/${systemSetting.id}')
+        .then((response) {
+          if (mounted && response.statusCode == 200) {
+            systemSetting.setFromJson(
+              response.data['data'],
+              included: response.data['included'] ?? [],
+            );
+          }
+        })
+        .whenComplete(() => hideLoadingPopup());
   }
 
   @override
@@ -64,27 +67,27 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
             initialValue: systemSetting.key,
             readOnly: true,
             decoration: InputDecoration(
-                label: Text(_setting.columnName('systemSetting', 'key_name')),
-                border: OutlineInputBorder()),
+              label: Text(_setting.columnName('systemSetting', 'key_name')),
+              border: OutlineInputBorder(),
+            ),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           DropdownMenu<SettingValueType>(
             initialSelection: systemSetting.valueType,
             onSelected: (value) =>
                 systemSetting.valueType = value ?? systemSetting.valueType,
             enabled: systemSetting.isNewRecord,
             dropdownMenuEntries: SettingValueType.values
-                .map<DropdownMenuEntry<SettingValueType>>((value) =>
-                    DropdownMenuEntry<SettingValueType>(
-                        value: value, label: value.humanize()))
+                .map<DropdownMenuEntry<SettingValueType>>(
+                  (value) => DropdownMenuEntry<SettingValueType>(
+                    value: value,
+                    label: value.humanize(),
+                  ),
+                )
                 .toList(),
             label: Text(_setting.columnName('systemSetting', 'value_type')),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           Visibility(
             visible: [
               SettingValueType.string,
@@ -106,8 +109,9 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
                 }
               },
               decoration: InputDecoration(
-                  label: Text(_setting.columnName('systemSetting', 'value')),
-                  border: OutlineInputBorder()),
+                label: Text(_setting.columnName('systemSetting', 'value')),
+                border: OutlineInputBorder(),
+              ),
             ),
           ),
           Visibility(
@@ -127,16 +131,18 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
                   ? systemSetting.value.toDateTime()
                   : null,
               dateType: DateType(),
-              onChanged: (value) => systemSetting.value =
-                  value == null ? null : Date.parsingDateTime(value),
+              onChanged: (value) => systemSetting.value = value == null
+                  ? null
+                  : Date.parsingDateTime(value),
               label: Text(_setting.columnName('systemSetting', 'value')),
             ),
           ),
           Visibility(
             visible: systemSetting.valueType == SettingValueType.datetime,
             child: DateFormField(
-              initialValue:
-                  systemSetting.value is DateTime ? systemSetting.value : null,
+              initialValue: systemSetting.value is DateTime
+                  ? systemSetting.value
+                  : null,
               onChanged: (value) => systemSetting.value = value,
               label: Text(_setting.columnName('systemSetting', 'value')),
             ),
@@ -144,8 +150,9 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
           Visibility(
             visible: systemSetting.valueType == SettingValueType.time,
             child: TimeFormField(
-              initialValue:
-                  systemSetting.value is TimeOfDay ? systemSetting.value : null,
+              initialValue: systemSetting.value is TimeOfDay
+                  ? systemSetting.value
+                  : null,
               onChanged: (value) => systemSetting.value = value,
               label: Text(_setting.columnName('systemSetting', 'value')),
             ),
@@ -161,21 +168,16 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
               title: Text(_setting.columnName('systemSetting', 'value')),
             ),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           AsyncDropdown(
             label: Text("User"),
             allowClear: true,
-            path: 'users',
             selected: systemSetting.user,
             onChanged: (model) => systemSetting.user = model,
             textOnSearch: (record) => record.username,
             modelClass: UserClass(),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           ElevatedButton(onPressed: _submit, child: Text('Submit')),
         ],
       ),
@@ -191,22 +193,23 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
         'id': systemSetting.id,
         'type': 'system_setting',
         'attributes': systemSetting.toJson(),
-      }
+      },
     };
-    server.put('system_settings/${systemSetting.id}', body: params).then(
-        (response) {
-      if (mounted && response.statusCode == 200) {
-        setState(() {
-          systemSetting.setFromJson(
-            response.data['data'],
-            included: response.data['included'] ?? [],
-          );
-        });
-        _flash.show(Text('Sukses simpan'), ToastificationType.success);
-      } else {
-        _flash.show(Text('Gagal simpan'), ToastificationType.error);
-      }
-    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => hideLoadingPopup());
+    server
+        .put('system_settings/${systemSetting.id}', body: params)
+        .then((response) {
+          if (mounted && response.statusCode == 200) {
+            setState(() {
+              systemSetting.setFromJson(
+                response.data['data'],
+                included: response.data['included'] ?? [],
+              );
+            });
+            _flash.show(Text('Sukses simpan'), ToastificationType.success);
+          } else {
+            _flash.show(Text('Gagal simpan'), ToastificationType.error);
+          }
+        }, onError: (error) => defaultErrorResponse(error: error))
+        .whenComplete(() => hideLoadingPopup());
   }
 }

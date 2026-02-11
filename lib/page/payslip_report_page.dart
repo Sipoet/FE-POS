@@ -20,21 +20,24 @@ class PayslipReportPage extends StatefulWidget {
 }
 
 class _PayslipReportPageState extends State<PayslipReportPage>
-    with AutomaticKeepAliveClientMixin, DefaultResponse, LoadingPopup {
+    with
+        AutomaticKeepAliveClientMixin,
+        DefaultResponse,
+        LoadingPopup,
+        ColumnTypeFinder {
   final formKey = GlobalKey<FormState>();
-  TrinaGridStateManager? tableStateManager;
+  SyncTableController<PayslipReport>? tableStateManager;
   List<PayrollType> payrollTypes = [];
   List<TableColumn> tableColumns = [];
   PayslipStatus? _payslipStatus;
   EmployeeStatus? _employeeStatus;
-  DateTimeRange _dateRange = DateTimeRange(
-      start: DateTime.now().copyWith(
-          month: DateTime.now().month - 1,
-          day: 26,
-          hour: 0,
-          minute: 0,
-          second: 0),
-      end: DateTime.now().copyWith(day: 25, hour: 23, minute: 59, second: 59));
+  DateTimeRange<Date> _dateRange = DateTimeRange(
+    start: Date.today()
+        .beginningOfMonth()
+        .subtract(Duration(days: 1))
+        .copyWith(day: 26),
+    end: Date.today().copyWith(day: 25),
+  );
   final cancelToken = CancelToken();
   @override
   bool get wantKeepAlive => true;
@@ -50,33 +53,42 @@ class _PayslipReportPageState extends State<PayslipReportPage>
     showLoadingPopup();
     tableStateManager?.removeAllRows();
     final tabManager = context.read<TabManager>();
-    fetchData('json').then((response) {
-      if (response.statusCode == 200) {
-        final json = response.data;
-        final included = json['included'];
-        setState(() {
-          tableColumns = json['meta']['table_columns'].map<TableColumn>((row) {
-            return TableColumn(
-                clientWidth:
-                    double.parse(row['client_width']?.toString() ?? '200'),
-                type: TableColumnType.fromString(row['type']),
-                inputOptions: row['input_options'],
-                name: row['name'],
-                canFilter: true,
-                canSort: row['can_sort'] ?? false,
-                humanizeName: row['humanize_name']);
-          }).toList();
-          tableStateManager?.setTableColumns(tableColumns,
-              tabManager: tabManager);
-          for (final row in json['data']) {
-            final model =
-                PayslipReportClass().fromJson(row, included: included ?? []);
-            tableStateManager?.appendModel(model);
+    fetchData('json')
+        .then((response) {
+          if (response.statusCode == 200) {
+            final json = response.data;
+            final included = json['included'];
+            setState(() {
+              tableColumns = json['meta']['table_columns'].map<TableColumn>((
+                row,
+              ) {
+                return TableColumn(
+                  clientWidth: double.parse(
+                    row['client_width']?.toString() ?? '200',
+                  ),
+                  type: convertToColumnType(row['type'], row),
+                  inputOptions: row['input_options'],
+                  name: row['name'],
+                  canFilter: true,
+                  canSort: row['can_sort'] ?? false,
+                  humanizeName: row['humanize_name'],
+                );
+              }).toList();
+              tableStateManager?.setTableColumns(
+                tableColumns,
+                tabManager: tabManager,
+              );
+              for (final row in json['data']) {
+                final model = PayslipReportClass().fromJson(
+                  row,
+                  included: included ?? [],
+                );
+                tableStateManager?.appendModel(model);
+              }
+            });
           }
-        });
-      }
-    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => hideLoadingPopup());
+        }, onError: (error) => defaultErrorResponse(error: error))
+        .whenComplete(() => hideLoadingPopup());
   }
 
   @override
@@ -87,16 +99,18 @@ class _PayslipReportPageState extends State<PayslipReportPage>
 
   Future fetchData(String responseType) {
     final server = context.read<Server>();
-    return server.get('payslips/report',
-        queryParam: {
-          'filter[start_date]': _dateRange.start.toIso8601String(),
-          'filter[end_date]': _dateRange.end.toIso8601String(),
-          'filter[employee_ids]': _employeeIds.join(','),
-          'filter[payslip_status]': _payslipStatus?.toString(),
-          'filter[employee_status]': _employeeStatus?.toString(),
-        },
-        cancelToken: cancelToken,
-        responseType: responseType);
+    return server.get(
+      'payslips/report',
+      queryParam: {
+        'filter[start_date]': _dateRange.start.toIso8601String(),
+        'filter[end_date]': _dateRange.end.toIso8601String(),
+        'filter[employee_ids]': _employeeIds.join(','),
+        'filter[payslip_status]': _payslipStatus?.toString(),
+        'filter[employee_status]': _employeeStatus?.toString(),
+      },
+      cancelToken: cancelToken,
+      responseType: responseType,
+    );
   }
 
   void download() {
@@ -105,17 +119,20 @@ class _PayslipReportPageState extends State<PayslipReportPage>
       if (response.statusCode == 200) {
         const fileSaver = FileSaver();
         String filename = (response.headers.value('content-disposition') ?? '');
-        filename = filename.substring(filename.indexOf('filename="') + 10,
-            filename.indexOf('xlsx";') + 4);
+        filename = filename.substring(
+          filename.indexOf('filename="') + 10,
+          filename.indexOf('xlsx";') + 4,
+        );
         fileSaver.download(
           filename,
           response.data,
           'xlsx',
           onSuccess: (path) {
             flash.showBanner(
-                messageType: ToastificationType.success,
-                title: 'Sukses download',
-                description: 'sukses disimpan di $path');
+              messageType: ToastificationType.success,
+              title: 'Sukses download',
+              description: 'sukses disimpan di $path',
+            );
           },
         );
       }
@@ -133,120 +150,115 @@ class _PayslipReportPageState extends State<PayslipReportPage>
           child: Column(
             children: [
               Form(
-                  key: formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 300,
-                        child: DateRangeFormField(
-                          label: const Text(
-                            'Periode',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          rangeType: DateRangeType(),
-                          initialDateRange: _dateRange,
-                          onChanged: (range) =>
-                              _dateRange = range ?? _dateRange,
+                key: formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 300,
+                      child: DateRangeFormField(
+                        label: const Text(
+                          'Periode',
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
+                        rangeType: DateRangeType(),
+                        initialValue: _dateRange,
+                        onChanged: (range) => _dateRange = range ?? _dateRange,
                       ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      SizedBox(
-                        width: 300,
-                        child: DropdownMenu<PayslipStatus>(
-                          label: const Text(
-                            'Status Slip Gaji',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          onSelected: (value) => _payslipStatus = value,
-                          dropdownMenuEntries: PayslipStatus.values
-                              .map<DropdownMenuEntry<PayslipStatus>>((status) =>
-                                  DropdownMenuEntry<PayslipStatus>(
-                                      value: status, label: status.humanize()))
-                              .toList(),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: 300,
+                      child: DropdownMenu<PayslipStatus>(
+                        label: const Text(
+                          'Status Slip Gaji',
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
+                        onSelected: (value) => _payslipStatus = value,
+                        dropdownMenuEntries: PayslipStatus.values
+                            .map<DropdownMenuEntry<PayslipStatus>>(
+                              (status) => DropdownMenuEntry<PayslipStatus>(
+                                value: status,
+                                label: status.humanize(),
+                              ),
+                            )
+                            .toList(),
                       ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      SizedBox(
-                        width: 300,
-                        child: AsyncDropdownMultiple<Employee>(
-                          label: const Text(
-                            'Karyawan',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          textOnSearch: (employee) =>
-                              "${employee.code} - ${employee.name}",
-                          modelClass: EmployeeClass(),
-                          path: 'employees',
-                          attributeKey: 'name',
-                          onChanged: (value) => _employeeIds = value
-                              .map<String>((e) => e.id.toString())
-                              .toList(),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: 300,
+                      child: AsyncDropdownMultiple<Employee>(
+                        label: const Text(
+                          'Karyawan',
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
+                        textOnSearch: (employee) =>
+                            "${employee.code} - ${employee.name}",
+                        modelClass: EmployeeClass(),
+                        attributeKey: 'name',
+                        onChanged: (value) => _employeeIds = value
+                            .map<String>((e) => e.id.toString())
+                            .toList(),
                       ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      SizedBox(
-                        width: 300,
-                        child: DropdownMenu<EmployeeStatus>(
-                          label: const Text(
-                            'Status Karyawan',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          onSelected: (value) => _employeeStatus = value,
-                          dropdownMenuEntries: EmployeeStatus.values
-                              .map<DropdownMenuEntry<EmployeeStatus>>(
-                                  (status) => DropdownMenuEntry<EmployeeStatus>(
-                                      value: status, label: status.humanize()))
-                              .toList(),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: 300,
+                      child: DropdownMenu<EmployeeStatus>(
+                        label: const Text(
+                          'Status Karyawan',
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
+                        onSelected: (value) => _employeeStatus = value,
+                        dropdownMenuEntries: EmployeeStatus.values
+                            .map<DropdownMenuEntry<EmployeeStatus>>(
+                              (status) => DropdownMenuEntry<EmployeeStatus>(
+                                value: status,
+                                label: status.humanize(),
+                              ),
+                            )
+                            .toList(),
                       ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Row(
-                        children: [
-                          ElevatedButton(
-                              onPressed: () {
-                                if (formKey.currentState!.validate()) {
-                                  formKey.currentState!.save();
-                                  search();
-                                }
-                              },
-                              child: const Text('Cari')),
-                          const SizedBox(
-                            width: 10,
-                          ),
-                          ElevatedButton(
-                              onPressed: () {
-                                if (formKey.currentState!.validate()) {
-                                  formKey.currentState!.save();
-                                  download();
-                                }
-                              },
-                              child: const Text('Download')),
-                        ],
-                      )
-                    ],
-                  )),
-              const SizedBox(
-                height: 10,
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            if (formKey.currentState!.validate()) {
+                              formKey.currentState!.save();
+                              search();
+                            }
+                          },
+                          child: const Text('Cari'),
+                        ),
+                        const SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (formKey.currentState!.validate()) {
+                              formKey.currentState!.save();
+                              download();
+                            }
+                          },
+                          child: const Text('Download'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(height: 10),
               const Divider(),
               SizedBox(
                 height: 500,
-                child: SyncDataTable(
+                child: SyncDataTable<PayslipReport>(
                   columns: tableColumns,
                   showSummary: true,
                   showFilter: true,
                   onLoaded: (stateManager) => tableStateManager = stateManager,
                 ),
-              )
+              ),
             ],
           ),
         ),

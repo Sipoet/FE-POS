@@ -19,12 +19,12 @@ class SalesTransactionReportPage extends StatefulWidget {
 
 class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late DateTimeRange range;
+  late DateTimeRange<Date> range;
   late Server server;
   late Flash flash;
   late List<TableColumn> columns;
   List<SalesTransactionReport> salesTransactionReports = [];
-  late final TrinaGridStateManager stateManager;
+  late final SyncTableController stateManager;
 
   @override
   bool get wantKeepAlive => true;
@@ -32,12 +32,10 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
   @override
   void initState() {
     final today = Date.today();
-    var now = DateTime.utc(today.year, today.month, today.day);
-    range = DateTimeRange(
-        start: beginningOfDay(now.copyWith(day: 1)),
-        end: endOfDay(now
-            .copyWith(month: now.month + 1, day: 1)
-            .subtract(const Duration(days: 1))));
+    range = DateTimeRange<Date>(
+      start: today.beginningOfMonth(),
+      end: today.endOfMonth(),
+    );
     flash = Flash();
     server = context.read<Server>();
     final setting = context.read<Setting>();
@@ -53,31 +51,27 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
 
   void _refreshTable(DateTimeRange range) {
     stateManager.setShowLoading(true);
-    server.get('sales/daily_transaction_report', queryParam: {
-      'start_date': range.start.toIso8601String(),
-      'end_date': range.end.toIso8601String(),
-    }).then((response) {
-      if (response.statusCode != 200) return;
-      var data = response.data['data'];
-      setState(() {
-        salesTransactionReports = data
-            .map<SalesTransactionReport>(
-                (line) => SalesTransactionReportClass().fromJson(line))
-            .toList();
-        stateManager.setModels(salesTransactionReports);
-      });
-    },
-        onError: (error, trace) =>
-            defaultErrorResponse(error: error)).whenComplete(
-        () => stateManager.setShowLoading(false));
-  }
-
-  DateTime beginningOfDay(DateTime date) {
-    return date.copyWith(hour: 0, minute: 0, second: 0);
-  }
-
-  DateTime endOfDay(DateTime date) {
-    return date.copyWith(hour: 23, minute: 59, second: 59, millisecond: 999);
+    server
+        .get(
+          'ipos/sales/daily_transaction_report',
+          queryParam: {
+            'start_date': range.start.toIso8601String(),
+            'end_date': range.end.toIso8601String(),
+          },
+        )
+        .then((response) {
+          if (response.statusCode != 200) return;
+          var data = response.data['data'];
+          setState(() {
+            salesTransactionReports = data
+                .map<SalesTransactionReport>(
+                  (line) => SalesTransactionReportClass().fromJson(line),
+                )
+                .toList();
+            stateManager.setModels(salesTransactionReports);
+          });
+        }, onError: (error, trace) => defaultErrorResponse(error: error))
+        .whenComplete(() => stateManager.setShowLoading(false));
   }
 
   @override
@@ -93,12 +87,13 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
         children: [
           SizedBox(
             width: 350,
-            child: DateRangeFormField(
-              initialDateRange: range,
+            child: DateRangeFormField<Date>(
               rangeType: DateRangeType(),
+              initialValue: range,
               onChanged: (newRange) {
-                range = newRange ??
-                    DateTimeRange(start: DateTime.now(), end: DateTime.now());
+                range =
+                    newRange ??
+                    DateTimeRange(start: Date.today(), end: Date.today());
                 _refreshTable(range);
               },
             ),

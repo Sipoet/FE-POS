@@ -21,6 +21,7 @@ class Item extends Model {
   Brand? brand;
   Money cogs;
   String uom;
+<<<<<<< HEAD
   String? description;
   Money sellPrice;
   List<DiscountRule> discountRules;
@@ -43,25 +44,45 @@ class Item extends Model {
         discountRules = discountRules ?? [],
         cogs = cogs ?? const Money(0),
         sellPrice = sellPrice ?? const Money(0);
+=======
+  Item({
+    this.code = '',
+    this.name = '',
+    this.itemTypeName = '',
+    this.brandName,
+    this.supplierCode,
+    this.supplier,
+    this.description,
+    this.brand,
+    this.uom = '',
+    Money? sellPrice,
+    Money? cogs,
+    ItemType? itemType,
+    super.id,
+  }) : itemType = itemType ?? ItemType(name: itemTypeName),
+       cogs = cogs ?? const Money(0),
+       sellPrice = sellPrice ?? const Money(0);
+>>>>>>> e2cb4fb19ebb9fb37c3fcd36c2c782779bfc7a67
 
   @override
-  String get modelName => 'item';
+  String get path => 'ipos/items';
 
   @override
   Map<String, dynamic> toMap() => {
-        'code': code,
-        'name': name,
-        'supplier': supplier,
-        'brand': brand,
-        'item_type': itemType,
-        'supplier_name': supplier?.name,
-        'supplier_code': supplierCode,
-        'brand_name': brandName,
-        'item_type_name': itemTypeName,
-        'sell_price': sellPrice,
-        'cogs': cogs,
-        'uom': uom
-      };
+    'code': code,
+    'name': name,
+    'supplier': supplier,
+    'brand': brand,
+    'item_type': itemType,
+    'supplier_name': supplier?.name,
+    'supplier_code': supplier?.code ?? supplierCode,
+    'brand_name': brand?.name ?? brandName,
+    'item_type_name': itemType.name,
+    'sell_price': sellPrice,
+    'description': description,
+    'cogs': cogs,
+    'uom': uom,
+  };
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -77,14 +98,19 @@ class Item extends Model {
     uom = attributes['uom'] ?? '';
     sellPrice = Money.tryParse(attributes['sell_price']) ?? sellPrice;
     supplier = SupplierClass().findRelationData(
-        relation: json['relationships']['supplier'], included: included);
-    itemType = ItemTypeClass().findRelationData(
+      relation: json['relationships']['supplier'],
+      included: included,
+    );
+    itemType =
+        ItemTypeClass().findRelationData(
           relation: json['relationships']['item_type'],
           included: included,
         ) ??
-        ItemType();
+        ItemType(name: itemTypeName);
     brand = BrandClass().findRelationData(
-        relation: json['relationships']['brand'], included: included);
+      relation: json['relationships']['brand'],
+      included: included,
+    );
   }
 
   Percentage get margin => cogs == Money(0)
@@ -92,7 +118,7 @@ class Item extends Model {
       : Percentage((sellPrice / cogs).value - 1);
 
   @override
-  String get modelValue => "$code - $name";
+  String get valueDescription => name;
 }
 
 class ItemClass extends ModelClass<Item> {

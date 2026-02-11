@@ -97,8 +97,7 @@ class PayslipReport extends Model {
     bank = attributes['bank'];
     bankAccount = attributes['bank_account'];
     bankRegisterName = attributes['bank_register_name'];
-    employeeStatus =
-        EmployeeStatus.convertFromString(attributes['employee_status']);
+    employeeStatus = EmployeeStatus.fromString(attributes['employee_status']);
     payslipStatus = PayslipStatus.fromString(attributes['payslip_status']);
     sickLeave = attributes['sick_leave'];
     knownAbsence = attributes['known_absence'];

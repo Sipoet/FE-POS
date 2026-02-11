@@ -42,7 +42,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final TextEditingController _discount4Controller;
   late final TextEditingController _codeController;
   late final TabController _tabController;
-  TrinaGridStateManager? _source;
+  TableController? _source;
   late final Server server;
   dynamic discount1;
   Percentage? discount2;
@@ -88,7 +88,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     _columns.addAll([
       TableColumn(
         clientWidth: 180,
-        type: TableColumnType.money,
+        type: MoneyTableColumnType(),
         name: 'discount_amount',
         humanizeName: 'Jumlah Diskon',
         getValue: (model) {
@@ -110,7 +110,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       ),
       TableColumn(
         clientWidth: 180,
-        type: TableColumnType.money,
+        type: MoneyTableColumnType(),
         name: 'sell_price_after_discount',
         humanizeName: 'Harga Setelah Diskon',
         getValue: (model) {
@@ -134,7 +134,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       TableColumn(
         clientWidth: 180,
         name: 'profit_after_discount',
-        type: TableColumnType.money,
+        type: MoneyTableColumnType(),
         humanizeName: 'Jumlah Profit Setelah Diskon',
         getValue: (model) {
           if (model is ItemReport) {
@@ -159,7 +159,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       TableColumn(
         clientWidth: 180,
         name: 'profit_margin_after_discount',
-        type: TableColumnType.percentage,
+        type: PercentageTableColumnType(),
         humanizeName: 'Profit Setelah Diskon(%)',
         getValue: (model) {
           if (model is ItemReport) {
@@ -187,12 +187,15 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     ]);
     server = context.read<Server>();
     _codeController = TextEditingController(text: discount.code);
-    _discount2Controller =
-        TextEditingController(text: discount.discount2.toString());
-    _discount3Controller =
-        TextEditingController(text: discount.discount3.toString());
-    _discount4Controller =
-        TextEditingController(text: discount.discount4.toString());
+    _discount2Controller = TextEditingController(
+      text: discount.discount2.toString(),
+    );
+    _discount3Controller = TextEditingController(
+      text: discount.discount3.toString(),
+    );
+    _discount4Controller = TextEditingController(
+      text: discount.discount4.toString(),
+    );
     flash = Flash();
     _focusNode = FocusNode();
     super.initState();
@@ -222,70 +225,100 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     });
 
     if (discount.items.isNotEmpty) {
-      request.filters.add(ComparisonFilterData(
-          key: 'item',
-          value: discount.items.map((line) => line.code).toList().join(',')));
+      request.filters.add(
+        ComparisonFilterData(
+          key: 'item_code',
+          value: discount.items.map((line) => line.code).toList().join(','),
+        ),
+      );
     }
     if (discount.suppliers.isNotEmpty) {
-      request.filters.add(ComparisonFilterData(
-          key: 'supplier',
-          value:
-              discount.suppliers.map((line) => line.code).toList().join(',')));
+      request.filters.add(
+        ComparisonFilterData(
+          key: 'supplier_code',
+          value: discount.suppliers.map((line) => line.code).toList().join(','),
+        ),
+      );
     }
     if (discount.itemTypes.isNotEmpty) {
-      request.filters.add(ComparisonFilterData(
-          key: 'item_type',
-          value:
-              discount.itemTypes.map((line) => line.name).toList().join(',')));
+      request.filters.add(
+        ComparisonFilterData(
+          key: 'item_type_name',
+          value: discount.itemTypes.map((line) => line.name).toList().join(','),
+        ),
+      );
     }
     if (discount.brands.isNotEmpty) {
-      request.filters.add(ComparisonFilterData(
-          key: 'brand',
-          value: discount.brands.map((line) => line.name).toList().join(',')));
+      request.filters.add(
+        ComparisonFilterData(
+          key: 'brand_name',
+          value: discount.brands.map((line) => line.name).toList().join(','),
+        ),
+      );
     }
     if (discount.blacklistItems.isNotEmpty) {
-      request.filters.add(ComparisonFilterData(
-          key: 'item',
+      request.filters.add(
+        ComparisonFilterData(
+          key: 'item_code',
           operator: QueryOperator.not,
           value: discount.blacklistItems
               .map((line) => line.code)
               .toList()
-              .join(',')));
+              .join(','),
+        ),
+      );
     }
     if (discount.blacklistSuppliers.isNotEmpty) {
-      request.filters.add(ComparisonFilterData(
-          key: 'supplier',
+      request.filters.add(
+        ComparisonFilterData(
+          key: 'supplier_code',
           operator: QueryOperator.not,
           value: discount.blacklistSuppliers
               .map((line) => line.code)
               .toList()
-              .join(',')));
+              .join(','),
+        ),
+      );
     }
     if (discount.blacklistItemTypes.isNotEmpty) {
-      request.filters.add(ComparisonFilterData(
-          key: 'item_type',
+      request.filters.add(
+        ComparisonFilterData(
+          key: 'item_type_name',
           operator: QueryOperator.not,
           value: discount.blacklistItemTypes
               .map((line) => line.name)
               .toList()
-              .join(',')));
+              .join(','),
+        ),
+      );
     }
     if (discount.blacklistBrands.isNotEmpty) {
-      request.filters.add(ComparisonFilterData(
-          key: 'brand',
+      request.filters.add(
+        ComparisonFilterData(
+          key: 'brand_name',
           operator: QueryOperator.not,
           value: discount.blacklistItemTypes
               .map((line) => line.name)
               .toList()
-              .join(',')));
+              .join(','),
+        ),
+      );
     }
-    return ItemReportClass().finds(server, request).then((response) {
-      return DataTableResponse<ItemReport>(
-          models: response.models, totalPage: response.metadata['total_pages']);
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse<ItemReport>();
-    }).whenComplete(() => _source?.setShowLoading(false));
+    return ItemReportClass()
+        .finds(server, request)
+        .then(
+          (response) {
+            return DataTableResponse<ItemReport>(
+              models: response.models,
+              totalPage: response.metadata['total_pages'],
+            );
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse<ItemReport>();
+          },
+        )
+        .whenComplete(() => _source?.setShowLoading(false));
   }
 
   void refreshTable() {
@@ -323,20 +356,25 @@ class _DiscountFormPageState extends State<DiscountFormPage>
 
   void fetchDiscount() {
     showLoadingPopup();
-    server.get('/discounts/${discount.id}', queryParam: {
-      'include':
-          'discount_items,discount_suppliers,discount_item_types,discount_brands,discount_brands.brand,discount_item_types.item_type,discount_suppliers.supplier,discount_items.item,customer_group'
-    }).then((response) {
-      if (response.statusCode == 200) {
-        var json = response.data['data'];
-        setState(() {
-          discount.setFromJson(json, included: response.data['included']);
-          _codeController.text = discount.code;
-        });
-        _focusNode.requestFocus();
-      }
-    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => hideLoadingPopup());
+    server
+        .get(
+          '/discounts/${discount.id}',
+          queryParam: {
+            'include':
+                'discount_items,discount_suppliers,discount_item_types,discount_brands,discount_brands.brand,discount_item_types.item_type,discount_suppliers.supplier,discount_items.item,customer_group',
+          },
+        )
+        .then((response) {
+          if (response.statusCode == 200) {
+            var json = response.data['data'];
+            setState(() {
+              discount.setFromJson(json, included: response.data['included']);
+              _codeController.text = discount.code;
+            });
+            _focusNode.requestFocus();
+          }
+        }, onError: (error) => defaultErrorResponse(error: error))
+        .whenComplete(() => hideLoadingPopup());
   }
 
   void _submit() async {
@@ -348,42 +386,50 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         'relationships': {
           'discount_items': {
             'data': discount.discountItems
-                .map<Map>((discountItem) => {
-                      'id': discountItem.id,
-                      'type': 'discount_item',
-                      'attributes': discountItem.toJson(),
-                    })
+                .map<Map>(
+                  (discountItem) => {
+                    'id': discountItem.id,
+                    'type': 'discount_item',
+                    'attributes': discountItem.toJson(),
+                  },
+                )
                 .toList(),
           },
           'discount_item_types': {
             'data': discount.discountItemTypes
-                .map<Map>((discountItemType) => {
-                      'id': discountItemType.id,
-                      'type': 'discount_item_type',
-                      'attributes': discountItemType.toJson(),
-                    })
+                .map<Map>(
+                  (discountItemType) => {
+                    'id': discountItemType.id,
+                    'type': 'discount_item_type',
+                    'attributes': discountItemType.toJson(),
+                  },
+                )
                 .toList(),
           },
           'discount_suppliers': {
             'data': discount.discountSuppliers
-                .map<Map>((discountSupplier) => {
-                      'id': discountSupplier.id,
-                      'type': 'discount_supplier',
-                      'attributes': discountSupplier.toJson(),
-                    })
+                .map<Map>(
+                  (discountSupplier) => {
+                    'id': discountSupplier.id,
+                    'type': 'discount_supplier',
+                    'attributes': discountSupplier.toJson(),
+                  },
+                )
                 .toList(),
           },
           'discount_brands': {
             'data': discount.discountBrands
-                .map<Map>((discountBrand) => {
-                      'id': discountBrand.id,
-                      'type': 'discount_brand',
-                      'attributes': discountBrand.toJson(),
-                    })
+                .map<Map>(
+                  (discountBrand) => {
+                    'id': discountBrand.id,
+                    'type': 'discount_brand',
+                    'attributes': discountBrand.toJson(),
+                  },
+                )
                 .toList(),
-          }
-        }
-      }
+          },
+        },
+      },
     };
     Future request;
     if (discount.id == null) {
@@ -392,62 +438,84 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       request = server.put('discounts/${discount.id}', body: body);
     }
     showLoadingPopup();
-    request.then((response) {
-      if ([200, 201].contains(response.statusCode)) {
-        var data = response.data['data'];
-        if (discount.id == null) {
-          setState(() {
-            discount.id = int.tryParse(data['id']);
-            discount.code = data['attributes']['code'];
-            final tabManager = context.read<TabManager>();
-            tabManager.changeTabHeader(
-                widget, 'Edit discount ${discount.code}');
-          });
-        }
+    request
+        .then(
+          (response) {
+            if ([200, 201].contains(response.statusCode)) {
+              var data = response.data['data'];
+              if (discount.id == null) {
+                setState(() {
+                  discount.id = int.tryParse(data['id']);
+                  discount.code = data['attributes']['code'];
+                  final tabManager = context.read<TabManager>();
+                  tabManager.changeTabHeader(
+                    widget,
+                    'Edit discount ${discount.code}',
+                  );
+                });
+              }
 
-        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
-      } else if (response.statusCode == 409) {
-        var data = response.data;
-        flash.showBanner(
-            title: data['message'],
-            description: data['errors'].join('\n'),
-            messageType: ToastificationType.error);
-      }
-    }, onError: (error, stackTrace) {
-      defaultErrorResponse(error: error);
-    }).whenComplete(() => hideLoadingPopup());
+              flash.show(
+                const Text('Berhasil disimpan'),
+                ToastificationType.success,
+              );
+            } else if (response.statusCode == 409) {
+              var data = response.data;
+              flash.showBanner(
+                title: data['message'],
+                description: data['errors'].join('\n'),
+                messageType: ToastificationType.error,
+              );
+            }
+          },
+          onError: (error, stackTrace) {
+            defaultErrorResponse(error: error);
+          },
+        )
+        .whenComplete(() => hideLoadingPopup());
   }
 
   void downloadDiscountItems() {
     showLoadingPopup();
-    server.get('discounts/${discount.id}/download_items', type: 'xlsx').then(
-        (response) async {
-      if (response.statusCode != 200) {
-        flash.showBanner(
-            title: 'Gagal Download',
-            description: 'Gagal Download discount item ${discount.code}',
-            messageType: ToastificationType.error);
-      }
-      String filename = response.headers.value('content-disposition') ?? '';
-      if (filename.isEmpty) {
-        return;
-      }
-      filename = filename.substring(
-          filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
-      var downloader = const FileSaver();
-      downloader.download(filename, response.data, 'xlsx',
-          onSuccess: (String path) {
-        flash.showBanner(
-            messageType: ToastificationType.success,
-            title: 'Sukses download',
-            description: 'sukses disimpan di $path');
-      });
-    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => hideLoadingPopup());
+    server
+        .get('discounts/${discount.id}/download_items', type: 'xlsx')
+        .then((response) async {
+          if (response.statusCode != 200) {
+            flash.showBanner(
+              title: 'Gagal Download',
+              description: 'Gagal Download discount item ${discount.code}',
+              messageType: ToastificationType.error,
+            );
+          }
+          String filename = response.headers.value('content-disposition') ?? '';
+          if (filename.isEmpty) {
+            return;
+          }
+          filename = filename.substring(
+            filename.indexOf('filename="') + 10,
+            filename.indexOf('xlsx";') + 4,
+          );
+          var downloader = const FileSaver();
+          downloader.download(
+            filename,
+            response.data,
+            'xlsx',
+            onSuccess: (String path) {
+              flash.showBanner(
+                messageType: ToastificationType.success,
+                title: 'Sukses download',
+                description: 'sukses disimpan di $path',
+              );
+            },
+          );
+        }, onError: (error) => defaultErrorResponse(error: error))
+        .whenComplete(() => hideLoadingPopup());
   }
 
-  static const labelStyle =
-      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+  static const labelStyle = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+  );
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -473,17 +541,17 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       child: Row(
                         children: [
                           ElevatedButton.icon(
-                              onPressed: () =>
-                                  fetchHistoryByRecord('Discount', discount.id),
-                              label: const Text('Riwayat'),
-                              icon: const Icon(Icons.history)),
-                          const SizedBox(
-                            width: 10,
+                            onPressed: () =>
+                                fetchHistoryByRecord('Discount', discount.id),
+                            label: const Text('Riwayat'),
+                            icon: const Icon(Icons.history),
                           ),
+                          const SizedBox(width: 10),
                           ElevatedButton.icon(
-                              onPressed: () => downloadDiscountItems(),
-                              label: const Text('Download'),
-                              icon: const Icon(Icons.download_rounded)),
+                            onPressed: () => downloadDiscountItems(),
+                            label: const Text('Download'),
+                            icon: const Icon(Icons.download_rounded),
+                          ),
                         ],
                       ),
                     ),
@@ -507,10 +575,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       child: NumberFormField<int>(
                         hintText:
                             'level paling tinggi yang akan dipakai jika antar aturan diskon konflik',
-                        label: const Text(
-                          'Level Diskon',
-                          style: labelStyle,
-                        ),
+                        label: const Text('Level Diskon', style: labelStyle),
                         validator: (value) {
                           if (value == null) {
                             return 'tidak valid';
@@ -523,683 +588,679 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                         initialValue: discount.weight,
                       ),
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
+                    const SizedBox(height: 10),
                   ],
                 ),
               ),
               TabBar(
-                  controller: _tabController,
-                  onTap: (idx) {
-                    if (idx == 2 && _tabController.indexIsChanging) {
-                      refreshTable();
-                    }
-                  },
-                  tabs: const [
-                    Tab(
-                      child: Text('Filter Diskon'),
-                    ),
-                    Tab(
-                      child: Text('Periode Aktif diskon'),
-                    ),
-                    Tab(
-                      child: Text('Kalkulasi Diskon'),
-                    ),
-                  ]),
-              const SizedBox(
-                height: 10,
+                controller: _tabController,
+                onTap: (idx) {
+                  if (idx == 2 && _tabController.indexIsChanging) {
+                    refreshTable();
+                  }
+                },
+                tabs: const [
+                  Tab(child: Text('Filter Diskon')),
+                  Tab(child: Text('Periode Aktif diskon')),
+                  Tab(child: Text('Kalkulasi Diskon')),
+                ],
               ),
+              const SizedBox(height: 10),
+              const SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.only(left: 20, right: 20),
                 child: SizedBox(
                   height: 950,
                   child: TabBarView(
-                      controller: _tabController,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  width: 400,
-                                  child: AsyncDropdownMultiple<ItemType>(
-                                    selecteds: discount.itemTypes,
-                                    key: const ValueKey('itemTypeSelect'),
-                                    path: '/item_types',
-                                    attributeKey: 'jenis',
-                                    label: const Text(
-                                      'Jenis/Departemen :',
-                                      style: labelStyle,
-                                    ),
-                                    textOnSelected: (itemType) => itemType.name,
-                                    textOnSearch: (itemType) =>
-                                        '${itemType.name} - ${itemType.description}',
-                                    modelClass: ItemTypeClass(),
-                                    onChanged: (option) {
-                                      discount.itemTypes = option;
-                                    },
-                                    validator: (value) {
-                                      if (discount.items.isEmpty &&
-                                          discount.itemTypes.isEmpty &&
-                                          discount.brands.isEmpty &&
-                                          discount.suppliers.isEmpty) {
-                                        return 'salah satu filter harus diisi';
-                                      }
-                                      return null;
-                                    },
+                    controller: _tabController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                width: 400,
+                                child: AsyncDropdownMultiple<ItemType>(
+                                  selecteds: discount.itemTypes,
+                                  key: const ValueKey('itemTypeSelect'),
+                                  attributeKey: 'jenis',
+                                  label: const Text(
+                                    'Jenis/Departemen :',
+                                    style: labelStyle,
                                   ),
-                                ),
-                                const SizedBox(height: 10),
-                                SizedBox(
-                                  width: 400,
-                                  child: AsyncDropdownMultiple<Supplier>(
-                                    key: const ValueKey('supplierSelect'),
-                                    selecteds: discount.suppliers,
-                                    path: '/suppliers',
-                                    attributeKey: 'kode',
-                                    textOnSelected: (supplier) => supplier.code,
-                                    textOnSearch: (supplier) =>
-                                        '${supplier.code} - ${supplier.name}',
-                                    modelClass: SupplierClass(),
-                                    label: const Text(
-                                      'Supplier:',
-                                      style: labelStyle,
-                                    ),
-                                    onChanged: (option) {
-                                      discount.suppliers = option;
-                                    },
-                                    validator: (value) {
-                                      if (discount.items.isEmpty &&
-                                          discount.itemTypes.isEmpty &&
-                                          discount.brands.isEmpty &&
-                                          discount.suppliers.isEmpty) {
-                                        return 'salah satu filter harus diisi';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                SizedBox(
-                                  width: 400,
-                                  child: AsyncDropdownMultiple<Brand>(
-                                    key: const ValueKey('brandSelect'),
-                                    selecteds: discount.brands,
-                                    path: '/brands',
-                                    attributeKey: 'merek',
-                                    textOnSearch: (brand) => brand.name,
-                                    modelClass: BrandClass(),
-                                    label: const Text(
-                                      'Merek:',
-                                      style: labelStyle,
-                                    ),
-                                    onChanged: (option) {
-                                      discount.brands = option;
-                                    },
-                                    validator: (value) {
-                                      if (discount.items.isEmpty &&
-                                          discount.itemTypes.isEmpty &&
-                                          discount.brands.isEmpty &&
-                                          discount.suppliers.isEmpty) {
-                                        return 'salah satu filter harus diisi';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                SizedBox(
-                                  width: 400,
-                                  child: AsyncDropdownMultiple<Item>(
-                                    key: const ValueKey('itemSelect'),
-                                    selecteds: discount.items,
-                                    path: '/items',
-                                    attributeKey: 'namaitem',
-                                    textOnSelected: (item) => item.code,
-                                    textOnSearch: (item) =>
-                                        "${item.code} - ${item.name}",
-                                    modelClass: ItemClass(),
-                                    label: const Text(
-                                      'Item:',
-                                      style: labelStyle,
-                                    ),
-                                    onChanged: (option) {
-                                      discount.items = option;
-                                    },
-                                    validator: (value) {
-                                      if (discount.items.isEmpty &&
-                                          discount.itemTypes.isEmpty &&
-                                          discount.brands.isEmpty &&
-                                          discount.suppliers.isEmpty) {
-                                        return 'salah satu filter harus diisi';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                SizedBox(
-                                  width: 400,
-                                  child: AsyncDropdownMultiple<ItemType>(
-                                    key: const ValueKey(
-                                        'blacklistItemTypeSelect'),
-                                    selecteds: discount.blacklistItemTypes,
-                                    path: '/item_types',
-                                    attributeKey: 'jenis',
-                                    textOnSelected: (itemType) => itemType.name,
-                                    textOnSearch: (itemType) =>
-                                        '${itemType.name} - ${itemType.description}',
-                                    modelClass: ItemTypeClass(),
-                                    label: const Text(
-                                      'Blacklist Jenis/Departemen :',
-                                      style: labelStyle,
-                                    ),
-                                    onChanged: (option) {
-                                      discount.blacklistItemTypes = option;
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                SizedBox(
-                                  width: 400,
-                                  child: AsyncDropdownMultiple<Supplier>(
-                                    key: const ValueKey(
-                                        'blacklistSupplierSelect'),
-                                    selecteds: discount.blacklistSuppliers,
-                                    path: '/suppliers',
-                                    attributeKey: 'kode',
-                                    textOnSelected: (supplier) => supplier.code,
-                                    textOnSearch: (supplier) =>
-                                        '${supplier.code} - ${supplier.name}',
-                                    modelClass: SupplierClass(),
-                                    label: const Text(
-                                      'Blacklist Supplier:',
-                                      style: labelStyle,
-                                    ),
-                                    onChanged: (option) {
-                                      discount.blacklistSuppliers = option;
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                SizedBox(
-                                  width: 400,
-                                  child: AsyncDropdownMultiple<Brand>(
-                                    key: const ValueKey('blacklistBrandSelect'),
-                                    selecteds: discount.blacklistBrands,
-                                    path: '/brands',
-                                    attributeKey: 'merek',
-                                    textOnSearch: (brand) => brand.name,
-                                    modelClass: BrandClass(),
-                                    label: const Text(
-                                      'Blacklist Merek:',
-                                      style: labelStyle,
-                                    ),
-                                    onChanged: (option) {
-                                      discount.blacklistBrands = option;
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                SizedBox(
-                                  width: 400,
-                                  child: AsyncDropdownMultiple<Item>(
-                                    key: const ValueKey('blacklistItemSelect'),
-                                    selecteds: discount.blacklistItems,
-                                    path: '/items',
-                                    attributeKey: 'namaitem',
-                                    textOnSelected: (item) => item.code,
-                                    textOnSearch: (item) =>
-                                        "${item.code} - ${item.name}",
-                                    modelClass: ItemClass(),
-                                    label: const Text(
-                                      'Blacklist Item:',
-                                      style: labelStyle,
-                                    ),
-                                    onChanged: (option) {
-                                      discount.blacklistItems = option;
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                SizedBox(
-                                  width: 400,
-                                  child: AsyncDropdown<CustomerGroup>(
-                                    key: const ValueKey('customerGroupCode'),
-                                    selected: discount.customerGroup,
-                                    path: '/customer_groups',
-                                    attributeKey: 'grup',
-                                    textOnSelected: (customerGroup) =>
-                                        customerGroup.code,
-                                    textOnSearch: (customerGroup) =>
-                                        "${customerGroup.code} - ${customerGroup.name}",
-                                    modelClass: CustomerGroupClass(),
-                                    label: const Text(
-                                      'Grup Pelanggan:',
-                                      style: labelStyle,
-                                    ),
-                                    onChanged: (option) {
-                                      discount.customerGroup = option;
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Flexible(
-                                  child: SizedBox(
-                                    width: 400,
-                                    child: DateRangeFormField(
-                                      initialDateRange: DateTimeRange(
-                                          start: discount.startTime,
-                                          end: discount.endTime),
-                                      label: const Text(
-                                        'Tanggal Aktif',
-                                        style: labelStyle,
-                                      ),
-                                      icon: const Icon(
-                                          Icons.calendar_today_outlined),
-                                      onChanged: ((DateTimeRange? range) {
-                                        if (range == null) {
-                                          return;
-                                        }
-                                        discount.startTime = range.start;
-                                        discount.endTime = range.end;
-                                      }),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                const Text(
-                                  'Aturan Aktif Diskon',
-                                  style: labelStyle,
-                                ),
-                                RadioGroup(
-                                  groupValue: discount.discountType,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      discount.discountType =
-                                          value ?? DiscountType.period;
-                                    });
+                                  textOnSelected: (itemType) => itemType.name,
+                                  textOnSearch: (itemType) =>
+                                      '${itemType.name} - ${itemType.description}',
+                                  modelClass: ItemTypeClass(),
+                                  onChanged: (option) {
+                                    discount.itemTypes = option;
                                   },
-                                  child: Wrap(
-                                    children: [
-                                      Radio<DiscountType>(
-                                        value: DiscountType.period,
-                                      ),
-                                      Text(DiscountType.period.humanize()),
-                                      Radio<DiscountType>(
-                                        value: DiscountType.dayOfWeek,
-                                      ),
-                                      Text(DiscountType.dayOfWeek.humanize()),
-                                    ],
-                                  ),
+                                  validator: (value) {
+                                    if (discount.items.isEmpty &&
+                                        discount.itemTypes.isEmpty &&
+                                        discount.brands.isEmpty &&
+                                        discount.suppliers.isEmpty) {
+                                      return 'salah satu filter harus diisi';
+                                    }
+                                    return null;
+                                  },
                                 ),
-                                Visibility(
-                                  visible: discount.discountType ==
-                                      DiscountType.dayOfWeek,
-                                  child: Wrap(
-                                    children: [
-                                      CheckboxListTile(
-                                        title: const Text("Senin"),
-                                        value: discount.week1,
-                                        onChanged: (newValue) {
-                                          setState(() {
-                                            discount.week1 = newValue ?? false;
-                                          });
-                                        },
-                                        controlAffinity:
-                                            ListTileControlAffinity.leading,
-                                      ),
-                                      CheckboxListTile(
-                                        title: const Text("Selasa"),
-                                        value: discount.week2,
-                                        onChanged: (newValue) {
-                                          setState(() {
-                                            discount.week2 = newValue ?? false;
-                                          });
-                                        },
-                                        controlAffinity:
-                                            ListTileControlAffinity.leading,
-                                      ),
-                                      CheckboxListTile(
-                                        title: const Text("Rabu"),
-                                        value: discount.week3,
-                                        onChanged: (newValue) {
-                                          setState(() {
-                                            discount.week3 = newValue ?? false;
-                                          });
-                                        },
-                                        controlAffinity:
-                                            ListTileControlAffinity.leading,
-                                      ),
-                                      CheckboxListTile(
-                                        title: const Text("Kamis"),
-                                        value: discount.week4,
-                                        onChanged: (newValue) {
-                                          setState(() {
-                                            discount.week4 = newValue ?? false;
-                                          });
-                                        },
-                                        controlAffinity:
-                                            ListTileControlAffinity.leading,
-                                      ),
-                                      CheckboxListTile(
-                                        title: const Text("Jumat"),
-                                        value: discount.week5,
-                                        onChanged: (newValue) {
-                                          setState(() {
-                                            discount.week5 = newValue ?? false;
-                                          });
-                                        },
-                                        controlAffinity:
-                                            ListTileControlAffinity.leading,
-                                      ),
-                                      CheckboxListTile(
-                                        title: const Text("Sabtu"),
-                                        value: discount.week6,
-                                        onChanged: (newValue) {
-                                          setState(() {
-                                            discount.week6 = newValue ?? false;
-                                          });
-                                        },
-                                        controlAffinity:
-                                            ListTileControlAffinity.leading,
-                                      ),
-                                      CheckboxListTile(
-                                        title: const Text("Minggu"),
-                                        value: discount.week7,
-                                        onChanged: (newValue) {
-                                          setState(() {
-                                            discount.week7 = newValue ?? false;
-                                          });
-                                        },
-                                        controlAffinity:
-                                            ListTileControlAffinity.leading,
-                                      ),
-                                    ],
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: 400,
+                                child: AsyncDropdownMultiple<Supplier>(
+                                  key: const ValueKey('supplierSelect'),
+                                  selecteds: discount.suppliers,
+                                  attributeKey: 'kode',
+                                  textOnSelected: (supplier) => supplier.code,
+                                  textOnSearch: (supplier) =>
+                                      '${supplier.code} - ${supplier.name}',
+                                  modelClass: SupplierClass(),
+                                  label: const Text(
+                                    'Supplier:',
+                                    style: labelStyle,
                                   ),
+                                  onChanged: (option) {
+                                    discount.suppliers = option;
+                                  },
+                                  validator: (value) {
+                                    if (discount.items.isEmpty &&
+                                        discount.itemTypes.isEmpty &&
+                                        discount.brands.isEmpty &&
+                                        discount.suppliers.isEmpty) {
+                                      return 'salah satu filter harus diisi';
+                                    }
+                                    return null;
+                                  },
                                 ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: 400,
+                                child: AsyncDropdownMultiple<Brand>(
+                                  key: const ValueKey('brandSelect'),
+                                  selecteds: discount.brands,
+                                  attributeKey: 'merek',
+                                  textOnSearch: (brand) => brand.name,
+                                  modelClass: BrandClass(),
+                                  label: const Text(
+                                    'Merek:',
+                                    style: labelStyle,
+                                  ),
+                                  onChanged: (option) {
+                                    discount.brands = option;
+                                  },
+                                  validator: (value) {
+                                    if (discount.items.isEmpty &&
+                                        discount.itemTypes.isEmpty &&
+                                        discount.brands.isEmpty &&
+                                        discount.suppliers.isEmpty) {
+                                      return 'salah satu filter harus diisi';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: 400,
+                                child: AsyncDropdownMultiple<Item>(
+                                  key: const ValueKey('itemSelect'),
+                                  selecteds: discount.items,
+                                  attributeKey: 'namaitem',
+                                  textOnSelected: (item) => item.code,
+                                  textOnSearch: (item) =>
+                                      "${item.code} - ${item.name}",
+                                  modelClass: ItemClass(),
+                                  label: const Text('Item:', style: labelStyle),
+                                  onChanged: (option) {
+                                    discount.items = option;
+                                  },
+                                  validator: (value) {
+                                    if (discount.items.isEmpty &&
+                                        discount.itemTypes.isEmpty &&
+                                        discount.brands.isEmpty &&
+                                        discount.suppliers.isEmpty) {
+                                      return 'salah satu filter harus diisi';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: 400,
+                                child: AsyncDropdownMultiple<ItemType>(
+                                  key: const ValueKey(
+                                    'blacklistItemTypeSelect',
+                                  ),
+                                  selecteds: discount.blacklistItemTypes,
+                                  attributeKey: 'jenis',
+                                  textOnSelected: (itemType) => itemType.name,
+                                  textOnSearch: (itemType) =>
+                                      '${itemType.name} - ${itemType.description}',
+                                  modelClass: ItemTypeClass(),
+                                  label: const Text(
+                                    'Blacklist Jenis/Departemen :',
+                                    style: labelStyle,
+                                  ),
+                                  onChanged: (option) {
+                                    discount.blacklistItemTypes = option;
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: 400,
+                                child: AsyncDropdownMultiple<Supplier>(
+                                  key: const ValueKey(
+                                    'blacklistSupplierSelect',
+                                  ),
+                                  selecteds: discount.blacklistSuppliers,
+                                  attributeKey: 'kode',
+                                  textOnSelected: (supplier) => supplier.code,
+                                  textOnSearch: (supplier) =>
+                                      '${supplier.code} - ${supplier.name}',
+                                  modelClass: SupplierClass(),
+                                  label: const Text(
+                                    'Blacklist Supplier:',
+                                    style: labelStyle,
+                                  ),
+                                  onChanged: (option) {
+                                    discount.blacklistSuppliers = option;
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: 400,
+                                child: AsyncDropdownMultiple<Brand>(
+                                  key: const ValueKey('blacklistBrandSelect'),
+                                  selecteds: discount.blacklistBrands,
+
+                                  attributeKey: 'merek',
+                                  textOnSearch: (brand) => brand.name,
+                                  modelClass: BrandClass(),
+                                  label: const Text(
+                                    'Blacklist Merek:',
+                                    style: labelStyle,
+                                  ),
+                                  onChanged: (option) {
+                                    discount.blacklistBrands = option;
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: 400,
+                                child: AsyncDropdownMultiple<Item>(
+                                  key: const ValueKey('blacklistItemSelect'),
+                                  selecteds: discount.blacklistItems,
+
+                                  attributeKey: 'namaitem',
+                                  textOnSelected: (item) => item.code,
+                                  textOnSearch: (item) =>
+                                      "${item.code} - ${item.name}",
+                                  modelClass: ItemClass(),
+                                  label: const Text(
+                                    'Blacklist Item:',
+                                    style: labelStyle,
+                                  ),
+                                  onChanged: (option) {
+                                    discount.blacklistItems = option;
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: 400,
+                                child: AsyncDropdown<CustomerGroup>(
+                                  key: const ValueKey('customerGroupCode'),
+                                  selected: discount.customerGroup,
+                                  attributeKey: 'grup',
+                                  textOnSelected: (customerGroup) =>
+                                      customerGroup.code,
+                                  textOnSearch: (customerGroup) =>
+                                      "${customerGroup.code} - ${customerGroup.name}",
+                                  modelClass: CustomerGroupClass(),
+                                  label: const Text(
+                                    'Grup Pelanggan:',
+                                    style: labelStyle,
+                                  ),
+                                  onChanged: (option) {
+                                    discount.customerGroup = option;
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
+                      ),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Flexible(
+                                child: SizedBox(
                                   width: 400,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Tipe Kalkulasi:',
-                                        style: labelStyle,
-                                      ),
-                                      RadioGroup(
-                                        groupValue: discount.calculationType,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            discount.calculationType = value ??
-                                                DiscountCalculationType
-                                                    .percentage;
-                                            if (discount.discount1 is Money) {
-                                              discount.discount1 =
-                                                  discount.discount1Percentage;
-                                              _discount2Controller.text =
-                                                  discount.discount2.toString();
-                                              _discount3Controller.text =
-                                                  discount.discount3.toString();
-                                              _discount4Controller.text =
-                                                  discount.discount4.toString();
-                                            } else if (discount.discount1
-                                                is Percentage) {
-                                              discount.discount1 =
-                                                  discount.discount1Nominal;
-                                              discount.discount2 =
-                                                  const Percentage(0);
-                                              discount.discount3 =
-                                                  discount.discount2;
-                                              discount.discount4 =
-                                                  discount.discount2;
-                                              _discount2Controller.text =
-                                                  discount.discount2.toString();
-                                              _discount3Controller.text =
-                                                  discount.discount3.toString();
-                                              _discount4Controller.text =
-                                                  discount.discount4.toString();
-                                            }
-                                          });
-                                        },
-                                        child: Wrap(
-                                          children: [
-                                            Radio<DiscountCalculationType>(
-                                              value: DiscountCalculationType
-                                                  .percentage,
-                                            ),
-                                            Text(DiscountCalculationType
-                                                .percentage
-                                                .humanize()),
-                                            Radio<DiscountCalculationType>(
-                                              value: DiscountCalculationType
-                                                  .nominal,
-                                            ),
-                                            Text(DiscountCalculationType.nominal
-                                                .humanize()),
-                                            Radio<DiscountCalculationType>(
-                                              value: DiscountCalculationType
-                                                  .specialPrice,
-                                            ),
-                                            Text(DiscountCalculationType
-                                                .specialPrice
-                                                .humanize()),
-                                          ],
-                                        ),
-                                      ),
-                                      if (discount.calculationType ==
-                                          DiscountCalculationType.percentage)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 10),
-                                          child: PercentageFormField(
-                                            label: const Text(
-                                              'Diskon 1',
-                                              style: labelStyle,
-                                            ),
-                                            validator: (value) {
-                                              if (value == null) {
-                                                return 'tidak valid';
-                                              }
-                                              if (value >= 100 || value < 0) {
-                                                return 'range valid antara 0 - 100';
-                                              }
-                                              return null;
-                                            },
-                                            onChanged: ((value) {
-                                              discount.discount1 = value;
-                                            }),
-                                            initialValue:
-                                                discount.discount1Percentage,
-                                          ),
-                                        ),
-                                      if (discount.calculationType !=
-                                          DiscountCalculationType.percentage)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 10),
-                                          child: MoneyFormField(
-                                            label: const Text(
-                                              'Diskon 1',
-                                              style: labelStyle,
-                                            ),
-                                            validator: (value) {
-                                              if (value == null) {
-                                                return 'tidak valid';
-                                              }
-                                              if (value <= 0) {
-                                                return 'harus lebih besar dari 0';
-                                              }
-                                              return null;
-                                            },
-                                            onChanged: ((value) {
-                                              discount.discount1 = value;
-                                            }),
-                                            initialValue:
-                                                discount.discount1Nominal,
-                                          ),
-                                        ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 10),
-                                        child: PercentageFormField(
-                                          controller: _discount2Controller,
-                                          readOnly: discount.calculationType ==
-                                              DiscountCalculationType.nominal,
-                                          label: const Text(
-                                            'Diskon 2',
-                                            style: labelStyle,
-                                          ),
-                                          validator: (value) {
-                                            if (value == null) {
-                                              return 'tidak valid';
-                                            } else if (value >= 100 ||
-                                                value < 0) {
-                                              return 'range valid antara 0 - 100';
-                                            }
-                                            return null;
-                                          },
-                                          onChanged: ((value) =>
-                                              discount.discount2 = value),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 10),
-                                        child: PercentageFormField(
-                                          readOnly: discount.calculationType ==
-                                              DiscountCalculationType.nominal,
-                                          controller: _discount3Controller,
-                                          label: const Text(
-                                            'Diskon 3',
-                                            style: labelStyle,
-                                          ),
-                                          validator: (value) {
-                                            if (value == null) {
-                                              return 'tidak valid';
-                                            } else if (value >= 100 ||
-                                                value < 0) {
-                                              return 'range valid antara 0 - 100';
-                                            }
-                                            return null;
-                                          },
-                                          onChanged: ((value) =>
-                                              discount.discount3 = value),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 10),
-                                        child: PercentageFormField(
-                                          readOnly: discount.calculationType ==
-                                              DiscountCalculationType.nominal,
-                                          controller: _discount4Controller,
-                                          label: const Text(
-                                            'Diskon 4',
-                                            style: labelStyle,
-                                          ),
-                                          validator: (value) {
-                                            if (value == null) {
-                                              return 'tidak valid';
-                                            } else if (value >= 100 ||
-                                                value < 0) {
-                                              return 'range valid antara 0 - 100';
-                                            }
-                                            return null;
-                                          },
-                                          onChanged: ((value) =>
-                                              discount.discount4 = value),
-                                        ),
-                                      ),
-                                    ],
+                                  child: DateRangeFormField(
+                                    rangeType: DateTimeRangeType(),
+                                    initialValue: DateTimeRange(
+                                      start: discount.startTime,
+                                      end: discount.endTime,
+                                    ),
+                                    onChanged: ((DateTimeRange? range) {
+                                      if (range == null) {
+                                        return;
+                                      }
+                                      discount.startTime = range.start;
+                                      discount.endTime = range.end;
+                                    }),
+                                    label: const Text(
+                                      'Tanggal Aktif',
+                                      style: labelStyle,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.calendar_today_outlined,
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                const Divider(),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                              ),
+                              const SizedBox(height: 10),
+                              const Text(
+                                'Aturan Aktif Diskon',
+                                style: labelStyle,
+                              ),
+                              RadioGroup(
+                                groupValue: discount.discountType,
+                                onChanged: (value) {
+                                  setState(() {
+                                    discount.discountType =
+                                        value ?? DiscountType.period;
+                                  });
+                                },
+                                child: Wrap(
                                   children: [
-                                    RichText(
-                                        text: TextSpan(
-                                            text: 'Preview Item ',
-                                            style: const TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 18),
-                                            children:
-                                                discountSummaryPreview())),
-                                    Align(
-                                      alignment: Alignment.topRight,
-                                      child: ElevatedButton.icon(
-                                          onPressed: refreshTable,
-                                          icon: const Icon(Icons.refresh),
-                                          label: const Text('Refresh Table')),
+                                    Radio<DiscountType>(
+                                      value: DiscountType.period,
+                                    ),
+                                    Text(DiscountType.period.humanize()),
+                                    Radio<DiscountType>(
+                                      value: DiscountType.dayOfWeek,
+                                    ),
+                                    Text(DiscountType.dayOfWeek.humanize()),
+                                  ],
+                                ),
+                              ),
+                              Visibility(
+                                visible:
+                                    discount.discountType ==
+                                    DiscountType.dayOfWeek,
+                                child: Wrap(
+                                  children: [
+                                    CheckboxListTile(
+                                      title: const Text("Senin"),
+                                      value: discount.week1,
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          discount.week1 = newValue ?? false;
+                                        });
+                                      },
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                    CheckboxListTile(
+                                      title: const Text("Selasa"),
+                                      value: discount.week2,
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          discount.week2 = newValue ?? false;
+                                        });
+                                      },
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                    CheckboxListTile(
+                                      title: const Text("Rabu"),
+                                      value: discount.week3,
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          discount.week3 = newValue ?? false;
+                                        });
+                                      },
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                    CheckboxListTile(
+                                      title: const Text("Kamis"),
+                                      value: discount.week4,
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          discount.week4 = newValue ?? false;
+                                        });
+                                      },
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                    CheckboxListTile(
+                                      title: const Text("Jumat"),
+                                      value: discount.week5,
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          discount.week5 = newValue ?? false;
+                                        });
+                                      },
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                    CheckboxListTile(
+                                      title: const Text("Sabtu"),
+                                      value: discount.week6,
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          discount.week6 = newValue ?? false;
+                                        });
+                                      },
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                    CheckboxListTile(
+                                      title: const Text("Minggu"),
+                                      value: discount.week7,
+                                      onChanged: (newValue) {
+                                        setState(() {
+                                          discount.week7 = newValue ?? false;
+                                        });
+                                      },
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
                                     ),
                                   ],
                                 ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                Expanded(
-                                  child: SizedBox(
-                                    height: bodyScreenHeight,
-                                    child: CustomAsyncDataTable<ItemReport>(
-                                      columns: _columns,
-                                      fetchData: (request) =>
-                                          fetchItem(request),
-                                      fixedLeftColumns: 2,
-                                      onLoaded: (stateManager) =>
-                                          _source = stateManager,
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
-                      ]),
+                      ),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                width: 400,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Tipe Kalkulasi:',
+                                      style: labelStyle,
+                                    ),
+                                    RadioGroup(
+                                      groupValue: discount.calculationType,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          discount.calculationType =
+                                              value ??
+                                              DiscountCalculationType
+                                                  .percentage;
+                                          if (discount.discount1 is Money) {
+                                            discount.discount1 =
+                                                discount.discount1Percentage;
+                                            _discount2Controller.text = discount
+                                                .discount2
+                                                .toString();
+                                            _discount3Controller.text = discount
+                                                .discount3
+                                                .toString();
+                                            _discount4Controller.text = discount
+                                                .discount4
+                                                .toString();
+                                          } else if (discount.discount1
+                                              is Percentage) {
+                                            discount.discount1 =
+                                                discount.discount1Nominal;
+                                            discount.discount2 =
+                                                const Percentage(0);
+                                            discount.discount3 =
+                                                discount.discount2;
+                                            discount.discount4 =
+                                                discount.discount2;
+                                            _discount2Controller.text = discount
+                                                .discount2
+                                                .toString();
+                                            _discount3Controller.text = discount
+                                                .discount3
+                                                .toString();
+                                            _discount4Controller.text = discount
+                                                .discount4
+                                                .toString();
+                                          }
+                                        });
+                                      },
+                                      child: Wrap(
+                                        children: [
+                                          Radio<DiscountCalculationType>(
+                                            value: DiscountCalculationType
+                                                .percentage,
+                                          ),
+                                          Text(
+                                            DiscountCalculationType.percentage
+                                                .humanize(),
+                                          ),
+                                          Radio<DiscountCalculationType>(
+                                            value:
+                                                DiscountCalculationType.nominal,
+                                          ),
+                                          Text(
+                                            DiscountCalculationType.nominal
+                                                .humanize(),
+                                          ),
+                                          Radio<DiscountCalculationType>(
+                                            value: DiscountCalculationType
+                                                .specialPrice,
+                                          ),
+                                          Text(
+                                            DiscountCalculationType.specialPrice
+                                                .humanize(),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (discount.calculationType ==
+                                        DiscountCalculationType.percentage)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 10),
+                                        child: PercentageFormField(
+                                          label: const Text(
+                                            'Diskon 1',
+                                            style: labelStyle,
+                                          ),
+                                          validator: (value) {
+                                            if (value == null) {
+                                              return 'tidak valid';
+                                            }
+                                            if (value >= 100 || value < 0) {
+                                              return 'range valid antara 0 - 100';
+                                            }
+                                            return null;
+                                          },
+                                          onChanged: ((value) {
+                                            discount.discount1 = value;
+                                          }),
+                                          initialValue:
+                                              discount.discount1Percentage,
+                                        ),
+                                      ),
+                                    if (discount.calculationType !=
+                                        DiscountCalculationType.percentage)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 10),
+                                        child: MoneyFormField(
+                                          label: const Text(
+                                            'Diskon 1',
+                                            style: labelStyle,
+                                          ),
+                                          validator: (value) {
+                                            if (value == null) {
+                                              return 'tidak valid';
+                                            }
+                                            if (value <= 0) {
+                                              return 'harus lebih besar dari 0';
+                                            }
+                                            return null;
+                                          },
+                                          onChanged: ((value) {
+                                            discount.discount1 = value;
+                                          }),
+                                          initialValue:
+                                              discount.discount1Nominal,
+                                        ),
+                                      ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 10),
+                                      child: PercentageFormField(
+                                        controller: _discount2Controller,
+                                        readOnly:
+                                            discount.calculationType ==
+                                            DiscountCalculationType.nominal,
+                                        label: const Text(
+                                          'Diskon 2',
+                                          style: labelStyle,
+                                        ),
+                                        validator: (value) {
+                                          if (value == null) {
+                                            return 'tidak valid';
+                                          } else if (value >= 100 ||
+                                              value < 0) {
+                                            return 'range valid antara 0 - 100';
+                                          }
+                                          return null;
+                                        },
+                                        onChanged: ((value) =>
+                                            discount.discount2 = value),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 10),
+                                      child: PercentageFormField(
+                                        readOnly:
+                                            discount.calculationType ==
+                                            DiscountCalculationType.nominal,
+                                        controller: _discount3Controller,
+                                        label: const Text(
+                                          'Diskon 3',
+                                          style: labelStyle,
+                                        ),
+                                        validator: (value) {
+                                          if (value == null) {
+                                            return 'tidak valid';
+                                          } else if (value >= 100 ||
+                                              value < 0) {
+                                            return 'range valid antara 0 - 100';
+                                          }
+                                          return null;
+                                        },
+                                        onChanged: ((value) =>
+                                            discount.discount3 = value),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 10),
+                                      child: PercentageFormField(
+                                        readOnly:
+                                            discount.calculationType ==
+                                            DiscountCalculationType.nominal,
+                                        controller: _discount4Controller,
+                                        label: const Text(
+                                          'Diskon 4',
+                                          style: labelStyle,
+                                        ),
+                                        validator: (value) {
+                                          if (value == null) {
+                                            return 'tidak valid';
+                                          } else if (value >= 100 ||
+                                              value < 0) {
+                                            return 'range valid antara 0 - 100';
+                                          }
+                                          return null;
+                                        },
+                                        onChanged: ((value) =>
+                                            discount.discount4 = value),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              const Divider(),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  RichText(
+                                    text: TextSpan(
+                                      text: 'Preview Item ',
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 18,
+                                      ),
+                                      children: discountSummaryPreview(),
+                                    ),
+                                  ),
+                                  Align(
+                                    alignment: Alignment.topRight,
+                                    child: ElevatedButton.icon(
+                                      onPressed: refreshTable,
+                                      icon: const Icon(Icons.refresh),
+                                      label: const Text('Refresh Table'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Expanded(
+                                child: SizedBox(
+                                  height: bodyScreenHeight,
+                                  child: CustomAsyncDataTable<ItemReport>(
+                                    columns: _columns,
+                                    showFilter: true,
+                                    fetchData: (request) => fetchItem(request),
+                                    fixedLeftColumns: 2,
+                                    onLoaded: (stateManager) =>
+                                        _source = stateManager,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(
-                height: 10,
-              ),
+              const SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.only(top: 10, bottom: 10),
                 child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                        _submit();
-                      }
-                    },
-                    child: const Text('submit')),
-              )
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
+                      _submit();
+                    }
+                  },
+                  child: const Text('submit'),
+                ),
+              ),
             ],
           ),
         ),
@@ -1213,36 +1274,21 @@ class _DiscountFormPageState extends State<DiscountFormPage>
 
     textArr.add(const TextSpan(text: 'Diskon1: '));
     if (discount1 is Percentage) {
-      textArr.add(TextSpan(
-        text: discount1.format(),
-        style: style,
-      ));
+      textArr.add(TextSpan(text: discount1.format(), style: style));
     } else if (discount1 is Money) {
-      textArr.add(TextSpan(
-        text: discount1.format(),
-        style: style,
-      ));
+      textArr.add(TextSpan(text: discount1.format(), style: style));
     }
     if (discount2 != null) {
       textArr.add(const TextSpan(text: ', Diskon2: '));
-      textArr.add(TextSpan(
-        text: discount2!.format(),
-        style: style,
-      ));
+      textArr.add(TextSpan(text: discount2!.format(), style: style));
     }
     if (discount3 != null) {
       textArr.add(const TextSpan(text: ', Diskon3: '));
-      textArr.add(TextSpan(
-        text: discount3!.format(),
-        style: style,
-      ));
+      textArr.add(TextSpan(text: discount3!.format(), style: style));
     }
     if (discount4 != null) {
       textArr.add(const TextSpan(text: ', Diskon4: '));
-      textArr.add(TextSpan(
-        text: discount4!.format(),
-        style: style,
-      ));
+      textArr.add(TextSpan(text: discount4!.format(), style: style));
     }
     return textArr;
   }

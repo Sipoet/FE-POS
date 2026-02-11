@@ -33,7 +33,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
   Purchase get purchase => widget.purchase;
   late final Server _server;
   late final Setting setting;
-  late final TrinaGridStateManager _source;
+  late final SyncTableController _source;
   late final List<TableColumn> _columns;
   double margin = 1;
   String roundType = 'mark';
@@ -48,7 +48,10 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
     flash = Flash();
     setting = context.read<Setting>();
     _server = context.read<Server>();
-    _columns = setting.tableColumn('ipos::PurchaseItem');
+    _columns = setting.tableColumn('ipos::PurchaseItem')
+      ..removeWhere(
+        (column) => ['purchase', 'transaction_date'].contains(column.name),
+      );
     if (purchase.id != null) {
       Future.delayed(Duration.zero, () => fetchPurchase());
     }
@@ -58,131 +61,139 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
   void fetchPurchase() {
     showLoadingPopup();
 
-    _server.get('purchases/show', queryParam: {
-      'code': Uri.encodeComponent(purchase.id),
-      'include':
-          'purchase_items,purchase_items.item,supplier,purchase_items.item_report'
-    }).then((response) {
-      if (response.statusCode == 200) {
-        setState(() {
-          purchase.setFromJson(response.data['data'],
-              included: response.data['included']);
-          _source.setModels(purchase.purchaseItems);
-        });
-      }
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-    }).whenComplete(() => hideLoadingPopup());
+    _server
+        .get(
+          'ipos/purchases/show',
+          queryParam: {
+            'code': Uri.encodeComponent(purchase.id),
+            'include':
+                'purchase_items,purchase_items.item,supplier,purchase_items.item_report',
+          },
+        )
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              setState(() {
+                purchase.setFromJson(
+                  response.data['data'],
+                  included: response.data['included'],
+                );
+                _source.setModels(purchase.purchaseItems);
+              });
+            }
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+          },
+        )
+        .whenComplete(() => hideLoadingPopup());
   }
 
   void openUpdatePriceForm() {
     showDialog<bool>(
-        context: context,
-        builder: (BuildContext context) {
-          final navigator = Navigator.of(context);
-          return StatefulBuilder(
-            builder: (BuildContext context, setstateDialog) => AlertDialog(
-              title: const Text("Ubah Harga Jual"),
-              content: Column(
-                children: [
-                  TextFormField(
-                    decoration: const InputDecoration(
-                        suffixIcon: Icon(Icons.percent),
-                        hintText: 'margin on %',
-                        helperText: 'margin on %',
-                        labelText: 'Margin',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder()),
-                    initialValue: margin.toString(),
-                    onChanged: (value) =>
-                        margin = double.tryParse(value) ?? margin,
+      context: context,
+      builder: (BuildContext context) {
+        final navigator = Navigator.of(context);
+        return StatefulBuilder(
+          builder: (BuildContext context, setstateDialog) => AlertDialog(
+            title: const Text("Ubah Harga Jual"),
+            content: Column(
+              children: [
+                TextFormField(
+                  decoration: const InputDecoration(
+                    suffixIcon: Icon(Icons.percent),
+                    hintText: 'margin on %',
+                    helperText: 'margin on %',
+                    labelText: 'Margin',
+                    labelStyle: labelStyle,
+                    border: OutlineInputBorder(),
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  DropdownMenu<String>(
-                    label: const Text(
-                      'Tipe Pembulatan',
-                      style: labelStyle,
-                    ),
-                    initialSelection: roundType,
-                    onSelected: (value) => setstateDialog(() {
-                      roundType = value ?? roundType;
-                    }),
-                    dropdownMenuEntries: const [
-                      DropdownMenuEntry(value: 'normal', label: 'Normal'),
-                      DropdownMenuEntry(
-                          value: 'ceil', label: 'Pembulatan atas'),
-                      DropdownMenuEntry(
-                          value: 'floor', label: 'Pembulatan bawah'),
-                      DropdownMenuEntry(
-                          value: 'mark', label: 'Pembulatan berdasarkan mark'),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Visibility(
-                    visible: roundType == 'mark',
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                          labelText: 'Mark batasan',
-                          labelStyle: labelStyle,
-                          border: OutlineInputBorder()),
-                      initialValue: markSeparator.toString(),
-                      onChanged: (value) => markSeparator =
-                          double.tryParse(value) ?? markSeparator,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Visibility(
-                    visible: roundType == 'mark',
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                          labelText: 'Mark Atas',
-                          labelStyle: labelStyle,
-                          border: OutlineInputBorder()),
-                      initialValue: markUpper.toString(),
-                      onChanged: (value) =>
-                          markUpper = double.tryParse(value) ?? markUpper,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Visibility(
-                    visible: roundType == 'mark',
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                          labelText: 'Mark Bawah',
-                          labelStyle: labelStyle,
-                          border: OutlineInputBorder()),
-                      initialValue: markLower.toString(),
-                      onChanged: (value) =>
-                          markLower = double.tryParse(value) ?? markLower,
-                    ),
-                  ),
-                ],
-              ),
-              actions: [
-                ElevatedButton(
-                  child: const Text("Kembali"),
-                  onPressed: () {
-                    navigator.pop(false);
-                  },
+                  initialValue: margin.toString(),
+                  onChanged: (value) =>
+                      margin = double.tryParse(value) ?? margin,
                 ),
-                ElevatedButton(
-                  child: const Text("Submit"),
-                  onPressed: () {
-                    updatePrice().then((result) => navigator.pop(result));
-                  },
+                const SizedBox(height: 10),
+                DropdownMenu<String>(
+                  label: const Text('Tipe Pembulatan', style: labelStyle),
+                  initialSelection: roundType,
+                  onSelected: (value) => setstateDialog(() {
+                    roundType = value ?? roundType;
+                  }),
+                  dropdownMenuEntries: const [
+                    DropdownMenuEntry(value: 'normal', label: 'Normal'),
+                    DropdownMenuEntry(value: 'ceil', label: 'Pembulatan atas'),
+                    DropdownMenuEntry(
+                      value: 'floor',
+                      label: 'Pembulatan bawah',
+                    ),
+                    DropdownMenuEntry(
+                      value: 'mark',
+                      label: 'Pembulatan berdasarkan mark',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Visibility(
+                  visible: roundType == 'mark',
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Mark batasan',
+                      labelStyle: labelStyle,
+                      border: OutlineInputBorder(),
+                    ),
+                    initialValue: markSeparator.toString(),
+                    onChanged: (value) =>
+                        markSeparator = double.tryParse(value) ?? markSeparator,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Visibility(
+                  visible: roundType == 'mark',
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Mark Atas',
+                      labelStyle: labelStyle,
+                      border: OutlineInputBorder(),
+                    ),
+                    initialValue: markUpper.toString(),
+                    onChanged: (value) =>
+                        markUpper = double.tryParse(value) ?? markUpper,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Visibility(
+                  visible: roundType == 'mark',
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Mark Bawah',
+                      labelStyle: labelStyle,
+                      border: OutlineInputBorder(),
+                    ),
+                    initialValue: markLower.toString(),
+                    onChanged: (value) =>
+                        markLower = double.tryParse(value) ?? markLower,
+                  ),
                 ),
               ],
             ),
-          );
-        }).then((result) {
+            actions: [
+              ElevatedButton(
+                child: const Text("Kembali"),
+                onPressed: () {
+                  navigator.pop(false);
+                },
+              ),
+              ElevatedButton(
+                child: const Text("Submit"),
+                onPressed: () {
+                  updatePrice().then((result) => navigator.pop(result));
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    ).then((result) {
       if (result == true) fetchPurchase();
     });
   }
@@ -198,8 +209,10 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
       'mark_separator': markSeparator,
     };
     try {
-      final response =
-          await _server.post('purchases/code/update_price', body: dataParams);
+      final response = await _server.post(
+        'ipos/purchases/code/update_price',
+        body: dataParams,
+      );
       hideLoadingPopup();
       return response.statusCode == 200;
     } catch (e) {
@@ -208,8 +221,10 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
     }
   }
 
-  static const labelStyle =
-      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+  static const labelStyle = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -240,32 +255,42 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                       // ),
                       // const Divider(),
                       Visibility(
-                        visible:
-                            setting.canShow('ipos::Purchase', 'notransaksi'),
+                        visible: setting.canShow(
+                          'ipos::Purchase',
+                          'notransaksi',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10.0),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'notransaksi'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'notransaksi',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchase.code,
                           ),
                         ),
                       ),
                       Visibility(
-                        visible:
-                            setting.canShow('ipos::Purchase', 'notrsorder'),
+                        visible: setting.canShow(
+                          'ipos::Purchase',
+                          'notrsorder',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10.0),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'notrsorder'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'notrsorder',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchase.orderCode,
                           ),
@@ -277,10 +302,13 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                           padding: const EdgeInsets.only(bottom: 10.0),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'kodesupel'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'kodesupel',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue:
                                 "${purchase.supplierCode} - ${purchase.supplierName}",
@@ -288,16 +316,21 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                         ),
                       ),
                       Visibility(
-                        visible:
-                            setting.canShow('ipos::Purchase', 'kantortujuan'),
+                        visible: setting.canShow(
+                          'ipos::Purchase',
+                          'kantortujuan',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10.0),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'kantortujuan'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'kantortujuan',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchase.destLocation,
                           ),
@@ -309,10 +342,13 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'user1'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'user1',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchase.userName,
                           ),
@@ -324,15 +360,19 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'note_date'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'note_date',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchase.noteDate == null
                                 ? null
                                 : dateTimeLocalFormat(
-                                    purchase.noteDate as DateTime),
+                                    purchase.noteDate as DateTime,
+                                  ),
                           ),
                         ),
                       ),
@@ -342,13 +382,17 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'tanggal'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'tanggal',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
-                            initialValue:
-                                dateTimeLocalFormat(purchase.datetime),
+                            initialValue: dateTimeLocalFormat(
+                              purchase.datetime,
+                            ),
                           ),
                         ),
                       ),
@@ -358,10 +402,13 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'totalitem'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'totalitem',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchase.totalItem.toString(),
                           ),
@@ -373,26 +420,34 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'subtotal'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'subtotal',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: moneyFormat(purchase.subtotal),
                           ),
                         ),
                       ),
                       Visibility(
-                        visible:
-                            setting.canShow('ipos::Purchase', 'potnomfaktur'),
+                        visible: setting.canShow(
+                          'ipos::Purchase',
+                          'potnomfaktur',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'potnomfaktur'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'potnomfaktur',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: moneyFormat(purchase.discountAmount),
                           ),
@@ -404,10 +459,13 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'biayalain'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'biayalain',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: moneyFormat(purchase.otherCost),
                           ),
@@ -419,42 +477,55 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'pajak'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'pajak',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: moneyFormat(purchase.taxAmount),
                           ),
                         ),
                       ),
                       Visibility(
-                        visible:
-                            setting.canShow('ipos::Purchase', 'totalakhir'),
+                        visible: setting.canShow(
+                          'ipos::Purchase',
+                          'totalakhir',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'totalakhir'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'totalakhir',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: moneyFormat(purchase.grandtotal),
                           ),
                         ),
                       ),
                       Visibility(
-                        visible:
-                            setting.canShow('ipos::Purchase', 'payment_type'),
+                        visible: setting.canShow(
+                          'ipos::Purchase',
+                          'payment_type',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'payment_type'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'payment_type',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchase.paymentMethodType,
                           ),
@@ -466,10 +537,13 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'bank_code'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'bank_code',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchase.bankCode,
                           ),
@@ -481,10 +555,13 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'jmltunai'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'jmltunai',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: moneyFormat(purchase.cashAmount),
                           ),
@@ -496,10 +573,13 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'jmldebit'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'jmldebit',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: moneyFormat(purchase.debitCardAmount),
                           ),
@@ -511,27 +591,36 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'jmlkredit'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'jmlkredit',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
-                            initialValue:
-                                moneyFormat(purchase.creditCardAmount),
+                            initialValue: moneyFormat(
+                              purchase.creditCardAmount,
+                            ),
                           ),
                         ),
                       ),
                       Visibility(
-                        visible:
-                            setting.canShow('ipos::Purchase', 'jmldeposit'),
+                        visible: setting.canShow(
+                          'ipos::Purchase',
+                          'jmldeposit',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'jmldeposit'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'jmldeposit',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: moneyFormat(purchase.emoneyAmount),
                           ),
@@ -543,26 +632,34 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText:
-                                    setting.columnName('ipos::Purchase', 'ppn'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'ppn',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             initialValue: purchase.taxType,
                           ),
                         ),
                       ),
                       Visibility(
-                        visible:
-                            setting.canShow('ipos::Purchase', 'keterangan'),
+                        visible: setting.canShow(
+                          'ipos::Purchase',
+                          'keterangan',
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             decoration: InputDecoration(
-                                labelText: setting.columnName(
-                                    'ipos::Purchase', 'keterangan'),
-                                labelStyle: labelStyle,
-                                border: const OutlineInputBorder()),
+                              labelText: setting.columnName(
+                                'ipos::Purchase',
+                                'keterangan',
+                              ),
+                              labelStyle: labelStyle,
+                              border: const OutlineInputBorder(),
+                            ),
                             readOnly: true,
                             minLines: 3,
                             maxLines: 5,
@@ -573,42 +670,43 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                     ],
                   ),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
                       "Item Detail",
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(
                       width: 50,
                       child: SubmenuButton(
-                          menuChildren: [
-                            MenuItemButton(
-                              child: const Text('Ganti Harga Jual'),
-                              onPressed: () {
-                                openUpdatePriceForm();
-                              },
-                            ),
-                            MenuItemButton(
-                              child: const Text('refresh item'),
-                              onPressed: () {
-                                fetchPurchase();
-                              },
-                            ),
-                          ],
-                          controller: menuController,
-                          onHover: (isHover) {
-                            if (isHover) {
-                              menuController.close();
-                            }
-                          },
-                          child: const Icon(Icons.table_rows_rounded)),
-                    )
+                        menuChildren: [
+                          MenuItemButton(
+                            child: const Text('Ganti Harga Jual'),
+                            onPressed: () {
+                              openUpdatePriceForm();
+                            },
+                          ),
+                          MenuItemButton(
+                            child: const Text('refresh item'),
+                            onPressed: () {
+                              fetchPurchase();
+                            },
+                          ),
+                        ],
+                        controller: menuController,
+                        onHover: (isHover) {
+                          if (isHover) {
+                            menuController.close();
+                          }
+                        },
+                        child: const Icon(Icons.table_rows_rounded),
+                      ),
+                    ),
                   ],
                 ),
                 SizedBox(

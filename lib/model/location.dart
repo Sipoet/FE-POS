@@ -5,15 +5,16 @@ class Location extends Model {
   String name;
   bool? branch;
   String? accountCode;
-  Location(
-      {super.id,
-      this.accountCode,
-      this.branch,
-      this.code = '',
-      this.name = ''});
+  Location({
+    super.id,
+    this.accountCode,
+    this.branch,
+    this.code = '',
+    this.name = '',
+  });
 
   @override
-  String get modelName => 'location';
+  String get path => 'ipos/locations';
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
@@ -26,11 +27,11 @@ class Location extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'code': code,
-        'name': name,
-        'cabang': branch,
-        'kodeacc': accountCode,
-      };
+    'code': code,
+    'name': name,
+    'cabang': branch,
+    'kodeacc': accountCode,
+  };
 
   @override
   String get modelValue => '$code - $name';

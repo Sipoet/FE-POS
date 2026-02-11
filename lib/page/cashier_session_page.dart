@@ -39,73 +39,86 @@ class _CashierSessionPageState extends State<CashierSessionPage>
   void _fetchCashierSessionToday() {
     showLoadingPopup();
     server
-        .get(
-      'cashier_sessions/today',
-    )
-        .then((response) {
-      if (response.statusCode == 200) {
-        final json = response.data;
-        setState(() {
-          cashierSession = CashierSessionClass()
-              .fromJson(json['data'], included: json['included'] ?? []);
-          _isTodayCashierFetched = true;
-        });
-      }
-    }, onError: (error) {
-      final response = error.response;
-      if (response?.statusCode == 404) {
-        _createCashierSessionToday();
-      } else {
-        defaultErrorResponse(error: error);
-      }
-    }).whenComplete(() => hideLoadingPopup());
+        .get('cashier_sessions/today')
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              final json = response.data;
+              setState(() {
+                cashierSession = CashierSessionClass().fromJson(
+                  json['data'],
+                  included: json['included'] ?? [],
+                );
+                _isTodayCashierFetched = true;
+              });
+            }
+          },
+          onError: (error) {
+            final response = error.response;
+            if (response?.statusCode == 404) {
+              _createCashierSessionToday();
+            } else {
+              defaultErrorResponse(error: error);
+            }
+          },
+        )
+        .whenComplete(() => hideLoadingPopup());
   }
 
   void _createCashierSessionToday() {
     showLoadingPopup();
     final bodyParams = {
-      'data': {'type': 'cashier_session', 'attributes': cashierSession.toJson()}
+      'data': {
+        'type': 'cashier_session',
+        'attributes': cashierSession.toJson(),
+      },
     };
-    server.post('cashier_sessions', body: bodyParams).then((response) {
-      if (response.statusCode == 201) {
-        final json = response.data;
-        setState(() {
-          cashierSession = CashierSessionClass()
-              .fromJson(json['data'], included: json['included'] ?? []);
-          _isTodayCashierFetched = true;
-        });
-      }
-    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => hideLoadingPopup());
+    server
+        .post('cashier_sessions', body: bodyParams)
+        .then((response) {
+          if (response.statusCode == 201) {
+            final json = response.data;
+            setState(() {
+              cashierSession = CashierSessionClass().fromJson(
+                json['data'],
+                included: json['included'] ?? [],
+              );
+              _isTodayCashierFetched = true;
+            });
+          }
+        }, onError: (error) => defaultErrorResponse(error: error))
+        .whenComplete(() => hideLoadingPopup());
   }
 
   void openTodayEdcSettlement() {
     tabManager.addTab(
-        "EDC Settlement hari ini",
-        EdcSettlementFormPage(
-          key: ObjectKey(cashierSession),
-          cashierSession: cashierSession,
-        ));
+      "EDC Settlement hari ini",
+      EdcSettlementFormPage(
+        key: ObjectKey(cashierSession),
+        cashierSession: cashierSession,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return SingleChildScrollView(
-        child: Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          const Text("Sesi Kasir Hari Ini"),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              SizedBox(
-                width: 50,
-                child: SubmenuButton(
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            const Text("Sesi Kasir Hari Ini"),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                SizedBox(
+                  width: 50,
+                  child: SubmenuButton(
                     controller: _menuController,
                     menuChildren: [
-                      if (_isTodayCashierFetched)
+                      if (_isTodayCashierFetched &&
+                          setting.isAuthorize('edc_settlements', 'update'))
                         MenuItemButton(
                           onPressed: () {
                             _menuController.close();
@@ -113,22 +126,26 @@ class _CashierSessionPageState extends State<CashierSessionPage>
                           },
                           child: const Text('EDC Settlement Hari ini'),
                         ),
-                      MenuItemButton(
-                        onPressed: () {
-                          _menuController.close();
-                        },
-                        child: const Text('Tambah Kas Keluar'),
-                      ),
+                      if (setting.isAuthorize('cash_outs', 'create'))
+                        MenuItemButton(
+                          onPressed: () {
+                            _menuController.close();
+                          },
+                          child: const Text('Tambah Kas Keluar'),
+                        ),
                     ],
-                    child: const Icon(Icons.table_rows_rounded)),
-              ),
-            ],
-          ),
-          Visibility(
-              visible: setting.isAuthorize('cashierSession', 'index'),
-              child: const CashierSessionTablePage()),
-        ],
+                    child: const Icon(Icons.table_rows_rounded),
+                  ),
+                ),
+              ],
+            ),
+            Visibility(
+              visible: setting.isAuthorize('cashier_sessions', 'read'),
+              child: const CashierSessionTablePage(),
+            ),
+          ],
+        ),
       ),
-    ));
+    );
   }
 }

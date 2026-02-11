@@ -2,6 +2,7 @@ import 'package:fe_pos/model/background_job.dart';
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,7 @@ class _BackgroundJobPageState extends State<BackgroundJobPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late List<TableColumn> _columns;
   List<BackgroundJob> records = [];
-  TrinaGridStateManager? stateManager;
+  SyncTableController? stateManager;
   late final Server _server;
   final flash = Flash();
   @override
@@ -27,47 +28,54 @@ class _BackgroundJobPageState extends State<BackgroundJobPage>
       TableColumn(clientWidth: 180, name: 'job_class', humanizeName: 'Aksi'),
       TableColumn(clientWidth: 220, name: 'args', humanizeName: 'Arguments'),
       TableColumn(
-          clientWidth: 180,
-          name: 'description',
-          type: TableColumnType.text,
-          humanizeName: 'Deskripsi'),
+        clientWidth: 180,
+        name: 'description',
+        type: TextTableColumnType(),
+        humanizeName: 'Deskripsi',
+      ),
       TableColumn(clientWidth: 150, name: 'status', humanizeName: 'Status'),
       TableColumn(
-          type: TableColumnType.datetime,
-          clientWidth: 180,
-          name: 'created_at',
-          humanizeName: 'Tgl Buat'),
+        type: DateTableColumnType(DateTimeRangeType()),
+        clientWidth: 180,
+        name: 'created_at',
+        humanizeName: 'Tgl Buat',
+      ),
       TableColumn(
-          clientWidth: 150,
-          name: 'action',
-          renderBody: (rendererContext) {
-            final record = records[rendererContext.rowIdx];
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                    tooltip: 'Jalankan Ulang',
-                    onPressed: () => _retryJob(record),
-                    icon: Icon(Icons.refresh)),
-                Offstage(
-                  offstage: record.status == BackgroundJobStatus.finished,
-                  child: IconButton(
-                      tooltip: 'Batalkan',
-                      onPressed: () => _cancelJob(record),
-                      icon: Icon(Icons.block)),
+        clientWidth: 150,
+        name: 'action',
+        renderBody: (rendererContext) {
+          final record = records[rendererContext.rowIdx];
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                tooltip: 'Jalankan Ulang',
+                onPressed: () => _retryJob(record),
+                icon: Icon(Icons.refresh),
+              ),
+              Offstage(
+                offstage: record.status == BackgroundJobStatus.finished,
+                child: IconButton(
+                  tooltip: 'Batalkan',
+                  onPressed: () => _cancelJob(record),
+                  icon: Icon(Icons.block),
                 ),
-                Offstage(
-                  offstage: record.status == BackgroundJobStatus.process ||
-                      record.status == BackgroundJobStatus.retry,
-                  child: IconButton(
-                      tooltip: 'Hapus',
-                      onPressed: () => _removeJob(record),
-                      icon: Icon(Icons.close)),
+              ),
+              Offstage(
+                offstage:
+                    record.status == BackgroundJobStatus.process ||
+                    record.status == BackgroundJobStatus.retry,
+                child: IconButton(
+                  tooltip: 'Hapus',
+                  onPressed: () => _removeJob(record),
+                  icon: Icon(Icons.close),
                 ),
-              ],
-            );
-          },
-          humanizeName: ''),
+              ),
+            ],
+          );
+        },
+        humanizeName: '',
+      ),
     ];
     _server = context.read<Server>();
 
@@ -87,16 +95,18 @@ class _BackgroundJobPageState extends State<BackgroundJobPage>
     _server.post('background_jobs/${record.id}/retry').then((response) {
       if (response.statusCode == 200) {
         flash.showBanner(
-            title: 'Sukses Jalankan Ulang',
-            description:
-                'Sukses Jalankan Ulang ${record.modelValue} (${record.id})',
-            messageType: ToastificationType.success);
+          title: 'Sukses Jalankan Ulang',
+          description:
+              'Sukses Jalankan Ulang ${record.modelValue} (${record.id})',
+          messageType: ToastificationType.success,
+        );
         _fetchRecord();
       } else {
         flash.showBanner(
-            title: 'Gagal Jalankan Ulang',
-            description: response.data.toString(),
-            messageType: ToastificationType.error);
+          title: 'Gagal Jalankan Ulang',
+          description: response.data.toString(),
+          messageType: ToastificationType.error,
+        );
       }
     }, onError: (error) => defaultErrorResponse(error: error));
   }
@@ -105,14 +115,16 @@ class _BackgroundJobPageState extends State<BackgroundJobPage>
     _server.post('background_jobs/${record.id}/cancel').then((response) {
       if (response.statusCode == 200) {
         flash.showBanner(
-            title: 'Sukses Batalkan',
-            description: 'Sukses Batalkan ${record.modelValue} (${record.id})',
-            messageType: ToastificationType.success);
+          title: 'Sukses Batalkan',
+          description: 'Sukses Batalkan ${record.modelValue} (${record.id})',
+          messageType: ToastificationType.success,
+        );
       } else {
         flash.showBanner(
-            title: 'Gagal Batalkan',
-            description: response.data.toString(),
-            messageType: ToastificationType.error);
+          title: 'Gagal Batalkan',
+          description: response.data.toString(),
+          messageType: ToastificationType.error,
+        );
       }
     }, onError: (error) => defaultErrorResponse(error: error));
   }
@@ -121,14 +133,16 @@ class _BackgroundJobPageState extends State<BackgroundJobPage>
     _server.delete('background_jobs/${record.id}').then((response) {
       if (response.statusCode == 200) {
         flash.showBanner(
-            title: 'Sukses Hapus',
-            description: 'Sukses Hapus ${record.modelValue} (${record.id})',
-            messageType: ToastificationType.success);
+          title: 'Sukses Hapus',
+          description: 'Sukses Hapus ${record.modelValue} (${record.id})',
+          messageType: ToastificationType.success,
+        );
       } else {
         flash.showBanner(
-            title: 'Gagal Hapus',
-            description: response.data.toString(),
-            messageType: ToastificationType.error);
+          title: 'Gagal Hapus',
+          description: response.data.toString(),
+          messageType: ToastificationType.error,
+        );
       }
     }, onError: (error) => defaultErrorResponse(error: error));
   }
@@ -136,19 +150,25 @@ class _BackgroundJobPageState extends State<BackgroundJobPage>
   void _fetchRecord() {
     stateManager?.setShowLoading(true);
 
-    _server.get('background_jobs').then((response) {
-      if (response.statusCode == 200) {
-        final data = response.data;
+    _server
+        .get('background_jobs')
+        .then((response) {
+          if (response.statusCode == 200) {
+            final data = response.data;
 
-        records = data['data']
-            .map<BackgroundJob>((json) => BackgroundJobClass()
-                .fromJson(json, included: data['included'] ?? []))
-            .toList();
+            records = data['data']
+                .map<BackgroundJob>(
+                  (json) => BackgroundJobClass().fromJson(
+                    json,
+                    included: data['included'] ?? [],
+                  ),
+                )
+                .toList();
 
-        stateManager?.setModels(records);
-      }
-    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => stateManager?.setShowLoading(false));
+            stateManager?.setModels(records);
+          }
+        }, onError: (error) => defaultErrorResponse(error: error))
+        .whenComplete(() => stateManager?.setShowLoading(false));
   }
 
   @override
@@ -156,25 +176,28 @@ class _BackgroundJobPageState extends State<BackgroundJobPage>
     super.build(context);
     return Center(
       child: VerticalBodyScroll(
-          child: Column(
-        children: [
-          Text("Background Job Log"),
-          Divider(),
-          Align(
-            alignment: Alignment.topRight,
-            child:
-                IconButton(onPressed: _fetchRecord, icon: Icon(Icons.refresh)),
-          ),
-          SizedBox(
-            height: bodyScreenHeight,
-            child: SyncDataTable<BackgroundJob>(
-              columns: _columns,
-              rows: records,
-              onLoaded: (newStateManager) => stateManager = newStateManager,
+        child: Column(
+          children: [
+            Text("Background Job Log"),
+            Divider(),
+            Align(
+              alignment: Alignment.topRight,
+              child: IconButton(
+                onPressed: _fetchRecord,
+                icon: Icon(Icons.refresh),
+              ),
             ),
-          )
-        ],
-      )),
+            SizedBox(
+              height: bodyScreenHeight,
+              child: SyncDataTable<BackgroundJob>(
+                columns: _columns,
+                rows: records,
+                onLoaded: (newStateManager) => stateManager = newStateManager,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

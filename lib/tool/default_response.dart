@@ -18,9 +18,10 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
       response = error.response;
     } catch (e) {
       flash.showBanner(
-          title: 'Gagal',
-          description: error.toString(),
-          messageType: ToastificationType.error);
+        title: 'Gagal',
+        description: error.toString(),
+        messageType: ToastificationType.error,
+      );
       return valueWhenError;
     }
 
@@ -28,14 +29,17 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
       case DioExceptionType.badResponse:
         if (response?.statusCode == 401) {
           Navigator.pop(context);
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const LoadingPage()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const LoadingPage()),
+          );
         } else if (response?.statusCode == 500) {
           Flash flash = Flash();
           flash.showBanner(
-              title: 'Gagal',
-              description: 'Terjadi kesalahan server. hubungi IT support',
-              messageType: ToastificationType.error);
+            title: 'Gagal',
+            description: 'Terjadi kesalahan server. hubungi IT support',
+            messageType: ToastificationType.error,
+          );
           log(response.data.toString(), time: DateTime.now());
         }
         break;
@@ -43,10 +47,11 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
         flash.showBanner(
-            title: 'koneksi terputus',
-            description:
-                'Pastikan sudah nyalakan VPN atau berada di satu network dengan server',
-            messageType: ToastificationType.error);
+          title: 'koneksi terputus',
+          description:
+              'Pastikan sudah nyalakan VPN atau berada di satu network dengan server',
+          messageType: ToastificationType.error,
+        );
         break;
     }
     log(error.toString(), time: DateTime.now());
@@ -60,12 +65,16 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
   double get bodyScreenHeight {
     final padding = MediaQuery.of(context).padding;
     final size = MediaQuery.of(context).size;
-    double tableHeight = size.height - padding.top - padding.bottom - 250;
+    double headerHeight = size.width > 800 ? 200 : 120;
+    double tableHeight =
+        size.height - padding.top - padding.bottom - headerHeight;
     return tableHeight < 400 ? 400.0 : tableHeight;
   }
 
-  void showConfirmDialog(
-      {required Function onSubmit, String message = 'Apakah Anda Yakin?'}) {
+  void showConfirmDialog({
+    required Function onSubmit,
+    String message = 'Apakah Anda Yakin?',
+  }) {
     AlertDialog alert = AlertDialog(
       title: const Text("Konfirmasi"),
       content: Text(message),
