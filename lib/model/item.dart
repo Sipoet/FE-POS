@@ -21,30 +21,9 @@ class Item extends Model {
   Brand? brand;
   Money cogs;
   String uom;
-<<<<<<< HEAD
   String? description;
   Money sellPrice;
   List<DiscountRule> discountRules;
-  Item(
-      {this.code = '',
-      this.name = '',
-      this.itemTypeName = '',
-      this.brandName,
-      this.supplierCode,
-      this.supplier,
-      this.description,
-      this.brand,
-      List<DiscountRule>? discountRules,
-      this.uom = '',
-      Money? sellPrice,
-      Money? cogs,
-      ItemType? itemType,
-      super.id})
-      : itemType = itemType ?? ItemType(),
-        discountRules = discountRules ?? [],
-        cogs = cogs ?? const Money(0),
-        sellPrice = sellPrice ?? const Money(0);
-=======
   Item({
     this.code = '',
     this.name = '',
@@ -54,15 +33,16 @@ class Item extends Model {
     this.supplier,
     this.description,
     this.brand,
+    List<DiscountRule>? discountRules,
     this.uom = '',
     Money? sellPrice,
     Money? cogs,
     ItemType? itemType,
     super.id,
-  }) : itemType = itemType ?? ItemType(name: itemTypeName),
+  }) : itemType = itemType ?? ItemType(),
+       discountRules = discountRules ?? [],
        cogs = cogs ?? const Money(0),
        sellPrice = sellPrice ?? const Money(0);
->>>>>>> e2cb4fb19ebb9fb37c3fcd36c2c782779bfc7a67
 
   @override
   String get path => 'ipos/items';
