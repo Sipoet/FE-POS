@@ -97,6 +97,7 @@ class _LastItemSalesTransactionWidgetState
                 key: 'transaction_date',
                 values: [_dateRange.start, _dateRange.end],
               ),
+              ComparisonFilterData(key: 'sale_type', value: ['KSR', 'JL']),
             ],
             include: ['item', 'sale'],
             sorts: [SortData(key: 'transaction_date', isAscending: false)],
@@ -169,7 +170,7 @@ class _LastItemSalesTransactionWidgetState
             contentPadding: EdgeInsets.only(left: 10, right: 0),
             border: OutlineInputBorder(),
           ),
-          dropdownMenuEntries: List<int>.generate(5, (i) => i * 5)
+          dropdownMenuEntries: [5, 10, 20, 50, 100]
               .map<DropdownMenuEntry<int>>(
                 (value) => DropdownMenuEntry<int>(
                   value: value,

@@ -165,7 +165,7 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
             contentPadding: EdgeInsets.only(left: 10, right: 0),
             border: OutlineInputBorder(),
           ),
-          dropdownMenuEntries: List<int>.generate(5, (i) => i * 5)
+          dropdownMenuEntries: [5, 10, 20, 50, 100]
               .map<DropdownMenuEntry<int>>(
                 (value) => DropdownMenuEntry<int>(
                   value: value,
