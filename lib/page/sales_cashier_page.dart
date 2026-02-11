@@ -38,8 +38,9 @@ class _SalesCashierPageState extends State<SalesCashierPage>
     flash = Flash();
     setting = context.read<Setting>();
     _source = CustomAsyncDataTableSource<SalesCashier>(
-        columns: setting.tableColumn('salesCashier'),
-        fetchData: fetchSalesCashiers);
+      columns: setting.tableColumn('salesCashier'),
+      fetchData: fetchSalesCashiers,
+    );
     if (_source.columns.isNotEmpty) {
       _source.sortColumn = _source.columns[1];
     }
@@ -58,11 +59,12 @@ class _SalesCashierPageState extends State<SalesCashierPage>
     _source.refreshDataFromFirstPage();
   }
 
-  Future<ResponseResult<SalesCashier>> fetchSalesCashiers(
-      {int page = 1,
-      int limit = 50,
-      TableColumn? sortColumn,
-      bool isAscending = false}) {
+  Future<ResponseResult<SalesCashier>> fetchSalesCashiers({
+    int page = 1,
+    int limit = 50,
+    TableColumn? sortColumn,
+    bool isAscending = false,
+  }) {
     String orderKey = sortColumn?.name ?? 'tanggal';
     Map<String, dynamic> param = {
       'search_text': _searchText,
@@ -76,36 +78,48 @@ class _SalesCashierPageState extends State<SalesCashierPage>
     try {
       return server
           .get('sales', queryParam: param, cancelToken: cancelToken)
-          .then((response) {
-        if (response.statusCode != 200) {
-          throw 'error: ${response.data.toString()}';
-        }
-        Map responseBody = response.data;
-        if (responseBody['data'] is! List) {
-          throw 'error: invalid data type ${response.data.toString()}';
-        }
-        final models = responseBody['data']
-            .map<SalesCashier>((json) => SalesCashierClass()
-                .fromJson(json, included: responseBody['included'] ?? []))
-            .toList();
-        final totalRows =
-            responseBody['meta']?['total_rows'] ?? responseBody['data'].length;
-        return ResponseResult<SalesCashier>(
-            totalRows: totalRows, models: models);
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
+          .then(
+            (response) {
+              if (response.statusCode != 200) {
+                throw 'error: ${response.data.toString()}';
+              }
+              Map responseBody = response.data;
+              if (responseBody['data'] is! List) {
+                throw 'error: invalid data type ${response.data.toString()}';
+              }
+              final models = responseBody['data']
+                  .map<SalesCashier>(
+                    (json) => SalesCashierClass().fromJson(
+                      json,
+                      included: responseBody['included'] ?? [],
+                    ),
+                  )
+                  .toList();
+              final totalRows =
+                  responseBody['meta']?['total_rows'] ??
+                  responseBody['data'].length;
+              return ResponseResult<SalesCashier>(
+                totalRows: totalRows,
+                models: models,
+              );
+            },
+            onError: (error, stackTrace) =>
+                defaultErrorResponse(error: error, valueWhenError: []),
+          );
     } catch (e, trace) {
       flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
+        title: e.toString(),
+        description: trace.toString(),
+        messageType: ToastificationType.error,
+      );
       throw 'error';
     }
   }
 
-  void showConfirmDialog(
-      {required Function onSubmit, String message = 'Apakah Anda Yakin?'}) {
+  void showConfirmDialog({
+    required Function onSubmit,
+    String message = 'Apakah Anda Yakin?',
+  }) {
     AlertDialog alert = AlertDialog(
       title: const Text("Konfirmasi"),
       content: Text(message),
@@ -151,19 +165,25 @@ class _SalesCashierPageState extends State<SalesCashierPage>
   void viewRecord(SalesCashier salesCashier) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Lihat Penjualan ${salesCashier.code}',
-          SalesCashierFormPage(salesCashier: salesCashier));
+      tabManager.addTab(
+        'Lihat Penjualan ${salesCashier.code}',
+        SalesCashierFormPage(salesCashier: salesCashier),
+      );
     });
   }
 
   void addForm() {
     String defaultLocation = 'TOKO';
-    final salesCashier =
-        SalesCashier(location: defaultLocation, salesCashierItems: []);
+    final salesCashier = SalesCashier(
+      location: defaultLocation,
+      salesCashierItems: [],
+    );
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Tambah Penjualan Kasir',
-          SalesCashierFormPage(salesCashier: salesCashier));
+      tabManager.addTab(
+        'Tambah Penjualan Kasir',
+        SalesCashierFormPage(salesCashier: salesCashier),
+      );
     });
   }
 
@@ -171,12 +191,13 @@ class _SalesCashierPageState extends State<SalesCashierPage>
   Widget build(BuildContext context) {
     super.build(context);
     _source.actionButtons = (sale, index) => [
-          IconButton.filled(
-              onPressed: () {
-                viewRecord(sale);
-              },
-              icon: const Icon(Icons.search_rounded)),
-        ];
+      IconButton.filled(
+        onPressed: () {
+          viewRecord(sale);
+        },
+        icon: const Icon(Icons.search_rounded),
+      ),
+    ];
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -207,8 +228,9 @@ class _SalesCashierPageState extends State<SalesCashierPage>
                   SizedBox(
                     width: 150,
                     child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
+                      decoration: const InputDecoration(
+                        hintText: 'Search Text',
+                      ),
                       onChanged: searchChanged,
                       onSubmitted: searchChanged,
                     ),
@@ -216,18 +238,19 @@ class _SalesCashierPageState extends State<SalesCashierPage>
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(
-                        controller: _menuController,
-                        menuChildren: [
-                          MenuItemButton(
-                            child: const Text('Tambah Penjualan di kasir'),
-                            onPressed: () {
-                              _menuController.close();
-                              addForm();
-                            },
-                          ),
-                        ],
-                        child: const Icon(Icons.table_rows_rounded)),
-                  )
+                      controller: _menuController,
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah Penjualan di kasir'),
+                          onPressed: () {
+                            _menuController.close();
+                            addForm();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),

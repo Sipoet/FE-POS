@@ -32,12 +32,14 @@ class Item extends Model {
     this.supplier,
     this.description,
     this.brand,
+    List<DiscountRule>? discountRules,
     this.uom = '',
     Money? sellPrice,
     Money? cogs,
     ItemType? itemType,
     super.id,
-  }) : itemType = itemType ?? ItemType(name: itemTypeName),
+  }) : itemType = itemType ?? ItemType(),
+       discountRules = discountRules ?? [],
        cogs = cogs ?? const Money(0),
        sellPrice = sellPrice ?? const Money(0);
 
