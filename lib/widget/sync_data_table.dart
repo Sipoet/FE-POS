@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:async/async.dart';
 import 'package:collection/collection.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
@@ -161,16 +163,6 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
         }
       },
     );
-  }
-
-  List<T> paginatedRows({
-    required List<T> models,
-    int page = 1,
-    int limit = 10,
-  }) {
-    int start = (page - 1) * limit;
-    int end = [page * limit, models.length].min;
-    return models.sublist(start, end);
   }
 
   Widget trinaGrid(ColorScheme colorScheme) {
@@ -350,7 +342,7 @@ class SyncTableController<T extends Model> extends ChangeNotifier {
     queryRequest.searchText = value;
     searchTextChanged = true;
     mobileController.searchText = value;
-
+    _refreshMobileModel();
     notifyListeners();
   }
 
@@ -378,11 +370,34 @@ class SyncTableController<T extends Model> extends ChangeNotifier {
   void _refreshMobileModel() {
     mobileController.totalPage =
         (models.length.toDouble() / rowsPerPage.toDouble()).ceil();
+    final selectedModel = _searchModels();
+    debugPrint('masuk refresh');
     mobileController.models = paginatedRows(
-      models: models,
+      models: selectedModel,
       page: mobileController.currentPage,
       limit: rowsPerPage,
     );
+  }
+
+  List<T> _searchModels() {
+    final encoder = JsonEncoder();
+    var result = models.where((model) {
+      return encoder
+          .convert(model.asMap().values.map((e) => e.toString()).toList())
+          .toLowerCase()
+          .contains(mobileController.searchText.toLowerCase());
+    });
+    final sort = queryRequest.sorts.firstOrNull;
+    if (sort != null) {
+      if (sort.isAscending) {
+        result = result.sorted((a, b) => a[sort.key].compareTo(b[sort.key]));
+      } else {
+        result = result.sorted(
+          (a, b) => (a[sort.key].compareTo(b[sort.key]) * -1),
+        );
+      }
+    }
+    return result.toList();
   }
 
   set sorts(List<SortData> value) {

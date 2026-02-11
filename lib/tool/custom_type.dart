@@ -57,6 +57,8 @@ extension DateTimeExt on DateTime {
     ).beginningOfDay().subtract(Duration(milliseconds: 1));
   }
 
+  String toJson() => format();
+
   DateTime beginningOfWeek() {
     int dayT = weekday;
     return subtract(Duration(days: dayT - 1)).beginningOfDay();
@@ -257,12 +259,22 @@ class Money {
     }
   }
 
+  String toJson() {
+    return value.toString();
+  }
+
+  DateTime? fromJson(String value) {
+    return DateTime.tryParse(value);
+  }
+
   @override
   bool operator ==(var other) {
     if (other is Money) {
       return value == other.value;
     } else if (other is double) {
       return value == other;
+    } else if (other is int) {
+      return value == other.toDouble();
     } else {
       return false;
     }
@@ -355,6 +367,8 @@ class Percentage {
   String toString() {
     return ((value * 10000).round() / 100).toString();
   }
+
+  String toJson() => format();
 
   String format() {
     return "${toString()}%";
