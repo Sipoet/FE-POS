@@ -1,20 +1,18 @@
+import 'package:fe_pos/widget/mobile_table.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/number_form_field.dart';
 export 'package:fe_pos/widget/number_form_field.dart';
 
 class PaginationWidget extends StatefulWidget {
-  final TextEditingController? controller;
-  final int totalPage;
-  final int initialPage;
-  final int limit;
+  final MobileTableController controller;
+  // final int totalPage;
+  // final int initialPage;
+  // final int limit;
   final void Function(int page)? onPageChanged;
   const PaginationWidget({
     super.key,
     this.onPageChanged,
-    this.controller,
-    this.limit = 10,
-    this.initialPage = 1,
-    this.totalPage = 1,
+    required this.controller,
   });
 
   @override
@@ -22,21 +20,22 @@ class PaginationWidget extends StatefulWidget {
 }
 
 class _PaginationWidgetState extends State<PaginationWidget> {
-  int get totalPage => widget.totalPage;
-  late final TextEditingController controller;
-  late int page;
+  MobileTableController get controller => widget.controller;
+  final textController = TextEditingController();
+
   @override
   void initState() {
-    page = widget.initialPage;
-    controller =
-        widget.controller ?? TextEditingController(text: page.toString());
+    controller.addListener(() {
+      textController.text = controller.currentPage.toString();
+    });
+    textController.text = controller.currentPage.toString();
     super.initState();
   }
 
   void fetchModels() {
-    controller.setValue(page);
+    // controller.setValue(page);
     if (widget.onPageChanged != null) {
-      widget.onPageChanged!(page);
+      widget.onPageChanged!(controller.currentPage);
     }
   }
 
@@ -57,7 +56,7 @@ class _PaginationWidgetState extends State<PaginationWidget> {
                 children: [
                   Text('Page:'),
                   pageField,
-                  Text('of $totalPage pages'),
+                  Text('of ${controller.totalPage} pages'),
                 ],
               ),
             ],
@@ -70,7 +69,7 @@ class _PaginationWidgetState extends State<PaginationWidget> {
               prevButton,
               Text('Page:'),
               pageField,
-              Text('of $totalPage pages'),
+              Text('of ${controller.totalPage} pages'),
               nextButton,
               lastButton,
             ],
@@ -83,7 +82,7 @@ class _PaginationWidgetState extends State<PaginationWidget> {
               prevButton,
               Text('Page:'),
               pageField,
-              Text('of $totalPage pages'),
+              Text('of ${controller.totalPage} pages'),
               nextButton,
               lastButton,
             ],
@@ -96,15 +95,15 @@ class _PaginationWidgetState extends State<PaginationWidget> {
   Widget get pageField => SizedBox(
     width: 50,
     child: NumberFormField<int>(
-      controller: controller,
+      controller: textController,
       isDense: true,
       onChanged: (value) {
         if (value == null) {
-          controller.setValue(page);
+          controller.currentPage = 1;
           return;
         }
-        if (value > 0 && value <= totalPage) {
-          page = value;
+        if (value > 0 && value <= controller.totalPage) {
+          controller.currentPage = value;
           fetchModels();
         }
       },
@@ -113,11 +112,11 @@ class _PaginationWidgetState extends State<PaginationWidget> {
   Widget get firstButton => IconButton(
     tooltip: 'First page',
     disabledColor: Colors.grey.shade300,
-    onPressed: page <= 1
+    onPressed: controller.currentPage <= 1
         ? null
         : () {
             setState(() {
-              page = 1;
+              controller.currentPage = 1;
             });
 
             fetchModels();
@@ -127,13 +126,13 @@ class _PaginationWidgetState extends State<PaginationWidget> {
   Widget get prevButton => IconButton(
     tooltip: 'Previous page',
     disabledColor: Colors.grey.shade300,
-    onPressed: page <= 1
+    onPressed: controller.currentPage <= 1
         ? null
         : () {
             setState(() {
-              page -= 1;
-              if (page < 1) {
-                page = 1;
+              controller.currentPage -= 1;
+              if (controller.currentPage < 1) {
+                controller.currentPage = 1;
                 return;
               }
             });
@@ -145,13 +144,13 @@ class _PaginationWidgetState extends State<PaginationWidget> {
   Widget get nextButton => IconButton(
     tooltip: 'Next page',
     disabledColor: Colors.grey.shade300,
-    onPressed: page >= totalPage
+    onPressed: controller.currentPage >= controller.totalPage
         ? null
         : () {
             setState(() {
-              page += 1;
-              if (page > totalPage) {
-                page = totalPage;
+              controller.currentPage += 1;
+              if (controller.currentPage > controller.totalPage) {
+                controller.currentPage = controller.totalPage;
                 return;
               }
             });
@@ -164,11 +163,11 @@ class _PaginationWidgetState extends State<PaginationWidget> {
   Widget get lastButton => IconButton(
     tooltip: 'Last page',
     disabledColor: Colors.grey.shade300,
-    onPressed: page >= totalPage
+    onPressed: controller.currentPage >= controller.totalPage
         ? null
         : () {
             setState(() {
-              page = totalPage;
+              controller.currentPage = controller.totalPage;
             });
             fetchModels();
           },

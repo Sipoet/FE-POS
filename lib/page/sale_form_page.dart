@@ -59,7 +59,7 @@ class _SaleFormPageState extends State<SaleFormPage>
           'ipos/sales/show',
           queryParam: {
             'code': Uri.encodeComponent(sale.id),
-            'include': 'sale_items',
+            'include': 'sale_items,sale_items.item',
           },
         )
         .then(
@@ -94,333 +94,328 @@ class _SaleFormPageState extends State<SaleFormPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  constraints: BoxConstraints.loose(const Size.fromWidth(600)),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Visibility(
-                      //   visible: sale.id != null,
-                      //   child: ElevatedButton.icon(
-                      //       onPressed: () => fetchHistoryByRecord('Sale', sale.id),
-                      //       label: const Text('Riwayat'),
-                      //       icon: const Icon(Icons.history)),
-                      // ),
-                      // const Divider(),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'notransaksi'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10.0),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'notransaksi',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+              Container(
+                constraints: BoxConstraints.loose(const Size.fromWidth(380)),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Visibility(
+                    //   visible: sale.id != null,
+                    //   child: ElevatedButton.icon(
+                    //       onPressed: () => fetchHistoryByRecord('Sale', sale.id),
+                    //       label: const Text('Riwayat'),
+                    //       icon: const Icon(Icons.history)),
+                    // ),
+                    // const Divider(),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'notransaksi'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'notransaksi',
                             ),
-                            readOnly: true,
-                            initialValue: sale.code,
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: sale.code,
                         ),
                       ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'user1'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'user1',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+                    ),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'user1'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'user1',
                             ),
-                            readOnly: true,
-                            initialValue: sale.userName,
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: sale.userName,
                         ),
                       ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'tanggal'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'tanggal',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+                    ),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'tanggal'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'tanggal',
                             ),
-                            readOnly: true,
-                            initialValue: dateTimeLocalFormat(sale.datetime),
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: dateTimeLocalFormat(sale.datetime),
                         ),
                       ),
+                    ),
 
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'totalitem'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'totalitem',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'totalitem'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'totalitem',
                             ),
-                            readOnly: true,
-                            initialValue: sale.totalItem.toString(),
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: sale.totalItem.toString(),
                         ),
                       ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'subtotal'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'subtotal',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+                    ),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'subtotal'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'subtotal',
                             ),
-                            readOnly: true,
-                            initialValue: moneyFormat(sale.subtotal),
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: moneyFormat(sale.subtotal),
                         ),
                       ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'potnomfaktur'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'potnomfaktur',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+                    ),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'potnomfaktur'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'potnomfaktur',
                             ),
-                            readOnly: true,
-                            initialValue: moneyFormat(sale.discountAmount),
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: moneyFormat(sale.discountAmount),
                         ),
                       ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'biayalain'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'biayalain',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+                    ),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'biayalain'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'biayalain',
                             ),
-                            readOnly: true,
-                            initialValue: moneyFormat(sale.otherCost),
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: moneyFormat(sale.otherCost),
                         ),
                       ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'pajak'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'pajak',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+                    ),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'pajak'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'pajak',
                             ),
-                            readOnly: true,
-                            initialValue: moneyFormat(sale.taxAmount),
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: moneyFormat(sale.taxAmount),
                         ),
                       ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'totalakhir'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'totalakhir',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+                    ),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'totalakhir'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'totalakhir',
                             ),
-                            readOnly: true,
-                            initialValue: moneyFormat(sale.grandtotal),
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: moneyFormat(sale.grandtotal),
                         ),
                       ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'payment_type'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'payment_type',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+                    ),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'payment_type'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'payment_type',
                             ),
-                            readOnly: true,
-                            initialValue: sale.paymentMethodType,
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: sale.paymentMethodType,
                         ),
                       ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'bank_code'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'bank_code',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+                    ),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'bank_code'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'bank_code',
                             ),
-                            readOnly: true,
-                            initialValue: sale.bankCode,
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: sale.bankCode,
                         ),
                       ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'jmltunai'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'jmltunai',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+                    ),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'jmltunai'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'jmltunai',
                             ),
-                            readOnly: true,
-                            initialValue: moneyFormat(sale.cashAmount),
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: moneyFormat(sale.cashAmount),
                         ),
                       ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'jmldebit'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'jmldebit',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+                    ),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'jmldebit'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'jmldebit',
                             ),
-                            readOnly: true,
-                            initialValue: moneyFormat(sale.debitCardAmount),
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: moneyFormat(sale.debitCardAmount),
                         ),
                       ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'jmlkk'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'jmlkk',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+                    ),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'jmlkk'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'jmlkk',
                             ),
-                            readOnly: true,
-                            initialValue: moneyFormat(sale.creditCardAmount),
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: moneyFormat(sale.creditCardAmount),
                         ),
                       ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'jmlemoney'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'jmlemoney',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+                    ),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'jmlemoney'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'jmlemoney',
                             ),
-                            readOnly: true,
-                            initialValue: moneyFormat(sale.emoneyAmount),
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: moneyFormat(sale.emoneyAmount),
                         ),
                       ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'ppn'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'ppn',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
-                            ),
-                            readOnly: true,
-                            initialValue: sale.taxType,
+                    ),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'ppn'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName('ipos::Sale', 'ppn'),
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          initialValue: sale.taxType,
                         ),
                       ),
-                      Visibility(
-                        visible: setting.canShow('ipos::Sale', 'keterangan'),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: setting.columnName(
-                                'ipos::Sale',
-                                'keterangan',
-                              ),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder(),
+                    ),
+                    Visibility(
+                      visible: setting.canShow('ipos::Sale', 'keterangan'),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: setting.columnName(
+                              'ipos::Sale',
+                              'keterangan',
                             ),
-                            readOnly: true,
-                            minLines: 3,
-                            maxLines: 5,
-                            initialValue: sale.description,
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
                           ),
+                          readOnly: true,
+                          minLines: 3,
+                          maxLines: 5,
+                          initialValue: sale.description,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
               const Text(

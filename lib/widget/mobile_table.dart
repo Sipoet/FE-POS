@@ -33,7 +33,6 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
     with TextFormatter, LoadingPopup {
   DataTableResponse<T>? queryResponse;
   late final TabManager tabManager;
-  final pageController = TextEditingController();
   final scrollController = ScrollController();
   MobileTableController<T> get controller => widget.controller;
   CancelableOperation<String>? searchOperation;
@@ -43,11 +42,6 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
 
     Future.delayed(Duration.zero, refreshTable);
     controller.addListener(() {
-      if (mounted) {
-        setState(() {});
-      }
-    });
-    controller.loader.addListener(() {
       if (mounted) {
         setState(() {});
       }
@@ -138,8 +132,7 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
         Visibility(
           visible: controller.models.isNotEmpty,
           child: PaginationWidget(
-            totalPage: controller.totalPage,
-            initialPage: controller.currentPage,
+            controller: controller,
             onPageChanged: (page) {
               controller.currentPage = page;
               controller.notifyChanged();
@@ -278,7 +271,6 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
   void refreshTable() {
     setState(() {
       controller.currentPage = 1;
-      controller.models.clear();
       controller.notifyChanged(force: true);
     });
   }
