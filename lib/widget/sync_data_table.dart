@@ -330,6 +330,7 @@ class SyncTableController<T extends Model> extends ChangeNotifier {
     models.clear();
     models.addAll(value);
     trinaController.setModels(value);
+    trinaController.refreshTable();
     _refreshMobileModel();
     notifyListeners();
   }

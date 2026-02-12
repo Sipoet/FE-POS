@@ -99,6 +99,8 @@ class PurchasePaymentHistory extends Model {
     'grand_total': grandTotal,
     'payment_amount': paymentAmount,
     'purchase_code': purchaseCode,
+    'purchase': purchase,
+    'purchase_order': purchaseOrder,
     'purchase_order_code': purchaseOrderCode,
     'code': code,
     'supplier_code': supplierCode,
@@ -128,11 +130,13 @@ class PurchasePaymentHistory extends Model {
           ) ??
           Account(code: attributes['payment_account_code'] ?? '');
       purchase = PurchaseClass().findRelationData(
-        included: included,
+        included: included.where((data) => data['type'] == 'purchase').toList(),
         relation: json['relationships']?['purchase'],
       );
       purchaseOrder = PurchaseOrderClass().findRelationData(
-        included: included,
+        included: included
+            .where((data) => data['type'] == 'purchase_order')
+            .toList(),
         relation: json['relationships']?['purchase_order'],
       );
     }

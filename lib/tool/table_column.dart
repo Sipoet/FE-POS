@@ -381,7 +381,7 @@ class DateTableColumnType<T extends DateTime> extends TableColumnType<T> {
     required TableColumn column,
     TabManager? tabManager,
   }) {
-    return Text(value?.toLocal().format() ?? '');
+    return Text(value?.toLocal().format() ?? '', textAlign: .right);
   }
 
   @override
@@ -535,10 +535,10 @@ class NumberTableColumnType<T> extends TableColumnType<T> with TextFormatter {
     TabManager? tabManager,
   }) {
     if (value is T) {
-      return Text(numberFormat(value));
+      return Text(numberFormat(value), textAlign: .right);
     } else {
       final newValue = convert(value);
-      return Text(numberFormat(newValue));
+      return Text(numberFormat(newValue), textAlign: .right);
     }
   }
 
@@ -845,11 +845,11 @@ class MoneyTableColumnType extends TableColumnType<Money> {
     TabManager? tabManager,
   }) {
     if (value is Money) {
-      return Text(value.format());
+      return Text(value.format(), textAlign: .right);
     } else if (value is num) {
-      return Text(Money.parse(value).format());
+      return Text(Money.parse(value).format(), textAlign: .right);
     } else {
-      return Text(value.toString());
+      return Text(value.toString(), textAlign: .right);
     }
   }
 
@@ -1034,7 +1034,7 @@ class PercentageTableColumnType extends TableColumnType<Percentage>
     required TableColumn column,
     TabManager? tabManager,
   }) {
-    return Text(value?.format() ?? '');
+    return Text(value?.format() ?? '', textAlign: .right);
   }
 
   @override

@@ -165,7 +165,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 isClosed: true,
                 label: 'Riwayat Pembayaran Pembelian',
                 isDisabled: !setting.isAuthorize(
-                  'purchasePaymentHistory',
+                  'purchase_payment_histories',
                   'read',
                 ),
                 pageFunct: () => const PurchasePaymentHistoryPage(),
