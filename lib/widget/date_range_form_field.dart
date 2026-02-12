@@ -190,6 +190,7 @@ class DateRangeFormField<T extends DateTime> extends StatefulWidget {
     this.onSaved,
     this.onChanged,
     this.helpText,
+    this.isDense,
     this.controller,
     this.focusNode,
     this.allowClear = false,
@@ -201,6 +202,7 @@ class DateRangeFormField<T extends DateTime> extends StatefulWidget {
   final TextStyle? textStyle;
   final DateTimeRange<T>? initialValue;
   final bool enabled;
+  final bool? isDense;
   final bool allowClear;
   final FocusNode? focusNode;
   final Function(DateTimeRange<T>? range)? onChanged;
@@ -269,6 +271,7 @@ class _DateRangeFormFieldState<T extends DateTime>
           : (value) => widget.validator!(_dateRange),
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.all(5),
+        isDense: widget.isDense,
         suffix: widget.allowClear && _dateRange != null
             ? IconButton(
                 iconSize: 24,

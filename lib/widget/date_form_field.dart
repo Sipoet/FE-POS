@@ -117,6 +117,7 @@ class DateFormField extends StatefulWidget {
   final bool allowClear;
   final DateType dateType;
   final bool? readOnly;
+  final bool? isDense;
   final FocusNode? focusNode;
   final DateEditingController? controller;
   final void Function(DateTime?)? onSaved;
@@ -130,6 +131,7 @@ class DateFormField extends StatefulWidget {
     this.controller,
     this.lastDate,
     this.helpText,
+    this.isDense,
     this.onSaved,
     this.readOnly,
     this.focusNode,
@@ -156,8 +158,9 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
     widget.controller?.addListener(() {
       setState(() {
         _datetime = widget.controller?.value;
-        _controller.text =
-            _datetime == null ? '' : dateType.displayFormat(_datetime!);
+        _controller.text = _datetime == null
+            ? ''
+            : dateType.displayFormat(_datetime!);
       });
     });
     writeToTextField();
@@ -170,23 +173,23 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
   void _openDialog() {
     dateType
         .showDialog(
-      context: context,
-      colorScheme: Theme.of(context).colorScheme,
-      initialDate: _datetime?.toLocal(),
-      helpText: widget.helpText,
-    )
+          context: context,
+          colorScheme: Theme.of(context).colorScheme,
+          initialDate: _datetime?.toLocal(),
+          helpText: widget.helpText,
+        )
         .then((date) {
-      if (date == null) {
-        return;
-      }
-      setState(() {
-        _datetime = date;
-        writeToTextField();
-        if (widget.onChanged != null) {
-          widget.onChanged!(_datetime);
-        }
-      });
-    });
+          if (date == null) {
+            return;
+          }
+          setState(() {
+            _datetime = date;
+            writeToTextField();
+            if (widget.onChanged != null) {
+              widget.onChanged!(_datetime);
+            }
+          });
+        });
   }
 
   void writeToTextField() {
@@ -219,6 +222,7 @@ class _DateFormFieldState extends State<DateFormField> with TextFormatter {
       },
       decoration: InputDecoration(
         label: widget.label,
+        isDense: widget.isDense,
         contentPadding: EdgeInsets.all(5),
         border: const OutlineInputBorder(),
         suffix: widget.allowClear

@@ -22,7 +22,7 @@ export 'package:fe_pos/model/payment_provider.dart';
 export 'package:fe_pos/model/payment_type.dart';
 export 'package:fe_pos/model/book_employee_attendance.dart';
 export 'package:fe_pos/model/book_payslip_line.dart';
-export 'package:fe_pos/model/purchase.dart';
+export 'package:fe_pos/model/ipos/purchase_header.dart';
 export 'package:fe_pos/model/purchase_order.dart';
 export 'package:fe_pos/model/consignment_in.dart';
 export 'package:fe_pos/model/consignment_in_order.dart';

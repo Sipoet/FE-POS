@@ -15,6 +15,7 @@ class Product extends Model with SaveNDestroyModel {
   String defaultBarcode;
   Brand? brand;
   Supplier? supplier;
+  Money sellPrice;
   List<ProductTag> tags = [];
 
   Product(
@@ -25,6 +26,7 @@ class Product extends Model with SaveNDestroyModel {
       this.itemType,
       List<ProductTag>? tags,
       this.brand,
+      this.sellPrice = const Money(0),
       this.supplier,
       super.createdAt,
       super.updatedAt})
@@ -42,8 +44,7 @@ class Product extends Model with SaveNDestroyModel {
         'default_barcode': defaultBarcode,
         'supplier': supplier,
         'supplier_product_code': supplierProductCode,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
+        'sell_price': sellPrice,
       };
 
   @override

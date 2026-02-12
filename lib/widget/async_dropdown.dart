@@ -60,6 +60,7 @@ class AsyncDropdownMultiple<T extends Model> extends StatefulWidget {
     this.textOnSelected,
     this.compareValue,
     this.controller,
+    this.isDense,
     required this.modelClass,
     this.selecteds,
   });
@@ -71,6 +72,7 @@ class AsyncDropdownMultiple<T extends Model> extends StatefulWidget {
   final Duration delayedSearch;
   final int recordLimit;
   final double? width;
+  final bool? isDense;
   final List<T>? selecteds;
   final int selectedDisplayLimit;
   final FocusNode? focusNode;
@@ -103,7 +105,8 @@ class _AsyncDropdownMultipleState<T extends Model>
 
   @override
   void initState() {
-    controller = widget.controller ??
+    controller =
+        widget.controller ??
         MultipleDropdownController<T>(widget.selecteds ?? []);
     server = context.read<Server>();
     _focusNode = widget.focusNode ?? FocusNode();
@@ -275,6 +278,7 @@ class _AsyncDropdownMultipleState<T extends Model>
       decoratorProps: DropDownDecoratorProps(
         decoration: InputDecoration(
           label: widget.label,
+          isDense: widget.isDense,
           border: const OutlineInputBorder(),
         ),
       ),
@@ -297,24 +301,26 @@ class _AsyncDropdownMultipleState<T extends Model>
           .then((response) => response.models);
     }
     return request(
-      page: page,
-      limit: widget.recordLimit,
-      searchText: filter,
-      cancelToken: _cancelToken,
-    ).then((response) {
-      if (response.statusCode == 200) {
-        Map responseBody = response.data;
-        return convertToOptions(
-          responseBody['data'],
-          responseBody['included'] ?? [],
+          page: page,
+          limit: widget.recordLimit,
+          searchText: filter,
+          cancelToken: _cancelToken,
+        )
+        .then((response) {
+          if (response.statusCode == 200) {
+            Map responseBody = response.data;
+            return convertToOptions(
+              responseBody['data'],
+              responseBody['included'] ?? [],
+            );
+          } else {
+            throw 'cant connect to server';
+          }
+        })
+        .onError(
+          (error, stackTrace) =>
+              defaultErrorResponse(error: error, valueWhenError: []),
         );
-      } else {
-        throw 'cant connect to server';
-      }
-    }).onError(
-      (error, stackTrace) =>
-          defaultErrorResponse(error: error, valueWhenError: []),
-    );
   }
 
   List<T> convertToOptions(List list, List relationships) {
@@ -326,12 +332,13 @@ class _AsyncDropdownMultipleState<T extends Model>
   }
 }
 
-typedef RequestRemote = Future Function({
-  int page,
-  int limit,
-  String searchText,
-  required CancelToken cancelToken,
-});
+typedef RequestRemote =
+    Future Function({
+      int page,
+      int limit,
+      String searchText,
+      required CancelToken cancelToken,
+    });
 
 class AsyncDropdown<T extends Model> extends StatefulWidget {
   const AsyncDropdown({
@@ -346,6 +353,7 @@ class AsyncDropdown<T extends Model> extends StatefulWidget {
     this.attributeKey,
     this.validator,
     this.onSaved,
+    this.isDense,
     this.focusNode,
     this.selectedDisplayLimit = 6,
     this.recordLimit = 10,
@@ -364,6 +372,7 @@ class AsyncDropdown<T extends Model> extends StatefulWidget {
   final double? width;
   final T? selected;
   final bool allowClear;
+  final bool? isDense;
   final FocusNode? focusNode;
   final int selectedDisplayLimit;
   final void Function(T? model)? onChanged;
@@ -488,6 +497,7 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
       decoratorProps: DropDownDecoratorProps(
         decoration: InputDecoration(
           label: widget.label,
+          isDense: widget.isDense,
           border: const OutlineInputBorder(),
         ),
       ),

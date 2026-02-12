@@ -19,7 +19,7 @@ class ProductPage extends StatefulWidget {
 }
 
 class _ProductPageState extends State<ProductPage> with DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
   String _searchText = '';
   List<Product> products = [];
@@ -50,7 +50,9 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
 
     final desc = product.isNewRecord ? 'Tambah' : 'Edit';
     tabManager.addTab(
-        '$desc Produk ${product.id ?? ''}', ProductFormPage(product: product));
+      '$desc Produk ${product.id ?? ''}',
+      ProductFormPage(product: product),
+    );
   }
 
   void refreshTable() {
@@ -63,13 +65,21 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
     request.cancelToken = cancelToken;
     request.filters.addAll(_filter);
 
-    return ProductClass().finds(server, request).then((response) {
-      return DataTableResponse<Product>(
-          totalPage: response.metadata['total_pages'], models: response.models);
-    }, onError: (error, stackTrace) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse<Product>(totalPage: 1, models: []);
-    }).whenComplete(() => _source.setShowLoading(false));
+    return ProductClass()
+        .finds(server, request)
+        .then(
+          (response) {
+            return DataTableResponse<Product>(
+              totalPage: response.metadata['total_pages'],
+              models: response.models,
+            );
+          },
+          onError: (error, stackTrace) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse<Product>(totalPage: 1, models: []);
+          },
+        )
+        .whenComplete(() => _source.setShowLoading(false));
   }
 
   void searchChanged(value) {
@@ -124,18 +134,19 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
                 SizedBox(
                   width: 50,
                   child: SubmenuButton(
-                      controller: _menuController,
-                      menuChildren: [
-                        MenuItemButton(
-                          child: const Text('Tambah Produk'),
-                          onPressed: () {
-                            _menuController.close();
-                            openForm(Product());
-                          },
-                        ),
-                      ],
-                      child: const Icon(Icons.table_rows_rounded)),
-                )
+                    controller: _menuController,
+                    menuChildren: [
+                      MenuItemButton(
+                        child: const Text('Tambah Produk'),
+                        onPressed: () {
+                          _menuController.close();
+                          openForm(Product());
+                        },
+                      ),
+                    ],
+                    child: const Icon(Icons.table_rows_rounded),
+                  ),
+                ),
               ],
             ),
           ),
@@ -147,7 +158,7 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
                   IconButton(
                     onPressed: () => openForm(model),
                     icon: Icon(Icons.edit),
-                  )
+                  ),
                 ],
               ),
               onLoaded: (stateManager) => _source = stateManager,

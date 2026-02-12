@@ -26,8 +26,7 @@ class _ItemReportPageState extends State<ItemReportPage>
   late final SyncTableController<ItemReport> _source;
   late Flash flash;
   late final List<TableColumn> columns;
-  List<ItemReport> _itemReports = [];
-  List<FilterData> _filters = [];
+
   String _searchText = '';
   String? _reportType;
   @override
@@ -45,31 +44,31 @@ class _ItemReportPageState extends State<ItemReportPage>
   void _displayReport() {
     _source.setShowLoading(true);
 
-    _requestReport(page: 1, limit: 2000).then((response) {
-      try {
-        if (response.statusCode != 200) {
-          setState(() {
-            //   itemReports = [];
-            _source.setModels([]);
-          });
-          return;
-        }
-        var data = response.data;
-        final initClass = ItemReportClass();
-        setState(() {
-          final itemReports = data['data'].map<ItemReport>((row) {
-            return initClass.fromJson(row);
-          }).toList();
-          _source.setModels(itemReports);
-          debugPrint('report page models ${itemReports.length}');
-        });
-      } catch (error, stackTrace) {
-        debugPrint(error.toString());
-        debugPrint(stackTrace.toString());
-      }
-    },
-        onError: ((error, stackTrace) => defaultErrorResponse(
-            error: error))).whenComplete(() => _source.setShowLoading(false));
+    _requestReport(page: 1, limit: 2000)
+        .then((response) {
+          try {
+            if (response.statusCode != 200) {
+              setState(() {
+                //   itemReports = [];
+                _source.setModels([]);
+              });
+              return;
+            }
+            var data = response.data;
+            final initClass = ItemReportClass();
+            setState(() {
+              final itemReports = data['data'].map<ItemReport>((row) {
+                return initClass.fromJson(row);
+              }).toList();
+              _source.setModels(itemReports);
+              debugPrint('report page models ${itemReports.length}');
+            });
+          } catch (error, stackTrace) {
+            debugPrint(error.toString());
+            debugPrint(stackTrace.toString());
+          }
+        }, onError: ((error, stackTrace) => defaultErrorResponse(error: error)))
+        .whenComplete(() => _source.setShowLoading(false));
   }
 
   void _downloadReport() {

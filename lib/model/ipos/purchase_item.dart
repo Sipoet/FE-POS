@@ -1,6 +1,8 @@
-import 'package:fe_pos/model/item.dart';
+import 'package:fe_pos/model/consignment_in.dart';
 export 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/model/model.dart';
+import 'package:fe_pos/model/ipos/purchase_header.dart';
+import 'package:fe_pos/model/purchase_return.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
 class IposPurchaseItem extends Model {
@@ -29,36 +31,45 @@ class IposPurchaseItem extends Model {
   double? warehouseStock;
   double? storeStock;
   double? numberOfSales;
-  IposPurchaseItem(
-      {Item? item,
-      super.id,
-      this.purchaseCode,
-      this.itemCode = '',
-      this.row = 0,
-      this.quantity = 0,
-      this.price = const Money(0),
-      this.uom = '',
-      this.stockLeft = 0.0,
-      this.storeStock = 0.0,
-      this.warehouseStock = 0.0,
-      this.numberOfSales = 0.0,
-      super.createdAt,
-      super.updatedAt,
-      this.itemTypeName,
-      this.brandName,
-      this.supplierCode,
-      this.subtotal = const Money(0),
-      this.discountAmount1 = 0,
-      this.discountPercentage2 = const Percentage(0),
-      this.discountPercentage3 = const Percentage(0),
-      this.discountPercentage4 = const Percentage(0),
-      this.taxAmount = const Money(0),
-      this.total = const Money(0),
-      this.orderQuantity = 0,
-      this.productionCode,
-      this.expiredDate,
-      this.cogs = const Money(0)})
-      : item = item ?? Item();
+  IposPurchaseHeader? purchase;
+  PurchaseReturn? purchaseReturn;
+  ConsignmentIn? consignmentIn;
+  String? purchaseType;
+  DateTime? transactionDate;
+  IposPurchaseItem({
+    Item? item,
+    super.id,
+    this.purchaseCode,
+    this.itemCode = '',
+    this.row = 0,
+    this.quantity = 0,
+    this.price = const Money(0),
+    this.uom = '',
+    this.stockLeft = 0.0,
+    this.storeStock = 0.0,
+    this.warehouseStock = 0.0,
+    this.numberOfSales = 0.0,
+    super.createdAt,
+    super.updatedAt,
+    this.transactionDate,
+    this.itemTypeName,
+    this.brandName,
+    this.purchaseType,
+    this.supplierCode,
+    this.purchaseReturn,
+    this.subtotal = const Money(0),
+    this.discountAmount1 = 0,
+    this.discountPercentage2 = const Percentage(0),
+    this.discountPercentage3 = const Percentage(0),
+    this.discountPercentage4 = const Percentage(0),
+    this.taxAmount = const Money(0),
+    this.total = const Money(0),
+    this.orderQuantity = 0,
+    this.productionCode,
+    this.expiredDate,
+    this.purchase,
+    this.cogs = const Money(0),
+  }) : item = item ?? Item();
 
   @override
   Map<String, dynamic> toMap() => {
@@ -69,6 +80,8 @@ class IposPurchaseItem extends Model {
         'nobaris': row,
         'harga': price,
         'satuan': uom,
+        'item': item,
+        'purchase': purchase ?? purchaseReturn ?? consignmentIn,
         'subtotal': subtotal,
         'potongan': discountAmount1,
         'potongan2': discountPercentage2,
@@ -92,10 +105,12 @@ class IposPurchaseItem extends Model {
         'item_type_name': itemTypeName,
         'supplier_code': supplierCode,
         'brand_name': brandName,
+        'transaction_date': transactionDate,
       };
   Money get sellPrice => item.sellPrice;
+
   @override
-  String get modelName => 'purchase_item';
+  String get path => 'ipos/purchase_items';
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -107,7 +122,19 @@ class IposPurchaseItem extends Model {
             included: included,
             relation: json['relationships']?['item'],
           ) ??
-          Item();
+          Item(id: attributes['kodeitem'], code: attributes['kodeitem']);
+      purchase = IposPurchaseHeaderClass().findRelationData(
+        included: included,
+        relation: json['relationships']?['purchase'],
+      );
+      purchaseReturn = PurchaseReturnClass().findRelationData(
+        included: included,
+        relation: json['relationships']?['purchase_return'],
+      );
+      consignmentIn = ConsignmentInClass().findRelationData(
+        included: included,
+        relation: json['relationships']?['consignment_in'],
+      );
     }
     itemCode = attributes['kodeitem'];
     row = attributes['nobaris'];
@@ -133,10 +160,32 @@ class IposPurchaseItem extends Model {
     supplierCode = attributes['supplier_code'];
     brandName = attributes['brand_name'];
     purchaseCode = attributes['notransaksi'];
+    purchaseType = attributes['purchase_type'];
+    transactionDate = DateTime.tryParse(attributes['transaction_date'] ?? '');
+  }
+
+  String get purchaseTypeName {
+    switch (purchaseType) {
+      case 'BL':
+        return 'Beli';
+      case 'RB':
+        return 'Retur';
+      case 'IM':
+        return 'Item Masuk';
+      case 'RKI':
+        return 'Konsinyasi Retur';
+      case 'KI':
+        return 'Konsinyasi';
+      default:
+        return '';
+    }
   }
 
   @override
-  String get modelValue => id.toString();
+  String get modelValue => "$purchaseCode-$itemCode";
+
+  @override
+  String? get valueDescription => purchaseTypeName;
 }
 
 class IposPurchaseItemClass extends ModelClass<IposPurchaseItem> {

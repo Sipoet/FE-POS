@@ -19,7 +19,7 @@ class PurchasePage extends StatefulWidget {
 
 class _PurchasePageState extends State<PurchasePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TableController<Purchase> _source;
+  late final TableController<IposPurchaseHeader> _source;
   late final Server server;
   String _searchText = '';
   List<IposPurchaseHeader> items = [];

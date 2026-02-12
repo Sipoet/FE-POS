@@ -61,7 +61,6 @@ dependencies:
   flutter_colorpicker: ^1.1.0
   flutter_barcode_scanner_plus: ^3.0.7
   flutter_simple_treeview: ^3.0.2
-  async: ^2.12.0
   pluralize: ^0.0.8
   month_picker_dialog: ^6.5.0
   async: ^2.13.0

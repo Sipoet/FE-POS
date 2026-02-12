@@ -84,8 +84,10 @@ class ModelRoute {
       key: ObjectKey(model),
       payrollType: model as PayrollType,
     ),
-    'Purchase': (model) =>
-        PurchaseFormPage(key: ObjectKey(model), purchase: model as Purchase),
+    'Purchase': (model) => PurchaseFormPage(
+      key: ObjectKey(model),
+      purchase: model as IposPurchaseHeader,
+    ),
     'PurchaseOrder': (model) => PurchaseOrderFormPage(
       key: ObjectKey(model),
       purchaseOrder: model as PurchaseOrder,
@@ -144,7 +146,7 @@ class ModelRoute {
     'PaymentType': PaymentTypeClass(),
     'BookEmployeeAttendance': BookEmployeeAttendanceClass(),
     'BookPayslipLine': BookPayslipLineClass(),
-    'Ipos::Purchase': PurchaseClass(),
+    'Ipos::Purchase': IposPurchaseHeaderClass(),
     'Ipos::PurchaseOrder': PurchaseOrderClass(),
     'Ipos::PurchaseItem': PurchaseItemClass(),
     'Ipos::PurchaseReturn': PurchaseReturnClass(),

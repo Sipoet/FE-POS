@@ -3,7 +3,7 @@ export 'package:fe_pos/model/product.dart';
 import 'package:fe_pos/model/consignment_in.dart';
 export 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/model/model.dart';
-import 'package:fe_pos/model/ipos/purchase.dart';
+import 'package:fe_pos/model/ipos/purchase_header.dart';
 import 'package:fe_pos/model/purchase_return.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
@@ -32,12 +32,8 @@ class PurchaseItem extends Model {
   double? warehouseStock;
   double? storeStock;
   double? numberOfSales;
-  // Purchase? purchase;
-  PurchaseReturn? purchaseReturn;
-  ConsignmentIn? consignmentIn;
   String? purchaseType;
   DateTime? transactionDate;
-  Item? item;
   PurchaseItem(
       {Product? product,
       super.id,
@@ -55,7 +51,6 @@ class PurchaseItem extends Model {
       super.updatedAt,
       this.itemTypeName,
       this.brandName,
-      this.item,
       this.supplierCode,
       this.subtotal = const Money(0),
       this.discountAmount1 = 0,
@@ -90,7 +85,7 @@ class PurchaseItem extends Model {
         'warehouse_stock': warehouseStock,
         'store_stock': storeStock,
         'number_of_sales': numberOfSales,
-        // 'sell_price': sellPrice,
+        'sell_price': sellPrice,
         'jmlpesan': orderQuantity,
         'tglexp': expiredDate,
         'kodeprod': productionCode,
@@ -110,45 +105,7 @@ class PurchaseItem extends Model {
   set product(Product? newProduct) =>
       _product = newProduct ?? ProductClass().initModel();
 
-  // Money get sellPrice => product.sellPrice;
-
-  @override
-  Map<String, dynamic> toMap() => {
-        'kodeitem': item?.code,
-        'item_code': item?.code,
-        'item_name': item?.name,
-        'jumlah': quantity,
-        'nobaris': row,
-        'harga': price,
-        'satuan': uom,
-        'item': item,
-        'purchase': purchaseReturn ?? consignmentIn,
-        'subtotal': subtotal,
-        'potongan': discountAmount1,
-        'potongan2': discountPercentage2,
-        'potongan3': discountPercentage3,
-        'potongan4': discountPercentage4,
-        'pajak': taxAmount,
-        'total': total,
-        'stock_left': stockLeft,
-        'warehouse_stock': warehouseStock,
-        'store_stock': storeStock,
-        'number_of_sales': numberOfSales,
-        'sell_price': sellPrice,
-        'jmlpesan': orderQuantity,
-        'tglexp': expiredDate,
-        'kodeprod': productionCode,
-        'hppdasar': cogs,
-        'notransaksi': purchaseCode,
-        'item.jenis': itemTypeName,
-        'item.supplier1': supplierCode,
-        'item.merek': brandName,
-        'item_type_name': itemTypeName,
-        'supplier_code': supplierCode,
-        'brand_name': brandName,
-        'transaction_date': transactionDate,
-      };
-  Money get sellPrice => item?.sellPrice ?? const Money(0);
+  Money get sellPrice => product.sellPrice;
 
   @override
   String get path => 'ipos/purchase_items';
@@ -167,23 +124,6 @@ class PurchaseItem extends Model {
     }
     if (product.id == null) {
       productId = attributes['product_id'];
-      item = ItemClass().findRelationData(
-            included: included,
-            relation: json['relationships']?['item'],
-          ) ??
-          Item(id: attributes['kodeitem'], code: attributes['kodeitem']);
-      // purchase = PurchaseClass().findRelationData(
-      //   included: included,
-      //   relation: json['relationships']?['purchase'],
-      // );
-      purchaseReturn = PurchaseReturnClass().findRelationData(
-        included: included,
-        relation: json['relationships']?['purchase_return'],
-      );
-      consignmentIn = ConsignmentInClass().findRelationData(
-        included: included,
-        relation: json['relationships']?['consignment_in'],
-      );
     }
     row = attributes['nobaris'];
     quantity = double.parse(attributes['jumlah']);
@@ -230,7 +170,7 @@ class PurchaseItem extends Model {
   }
 
   @override
-  String get modelValue => "$purchaseCode-${item?.code}";
+  String get modelValue => "$purchaseCode-${product.name}";
 
   @override
   String? get valueDescription => purchaseTypeName;

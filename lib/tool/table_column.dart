@@ -139,6 +139,21 @@ abstract class TableColumnType<T> {
   T? convert(dynamic value);
 
   TrinaColumnType get trinaColumnType;
+
+  static TableColumnType get integer => NumberTableColumnType(IntegerType());
+  static TableColumnType get double => NumberTableColumnType(DoubleType());
+  static TableColumnType get money => MoneyTableColumnType();
+  static TableColumnType get date => DateTableColumnType(DateRangeType());
+  static TableColumnType get datetime =>
+      DateTableColumnType(DateTimeRangeType());
+  static TableColumnType get percentage => PercentageTableColumnType();
+  static TableColumnType get text => TextTableColumnType();
+  static TableColumnType get contact => ContactTableColumnType();
+  static TableColumnType get time => TimeTableColumnType();
+  static TableColumnType model(ModelClass modelClass) =>
+      ModelTableColumnType(modelClass: modelClass);
+  static TableColumnType enums(List<String> enumList) =>
+      EnumTableColumnType(availableValues: enumList);
 }
 
 class TextTableColumnType extends TableColumnType<String> {
