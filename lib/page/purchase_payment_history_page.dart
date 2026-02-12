@@ -36,7 +36,12 @@ class _PurchasePaymentHistoryPageState extends State<PurchasePaymentHistoryPage>
   ) {
     request.filters = _filters;
 
-    request.include = ['supplier', 'payment_account'];
+    request.include = [
+      'supplier',
+      'payment_account',
+      'purchase',
+      'purchase_order',
+    ];
     return PurchasePaymentHistoryClass()
         .finds(_server, request)
         .then(
