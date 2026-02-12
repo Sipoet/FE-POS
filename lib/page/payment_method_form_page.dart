@@ -44,36 +44,45 @@ class _PaymentMethodFormPageState extends State<PaymentMethodFormPage>
         'type': 'payment_method',
         'id': paymentMethod.id,
         'attributes': paymentMethod.toJson(),
-      }
+      },
     };
     var request = paymentMethod.id == null
         ? _server.post('payment_methods', body: body)
         : _server.put('payment_methods/${paymentMethod.id}', body: body);
 
-    request.then((response) {
-      if ([200, 201].contains(response.statusCode)) {
-        var data = response.data['data'];
-        setState(() {
-          paymentMethod.setFromJson(
-            data,
-            included: response.data['included'],
-          );
-          var tabManager = context.read<TabManager>();
-          tabManager.changeTabHeader(
-              widget, 'Edit Karyawan ${paymentMethod.name}');
-        });
+    request.then(
+      (response) {
+        if ([200, 201].contains(response.statusCode)) {
+          var data = response.data['data'];
+          setState(() {
+            paymentMethod.setFromJson(
+              data,
+              included: response.data['included'],
+            );
+            var tabManager = context.read<TabManager>();
+            tabManager.changeTabHeader(
+              widget,
+              'Edit Karyawan ${paymentMethod.name}',
+            );
+          });
 
-        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
-      } else if (response.statusCode == 409) {
-        var data = response.data;
-        flash.showBanner(
+          flash.show(
+            const Text('Berhasil disimpan'),
+            ToastificationType.success,
+          );
+        } else if (response.statusCode == 409) {
+          var data = response.data;
+          flash.showBanner(
             title: data['message'],
             description: (data['errors'] ?? []).join('\n'),
-            messageType: ToastificationType.error);
-      }
-    }, onError: (error, stackTrace) {
-      defaultErrorResponse(error: error);
-    });
+            messageType: ToastificationType.error,
+          );
+        }
+      },
+      onError: (error, stackTrace) {
+        defaultErrorResponse(error: error);
+      },
+    );
   }
 
   @override
@@ -81,85 +90,86 @@ class _PaymentMethodFormPageState extends State<PaymentMethodFormPage>
     super.build(context);
     const labelStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
     return SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-            child: Center(
-                child: Container(
-                    constraints:
-                        BoxConstraints.loose(const Size.fromWidth(600)),
-                    child: Form(
-                        key: _formKey,
-                        child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TextFormField(
-                                decoration: const InputDecoration(
-                                    labelText: 'Nama Metode Pembayaran',
-                                    labelStyle: labelStyle,
-                                    border: OutlineInputBorder()),
-                                onSaved: (newValue) {
-                                  paymentMethod.name = newValue.toString();
-                                },
-                                onChanged: (newValue) {
-                                  paymentMethod.name = newValue.toString();
-                                },
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              Flexible(
-                                child: AsyncDropdown<Bank>(
-                                  path: '/banks',
-                                  attributeKey: 'namabank',
-                                  label: const Text(
-                                    'Bank/Provider :',
-                                    style: labelStyle,
-                                  ),
-                                  onSaved: (bank) {
-                                    paymentMethod.bank = bank ?? Bank();
-                                  },
-                                  textOnSearch: (bank) =>
-                                      "${bank.code} - ${bank.name}",
-                                  modelClass: BankClass(),
-                                  selected: paymentMethod.bank,
-                                  validator: (bank) {
-                                    if (bank == null) {
-                                      return 'harus diisi';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              DropdownMenu<PaymentType>(
-                                  initialSelection: paymentMethod.paymentType,
-                                  onSelected: ((value) =>
-                                      paymentMethod.paymentType =
-                                          value ?? PaymentType.other),
-                                  dropdownMenuEntries: PaymentType.values
-                                      .map<DropdownMenuEntry<PaymentType>>(
-                                          (paymentType) => DropdownMenuEntry(
-                                              value: paymentType,
-                                              label: paymentType.humanize()))
-                                      .toList()),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.only(top: 10, bottom: 10),
-                                child: ElevatedButton(
-                                    onPressed: () {
-                                      if (_formKey.currentState!.validate()) {
-                                        flash.show(const Text('Loading'),
-                                            ToastificationType.info);
-                                        _submit();
-                                      }
-                                    },
-                                    child: const Text('submit')),
-                              )
-                            ]))))));
+      scrollDirection: Axis.vertical,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+        child: Center(
+          child: Container(
+            constraints: BoxConstraints.loose(const Size.fromWidth(600)),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Nama Metode Pembayaran',
+                      labelStyle: labelStyle,
+                      border: OutlineInputBorder(),
+                    ),
+                    onSaved: (newValue) {
+                      paymentMethod.name = newValue.toString();
+                    },
+                    onChanged: (newValue) {
+                      paymentMethod.name = newValue.toString();
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  Flexible(
+                    child: AsyncDropdown<Bank>(
+                      attributeKey: 'namabank',
+                      label: const Text('Bank/Provider :', style: labelStyle),
+                      onSaved: (bank) {
+                        paymentMethod.bank = bank ?? Bank();
+                      },
+                      textOnSearch: (bank) => "${bank.code} - ${bank.name}",
+                      modelClass: BankClass(),
+                      selected: paymentMethod.bank,
+                      validator: (bank) {
+                        if (bank == null) {
+                          return 'harus diisi';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  DropdownMenu<PaymentType>(
+                    initialSelection: paymentMethod.paymentType,
+                    onSelected: ((value) =>
+                        paymentMethod.paymentType = value ?? PaymentType.other),
+                    dropdownMenuEntries: PaymentType.values
+                        .map<DropdownMenuEntry<PaymentType>>(
+                          (paymentType) => DropdownMenuEntry(
+                            value: paymentType,
+                            label: paymentType.humanize(),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10, bottom: 10),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          flash.show(
+                            const Text('Loading'),
+                            ToastificationType.info,
+                          );
+                          _submit();
+                        }
+                      },
+                      child: const Text('submit'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

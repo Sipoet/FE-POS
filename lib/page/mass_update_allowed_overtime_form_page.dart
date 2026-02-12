@@ -29,7 +29,7 @@ class _MassUpdateAllowedOvertimeFormPageState
   DateTime _dateTime = DateTime.now();
   bool _allowOvertime = true;
   int? _shift;
-  late final TrinaGridStateManager _source;
+  late final SyncTableController _source;
   late final Flash flash;
   late final Setting setting;
 
@@ -51,102 +51,99 @@ class _MassUpdateAllowedOvertimeFormPageState
     const labelStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
 
     return SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-          child: Center(
-            child: Container(
-              constraints: BoxConstraints.loose(const Size.fromWidth(600)),
-              alignment: Alignment.center,
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: DateFormField(
-                        focusNode: _focusNode,
-                        initialValue: _dateTime,
-                        label: const Text('Tanggal', style: labelStyle),
-                        helpText: 'Tanggal',
-                        dateType: DateType(),
-                        onSaved: (value) {
-                          _dateTime = value ?? _dateTime;
-                        },
+      scrollDirection: Axis.vertical,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+        child: Center(
+          child: Container(
+            constraints: BoxConstraints.loose(const Size.fromWidth(600)),
+            alignment: Alignment.center,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: DateFormField(
+                      focusNode: _focusNode,
+                      initialValue: _dateTime,
+                      label: const Text('Tanggal', style: labelStyle),
+                      helpText: 'Tanggal',
+                      dateType: DateType(),
+                      onSaved: (value) {
+                        _dateTime = value ?? _dateTime;
+                      },
+                    ),
+                  ),
+                  Flexible(
+                    child: AsyncDropdownMultiple<Employee>(
+                      key: const ValueKey('employeeSelect'),
+                      attributeKey: 'name',
+                      textOnSearch: (employee) =>
+                          "${employee.code} - ${employee.name}",
+                      modelClass: EmployeeClass(),
+                      label: const Text('Karyawan :', style: labelStyle),
+                      onSaved: (employees) {
+                        _employees = employees ?? _employees;
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: TextFormField(
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      onSaved: (value) {
+                        setState(() {
+                          _shift = int.tryParse(value ?? '');
+                        });
+                      },
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        label: Text('Shift', style: labelStyle),
                       ),
                     ),
-                    Flexible(
-                      child: AsyncDropdownMultiple<Employee>(
-                        key: const ValueKey('employeeSelect'),
-                        path: '/employees',
-                        attributeKey: 'name',
-                        textOnSearch: (employee) =>
-                            "${employee.code} - ${employee.name}",
-                        modelClass: EmployeeClass(),
-                        label: const Text(
-                          'Karyawan :',
-                          style: labelStyle,
-                        ),
-                        onSaved: (employees) {
-                          _employees = employees ?? _employees;
-                        },
-                      ),
+                  ),
+                  CheckboxListTile(
+                    title: const Text('Boleh Overtime?'),
+                    value: _allowOvertime,
+                    onChanged: (val) => setState(() {
+                      _allowOvertime = val ?? false;
+                    }),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10, bottom: 10),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          _formKey.currentState!.save();
+                          flash.show(
+                            const Text('Loading'),
+                            ToastificationType.info,
+                          );
+                          _submit();
+                        }
+                      },
+                      child: const Text('submit'),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: TextFormField(
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        onSaved: (value) {
-                          setState(() {
-                            _shift = int.tryParse(value ?? '');
-                          });
-                        },
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          label: Text(
-                            'Shift',
-                            style: labelStyle,
-                          ),
-                        ),
-                      ),
+                  ),
+                  SizedBox(
+                    height: bodyScreenHeight,
+                    child: SyncDataTable<EmployeeAttendance>(
+                      columns: setting.tableColumn('employeeAttendance'),
+                      onLoaded: (stateManager) => _source = stateManager,
                     ),
-                    CheckboxListTile(
-                        title: const Text('Boleh Overtime?'),
-                        value: _allowOvertime,
-                        onChanged: (val) => setState(() {
-                              _allowOvertime = val ?? false;
-                            })),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10, bottom: 10),
-                      child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              _formKey.currentState!.save();
-                              flash.show(const Text('Loading'),
-                                  ToastificationType.info);
-                              _submit();
-                            }
-                          },
-                          child: const Text('submit')),
-                    ),
-                    SizedBox(
-                        height: bodyScreenHeight,
-                        child: SyncDataTable<EmployeeAttendance>(
-                          columns: setting.tableColumn('employeeAttendance'),
-                          onLoaded: (stateManager) => _source = stateManager,
-                        ))
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 
   void _submit() async {
@@ -160,28 +157,38 @@ class _MassUpdateAllowedOvertimeFormPageState
 
     _server
         .post('employee_attendances/mass_update_allow_overtime', body: body)
-        .then((response) {
-      if (response.statusCode == 200) {
-        flash.showBanner(
-            messageType: ToastificationType.success,
-            title: 'Berhasil update Absensi Karyawan');
-        final json = response.data;
-        final employeeAttendances = json['data']
-            .map<EmployeeAttendance>((rawData) => EmployeeAttendanceClass()
-                .fromJson(rawData, included: json['included'] ?? []))
-            .toList();
-        setState(() {
-          _source.setModels(employeeAttendances);
-        });
-      } else {
-        final flash = Flash();
-        flash.showBanner(
-            messageType: ToastificationType.error,
-            title: 'Gagal update Absensi Karyawan',
-            description: response.data['message']);
-      }
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-    }).whenComplete(() => _source.setShowLoading(false));
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              flash.showBanner(
+                messageType: ToastificationType.success,
+                title: 'Berhasil update Absensi Karyawan',
+              );
+              final json = response.data;
+              final employeeAttendances = json['data']
+                  .map<EmployeeAttendance>(
+                    (rawData) => EmployeeAttendanceClass().fromJson(
+                      rawData,
+                      included: json['included'] ?? [],
+                    ),
+                  )
+                  .toList();
+              setState(() {
+                _source.setModels(employeeAttendances);
+              });
+            } else {
+              final flash = Flash();
+              flash.showBanner(
+                messageType: ToastificationType.error,
+                title: 'Gagal update Absensi Karyawan',
+                description: response.data['message'],
+              );
+            }
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+          },
+        )
+        .whenComplete(() => _source.setShowLoading(false));
   }
 }

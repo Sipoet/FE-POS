@@ -64,34 +64,36 @@ class CashTransactionReport extends Model {
     String? detailAccountCode,
     DateTime? transactionAt,
     this.paymentAmount = const Money(0),
-  })  : transactionAt = transactionAt ?? DateTime.now(),
-        paymentAccount =
-            paymentAccount ?? Account(code: paymentAccountCode ?? ''),
-        detailAccount = detailAccount ?? Account(code: detailAccountCode ?? '');
+  }) : transactionAt = transactionAt ?? DateTime.now(),
+       paymentAccount =
+           paymentAccount ?? Account(code: paymentAccountCode ?? ''),
+       detailAccount = detailAccount ?? Account(code: detailAccountCode ?? '');
   @override
   Map<String, dynamic> toMap() => {
-        'transaction_at': transactionAt,
-        'transaction_type': transactionType,
-        'description': description,
-        'payment_account': "${paymentAccount.code} - ${paymentAccount.name}",
-        'detail_account': "${detailAccount.code} - ${detailAccount.name}",
-        'payment_account_code': paymentAccount.code,
-        'detail_account_code': detailAccount.code,
-        'payment_amount': paymentAmount,
-        'code': code,
-      };
+    'transaction_at': transactionAt,
+    'transaction_type': transactionType,
+    'description': description,
+    'payment_account': "${paymentAccount.code} - ${paymentAccount.name}",
+    'detail_account': "${detailAccount.code} - ${detailAccount.name}",
+    'payment_account_code': paymentAccount.code,
+    'detail_account_code': detailAccount.code,
+    'payment_amount': paymentAmount,
+    'code': code,
+  };
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
 
     if (included.isNotEmpty) {
-      paymentAccount = AccountClass().findRelationData(
+      paymentAccount =
+          AccountClass().findRelationData(
             included: included,
             relation: json['relationships']?['payment_account'],
           ) ??
           paymentAccount;
-      detailAccount = AccountClass().findRelationData(
+      detailAccount =
+          AccountClass().findRelationData(
             included: included,
             relation: json['relationships']?['detail_account'],
           ) ??
@@ -101,8 +103,12 @@ class CashTransactionReport extends Model {
     transactionAt = DateTime.parse(attributes['transaction_at'] ?? '');
     description = attributes['description'];
     paymentAmount = Money.parse(attributes['payment_amount'] ?? '0');
-    transactionType =
-        CashTransactionType.fromString(attributes['transaction_type'] ?? '');
+    if (attributes['transaction_type'] != null) {
+      transactionType = CashTransactionType.fromString(
+        attributes['transaction_type'],
+      );
+    }
+
     code = attributes['code'];
   }
 }

@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:fe_pos/tool/query_data.dart';
 import 'package:fe_pos/model/sale.dart';
 import 'package:fe_pos/page/sale_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
@@ -16,8 +17,11 @@ class LastSalesTransactionWidget extends StatefulWidget {
   final int limit;
 
   final TransactionReportController? controller;
-  const LastSalesTransactionWidget(
-      {super.key, this.limit = 5, this.controller});
+  const LastSalesTransactionWidget({
+    super.key,
+    this.limit = 5,
+    this.controller,
+  });
   @override
   State<LastSalesTransactionWidget> createState() =>
       _LastSalesTransactionWidgetState();
@@ -36,27 +40,30 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
   late final Setting setting;
   late AnimationController _controller;
   DateTimeRange _dateRange = DateTimeRange(
-      start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
-      end: DateTime.now()
-          .copyWith(hour: 23, minute: 59, second: 59, millisecond: 999));
+    start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
+    end: DateTime.now().copyWith(
+      hour: 23,
+      minute: 59,
+      second: 59,
+      millisecond: 999,
+    ),
+  );
   @override
   void initState() {
     limit = widget.limit;
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 5),
-    )
-      ..addListener(() {
-        if (mounted) {
-          setState(() {});
-        }
-      })
-      ..addStatusListener((status) {
-        if (mounted && status == AnimationStatus.completed) {
-          _controller.reset();
-          _controller.forward();
-        }
-      });
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 5))
+          ..addListener(() {
+            if (mounted) {
+              setState(() {});
+            }
+          })
+          ..addStatusListener((status) {
+            if (mounted && status == AnimationStatus.completed) {
+              _controller.reset();
+              _controller.forward();
+            }
+          });
     setting = context.read<Setting>();
     _dateRange = widget.controller?.range ?? _dateRange;
     widget.controller?.addListener(setDateAndRefreshReport);
@@ -76,33 +83,31 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
     _controller.reset();
     _controller.forward();
     final server = context.read<Server>();
-    server
-        .get(
-      'sales',
-      queryParam: {
-        'filter[tanggal][btw]': [
-          _dateRange.start.toIso8601String(),
-          _dateRange.end.toIso8601String()
-        ].join(','),
-        'page[page]': '1',
-        'page[limit]': limit.toString(),
-        'sort': '-tanggal'
-      },
-      cancelToken: cancelToken,
-    )
+    SaleClass()
+        .finds(
+          server,
+          QueryRequest(
+            page: 1,
+            limit: limit,
+            filters: [
+              BetweenFilterData(
+                key: 'tanggal',
+                values: [_dateRange.start, _dateRange.end],
+              ),
+            ],
+            sorts: [SortData(key: 'tanggal', isAscending: false)],
+          ),
+        )
         .then((response) {
-      if (!mounted) return;
-      if (response.statusCode == 200) {
-        var data = response.data['data'] as List;
-        setState(() {
-          sales = data.map<Sale>((row) => SaleClass().fromJson(row)).toList();
+          if (!mounted) return;
+
+          setState(() {
+            sales = response.models;
+          });
+        }, onError: (error, stack) => defaultErrorResponse(error: error))
+        .whenComplete(() {
+          if (_controller.isAnimating) _controller.reset();
         });
-      }
-    },
-            onError: (error, stack) =>
-                defaultErrorResponse(error: error)).whenComplete(() {
-      if (_controller.isAnimating) _controller.reset();
-    });
   }
 
   @override
@@ -121,7 +126,9 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
     super.build(context);
     var colorScheme = Theme.of(context).colorScheme;
     final labelStyle = TextStyle(
-        color: colorScheme.onPrimaryContainer, fontWeight: FontWeight.bold);
+      color: colorScheme.onPrimaryContainer,
+      fontWeight: FontWeight.bold,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -131,33 +138,40 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
             Text(
               'Penjualan Terakhir',
               style: TextStyle(
-                  fontSize: 18,
-                  color: colorScheme.onPrimaryContainer,
-                  fontWeight: FontWeight.w900),
+                fontSize: 18,
+                color: colorScheme.onPrimaryContainer,
+                fontWeight: FontWeight.w900,
+              ),
             ),
             IconButton.filled(
-                tooltip: 'Refresh Laporan',
-                alignment: Alignment.centerRight,
-                onPressed: () => refreshReport(),
-                icon: const Icon(Icons.refresh_rounded))
+              tooltip: 'Refresh Laporan',
+              alignment: Alignment.centerRight,
+              onPressed: () => refreshReport(),
+              icon: const Icon(Icons.refresh_rounded),
+            ),
           ],
         ),
-        const SizedBox(
-          height: 10,
-        ),
+        const SizedBox(height: 10),
         DropdownMenu<int>(
           width: 100,
-          textStyle:
-              TextStyle(fontSize: 18, color: colorScheme.onPrimaryContainer),
+          textStyle: TextStyle(
+            fontSize: 18,
+            color: colorScheme.onPrimaryContainer,
+          ),
           inputDecorationTheme: const InputDecorationTheme(
-              filled: true,
-              isDense: true,
-              fillColor: Colors.white,
-              contentPadding: EdgeInsets.only(left: 10, right: 0),
-              border: OutlineInputBorder()),
-          dropdownMenuEntries: List<int>.generate(5, (i) => i * 5)
-              .map<DropdownMenuEntry<int>>((value) =>
-                  DropdownMenuEntry<int>(value: value, label: value.toString()))
+            filled: true,
+            isDense: true,
+            fillColor: Colors.white,
+            contentPadding: EdgeInsets.only(left: 10, right: 0),
+            border: OutlineInputBorder(),
+          ),
+          dropdownMenuEntries: [5, 10, 20, 50, 100]
+              .map<DropdownMenuEntry<int>>(
+                (value) => DropdownMenuEntry<int>(
+                  value: value,
+                  label: value.toString(),
+                ),
+              )
               .toList(),
           initialSelection: limit,
           onSelected: (value) {
@@ -165,9 +179,7 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
             refreshReport();
           },
         ),
-        const SizedBox(
-          height: 10,
-        ),
+        const SizedBox(height: 10),
         if (_controller.isAnimating)
           Center(
             child: CircularProgressIndicator(
@@ -180,103 +192,113 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
           Table(
             columnWidths: const {
               3: FlexColumnWidth(2),
-              2: FlexColumnWidth(0.5)
+              2: FlexColumnWidth(0.5),
             },
             border: TableBorder.all(
               color: Colors.grey.shade400.withValues(alpha: 0.5),
             ),
-            children: [
+            children:
+                [
                   TableRow(
-                      key: ValueKey('Header Table Last Sale'),
-                      decoration: BoxDecoration(
-                        color: colorScheme.secondaryContainer,
+                    key: ValueKey('Header Table Last Sale'),
+                    decoration: BoxDecoration(
+                      color: colorScheme.secondaryContainer,
+                    ),
+                    children: [
+                      TableCell(
+                        child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text('Tanggal', style: labelStyle),
+                        ),
                       ),
-                      children: [
-                        TableCell(
-                            child: Padding(
+                      TableCell(
+                        child: Padding(
                           padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            'Tanggal',
-                            style: labelStyle,
-                          ),
-                        )),
-                        TableCell(
-                            child: Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text(
-                            'No Transaksi',
-                            style: labelStyle,
-                          ),
-                        )),
-                        TableCell(
-                            child: Padding(
+                          child: Text('No Transaksi', style: labelStyle),
+                        ),
+                      ),
+                      TableCell(
+                        child: Padding(
                           padding: EdgeInsets.all(8.0),
                           child: Align(
-                              alignment: Alignment.centerRight,
-                              child: Text(
-                                'Total Item',
-                                style: labelStyle,
-                              )),
-                        )),
-                        TableCell(
-                            child: Padding(
+                            alignment: Alignment.centerRight,
+                            child: Text('Total Item', style: labelStyle),
+                          ),
+                        ),
+                      ),
+                      TableCell(
+                        child: Padding(
                           padding: EdgeInsets.all(8.0),
                           child: Align(
-                              alignment: Alignment.centerRight,
-                              child: Text(
-                                'Total Transaksi',
-                                style: labelStyle,
-                              )),
-                        )),
-                      ]),
+                            alignment: Alignment.centerRight,
+                            child: Text('Total Transaksi', style: labelStyle),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ] +
                 sales
                     .mapIndexed<TableRow>(
                       (index, sale) => TableRow(
-                          key: ValueKey(sale.code),
-                          decoration: BoxDecoration(
-                              color: index.isEven
-                                  ? colorScheme.tertiaryContainer
-                                  : colorScheme.secondaryContainer),
-                          children: [
-                            TableCell(
-                                verticalAlignment:
-                                    TableCellVerticalAlignment.top,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: SelectableText(
-                                      dateTimeLocalFormat(sale.datetime)),
-                                )),
-                            TableCell(
-                                verticalAlignment:
-                                    TableCellVerticalAlignment.top,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: InkWell(
-                                      onTap: () => _openSaleDetail(sale),
-                                      child: Text(sale.code)),
-                                )),
-                            TableCell(
-                                verticalAlignment:
-                                    TableCellVerticalAlignment.top,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: SelectableText(
-                                          numberFormat(sale.totalItem))),
-                                )),
-                            TableCell(
-                                verticalAlignment:
-                                    TableCellVerticalAlignment.top,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: SelectableText(
-                                          moneyFormat(sale.grandtotal))),
-                                )),
-                          ]),
+                        key: ValueKey(sale.code),
+                        decoration: BoxDecoration(
+                          color: index.isEven
+                              ? colorScheme.tertiaryContainer
+                              : colorScheme.secondaryContainer,
+                        ),
+                        children: [
+                          TableCell(
+                            verticalAlignment: TableCellVerticalAlignment.top,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: SelectableText(
+                                dateTimeLocalFormat(sale.datetime),
+                              ),
+                            ),
+                          ),
+                          TableCell(
+                            verticalAlignment: TableCellVerticalAlignment.top,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: InkWell(
+                                onTap: () => _openSaleDetail(sale),
+                                child: Text(
+                                  sale.code,
+                                  style: TextStyle(
+                                    fontStyle: .italic,
+                                    decoration: .underline,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          TableCell(
+                            verticalAlignment: TableCellVerticalAlignment.top,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: SelectableText(
+                                  numberFormat(sale.totalItem),
+                                ),
+                              ),
+                            ),
+                          ),
+                          TableCell(
+                            verticalAlignment: TableCellVerticalAlignment.top,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: SelectableText(
+                                  moneyFormat(sale.grandtotal),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     )
                     .toList(),
           ),
@@ -287,11 +309,15 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
   void _openSaleDetail(Sale sale) {
     final tabManager = context.read<TabManager>();
     if (isDesktop()) {
-      tabManager.setSafeAreaContent('Penjualan ${sale.code}',
-          SaleFormPage(sale: sale, key: ObjectKey(sale)));
+      tabManager.setSafeAreaContent(
+        'Penjualan ${sale.code}',
+        SaleFormPage(sale: sale, key: ObjectKey(sale)),
+      );
     } else {
-      tabManager.addTab('Penjualan ${sale.code}',
-          SaleFormPage(sale: sale, key: ObjectKey(sale)));
+      tabManager.addTab(
+        'Penjualan ${sale.code}',
+        SaleFormPage(sale: sale, key: ObjectKey(sale)),
+      );
     }
   }
 }

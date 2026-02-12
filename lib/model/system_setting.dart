@@ -2,7 +2,7 @@ import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/user.dart';
 export 'package:fe_pos/model/user.dart';
 
-enum SettingValueType {
+enum SettingValueType implements EnumTranslation {
   string,
   number,
   json,
@@ -32,6 +32,7 @@ enum SettingValueType {
     }
   }
 
+  @override
   String humanize() {
     switch (this) {
       case string:

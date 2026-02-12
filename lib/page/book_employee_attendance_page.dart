@@ -20,10 +20,9 @@ class BookEmployeeAttendancePage extends StatefulWidget {
 
 class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
-  String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
   List<FilterData> _filters = [];
@@ -48,17 +47,23 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
   }
 
   Future<DataTableResponse<BookEmployeeAttendance>> fetchData(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    request.include.add('employee');
-    return BookEmployeeAttendanceClass().finds(server, request).then(
-        (value) => DataTableResponse<BookEmployeeAttendance>(
+
+    request.includeAdd('employee');
+    return BookEmployeeAttendanceClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<BookEmployeeAttendance>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void addForm() {
@@ -67,10 +72,12 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
     final tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'New BookEmployeeAttendance',
-          BookEmployeeAttendanceFormPage(
-              key: ObjectKey(bookEmployeeAttendance),
-              bookEmployeeAttendance: bookEmployeeAttendance));
+        'New BookEmployeeAttendance',
+        BookEmployeeAttendanceFormPage(
+          key: ObjectKey(bookEmployeeAttendance),
+          bookEmployeeAttendance: bookEmployeeAttendance,
+        ),
+      );
     });
   }
 
@@ -78,46 +85,39 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
     final tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Edit BookEmployeeAttendance ${bookEmployeeAttendance.id}',
-          BookEmployeeAttendanceFormPage(
-              key: ObjectKey(bookEmployeeAttendance),
-              bookEmployeeAttendance: bookEmployeeAttendance));
+        'Edit BookEmployeeAttendance ${bookEmployeeAttendance.id}',
+        BookEmployeeAttendanceFormPage(
+          key: ObjectKey(bookEmployeeAttendance),
+          bookEmployeeAttendance: bookEmployeeAttendance,
+        ),
+      );
     });
   }
 
   void destroyRecord(BookEmployeeAttendance bookEmployeeAttendance) {
     showConfirmDialog(
-        message: 'Apakah anda yakin hapus ${bookEmployeeAttendance.id}?',
-        onSubmit: () {
-          server
-              .delete('/book_employee_attendances/${bookEmployeeAttendance.id}')
-              .then((response) {
-            if (response.statusCode == 200) {
-              flash.showBanner(
-                  messageType: ToastificationType.success,
-                  title: 'Sukses Hapus',
-                  description:
-                      'Sukses Hapus BookEmployeeAttendance ${bookEmployeeAttendance.id}');
-              _source.refreshTable();
-            }
-          }, onError: (error) {
-            defaultErrorResponse(error: error);
-          });
-        });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      _source.refreshTable();
-    }
+      message: 'Apakah anda yakin hapus ${bookEmployeeAttendance.id}?',
+      onSubmit: () {
+        server
+            .delete('/book_employee_attendances/${bookEmployeeAttendance.id}')
+            .then(
+              (response) {
+                if (response.statusCode == 200) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses Hapus',
+                    description:
+                        'Sukses Hapus BookEmployeeAttendance ${bookEmployeeAttendance.id}',
+                  );
+                  _source.refreshTable();
+                }
+              },
+              onError: (error) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
   @override
@@ -142,34 +142,18 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      _source.refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
-                    child: SubmenuButton(menuChildren: [
-                      MenuItemButton(
-                        child: const Text('Tambah BookEmployeeAttendance'),
-                        onPressed: () => addForm(),
-                      ),
-                    ], child: const Icon(Icons.table_rows_rounded)),
-                  )
+                    child: SubmenuButton(
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah BookEmployeeAttendance'),
+                          onPressed: () => addForm(),
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -180,17 +164,19 @@ class _BookEmployeeAttendancePageState extends State<BookEmployeeAttendancePage>
                   return Row(
                     children: [
                       IconButton(
-                          onPressed: () {
-                            editForm(bookEmployeeAttendance);
-                          },
-                          tooltip: 'Edit BookEmployeeAttendance',
-                          icon: const Icon(Icons.edit)),
+                        onPressed: () {
+                          editForm(bookEmployeeAttendance);
+                        },
+                        tooltip: 'Edit BookEmployeeAttendance',
+                        icon: const Icon(Icons.edit),
+                      ),
                       IconButton(
-                          onPressed: () {
-                            destroyRecord(bookEmployeeAttendance);
-                          },
-                          tooltip: 'Hapus BookEmployeeAttendance',
-                          icon: const Icon(Icons.delete)),
+                        onPressed: () {
+                          destroyRecord(bookEmployeeAttendance);
+                        },
+                        tooltip: 'Hapus BookEmployeeAttendance',
+                        icon: const Icon(Icons.delete),
+                      ),
                     ],
                   );
                 },

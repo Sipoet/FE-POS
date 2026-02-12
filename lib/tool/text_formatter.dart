@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' show TimeOfDay;
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fe_pos/tool/custom_type.dart';
 
@@ -7,6 +7,10 @@ mixin TextFormatter {
     return data.format24Hour();
   }
 
+  static const labelStyle = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.bold,
+  );
   String dateFormat(DateTime date) {
     return DateFormat('dd/MM/y', 'id_ID').format(date);
   }
@@ -14,14 +18,16 @@ mixin TextFormatter {
   String moneyFormat(dynamic value, {int decimalDigits = 1}) {
     if (value is Money) {
       return NumberFormat.currency(
-              locale: "id_ID",
-              symbol: value.symbol,
-              decimalDigits: decimalDigits)
-          .format(value.value);
+        locale: "id_ID",
+        symbol: value.symbol,
+        decimalDigits: decimalDigits,
+      ).format(value.value);
     }
     return NumberFormat.currency(
-            locale: "id_ID", symbol: "Rp", decimalDigits: decimalDigits)
-        .format(value);
+      locale: "id_ID",
+      symbol: "Rp",
+      decimalDigits: decimalDigits,
+    ).format(value);
   }
 
   String dateTimeFormat(DateTime date) {
@@ -33,6 +39,9 @@ mixin TextFormatter {
   }
 
   String numberFormat(number) {
+    if (number is! num) {
+      return '';
+    }
     return NumberFormat(",##0.##", "en_US").format(number);
   }
 

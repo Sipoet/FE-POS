@@ -24,28 +24,28 @@ class Item extends Model {
   String? description;
   Money sellPrice;
   List<DiscountRule> discountRules;
-  Item(
-      {this.code = '',
-      this.name = '',
-      this.itemTypeName = '',
-      this.brandName,
-      this.supplierCode,
-      this.supplier,
-      this.description,
-      this.brand,
-      List<DiscountRule>? discountRules,
-      this.uom = '',
-      Money? sellPrice,
-      Money? cogs,
-      ItemType? itemType,
-      super.id})
-      : itemType = itemType ?? ItemType(),
+  Item({
+    this.code = '',
+    this.name = '',
+    this.itemTypeName = '',
+    this.brandName,
+    this.supplierCode,
+    this.supplier,
+    this.description,
+    this.brand,
+    List<DiscountRule>? discountRules,
+    this.uom = '',
+    Money? sellPrice,
+    Money? cogs,
+    ItemType? itemType,
+    super.id,
+  })  : itemType = itemType ?? ItemType(),
         discountRules = discountRules ?? [],
         cogs = cogs ?? const Money(0),
         sellPrice = sellPrice ?? const Money(0);
 
   @override
-  String get modelName => 'item';
+  String get path => 'ipos/items';
 
   @override
   Map<String, dynamic> toMap() => {
@@ -55,12 +55,13 @@ class Item extends Model {
         'brand': brand,
         'item_type': itemType,
         'supplier_name': supplier?.name,
-        'supplier_code': supplierCode,
-        'brand_name': brandName,
-        'item_type_name': itemTypeName,
+        'supplier_code': supplier?.code ?? supplierCode,
+        'brand_name': brand?.name ?? brandName,
+        'item_type_name': itemType.name,
         'sell_price': sellPrice,
+        'description': description,
         'cogs': cogs,
-        'uom': uom
+        'uom': uom,
       };
 
   @override
@@ -77,12 +78,14 @@ class Item extends Model {
     uom = attributes['uom'] ?? '';
     sellPrice = Money.tryParse(attributes['sell_price']) ?? sellPrice;
     supplier = SupplierClass().findRelationData(
-        relation: json['relationships']['supplier'], included: included);
+      relation: json['relationships']['supplier'],
+      included: included,
+    );
     itemType = ItemTypeClass().findRelationData(
           relation: json['relationships']['item_type'],
           included: included,
         ) ??
-        ItemType();
+        ItemType(name: itemTypeName);
     brand = BrandClass().findRelationData(
         relation: json['relationships']['brand'], included: included);
     discountRules = DiscountRuleClass().findRelationsData(
@@ -94,7 +97,7 @@ class Item extends Model {
       : Percentage((sellPrice / cogs).value - 1);
 
   @override
-  String get modelValue => "$code - $name";
+  String get valueDescription => name;
 }
 
 class ItemClass extends ModelClass<Item> {

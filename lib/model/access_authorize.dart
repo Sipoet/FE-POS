@@ -3,13 +3,11 @@ export 'package:fe_pos/tool/custom_type.dart';
 
 class AccessAuthorize extends Model {
   String controller;
-  List<String> action;
-  AccessAuthorize({required this.controller, required this.action, super.id});
+  List<String> actions;
+  AccessAuthorize({required this.controller, required this.actions, super.id});
+
   @override
-  Map<String, dynamic> toMap() => {
-        'controller': controller,
-        'action': action.join(','),
-      };
+  Map<String, dynamic> toMap() => {'controller': controller, 'action': actions};
 
   @override
   String get modelName => 'access_authorize';
@@ -19,14 +17,14 @@ class AccessAuthorize extends Model {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];
     controller = attributes['controller'];
-    action = attributes['action'].map<String>((e) => e.toString()).toList();
+    actions = attributes['action'].map<String>((e) => e.toString()).toList();
   }
 
   @override
-  String get modelValue => '$controller - ${action.join(',')}';
+  String get modelValue => '$controller - ${actions.join(',')}';
 }
 
 class AccessAuthorizeClass extends ModelClass<AccessAuthorize> {
   @override
-  AccessAuthorize initModel() => AccessAuthorize(controller: '', action: []);
+  AccessAuthorize initModel() => AccessAuthorize(controller: '', actions: []);
 }

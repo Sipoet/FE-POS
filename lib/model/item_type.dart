@@ -11,13 +11,7 @@ class ItemType extends Model {
             : ItemType(id: parentId, name: parentId as String);
 
   @override
-  Map<String, dynamic> toMap() => {
-        'description': description,
-        'name': name,
-        'parent_id': parentId,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-      };
+  Map<String, dynamic> toMap() => {'description': description, 'name': name};
 
   @override
   String toString() {
@@ -25,7 +19,7 @@ class ItemType extends Model {
   }
 
   @override
-  String get modelName => 'item_type';
+  String get path => 'ipos/item_types';
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -47,7 +41,7 @@ class ItemType extends Model {
   ItemType? get parent => _parent;
 
   @override
-  String get modelValue => name;
+  String get valueDescription => description;
 }
 
 class ItemTypeClass extends ModelClass<ItemType> {

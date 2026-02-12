@@ -10,7 +10,7 @@ import 'package:fe_pos/model/discount_item_type.dart';
 export 'package:fe_pos/model/discount_item_type.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-enum DiscountCalculationType {
+enum DiscountCalculationType implements EnumTranslation {
   percentage,
   specialPrice,
   nominal;
@@ -28,7 +28,7 @@ enum DiscountCalculationType {
     return '';
   }
 
-  factory DiscountCalculationType.convertFromString(String value) {
+  factory DiscountCalculationType.fromString(String value) {
     if (value == 'percentage') {
       return percentage;
     } else if (value == 'nominal') {
@@ -39,6 +39,7 @@ enum DiscountCalculationType {
     throw '$value is not valid discount calculation type';
   }
 
+  @override
   String humanize() {
     if (this == percentage) {
       return 'persentase';
@@ -51,7 +52,7 @@ enum DiscountCalculationType {
   }
 }
 
-enum DiscountType {
+enum DiscountType implements EnumTranslation {
   period,
   // repeatedHourOnPeriod,
   dayOfWeek;
@@ -69,7 +70,7 @@ enum DiscountType {
     return '';
   }
 
-  factory DiscountType.convertFromString(String value) {
+  factory DiscountType.fromString(String value) {
     if (value == 'period') {
       return period;
     } else if (value == 'day_of_week') {
@@ -81,6 +82,7 @@ enum DiscountType {
     throw '$value is not valid discount type';
   }
 
+  @override
   String humanize() {
     if (this == period) {
       return 'Periode';
@@ -102,6 +104,7 @@ class Discount extends Model {
   String? blacklistItemType;
   String? blacklistBrandName;
   String? blacklistSupplierCode;
+  String? blacklistItemCode;
   dynamic discount1;
   Percentage? discount2;
   Percentage? discount3;
@@ -125,35 +128,37 @@ class Discount extends Model {
   bool week6;
   bool week7;
   DiscountType discountType;
-  Discount(
-      {super.id,
-      this.code = '',
-      this.itemCode,
-      this.itemType,
-      this.brandName,
-      this.blacklistBrandName,
-      this.blacklistItemType,
-      this.blacklistSupplierCode,
-      this.supplierCode,
-      this.customerGroup,
-      required this.calculationType,
-      required this.discount1,
-      this.discount2,
-      this.discount3,
-      this.discount4,
-      super.createdAt,
-      super.updatedAt,
-      this.week1 = false,
-      this.week2 = false,
-      this.week3 = false,
-      this.week4 = false,
-      this.week5 = false,
-      this.week6 = false,
-      this.week7 = false,
-      this.discountType = DiscountType.period,
-      required this.startTime,
-      required this.endTime,
-      this.weight = 1});
+  Discount({
+    super.id,
+    this.code = '',
+    this.itemCode,
+    this.itemType,
+    this.brandName,
+    this.blacklistBrandName,
+    this.blacklistItemType,
+    this.blacklistSupplierCode,
+    this.blacklistItemCode,
+    this.supplierCode,
+    this.customerGroup,
+    required this.calculationType,
+    required this.discount1,
+    this.discount2,
+    this.discount3,
+    this.discount4,
+    super.createdAt,
+    super.updatedAt,
+    this.week1 = false,
+    this.week2 = false,
+    this.week3 = false,
+    this.week4 = false,
+    this.week5 = false,
+    this.week6 = false,
+    this.week7 = false,
+    this.discountType = DiscountType.period,
+    required this.startTime,
+    required this.endTime,
+    this.weight = 1,
+  });
 
   @override
   String get modelName => 'discount';
@@ -167,13 +172,20 @@ class Discount extends Model {
     itemType = attributes['item_type_name'];
     supplierCode = attributes['supplier_code'];
     brandName = attributes['brand_name'];
+    if (attributes['calculation_type'] != null) {
+      calculationType = DiscountCalculationType.fromString(
+        attributes['calculation_type'].toString(),
+      );
+    }
+    if (attributes['discount_type'] != null) {
+      discountType = DiscountType.fromString(
+        attributes['discount_type'].toString(),
+      );
+    }
 
-    calculationType = DiscountCalculationType.convertFromString(
-        attributes['calculation_type'].toString());
-    discountType =
-        DiscountType.convertFromString(attributes['discount_type'].toString());
     blacklistItemType = attributes['blacklist_item_type_name'];
     blacklistSupplierCode = attributes['blacklist_supplier_code'];
+    blacklistItemCode = attributes['blacklist_item_code'];
     blacklistBrandName = attributes['blacklist_brand_name'];
     discount1 = calculationType == DiscountCalculationType.percentage
         ? Percentage(attributes['discount1'] ?? 0)
@@ -240,7 +252,8 @@ class Discount extends Model {
 
   List<Supplier> get suppliers => discountSuppliers
       .where(
-          (element) => element.isExclude == false && element.supplier != null)
+        (element) => element.isExclude == false && element.supplier != null,
+      )
       .map<Supplier>((e) => e.supplier as Supplier)
       .toList();
   List<Supplier> get blacklistSuppliers => discountSuppliers
@@ -250,7 +263,8 @@ class Discount extends Model {
 
   List<ItemType> get itemTypes => discountItemTypes
       .where(
-          (element) => element.isExclude == false && element.itemType != null)
+        (element) => element.isExclude == false && element.itemType != null,
+      )
       .map<ItemType>((e) => e.itemType as ItemType)
       .toList();
   List<ItemType> get blacklistItemTypes => discountItemTypes
@@ -282,8 +296,9 @@ class Discount extends Model {
   set blacklistItemTypes(List<ItemType> newItemTypes) {
     discountItemTypes.removeWhere((element) => element.isExclude);
     for (final newItemType in newItemTypes) {
-      discountItemTypes
-          .add(DiscountItemType(itemType: newItemType, isExclude: true));
+      discountItemTypes.add(
+        DiscountItemType(itemType: newItemType, isExclude: true),
+      );
     }
   }
 
@@ -297,8 +312,9 @@ class Discount extends Model {
   set blacklistSuppliers(List<Supplier> newSuppliers) {
     discountSuppliers.removeWhere((element) => element.isExclude);
     for (final newSupplier in newSuppliers) {
-      discountSuppliers
-          .add(DiscountSupplier(supplier: newSupplier, isExclude: true));
+      discountSuppliers.add(
+        DiscountSupplier(supplier: newSupplier, isExclude: true),
+      );
     }
   }
 
@@ -318,41 +334,42 @@ class Discount extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'code': code.trim(),
-        'item_code': itemCode,
-        'item_type_name': itemType,
-        'brand_name': brandName,
-        'supplier_code': supplierCode,
-        'item.kodeitem': itemCode,
-        'item_type.jenis': itemType,
-        'brand.merek': brandName,
-        'supplier.kode': supplierCode,
-        'calculation_type': calculationType,
-        'discount_type': discountType,
-        'blacklist_item_type.jenis': blacklistItemType,
-        'blacklist_brand.merek': blacklistBrandName,
-        'blacklist_supplier.kode': blacklistSupplierCode,
-        'blacklist_item_type_name': blacklistItemType,
-        'blacklist_brand_name': blacklistBrandName,
-        'blacklist_supplier_code': blacklistSupplierCode,
-        'customer_group_code': customerGroup?.code,
-        'discount1': discount1,
-        'discount2': discount2,
-        'discount3': discount3,
-        'discount4': discount4,
-        'week1': week1,
-        'week2': week2,
-        'week3': week3,
-        'week4': week4,
-        'week5': week5,
-        'week6': week6,
-        'week7': week7,
-        'start_time': startTime,
-        'end_time': endTime,
-        'weight': weight,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-      };
+    'code': code.trim(),
+    'item_code': itemCode,
+    'item_type_name': itemType,
+    'brand_name': brandName,
+    'supplier_code': supplierCode,
+    'item.kodeitem': itemCode,
+    'item_type.jenis': itemType,
+    'brand.merek': brandName,
+    'supplier.kode': supplierCode,
+    'calculation_type': calculationType,
+    'discount_type': discountType,
+    'blacklist_item_type.jenis': blacklistItemType,
+    'blacklist_brand.merek': blacklistBrandName,
+    'blacklist_supplier.kode': blacklistSupplierCode,
+    'blacklist_item_type_name': blacklistItemType,
+    'blacklist_brand_name': blacklistBrandName,
+    'blacklist_supplier_code': blacklistSupplierCode,
+    'blacklist_item_code': blacklistItemCode,
+    'customer_group_code': customerGroup?.code,
+    'discount1': discount1,
+    'discount2': discount2,
+    'discount3': discount3,
+    'discount4': discount4,
+    'week1': week1,
+    'week2': week2,
+    'week3': week3,
+    'week4': week4,
+    'week5': week5,
+    'week6': week6,
+    'week7': week7,
+    'start_time': startTime,
+    'end_time': endTime,
+    'weight': weight,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
 
   Percentage get discount1Percentage => discount1 is Money
       ? Percentage(discount1.value / 100)
@@ -371,8 +388,9 @@ class Discount extends Model {
 class DiscountClass extends ModelClass<Discount> {
   @override
   Discount initModel() => Discount(
-      calculationType: DiscountCalculationType.percentage,
-      discount1: 0,
-      startTime: DateTime.now(),
-      endTime: DateTime.now());
+    calculationType: DiscountCalculationType.percentage,
+    discount1: 0,
+    startTime: DateTime.now(),
+    endTime: DateTime.now(),
+  );
 }

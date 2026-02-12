@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/consignment_in.dart';
 import 'package:fe_pos/model/purchase_order_item.dart';
 export 'package:fe_pos/model/purchase_order_item.dart';
 import 'package:fe_pos/model/model.dart';
@@ -8,6 +9,7 @@ class ConsignmentInOrder extends Model {
   String? orderCode;
   String userName;
   List<PurchaseOrderItem> purchaseOrderItems;
+  ConsignmentIn? consignmentIn;
   DateTime datetime;
   DateTime deliveredDate;
   String description;
@@ -28,64 +30,67 @@ class ConsignmentInOrder extends Model {
   String destLocation;
   String supplierCode;
   Supplier supplier;
-  ConsignmentInOrder(
-      {this.userName = '',
-      this.description = '',
-      this.totalItem = 0,
-      this.code = '',
-      this.supplierCode = '',
-      this.orderCode,
-      this.subtotal = const Money(0),
-      this.grandtotal = const Money(0),
-      this.discountAmount = const Money(0),
-      this.otherCost = const Money(0),
-      this.cashAmount = const Money(0),
-      this.debitCardAmount = const Money(0),
-      this.creditCardAmount = const Money(0),
-      this.emoneyAmount = const Money(0),
-      this.taxAmount = const Money(0),
-      this.paymentMethodType = 'non',
-      this.location = '',
-      this.destLocation = '',
-      this.bankCode,
-      this.taxType = '',
-      Supplier? supplier,
-      super.id,
-      super.createdAt,
-      super.updatedAt,
-      DateTime? datetime,
-      DateTime? deliveredDate,
-      List<PurchaseOrderItem>? purchaseOrderItems})
-      : purchaseOrderItems = purchaseOrderItems ?? <PurchaseOrderItem>[],
-        datetime = datetime ?? DateTime.now(),
-        supplier = supplier ?? Supplier(),
-        deliveredDate = deliveredDate ?? DateTime.now();
+  ConsignmentInOrder({
+    this.userName = '',
+    this.description = '',
+    this.totalItem = 0,
+    this.code = '',
+    this.supplierCode = '',
+    this.orderCode,
+    this.subtotal = const Money(0),
+    this.grandtotal = const Money(0),
+    this.discountAmount = const Money(0),
+    this.otherCost = const Money(0),
+    this.cashAmount = const Money(0),
+    this.debitCardAmount = const Money(0),
+    this.creditCardAmount = const Money(0),
+    this.emoneyAmount = const Money(0),
+    this.taxAmount = const Money(0),
+    this.paymentMethodType = 'non',
+    this.location = '',
+    this.destLocation = '',
+    this.bankCode,
+    this.consignmentIn,
+    this.taxType = '',
+    Supplier? supplier,
+    super.id,
+    super.createdAt,
+    super.updatedAt,
+    DateTime? datetime,
+    DateTime? deliveredDate,
+    List<PurchaseOrderItem>? purchaseOrderItems,
+  }) : purchaseOrderItems = purchaseOrderItems ?? <PurchaseOrderItem>[],
+       datetime = datetime ?? DateTime.now(),
+       supplier = supplier ?? Supplier(),
+       deliveredDate = deliveredDate ?? DateTime.now();
 
   @override
   Map<String, dynamic> toMap() => {
-        'user1': userName,
-        'tanggal': datetime,
-        'keterangan': description,
-        'totalitem': totalItem,
-        'subtotal': subtotal,
-        'totalakhir': grandtotal,
-        'potnomfaktur': discountAmount,
-        'biayalain': otherCost,
-        'jmltunai': cashAmount,
-        'jmldebit': debitCardAmount,
-        'jmlkk': creditCardAmount,
-        'jmlemoney': emoneyAmount,
-        'payment_type': paymentMethodType,
-        'ppn': taxType,
-        'pajak': taxAmount,
-        'bank_code': bankCode,
-        'notransaksi': code,
-        'notrsorder': orderCode,
-        'kodekantor': location,
-        'kantortujuan': destLocation,
-        'kodesupel': supplierCode,
-        'tanggalkirim': deliveredDate,
-      };
+    'user1': userName,
+    'tanggal': datetime,
+    'supplier': supplier,
+    'keterangan': description,
+    'consignment_in': consignmentIn,
+    'totalitem': totalItem,
+    'subtotal': subtotal,
+    'totalakhir': grandtotal,
+    'potnomfaktur': discountAmount,
+    'biayalain': otherCost,
+    'jmltunai': cashAmount,
+    'jmldebit': debitCardAmount,
+    'jmlkk': creditCardAmount,
+    'jmlemoney': emoneyAmount,
+    'payment_type': paymentMethodType,
+    'ppn': taxType,
+    'pajak': taxAmount,
+    'bank_code': bankCode,
+    'notransaksi': code,
+    'notrsorder': orderCode,
+    'kodekantor': location,
+    'kantortujuan': destLocation,
+    'kodesupel': supplierCode,
+    'tanggalkirim': deliveredDate,
+  };
 
   String get supplierName => supplier.name;
 
@@ -93,16 +98,6 @@ class ConsignmentInOrder extends Model {
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
 
-    if (included.isNotEmpty) {
-      purchaseOrderItems = PurchaseOrderItemClass().findRelationsData(
-          included: included,
-          relation: json['relationships']['purchase_order_items']);
-      supplier = SupplierClass().findRelationData(
-            included: included,
-            relation: json['relationships']['supplier'],
-          ) ??
-          supplier;
-    }
     super.setFromJson(json, included: included);
     id = json['id'];
     userName = attributes['user1'];
@@ -128,10 +123,29 @@ class ConsignmentInOrder extends Model {
     destLocation = attributes['kantortujuan'];
     bankCode = attributes['bank_code'];
     supplierCode = attributes['kodesupel'];
+    if (included.isNotEmpty) {
+      purchaseOrderItems = PurchaseOrderItemClass().findRelationsData(
+        included: included,
+        relation: json['relationships']['purchase_order_items'],
+      );
+      consignmentIn = ConsignmentInClass().findRelationData(
+        included: included,
+        relation: json['relationships']['consignment_in'],
+      );
+      supplier =
+          SupplierClass().findRelationData(
+            included: included,
+            relation: json['relationships']['supplier'],
+          ) ??
+          Supplier(code: supplierCode);
+    }
   }
 
   @override
   String get modelValue => code;
+
+  @override
+  String get path => 'ipos/consignment_in_orders';
 }
 
 class ConsignmentInOrderClass extends ModelClass<ConsignmentInOrder> {

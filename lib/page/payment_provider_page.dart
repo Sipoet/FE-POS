@@ -20,10 +20,10 @@ class PaymentProviderPage extends StatefulWidget {
 
 class _PaymentProviderPageState extends State<PaymentProviderPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
+  late final Setting setting;
 
-  String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
   List<FilterData> _filters = [];
@@ -36,7 +36,7 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    final setting = context.read<Setting>();
+    setting = context.read<Setting>();
     columns = setting.tableColumn('paymentProvider');
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
@@ -54,16 +54,22 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
   }
 
   Future<DataTableResponse<PaymentProvider>> fetchPaymentProviders(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return PaymentProviderClass().finds(server, request).then(
-        (value) => DataTableResponse<PaymentProvider>(
+
+    return PaymentProviderClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<PaymentProvider>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void addForm() {
@@ -72,10 +78,12 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Tipe Pembayaran Baru',
-          PaymentProviderFormPage(
-              key: ObjectKey(paymentProvider),
-              paymentProvider: paymentProvider));
+        'Tipe Pembayaran Baru',
+        PaymentProviderFormPage(
+          key: ObjectKey(paymentProvider),
+          paymentProvider: paymentProvider,
+        ),
+      );
     });
   }
 
@@ -83,45 +91,39 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Edit Tipe Pembayaran ${paymentProvider.name}',
-          PaymentProviderFormPage(
-              key: ObjectKey(paymentProvider),
-              paymentProvider: paymentProvider));
+        'Edit Tipe Pembayaran ${paymentProvider.name}',
+        PaymentProviderFormPage(
+          key: ObjectKey(paymentProvider),
+          paymentProvider: paymentProvider,
+        ),
+      );
     });
   }
 
   void destroyRecord(PaymentProvider paymentProvider) {
     showConfirmDialog(
-        message: 'Apakah anda yakin hapus ${paymentProvider.name}?',
-        onSubmit: () {
-          server.delete('/payment_providers/${paymentProvider.id}').then(
+      message: 'Apakah anda yakin hapus ${paymentProvider.name}?',
+      onSubmit: () {
+        server
+            .delete('/payment_providers/${paymentProvider.id}')
+            .then(
               (response) {
-            if (response.statusCode == 200) {
-              flash.showBanner(
-                  messageType: ToastificationType.success,
-                  title: 'Sukses Hapus',
-                  description:
-                      'Sukses Hapus paymentProvider ${paymentProvider.name}');
-              refreshTable();
-            }
-          }, onError: (error) {
-            defaultErrorResponse(error: error);
-          });
-        });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+                if (response.statusCode == 200) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses Hapus',
+                    description:
+                        'Sukses Hapus paymentProvider ${paymentProvider.name}',
+                  );
+                  refreshTable();
+                }
+              },
+              onError: (error) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
   @override
@@ -133,9 +135,7 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
         children: [
           TableFilterForm(
             columns: columns,
-            enums: const {
-              'status': PaymentProviderStatus.values,
-            },
+            enums: const {'status': PaymentProviderStatus.values},
             onSubmit: (filter) {
               _filters = filter;
               refreshTable();
@@ -146,33 +146,19 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _searchText = '';
-                    });
-                    refreshTable();
-                  },
-                  tooltip: 'Reset Table',
-                  icon: const Icon(Icons.refresh),
-                ),
-                SizedBox(
-                  width: 150,
-                  child: TextField(
-                    decoration: const InputDecoration(hintText: 'Search Text'),
-                    onChanged: searchChanged,
-                    onSubmitted: searchChanged,
-                  ),
-                ),
-                SizedBox(
-                  width: 50,
-                  child: SubmenuButton(menuChildren: [
-                    MenuItemButton(
-                      child: const Text('Tambah Payment Provider'),
-                      onPressed: () => addForm(),
+                if (setting.isAuthorize('payment_providers', 'create'))
+                  SizedBox(
+                    width: 50,
+                    child: SubmenuButton(
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah Payment Provider'),
+                          onPressed: () => addForm(),
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
                     ),
-                  ], child: const Icon(Icons.table_rows_rounded)),
-                )
+                  ),
               ],
             ),
           ),
@@ -182,18 +168,22 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
               renderAction: (paymentProvider) => Row(
                 spacing: 10,
                 children: [
-                  IconButton(
+                  if (setting.isAuthorize('payment_providers', 'update'))
+                    IconButton(
                       onPressed: () {
                         editForm(paymentProvider);
                       },
                       tooltip: 'Edit Payment Provider',
-                      icon: const Icon(Icons.edit)),
-                  IconButton(
+                      icon: const Icon(Icons.edit),
+                    ),
+                  if (setting.isAuthorize('payment_providers', 'destroy'))
+                    IconButton(
                       onPressed: () {
                         destroyRecord(paymentProvider);
                       },
                       tooltip: 'Hapus Payment Provider',
-                      icon: const Icon(Icons.delete)),
+                      icon: const Icon(Icons.delete),
+                    ),
                 ],
               ),
               onLoaded: (stateManager) => _source = stateManager,

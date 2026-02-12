@@ -21,7 +21,7 @@ class _ItemModalSelectState extends State<ItemModalSelect>
   List<ItemReport> models = [];
   late final Server _server;
   late final List<TableColumn> _columns;
-  late final TrinaGridStateManager _source;
+  late final TableController<ItemReport> _source;
 
   @override
   void initState() {
@@ -35,13 +35,21 @@ class _ItemModalSelectState extends State<ItemModalSelect>
 
   Future<DataTableResponse<ItemReport>> fetchItem(QueryRequest request) {
     _source.setShowLoading(true);
-    return ItemReportClass().finds(_server, request).then((result) {
-      return DataTableResponse<ItemReport>(
-          models: result.models, totalPage: result.metadata['total_pages']);
-    }, onError: ((error, stackTrace) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse<ItemReport>(models: [], totalPage: 0);
-    })).whenComplete(() => _source.setShowLoading(false));
+    return ItemReportClass()
+        .finds(_server, request)
+        .then(
+          (result) {
+            return DataTableResponse<ItemReport>(
+              models: result.models,
+              totalPage: result.metadata['total_pages'],
+            );
+          },
+          onError: ((error, stackTrace) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse<ItemReport>(models: [], totalPage: 0);
+          }),
+        )
+        .whenComplete(() => _source.setShowLoading(false));
   }
 
   @override
@@ -68,12 +76,11 @@ class _ItemModalSelectState extends State<ItemModalSelect>
             fixedLeftColumns: 2,
           ),
         ),
-        const SizedBox(
-          height: 10,
-        ),
+        const SizedBox(height: 10),
         ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(selectedItems),
-            child: const Text('Pilih')),
+          onPressed: () => Navigator.of(context).pop(selectedItems),
+          child: const Text('Pilih'),
+        ),
       ],
     );
   }

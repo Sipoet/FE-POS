@@ -19,9 +19,9 @@ class PaymentMethodPage extends StatefulWidget {
 
 class _PaymentMethodPageState extends State<PaymentMethodPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
-  String _searchText = '';
+
   final cancelToken = CancelToken();
   late Flash flash;
   final _menuController = MenuController();
@@ -54,16 +54,22 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
   }
 
   Future<DataTableResponse<PaymentMethod>> fetchPaymentMethods(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return PaymentMethodClass().finds(server, request).then(
-        (value) => DataTableResponse<PaymentMethod>(
+
+    return PaymentMethodClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<PaymentMethod>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void addForm() {
@@ -71,9 +77,12 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Tambah Metode Pembayaran',
-          PaymentMethodFormPage(
-              key: ObjectKey(paymentMethod), paymentMethod: paymentMethod));
+        'Tambah Metode Pembayaran',
+        PaymentMethodFormPage(
+          key: ObjectKey(paymentMethod),
+          paymentMethod: paymentMethod,
+        ),
+      );
     });
   }
 
@@ -81,34 +90,24 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Edit Metode Pembayaran ${paymentMethod.name}',
-          PaymentMethodFormPage(
-              key: ObjectKey(paymentMethod), paymentMethod: paymentMethod));
+        'Edit Metode Pembayaran ${paymentMethod.name}',
+        PaymentMethodFormPage(
+          key: ObjectKey(paymentMethod),
+          paymentMethod: paymentMethod,
+        ),
+      );
     });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
   }
 
   List<Widget> actionButtons(PaymentMethod paymentMethod, int index) {
     return <Widget>[
       IconButton(
-          onPressed: () {
-            editForm(paymentMethod);
-          },
-          tooltip: 'Edit Metode Pembayaran',
-          icon: const Icon(Icons.edit)),
+        onPressed: () {
+          editForm(paymentMethod);
+        },
+        tooltip: 'Edit Metode Pembayaran',
+        icon: const Icon(Icons.edit),
+      ),
     ];
   }
 
@@ -122,9 +121,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
           children: [
             TableFilterForm(
               columns: columns,
-              enums: const {
-                'payment_type': PaymentType.values,
-              },
+              enums: const {'payment_type': PaymentType.values},
               onSubmit: (filter) {
                 _filters = filter;
                 refreshTable();
@@ -135,40 +132,22 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(
-                        controller: _menuController,
-                        menuChildren: [
-                          MenuItemButton(
-                            child: const Text('Tambah Metode Pembayaran'),
-                            onPressed: () {
-                              _menuController.close();
-                              addForm();
-                            },
-                          ),
-                        ],
-                        child: const Icon(Icons.table_rows_rounded)),
-                  )
+                      controller: _menuController,
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah Metode Pembayaran'),
+                          onPressed: () {
+                            _menuController.close();
+                            addForm();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -176,11 +155,12 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<PaymentMethod>(
                 renderAction: (paymentMethod) => IconButton(
-                    onPressed: () {
-                      editForm(paymentMethod);
-                    },
-                    tooltip: 'Edit Metode Pembayaran',
-                    icon: const Icon(Icons.edit)),
+                  onPressed: () {
+                    editForm(paymentMethod);
+                  },
+                  tooltip: 'Edit Metode Pembayaran',
+                  icon: const Icon(Icons.edit),
+                ),
                 onLoaded: (stateManager) => _source = stateManager,
                 columns: columns,
                 fetchData: fetchPaymentMethods,

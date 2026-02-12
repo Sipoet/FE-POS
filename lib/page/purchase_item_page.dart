@@ -19,7 +19,7 @@ class PurchaseItemPage extends StatefulWidget {
 
 class _PurchaseItemPageState extends State<PurchaseItemPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
   String _searchText = '';
   List<IposPurchaseItem> items = [];
@@ -55,27 +55,17 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
       QueryRequest request) {
     request.filters = _filters;
     request.searchText = _searchText;
+    request.include = ['item', 'purchase'];
     return IposPurchaseItemClass().finds(server, request).then(
-        (value) => DataTableResponse<IposPurchaseItem>(
-            models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+      (value) => DataTableResponse<IposPurchaseItem>(
+        models: value.models,
+        totalPage: value.metadata['total_pages'],
+      ),
+      onError: (error) {
+        defaultErrorResponse(error: error);
+        return DataTableResponse.empty();
+      },
+    );
   }
 
   void viewRecord(IposPurchaseItem purchaseItem) {
@@ -109,27 +99,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                ],
+                children: [],
               ),
             ),
             SizedBox(
@@ -139,15 +109,16 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
                   spacing: 10,
                   children: [
                     IconButton.filled(
-                        onPressed: () {
-                          viewRecord(purchaseItem);
-                        },
-                        icon: const Icon(Icons.search_rounded)),
+                      onPressed: () {
+                        viewRecord(purchaseItem);
+                      },
+                      icon: const Icon(Icons.search_rounded),
+                    ),
                   ],
                 ),
                 onLoaded: (stateManager) {
                   _source = stateManager;
-                  _source.sortDescending(_source.columns[0]);
+                  _source.sortDescending(_source.columns[1]);
                 },
                 columns: columns,
                 fetchData: fetchPurchaseItems,

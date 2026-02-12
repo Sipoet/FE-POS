@@ -52,38 +52,47 @@ mixin SessionState<T extends StatefulWidget> on State<T>
     String jwtBefore = server.jwt;
     server.jwt = '';
     if (host.isNotEmpty) server.host = host;
-    return server.post('login', body: {
-      'user': {'username': username, 'password': password}
-    }).then((response) {
-      try {
-        if (response.statusCode == 200) {
-          server.jwt = response.headers.value('Authorization');
-          server.userName = username;
+    return server
+        .post(
+          'login',
+          body: {
+            'user': {'username': username, 'password': password},
+          },
+        )
+        .then(
+          (response) {
+            try {
+              if (response.statusCode == 200) {
+                server.jwt = response.headers.value('Authorization');
+                server.userName = username;
 
-          saveSession(server);
-          onSuccess(response);
-        } else {
-          server.jwt = jwtBefore;
-          onFailed(response);
-        }
-      } catch (error) {
-        final flash = Flash();
-        flash.show(Text(error.toString()), ToastificationType.error);
-      }
-    }, onError: (error, stackTrace) {
-      final flash = Flash();
-      flash.show(
-          Text(
-            "${error.toString()} ${stackTrace.toString()}",
-            style: const TextStyle(fontSize: 9),
-          ),
-          ToastificationType.error);
-      if (error.type == DioExceptionType.badResponse) {
-        onFailed(error.response);
-      } else {
-        defaultErrorResponse(error: error);
-      }
-    });
+                saveSession(server);
+                onSuccess(response);
+              } else {
+                server.jwt = jwtBefore;
+                onFailed(response);
+              }
+            } catch (error) {
+              final flash = Flash();
+              flash.show(Text(error.toString()), ToastificationType.error);
+            }
+          },
+          onError: (error, stackTrace) {
+            final flash = Flash();
+            flash.show(
+              Text(
+                "${error.toString()} ${stackTrace.toString()}",
+                style: const TextStyle(fontSize: 9),
+              ),
+              ToastificationType.error,
+            );
+            if (error.type == DioExceptionType.badResponse) {
+              onFailed(error.response);
+            } else {
+              defaultErrorResponse(error: error);
+            }
+          },
+        );
   }
 
   Future logout(Server server) {
@@ -99,25 +108,25 @@ mixin SessionState<T extends StatefulWidget> on State<T>
           title: body['message'],
           messageType: ToastificationType.success,
         );
-        navigator.pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => const LoginPage()));
+        navigator.pushReplacement(
+          MaterialPageRoute(
+            builder: (BuildContext context) => const LoginPage(),
+          ),
+        );
       } else {
-        flash.show(
-            Text(
-              body['error'],
-            ),
-            ToastificationType.error);
+        flash.show(Text(body['error']), ToastificationType.error);
       }
     }, onError: (error, stackTrace) => defaultErrorResponse(error: error));
   }
 
   void saveSession(Server server) async {
     _storage.write(
-        key: storageServerKey,
-        value: jsonEncode({
-          'host': server.host,
-          'jwt': server.jwt,
-          'userName': server.userName
-        }));
+      key: storageServerKey,
+      value: jsonEncode({
+        'host': server.host,
+        'jwt': server.jwt,
+        'userName': server.userName,
+      }),
+    );
   }
 }

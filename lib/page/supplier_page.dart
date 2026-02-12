@@ -15,9 +15,9 @@ class SupplierPage extends StatefulWidget {
 }
 
 class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
-  String _searchText = '';
+
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
@@ -42,27 +42,18 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
   }
 
   Future<DataTableResponse<Supplier>> fetchSuppliers(QueryRequest request) {
-    return SupplierClass().finds(server, request).then(
-        (value) => DataTableResponse<Supplier>(
+    return SupplierClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<Supplier>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   @override
@@ -76,27 +67,7 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                ],
+                children: [],
               ),
             ),
             SizedBox(

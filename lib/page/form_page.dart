@@ -28,6 +28,8 @@ export 'sale_form_page.dart';
 export 'purchase_form_page.dart';
 export 'purchase_order_form_page.dart';
 export 'purchase_return_form_page.dart';
+export 'consignment_in_form_page.dart';
+export 'consignment_in_order_form_page.dart';
 
 // inventory
 export 'transfer_form_page.dart';

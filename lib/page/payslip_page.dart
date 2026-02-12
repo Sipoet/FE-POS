@@ -22,9 +22,8 @@ class PayslipPage extends StatefulWidget {
 
 class _PayslipPageState extends State<PayslipPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
-  String _searchText = '';
   List<Payslip> payslips = [];
   final cancelToken = CancelToken();
   late Flash flash;
@@ -59,91 +58,112 @@ class _PayslipPageState extends State<PayslipPage>
 
   Future<DataTableResponse<Payslip>> fetchPayslips(QueryRequest request) {
     request.filters = _filters;
-    request.searchText = _searchText;
     request.include = ['payroll', 'employee'];
-    return PayslipClass().finds(server, request).then(
-        (value) => DataTableResponse<Payslip>(
+    return PayslipClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<Payslip>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void generatePayslip() {
     final tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Generate Slip Gaji',
-          const GeneratePayslipFormPage(key: ObjectKey('Generate Payslip')));
+      tabManager.addTab(
+        'Generate Slip Gaji',
+        const GeneratePayslipFormPage(key: ObjectKey('Generate Payslip')),
+      );
     });
   }
 
   void editForm(Payslip payslip) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Edit SLip Gaji ${payslip.id}',
-          PayslipFormPage(key: ObjectKey(payslip), payslip: payslip));
+      tabManager.addTab(
+        'Edit SLip Gaji ${payslip.id}',
+        PayslipFormPage(key: ObjectKey(payslip), payslip: payslip),
+      );
     });
   }
 
   void destroyRecord(Payslip payslip) {
     showConfirmDialog(
-        message: 'Apakah anda yakin hapus ${payslip.id}?',
-        onSubmit: () {
-          server.delete('/payslips/${payslip.id}').then((response) {
-            if (response.statusCode == 200) {
-              flash.showBanner(
-                  messageType: ToastificationType.success,
-                  title: 'Sukses Hapus',
-                  description: 'Sukses Hapus Slip Gaji ${payslip.id}');
-              refreshTable();
-            }
-          }, onError: (error) {
-            defaultErrorResponse(error: error);
-          });
-        });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+      message: 'Apakah anda yakin hapus ${payslip.id}?',
+      onSubmit: () {
+        server
+            .delete('/payslips/${payslip.id}')
+            .then(
+              (response) {
+                if (response.statusCode == 200) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses Hapus',
+                    description: 'Sukses Hapus Slip Gaji ${payslip.id}',
+                  );
+                  refreshTable();
+                }
+              },
+              onError: (error) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
   void cancelPayslip(Payslip payslip) {
-    server.post('payslips/${payslip.id.toString()}/cancel').then((response) {
-      if (response.statusCode == 200) {
-        flash.show(
-            Text('Berhasil Cancel slip gaji'), ToastificationType.success);
-        _source.refreshTable();
-        return;
-      }
-      flash.show(Text('Gagal Cancel slip gaji'), ToastificationType.error);
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-    });
+    server
+        .post('payslips/${payslip.id.toString()}/cancel')
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              flash.show(
+                Text('Berhasil Cancel slip gaji'),
+                ToastificationType.success,
+              );
+              _source.refreshTable();
+              return;
+            }
+            flash.show(
+              Text('Gagal Cancel slip gaji'),
+              ToastificationType.error,
+            );
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
   void confirmPayslip(Payslip payslip) {
-    server.post('payslips/${payslip.id.toString()}/confirm').then((response) {
-      if (response.statusCode == 200) {
-        flash.show(
-            Text('Berhasil Confirm slip gaji'), ToastificationType.success);
-        _source.refreshTable();
-        return;
-      }
-      flash.show(Text('Gagal Confirm slip gaji'), ToastificationType.error);
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-    });
+    server
+        .post('payslips/${payslip.id.toString()}/confirm')
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              flash.show(
+                Text('Berhasil Confirm slip gaji'),
+                ToastificationType.success,
+              );
+              _source.refreshTable();
+              return;
+            }
+            flash.show(
+              Text('Gagal Confirm slip gaji'),
+              ToastificationType.error,
+            );
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
   void payPayslip() {
@@ -156,14 +176,13 @@ class _PayslipPageState extends State<PayslipPage>
             children: [
               Text('Pembayaran Slip Gaji'),
               IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: Icon(Icons.close)),
+                onPressed: () => Navigator.of(context).pop(),
+                icon: Icon(Icons.close),
+              ),
             ],
           ),
           contentPadding: EdgeInsets.all(10),
-          content: PayslipPayPage(
-            isModal: true,
-          ),
+          content: PayslipPayPage(isModal: true),
         );
       },
     );
@@ -177,24 +196,33 @@ class _PayslipPageState extends State<PayslipPage>
 
   void download(Payslip payslip) async {
     server.get('payslips/${payslip.id.toString()}/download', type: 'file').then(
-        (response) async {
-      String filename = response.headers.value('content-disposition') ?? '';
-      if (filename.isEmpty) {
-        return;
-      }
-      filename = filename.substring(
-          filename.indexOf('filename="') + 10, filename.indexOf('pdf";') + 3);
+      (response) async {
+        String filename = response.headers.value('content-disposition') ?? '';
+        if (filename.isEmpty) {
+          return;
+        }
+        filename = filename.substring(
+          filename.indexOf('filename="') + 10,
+          filename.indexOf('pdf";') + 3,
+        );
 
-      var downloader = const FileSaver();
-      downloader.download(filename, response.data, 'pdf',
+        var downloader = const FileSaver();
+        downloader.download(
+          filename,
+          response.data,
+          'pdf',
           onSuccess: (String path) {
-        flash.showBanner(
-            messageType: ToastificationType.success,
-            title: 'Sukses download',
-            duration: Durations.short1,
-            description: 'sukses disimpan di $path');
-      });
-    }, onError: (error) => defaultErrorResponse(error: error));
+            flash.showBanner(
+              messageType: ToastificationType.success,
+              title: 'Sukses download',
+              duration: Durations.short1,
+              description: 'sukses disimpan di $path',
+            );
+          },
+        );
+      },
+      onError: (error) => defaultErrorResponse(error: error),
+    );
   }
 
   void sendEmail(Payslip payslip) {
@@ -203,9 +231,10 @@ class _PayslipPageState extends State<PayslipPage>
         flash.show(Text(response.data['message']), ToastificationType.info);
       } else {
         flash.showBanner(
-            title: 'gagal kirim email ${payslip.id.toString()}',
-            description: response.data['message'] ?? '',
-            messageType: ToastificationType.error);
+          title: 'gagal kirim email ${payslip.id.toString()}',
+          description: response.data['message'] ?? '',
+          messageType: ToastificationType.error,
+        );
       }
     }, onError: (error) => defaultErrorResponse(error: error));
   }
@@ -233,66 +262,48 @@ class _PayslipPageState extends State<PayslipPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(
-                        controller: menuController,
-                        onHover: (isHover) {
-                          if (isHover) {
+                      controller: menuController,
+                      onHover: (isHover) {
+                        if (isHover) {
+                          menuController.close();
+                        }
+                      },
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Cancel Slip Gaji'),
+                          onPressed: () {
                             menuController.close();
-                          }
-                        },
-                        menuChildren: [
-                          MenuItemButton(
-                            child: const Text('Cancel Slip Gaji'),
-                            onPressed: () {
-                              menuController.close();
-                              actionSelected(cancelPayslip);
-                            },
-                          ),
-                          MenuItemButton(
-                            child: const Text('confirm Slip Gaji'),
-                            onPressed: () {
-                              menuController.close();
-                              actionSelected(confirmPayslip);
-                            },
-                          ),
-                          MenuItemButton(
-                            child: const Text('pay Slip Gaji'),
-                            onPressed: () {
-                              menuController.close();
-                              payPayslip();
-                            },
-                          ),
-                          MenuItemButton(
-                            child: const Text('Generate Slip Gaji'),
-                            onPressed: () {
-                              menuController.close();
-                              generatePayslip();
-                            },
-                          ),
-                        ],
-                        child: const Icon(Icons.table_rows_rounded)),
-                  )
+                            actionSelected(cancelPayslip);
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('confirm Slip Gaji'),
+                          onPressed: () {
+                            menuController.close();
+                            actionSelected(confirmPayslip);
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('pay Slip Gaji'),
+                          onPressed: () {
+                            menuController.close();
+                            payPayslip();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('Generate Slip Gaji'),
+                          onPressed: () {
+                            menuController.close();
+                            generatePayslip();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -304,29 +315,33 @@ class _PayslipPageState extends State<PayslipPage>
                   spacing: 10,
                   children: [
                     IconButton(
-                        onPressed: () {
-                          editForm(payslip);
-                        },
-                        tooltip: 'Edit Slip Gaji',
-                        icon: const Icon(Icons.edit)),
+                      onPressed: () {
+                        editForm(payslip);
+                      },
+                      tooltip: 'Edit Slip Gaji',
+                      icon: const Icon(Icons.edit),
+                    ),
                     IconButton(
-                        onPressed: () {
-                          download(payslip);
-                        },
-                        tooltip: 'Download Slip Gaji',
-                        icon: const Icon(Icons.download)),
+                      onPressed: () {
+                        download(payslip);
+                      },
+                      tooltip: 'Download Slip Gaji',
+                      icon: const Icon(Icons.download),
+                    ),
                     IconButton(
-                        onPressed: () {
-                          sendEmail(payslip);
-                        },
-                        tooltip: 'Kirim email Slip Gaji',
-                        icon: const Icon(Icons.send)),
+                      onPressed: () {
+                        sendEmail(payslip);
+                      },
+                      tooltip: 'Kirim email Slip Gaji',
+                      icon: const Icon(Icons.send),
+                    ),
                     IconButton(
-                        onPressed: () {
-                          destroyRecord(payslip);
-                        },
-                        tooltip: 'Hapus Slip Gaji',
-                        icon: const Icon(Icons.delete)),
+                      onPressed: () {
+                        destroyRecord(payslip);
+                      },
+                      tooltip: 'Hapus Slip Gaji',
+                      icon: const Icon(Icons.delete),
+                    ),
                   ],
                 ),
                 onRowChecked: (event) {

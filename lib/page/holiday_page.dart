@@ -20,10 +20,10 @@ class HolidayPage extends StatefulWidget {
 
 class _HolidayPageState extends State<HolidayPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
   final _menuController = MenuController();
-  String _searchText = '';
+
   final cancelToken = CancelToken();
   late Flash flash;
   List<FilterData> _filters = [];
@@ -55,14 +55,19 @@ class _HolidayPageState extends State<HolidayPage>
 
   Future<DataTableResponse<Holiday>> fetchHolidays(QueryRequest request) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return HolidayClass().finds(server, request).then(
-        (value) => DataTableResponse<Holiday>(
+
+    return HolidayClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<Holiday>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void addForm() {
@@ -70,49 +75,46 @@ class _HolidayPageState extends State<HolidayPage>
 
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Tambah Liburan',
-          HolidayFormPage(key: ObjectKey(holiday), holiday: holiday));
+      tabManager.addTab(
+        'Tambah Liburan',
+        HolidayFormPage(key: ObjectKey(holiday), holiday: holiday),
+      );
     });
   }
 
   void editForm(Holiday holiday) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Edit Liburan ${holiday.id}',
-          HolidayFormPage(key: ObjectKey(holiday), holiday: holiday));
+      tabManager.addTab(
+        'Edit Liburan ${holiday.id}',
+        HolidayFormPage(key: ObjectKey(holiday), holiday: holiday),
+      );
     });
   }
 
   void destroyRecord(Holiday holiday) {
     showConfirmDialog(
-        message: 'Apakah anda yakin hapus ${holiday.id}?',
-        onSubmit: () {
-          server.delete('/holidays/${holiday.id}').then((response) {
-            if (response.statusCode == 200) {
-              flash.showBanner(
-                  messageType: ToastificationType.success,
-                  title: 'Sukses Hapus',
-                  description: 'Sukses Hapus Liburan ${holiday.id}');
-              refreshTable();
-            }
-          }, onError: (error) {
-            defaultErrorResponse(error: error);
-          });
-        });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+      message: 'Apakah anda yakin hapus ${holiday.id}?',
+      onSubmit: () {
+        server
+            .delete('/holidays/${holiday.id}')
+            .then(
+              (response) {
+                if (response.statusCode == 200) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses Hapus',
+                    description: 'Sukses Hapus Liburan ${holiday.id}',
+                  );
+                  refreshTable();
+                }
+              },
+              onError: (error) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
   @override
@@ -137,40 +139,22 @@ class _HolidayPageState extends State<HolidayPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(
-                        controller: _menuController,
-                        menuChildren: [
-                          MenuItemButton(
-                            child: const Text('Tambah Libur Karyawan'),
-                            onPressed: () {
-                              _menuController.close();
-                              addForm();
-                            },
-                          ),
-                        ],
-                        child: const Icon(Icons.table_rows_rounded)),
-                  )
+                      controller: _menuController,
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah Libur Karyawan'),
+                          onPressed: () {
+                            _menuController.close();
+                            addForm();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -181,17 +165,19 @@ class _HolidayPageState extends State<HolidayPage>
                   spacing: 10,
                   children: [
                     IconButton(
-                        onPressed: () {
-                          editForm(holiday);
-                        },
-                        tooltip: 'Edit Holiday',
-                        icon: const Icon(Icons.edit)),
+                      onPressed: () {
+                        editForm(holiday);
+                      },
+                      tooltip: 'Edit Holiday',
+                      icon: const Icon(Icons.edit),
+                    ),
                     IconButton(
-                        onPressed: () {
-                          destroyRecord(holiday);
-                        },
-                        tooltip: 'Hapus Holiday',
-                        icon: const Icon(Icons.delete)),
+                      onPressed: () {
+                        destroyRecord(holiday);
+                      },
+                      tooltip: 'Hapus Holiday',
+                      icon: const Icon(Icons.delete),
+                    ),
                   ],
                 ),
                 columns: columns,

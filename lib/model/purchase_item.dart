@@ -1,6 +1,10 @@
 import 'package:fe_pos/model/product.dart';
 export 'package:fe_pos/model/product.dart';
+import 'package:fe_pos/model/consignment_in.dart';
+export 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/model/model.dart';
+import 'package:fe_pos/model/ipos/purchase.dart';
+import 'package:fe_pos/model/purchase_return.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
 class PurchaseItem extends Model {
@@ -28,6 +32,12 @@ class PurchaseItem extends Model {
   double? warehouseStock;
   double? storeStock;
   double? numberOfSales;
+  // Purchase? purchase;
+  PurchaseReturn? purchaseReturn;
+  ConsignmentIn? consignmentIn;
+  String? purchaseType;
+  DateTime? transactionDate;
+  Item? item;
   PurchaseItem(
       {Product? product,
       super.id,
@@ -45,6 +55,7 @@ class PurchaseItem extends Model {
       super.updatedAt,
       this.itemTypeName,
       this.brandName,
+      this.item,
       this.supplierCode,
       this.subtotal = const Money(0),
       this.discountAmount1 = 0,
@@ -100,8 +111,47 @@ class PurchaseItem extends Model {
       _product = newProduct ?? ProductClass().initModel();
 
   // Money get sellPrice => product.sellPrice;
+
   @override
-  String get modelName => 'purchase_item';
+  Map<String, dynamic> toMap() => {
+        'kodeitem': item?.code,
+        'item_code': item?.code,
+        'item_name': item?.name,
+        'jumlah': quantity,
+        'nobaris': row,
+        'harga': price,
+        'satuan': uom,
+        'item': item,
+        'purchase': purchaseReturn ?? consignmentIn,
+        'subtotal': subtotal,
+        'potongan': discountAmount1,
+        'potongan2': discountPercentage2,
+        'potongan3': discountPercentage3,
+        'potongan4': discountPercentage4,
+        'pajak': taxAmount,
+        'total': total,
+        'stock_left': stockLeft,
+        'warehouse_stock': warehouseStock,
+        'store_stock': storeStock,
+        'number_of_sales': numberOfSales,
+        'sell_price': sellPrice,
+        'jmlpesan': orderQuantity,
+        'tglexp': expiredDate,
+        'kodeprod': productionCode,
+        'hppdasar': cogs,
+        'notransaksi': purchaseCode,
+        'item.jenis': itemTypeName,
+        'item.supplier1': supplierCode,
+        'item.merek': brandName,
+        'item_type_name': itemTypeName,
+        'supplier_code': supplierCode,
+        'brand_name': brandName,
+        'transaction_date': transactionDate,
+      };
+  Money get sellPrice => item?.sellPrice ?? const Money(0);
+
+  @override
+  String get path => 'ipos/purchase_items';
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -117,6 +167,23 @@ class PurchaseItem extends Model {
     }
     if (product.id == null) {
       productId = attributes['product_id'];
+      item = ItemClass().findRelationData(
+            included: included,
+            relation: json['relationships']?['item'],
+          ) ??
+          Item(id: attributes['kodeitem'], code: attributes['kodeitem']);
+      // purchase = PurchaseClass().findRelationData(
+      //   included: included,
+      //   relation: json['relationships']?['purchase'],
+      // );
+      purchaseReturn = PurchaseReturnClass().findRelationData(
+        included: included,
+        relation: json['relationships']?['purchase_return'],
+      );
+      consignmentIn = ConsignmentInClass().findRelationData(
+        included: included,
+        relation: json['relationships']?['consignment_in'],
+      );
     }
     row = attributes['nobaris'];
     quantity = double.parse(attributes['jumlah']);
@@ -141,10 +208,32 @@ class PurchaseItem extends Model {
     supplierCode = attributes['supplier_code'];
     brandName = attributes['brand_name'];
     purchaseCode = attributes['notransaksi'];
+    purchaseType = attributes['purchase_type'];
+    transactionDate = DateTime.tryParse(attributes['transaction_date'] ?? '');
+  }
+
+  String get purchaseTypeName {
+    switch (purchaseType) {
+      case 'BL':
+        return 'Beli';
+      case 'RB':
+        return 'Retur';
+      case 'IM':
+        return 'Item Masuk';
+      case 'RKI':
+        return 'Konsinyasi Retur';
+      case 'KI':
+        return 'Konsinyasi';
+      default:
+        return '';
+    }
   }
 
   @override
-  String get modelValue => id.toString();
+  String get modelValue => "$purchaseCode-${item?.code}";
+
+  @override
+  String? get valueDescription => purchaseTypeName;
 }
 
 class PurchaseItemClass extends ModelClass<PurchaseItem> {

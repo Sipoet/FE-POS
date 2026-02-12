@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/purchase.dart';
 import 'package:fe_pos/model/purchase_order_item.dart';
 export 'package:fe_pos/model/purchase_order_item.dart';
 import 'package:fe_pos/model/model.dart';
@@ -5,11 +6,12 @@ export 'package:fe_pos/tool/custom_type.dart';
 
 class PurchaseOrder extends Model {
   String code;
-  String? orderCode;
+  String? purchaseCode;
   String userName;
+  Purchase? purchase;
   List<PurchaseOrderItem> purchaseItems;
   DateTime datetime;
-  DateTime deliveredDate;
+  DateTime? deliveredDate;
   String description;
   double totalItem;
   Money subtotal;
@@ -28,69 +30,72 @@ class PurchaseOrder extends Model {
   String destLocation;
   String supplierCode;
   Supplier supplier;
-  PurchaseOrder(
-      {this.userName = '',
-      this.description = '',
-      this.totalItem = 0,
-      this.code = '',
-      this.supplierCode = '',
-      this.orderCode,
-      this.subtotal = const Money(0),
-      this.grandtotal = const Money(0),
-      this.discountAmount = const Money(0),
-      this.otherCost = const Money(0),
-      this.cashAmount = const Money(0),
-      this.debitCardAmount = const Money(0),
-      this.creditCardAmount = const Money(0),
-      this.emoneyAmount = const Money(0),
-      this.taxAmount = const Money(0),
-      this.paymentMethodType = 'non',
-      this.location = '',
-      this.destLocation = '',
-      this.bankCode,
-      this.taxType = '',
-      Supplier? supplier,
-      super.id,
-      super.createdAt,
-      super.updatedAt,
-      DateTime? datetime,
-      DateTime? deliveredDate,
-      List<PurchaseOrderItem>? purchaseItems})
-      : purchaseItems = purchaseItems ?? <PurchaseOrderItem>[],
-        datetime = datetime ?? DateTime.now(),
-        supplier = supplier ?? Supplier(),
-        deliveredDate = deliveredDate ?? DateTime.now();
+  PurchaseOrder({
+    this.userName = '',
+    this.description = '',
+    this.totalItem = 0,
+    this.code = '',
+    this.supplierCode = '',
+    this.purchaseCode,
+    this.subtotal = const Money(0),
+    this.grandtotal = const Money(0),
+    this.discountAmount = const Money(0),
+    this.otherCost = const Money(0),
+    this.cashAmount = const Money(0),
+    this.debitCardAmount = const Money(0),
+    this.creditCardAmount = const Money(0),
+    this.emoneyAmount = const Money(0),
+    this.taxAmount = const Money(0),
+    this.paymentMethodType = 'non',
+    this.location = '',
+    this.purchase,
+    this.destLocation = '',
+    this.bankCode,
+    this.taxType = '',
+    Supplier? supplier,
+    super.id,
+    super.createdAt,
+    super.updatedAt,
+    DateTime? datetime,
+    this.deliveredDate,
+    List<PurchaseOrderItem>? purchaseItems,
+  }) : purchaseItems = purchaseItems ?? <PurchaseOrderItem>[],
+       datetime = datetime ?? DateTime.now(),
+       supplier = supplier ?? Supplier();
 
   @override
   Map<String, dynamic> toMap() => {
-        'user1': userName,
-        'tanggal': datetime,
-        'keterangan': description,
-        'totalitem': totalItem,
-        'subtotal': subtotal,
-        'totalakhir': grandtotal,
-        'potnomfaktur': discountAmount,
-        'biayalain': otherCost,
-        'jmltunai': cashAmount,
-        'jmldebit': debitCardAmount,
-        'jmlkk': creditCardAmount,
-        'jmlemoney': emoneyAmount,
-        'payment_type': paymentMethodType,
-        'ppn': taxType,
-        'pajak': taxAmount,
-        'bank_code': bankCode,
-        'notransaksi': code,
-        'notrsorder': orderCode,
-        'kodekantor': location,
-        'kantortujuan': destLocation,
-        'kodesupel': supplierCode,
-        'tanggalkirim': deliveredDate,
-      };
+    'user1': userName,
+    'tanggal': datetime,
+    'keterangan': description,
+    'totalitem': totalItem,
+    'subtotal': subtotal,
+    'supplier': supplier,
+    'totalakhir': grandtotal,
+    'potnomfaktur': discountAmount,
+    'biayalain': otherCost,
+    'jmltunai': cashAmount,
+    'jmldebit': debitCardAmount,
+    'jmlkk': creditCardAmount,
+    'jmlemoney': emoneyAmount,
+    'payment_type': paymentMethodType,
+    'ppn': taxType,
+    'pajak': taxAmount,
+    'bank_code': bankCode,
+    'notransaksi': code,
+    'notrsorder': purchaseCode,
+    'purchase': purchase,
+    'kodekantor': location,
+    'kantortujuan': destLocation,
+    'kodesupel': supplierCode,
+    'tanggalkirim': deliveredDate,
+    'supplier_name': supplierName,
+  };
 
   String get supplierName => supplier.name;
 
   @override
-  String get modelName => 'purchase_order';
+  String get path => 'ipos/purchase_orders';
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -102,16 +107,21 @@ class PurchaseOrder extends Model {
         included: included,
         relation: json['relationships']['purchase_order_items'],
       );
-      supplier = SupplierClass().findRelationData(
+      supplier =
+          SupplierClass().findRelationData(
             included: included,
             relation: json['relationships']['supplier'],
           ) ??
           supplier;
+      purchase = PurchaseClass().findRelationData(
+        included: included,
+        relation: json['relationships']['purchase'],
+      );
     }
     id = json['id'];
     userName = attributes['user1'];
     datetime = DateTime.parse(attributes['tanggal']);
-    deliveredDate = DateTime.parse(attributes['tanggalkirim']);
+    deliveredDate = DateTime.tryParse(attributes['tanggalkirim'] ?? '');
     description = attributes['keterangan'];
     totalItem = double.parse(attributes['totalitem']);
     subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
@@ -127,7 +137,7 @@ class PurchaseOrder extends Model {
     taxType = attributes['ppn'];
     taxAmount = Money.tryParse(attributes['pajak']) ?? const Money(0);
     code = attributes['notransaksi'];
-    orderCode = attributes['notrsorder'];
+    purchaseCode = attributes['notrsorder'];
     location = attributes['kodekantor'];
     destLocation = attributes['kantortujuan'];
     bankCode = attributes['bank_code'];

@@ -6,26 +6,26 @@ class CashierSession extends Model {
   Money totalIn;
   Money totalOut;
   List<EdcSettlement> edcSettlements;
-  CashierSession(
-      {Date? date,
-      DateTime? endTime,
-      super.id,
-      this.totalIn = const Money(0),
-      this.totalOut = const Money(0),
-      List<EdcSettlement>? edcSettlements,
-      super.createdAt,
-      super.updatedAt})
-      : date = date ?? Date.today(),
-        edcSettlements = edcSettlements ?? <EdcSettlement>[];
+  CashierSession({
+    Date? date,
+    DateTime? endTime,
+    super.id,
+    this.totalIn = const Money(0),
+    this.totalOut = const Money(0),
+    List<EdcSettlement>? edcSettlements,
+    super.createdAt,
+    super.updatedAt,
+  }) : date = date ?? Date.today(),
+       edcSettlements = edcSettlements ?? <EdcSettlement>[];
 
   @override
   Map<String, dynamic> toMap() => {
-        'date': date,
-        'total_in': totalIn,
-        'total_out': totalOut,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-      };
+    'date': date,
+    'total_in': totalIn,
+    'total_out': totalOut,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
   @override
   String get modelName => 'cashier_session';
   @override
@@ -36,9 +36,12 @@ class CashierSession extends Model {
     var attributes = json['attributes'];
     super.setFromJson(json, included: included);
     date = Date.parse(attributes['date']);
-
-    totalIn = Money.parse(attributes['total_in']);
-    totalOut = Money.parse(attributes['total_out']);
+    if (attributes['total_in'] != null) {
+      totalIn = Money.parse(attributes['total_in']);
+    }
+    if (attributes['total_in'] != null) {
+      totalOut = Money.parse(attributes['total_out']);
+    }
   }
 }
 

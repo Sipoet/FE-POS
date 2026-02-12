@@ -3,7 +3,7 @@ import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/ipos/purchase_header.dart';
 import 'package:fe_pos/model/purchase_order.dart';
 
-enum PurchaseType {
+enum PurchaseType implements EnumTranslation {
   payment,
   returned,
   dp;
@@ -31,6 +31,7 @@ enum PurchaseType {
     throw '$value is not valid purchase type';
   }
 
+  @override
   String humanize() {
     switch (this) {
       case payment:
@@ -98,6 +99,8 @@ class PurchasePaymentHistory extends Model {
         'grand_total': grandTotal,
         'payment_amount': paymentAmount,
         'purchase_code': purchaseCode,
+        'purchase': purchase,
+        'purchase_order': purchaseOrder,
         'purchase_order_code': purchaseOrderCode,
         'code': code,
         'supplier_code': supplierCode,
@@ -125,11 +128,12 @@ class PurchasePaymentHistory extends Model {
           ) ??
           Account(code: attributes['payment_account_code'] ?? '');
       purchase = IposPurchaseHeaderClass().findRelationData(
-        included: included,
+        included: included.where((data) => data['type'] == 'purchase').toList(),
         relation: json['relationships']?['purchase'],
       );
       purchaseOrder = PurchaseOrderClass().findRelationData(
-        included: included,
+        included:
+            included.where((data) => data['type'] == 'purchase_order').toList(),
         relation: json['relationships']?['purchase_order'],
       );
     }

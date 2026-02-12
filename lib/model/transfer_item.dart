@@ -19,50 +19,50 @@ class TransferItem extends Model {
   String? brandName;
   String? supplierCode;
   String? itemTypeName;
-  TransferItem(
-      {Item? item,
-      super.id,
-      this.itemCode = '',
-      this.row = 0,
-      this.quantity = 0,
-      this.uom = '',
-      this.detinfo,
-      this.transferCode,
-      this.itemTypeName,
-      this.brandName,
-      this.supplierCode,
-      this.conversionQuantity = 0,
-      super.createdAt,
-      super.updatedAt,
-      this.productionCode,
-      this.expiredDate,
-      this.sellPrice = const Money(0),
-      this.cogs = const Money(0)})
-      : item = item ?? Item();
+  TransferItem({
+    Item? item,
+    super.id,
+    this.itemCode = '',
+    this.row = 0,
+    this.quantity = 0,
+    this.uom = '',
+    this.detinfo,
+    this.transferCode,
+    this.itemTypeName,
+    this.brandName,
+    this.supplierCode,
+    this.conversionQuantity = 0,
+    super.createdAt,
+    super.updatedAt,
+    this.productionCode,
+    this.expiredDate,
+    this.sellPrice = const Money(0),
+    this.cogs = const Money(0),
+  }) : item = item ?? Item();
 
   @override
   Map<String, dynamic> toMap() => {
-        'kodeitem': itemCode,
-        'jumlah': quantity,
-        'nobaris': row,
-        'satuan': uom,
-        'jmlkonversi': conversionQuantity,
-        'sell_price': sellPrice,
-        'detinfo': detinfo,
-        'tglexp': expiredDate,
-        'kodeprod': productionCode,
-        'cogs': cogs,
-        'notransaksi': transferCode,
-        'item.jenis': itemTypeName,
-        'item.supplier1': supplierCode,
-        'item.merek': brandName,
-        'item_type_name': itemTypeName,
-        'supplier_code': supplierCode,
-        'brand_name': brandName,
-      };
+    'kodeitem': itemCode,
+    'jumlah': quantity,
+    'nobaris': row,
+    'satuan': uom,
+    'jmlkonversi': conversionQuantity,
+    'sell_price': sellPrice,
+    'detinfo': detinfo,
+    'tglexp': expiredDate,
+    'kodeprod': productionCode,
+    'cogs': cogs,
+    'notransaksi': transferCode,
+    'item.jenis': itemTypeName,
+    'item.supplier1': supplierCode,
+    'item.merek': brandName,
+    'item_type_name': itemTypeName,
+    'supplier_code': supplierCode,
+    'brand_name': brandName,
+  };
 
   @override
-  String get modelName => 'transfer_item';
+  String get path => 'ipos/transfer_items';
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -70,7 +70,8 @@ class TransferItem extends Model {
     var attributes = json['attributes'];
 
     if (included.isNotEmpty) {
-      item = ItemClass().findRelationData(
+      item =
+          ItemClass().findRelationData(
             included: included,
             relation: json['relationships']?['item'],
           ) ??

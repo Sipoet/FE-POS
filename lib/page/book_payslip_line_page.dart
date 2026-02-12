@@ -20,10 +20,9 @@ class BookPayslipLinePage extends StatefulWidget {
 
 class _BookPayslipLinePageState extends State<BookPayslipLinePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
 
-  String _searchText = '';
   final cancelToken = CancelToken();
   late Flash flash;
   List<FilterData> _filters = [];
@@ -54,15 +53,20 @@ class _BookPayslipLinePageState extends State<BookPayslipLinePage>
 
   Future<DataTableResponse<BookPayslipLine>> fetchData(QueryRequest request) {
     request.filters = _filters;
-    request.searchText = _searchText;
+
     request.include = ['employee', 'payroll_type'];
-    return BookPayslipLineClass().finds(server, request).then(
-        (value) => DataTableResponse<BookPayslipLine>(
+    return BookPayslipLineClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<BookPayslipLine>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void addForm() {
@@ -71,10 +75,12 @@ class _BookPayslipLinePageState extends State<BookPayslipLinePage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'New BookPayslipLine',
-          BookPayslipLineFormPage(
-              key: ObjectKey(bookPayslipLine),
-              bookPayslipLine: bookPayslipLine));
+        'New BookPayslipLine',
+        BookPayslipLineFormPage(
+          key: ObjectKey(bookPayslipLine),
+          bookPayslipLine: bookPayslipLine,
+        ),
+      );
     });
   }
 
@@ -82,45 +88,39 @@ class _BookPayslipLinePageState extends State<BookPayslipLinePage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Edit BookPayslipLine ${bookPayslipLine.id}',
-          BookPayslipLineFormPage(
-              key: ObjectKey(bookPayslipLine),
-              bookPayslipLine: bookPayslipLine));
+        'Edit BookPayslipLine ${bookPayslipLine.id}',
+        BookPayslipLineFormPage(
+          key: ObjectKey(bookPayslipLine),
+          bookPayslipLine: bookPayslipLine,
+        ),
+      );
     });
   }
 
   void destroyRecord(BookPayslipLine bookPayslipLine) {
     showConfirmDialog(
-        message: 'Apakah anda yakin hapus ${bookPayslipLine.id}?',
-        onSubmit: () {
-          server.delete('/book_payslip_lines/${bookPayslipLine.id}').then(
+      message: 'Apakah anda yakin hapus ${bookPayslipLine.id}?',
+      onSubmit: () {
+        server
+            .delete('/book_payslip_lines/${bookPayslipLine.id}')
+            .then(
               (response) {
-            if (response.statusCode == 200) {
-              flash.showBanner(
-                  messageType: ToastificationType.success,
-                  title: 'Sukses Hapus',
-                  description:
-                      'Sukses Hapus BookPayslipLine ${bookPayslipLine.id}');
-              refreshTable();
-            }
-          }, onError: (error) {
-            defaultErrorResponse(error: error);
-          });
-        });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+                if (response.statusCode == 200) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses Hapus',
+                    description:
+                        'Sukses Hapus BookPayslipLine ${bookPayslipLine.id}',
+                  );
+                  refreshTable();
+                }
+              },
+              onError: (error) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
   @override
@@ -143,53 +143,43 @@ class _BookPayslipLinePageState extends State<BookPayslipLinePage>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _searchText = '';
-                    });
-                    refreshTable();
-                  },
-                  tooltip: 'Reset Table',
-                  icon: const Icon(Icons.refresh),
-                ),
-                SizedBox(
-                  width: 150,
-                  child: TextField(
-                    decoration: const InputDecoration(hintText: 'Search Text'),
-                    onChanged: searchChanged,
-                    onSubmitted: searchChanged,
-                  ),
-                ),
                 SizedBox(
                   width: 50,
-                  child: SubmenuButton(menuChildren: [
-                    MenuItemButton(
-                      child: const Text('Tambah BookPayslipLine'),
-                      onPressed: () => addForm(),
-                    ),
-                  ], child: const Icon(Icons.table_rows_rounded)),
-                )
+                  child: SubmenuButton(
+                    menuChildren: [
+                      MenuItemButton(
+                        child: const Text('Tambah BookPayslipLine'),
+                        onPressed: () => addForm(),
+                      ),
+                    ],
+                    child: const Icon(Icons.table_rows_rounded),
+                  ),
+                ),
               ],
             ),
           ),
           SizedBox(
             height: bodyScreenHeight,
             child: CustomAsyncDataTable<BookPayslipLine>(
-              renderAction: (bookPayslipLine) => Row(spacing: 10, children: [
-                IconButton(
+              renderAction: (bookPayslipLine) => Row(
+                spacing: 10,
+                children: [
+                  IconButton(
                     onPressed: () {
                       editForm(bookPayslipLine);
                     },
                     tooltip: 'Edit BookPayslipLine',
-                    icon: const Icon(Icons.edit)),
-                IconButton(
+                    icon: const Icon(Icons.edit),
+                  ),
+                  IconButton(
                     onPressed: () {
                       destroyRecord(bookPayslipLine);
                     },
                     tooltip: 'Hapus BookPayslipLine',
-                    icon: const Icon(Icons.delete)),
-              ]),
+                    icon: const Icon(Icons.delete),
+                  ),
+                ],
+              ),
               columns: columns,
               fetchData: fetchData,
               onLoaded: (stateManager) => _source = stateManager,

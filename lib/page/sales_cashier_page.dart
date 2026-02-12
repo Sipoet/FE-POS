@@ -19,7 +19,7 @@ class SalesCashierPage extends StatefulWidget {
 
 class _SalesCashierPageState extends State<SalesCashierPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController<SalesCashier> _source;
   late final Server server;
   String _searchText = '';
   List<SalesCashier> items = [];
@@ -54,22 +54,27 @@ class _SalesCashierPageState extends State<SalesCashierPage>
   }
 
   Future<DataTableResponse<SalesCashier>> fetchSalesCashiers(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
     request.searchText = _searchText;
     try {
-      return SalesCashierClass().finds(server, request).then((result) {
-        return DataTableResponse<SalesCashier>(
+      return SalesCashierClass().finds(server, request).then(
+        (result) {
+          return DataTableResponse<SalesCashier>(
             totalPage: result.metadata['total_pages'] ?? 1,
-            models: result.models);
-      },
-          onError: (error, stackTrace) =>
-              defaultErrorResponse(error: error, valueWhenError: []));
+            models: result.models,
+          );
+        },
+        onError: (error, stackTrace) =>
+            defaultErrorResponse(error: error, valueWhenError: []),
+      );
     } catch (e, trace) {
       flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
+        title: e.toString(),
+        description: trace.toString(),
+        messageType: ToastificationType.error,
+      );
       throw 'error';
     }
   }
@@ -91,19 +96,25 @@ class _SalesCashierPageState extends State<SalesCashierPage>
   void viewRecord(SalesCashier salesCashier) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Lihat Penjualan ${salesCashier.code}',
-          SalesCashierFormPage(salesCashier: salesCashier));
+      tabManager.addTab(
+        'Lihat Penjualan ${salesCashier.code}',
+        SalesCashierFormPage(salesCashier: salesCashier),
+      );
     });
   }
 
   void addForm() {
     String defaultLocation = 'TOKO';
-    final salesCashier =
-        SalesCashier(location: defaultLocation, salesCashierItems: []);
+    final salesCashier = SalesCashier(
+      location: defaultLocation,
+      salesCashierItems: [],
+    );
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Tambah Penjualan Kasir',
-          SalesCashierFormPage(salesCashier: salesCashier));
+      tabManager.addTab(
+        'Tambah Penjualan Kasir',
+        SalesCashierFormPage(salesCashier: salesCashier),
+      );
     });
   }
 
@@ -141,8 +152,9 @@ class _SalesCashierPageState extends State<SalesCashierPage>
                   SizedBox(
                     width: 150,
                     child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
+                      decoration: const InputDecoration(
+                        hintText: 'Search Text',
+                      ),
                       onChanged: searchChanged,
                       onSubmitted: searchChanged,
                     ),
@@ -150,18 +162,19 @@ class _SalesCashierPageState extends State<SalesCashierPage>
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(
-                        controller: _menuController,
-                        menuChildren: [
-                          MenuItemButton(
-                            child: const Text('Tambah Penjualan di kasir'),
-                            onPressed: () {
-                              _menuController.close();
-                              addForm();
-                            },
-                          ),
-                        ],
-                        child: const Icon(Icons.table_rows_rounded)),
-                  )
+                      controller: _menuController,
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah Penjualan di kasir'),
+                          onPressed: () {
+                            _menuController.close();
+                            addForm();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -171,10 +184,11 @@ class _SalesCashierPageState extends State<SalesCashierPage>
                 renderAction: (sale) => Row(
                   children: [
                     IconButton.filled(
-                        onPressed: () {
-                          viewRecord(sale);
-                        },
-                        icon: const Icon(Icons.search_rounded)),
+                      onPressed: () {
+                        viewRecord(sale);
+                      },
+                      icon: const Icon(Icons.search_rounded),
+                    ),
                   ],
                 ),
                 onLoaded: (stateManager) {

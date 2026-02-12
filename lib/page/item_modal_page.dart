@@ -12,12 +12,13 @@ class ItemModalPage extends StatefulWidget {
   final String? itemTypeName;
   final String? supplierCode;
   final String? brandName;
-  const ItemModalPage(
-      {super.key,
-      this.barcode,
-      this.itemTypeName,
-      this.supplierCode,
-      this.brandName});
+  const ItemModalPage({
+    super.key,
+    this.barcode,
+    this.itemTypeName,
+    this.supplierCode,
+    this.brandName,
+  });
 
   @override
   State<ItemModalPage> createState() => _ItemModalPageState();
@@ -32,7 +33,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
   late final Server _server;
   List<ItemReport> itemReports = [];
   Item? selectedItem;
-  TrinaGridStateManager? _source;
+  SyncTableController? _source;
   final _whiteListColumnNames = [
     'item_code',
     'item_name',
@@ -51,7 +52,8 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
     final columns = _setting.tableColumn('itemReport');
     tableColumns = _whiteListColumnNames
         .map<TableColumn>(
-            (name) => columns.firstWhere((column) => column.name == name))
+          (name) => columns.firstWhere((column) => column.name == name),
+        )
         .toList();
 
     super.initState();
@@ -133,13 +135,9 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
               ),
             ],
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           ElevatedButton(onPressed: _search, child: const Text('Cari')),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           SizedBox(
             width: 1200,
             height: 500,
@@ -162,26 +160,21 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
               },
             ),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             mainAxisSize: MainAxisSize.max,
             children: [
               ElevatedButton.icon(
-                  icon: const Icon(
-                    Icons.check,
-                    color: Colors.green,
-                  ),
-                  onPressed: _select,
-                  label: const Text('Pilih')),
-              const SizedBox(
-                width: 10,
+                icon: const Icon(Icons.check, color: Colors.green),
+                onPressed: _select,
+                label: const Text('Pilih'),
               ),
+              const SizedBox(width: 10),
               ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Tutup')),
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Tutup'),
+              ),
             ],
           ),
         ],
@@ -197,7 +190,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
       'report_type': 'json',
       'sort': 'item_code',
       'search_text': searchText,
-      'include': 'item,discount_rules'
+      'include': 'item,discount_rules',
     };
     if (itemTypeName != null) {
       param['filter[item_type_name][eq]'] = itemTypeName;
@@ -208,21 +201,29 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
     if (supplierCode != null) {
       param['filter[supplier_code][eq]'] = supplierCode;
     }
-    _server.get('item_reports', queryParam: param, type: 'json').then(
-        (response) {
-      if (response.statusCode == 200) {
-        setState(() {
-          itemReports = response.data['data']
-              .map<ItemReport>((data) => ItemReportClass()
-                  .fromJson(data, included: response.data['included'] ?? []))
-              .toList();
-          _source?.setModels(itemReports);
-        });
-        _source?.setShowLoading(false);
-      }
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-    });
+    _server
+        .get('item_reports', queryParam: param, type: 'json')
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              setState(() {
+                itemReports = response.data['data']
+                    .map<ItemReport>(
+                      (data) => ItemReportClass().fromJson(
+                        data,
+                        included: response.data['included'] ?? [],
+                      ),
+                    )
+                    .toList();
+                _source?.setModels(itemReports);
+              });
+              _source?.setShowLoading(false);
+            }
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
   void _select() {

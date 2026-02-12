@@ -36,16 +36,19 @@ class _BrandFormPageState extends State<BrandFormPage>
 
   void fetchBrand() {
     showLoadingPopup();
-    _server.get('brands/${brand.id}').then((response) {
-      if (mounted && response.statusCode == 200) {
-        brand.setFromJson(
-          response.data['data'],
-          included: response.data['included'] ?? [],
-        );
-        _nameController.text = brand.name;
-        _descriptionController.text = brand.description;
-      }
-    }).whenComplete(() => hideLoadingPopup());
+    _server
+        .get('ipos/brands/${brand.id}')
+        .then((response) {
+          if (mounted && response.statusCode == 200) {
+            brand.setFromJson(
+              response.data['data'],
+              included: response.data['included'] ?? [],
+            );
+            _nameController.text = brand.name;
+            _descriptionController.text = brand.description;
+          }
+        })
+        .whenComplete(() => hideLoadingPopup());
   }
 
   @override
@@ -57,20 +60,20 @@ class _BrandFormPageState extends State<BrandFormPage>
             controller: _nameController,
             readOnly: true,
             decoration: InputDecoration(
-                label: Text(_setting.columnName('brand', 'name')),
-                border: OutlineInputBorder()),
+              label: Text(_setting.columnName('brand', 'name')),
+              border: OutlineInputBorder(),
+            ),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           TextFormField(
             controller: _descriptionController,
             readOnly: true,
             minLines: 3,
             maxLines: 5,
             decoration: InputDecoration(
-                label: Text(_setting.columnName('brand', 'description')),
-                border: OutlineInputBorder()),
+              label: Text(_setting.columnName('brand', 'description')),
+              border: OutlineInputBorder(),
+            ),
           ),
         ],
       ),

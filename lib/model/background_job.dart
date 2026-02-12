@@ -1,7 +1,7 @@
 import 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-enum BackgroundJobStatus {
+enum BackgroundJobStatus implements EnumTranslation {
   scheduled,
   process,
   finished,
@@ -40,6 +40,22 @@ enum BackgroundJobStatus {
         return 'dead';
     }
   }
+
+  @override
+  String humanize() {
+    switch (this) {
+      case scheduled:
+        return 'scheduled';
+      case process:
+        return 'process';
+      case finished:
+        return 'finished';
+      case retry:
+        return 'retry';
+      case dead:
+        return 'dead';
+    }
+  }
 }
 
 class BackgroundJob extends Model {
@@ -47,22 +63,23 @@ class BackgroundJob extends Model {
   String? args;
   BackgroundJobStatus status;
   String description;
-  BackgroundJob(
-      {this.jobClass = '',
-      this.args,
-      this.description = '',
-      this.status = BackgroundJobStatus.scheduled,
-      super.id,
-      super.createdAt,
-      super.updatedAt});
+  BackgroundJob({
+    this.jobClass = '',
+    this.args,
+    this.description = '',
+    this.status = BackgroundJobStatus.scheduled,
+    super.id,
+    super.createdAt,
+    super.updatedAt,
+  });
 
   @override
   Map<String, dynamic> toMap() => {
-        'job_class': jobClass,
-        'args': args,
-        'status': status,
-        'description': description,
-      };
+    'job_class': jobClass,
+    'args': args,
+    'status': status,
+    'description': description,
+  };
 
   @override
   String get modelName => 'background_job';
@@ -75,7 +92,9 @@ class BackgroundJob extends Model {
     jobClass = attributes['job_class'] ?? '';
     args = attributes['args'].toString();
     description = attributes['description'].toString();
-    status = BackgroundJobStatus.fromString(attributes['status']);
+    if (attributes['status'] != null) {
+      status = BackgroundJobStatus.fromString(attributes['status']);
+    }
   }
 
   @override

@@ -19,9 +19,9 @@ class PurchaseOrderPage extends StatefulWidget {
 
 class _PurchaseOrderPageState extends State<PurchaseOrderPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
-  String _searchText = '';
+
   List<PurchaseOrder> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
@@ -53,37 +53,32 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
   }
 
   Future<DataTableResponse<PurchaseOrder>> fetchPurchaseOrders(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return PurchaseOrderClass().finds(server, request).then(
-        (value) => DataTableResponse<PurchaseOrder>(
-            models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
-  }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+    request.includeAddAll(['supplier', 'purchase']);
+    return PurchaseOrderClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<PurchaseOrder>(
+            models: value.models,
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void viewRecord(PurchaseOrder purchaseOrder) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Lihat Pesanan Pembelian ${purchaseOrder.code}',
-          PurchaseOrderFormPage(purchaseOrder: purchaseOrder));
+      tabManager.addTab(
+        'Lihat Pesanan Pembelian ${purchaseOrder.code}',
+        PurchaseOrderFormPage(purchaseOrder: purchaseOrder),
+      );
     });
   }
 
@@ -107,27 +102,7 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                ],
+                children: [],
               ),
             ),
             SizedBox(
@@ -137,10 +112,11 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
                   spacing: 10,
                   children: [
                     IconButton.filled(
-                        onPressed: () {
-                          viewRecord(purchaseOrder);
-                        },
-                        icon: const Icon(Icons.search_rounded))
+                      onPressed: () {
+                        viewRecord(purchaseOrder);
+                      },
+                      icon: const Icon(Icons.search_rounded),
+                    ),
                   ],
                 ),
                 onLoaded: (stateManager) {

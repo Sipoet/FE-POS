@@ -1,6 +1,6 @@
-import 'package:fe_pos/model/item.dart';
 export 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/model/model.dart';
+import 'package:fe_pos/model/sale.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
 class SaleItem extends Model {
@@ -31,70 +31,77 @@ class SaleItem extends Model {
   String? itemTypeName;
   String? itemName;
   DateTime transactionDate;
-  SaleItem(
-      {Item? item,
-      super.id,
-      this.itemCode = '',
-      this.row = 0,
-      this.quantity = 0,
-      this.price = const Money(0),
-      this.uom = '',
-      this.saleType = '',
-      this.itemName,
-      super.createdAt,
-      super.updatedAt,
-      this.itemTypeName,
-      this.brandName,
-      this.supplierCode,
-      DateTime? transactionDate,
-      this.subtotal = const Money(0),
-      this.discountAmount1 = 0,
-      this.discountPercentage2 = const Percentage(0),
-      this.discountPercentage3 = const Percentage(0),
-      this.discountPercentage4 = const Percentage(0),
-      this.taxAmount = const Money(0),
-      this.total = const Money(0),
-      this.systemSellPrice = '',
-      this.promoType = '',
-      this.freeQuantity = 0,
-      this.promoItemCode = '',
-      this.promoUom = '',
-      this.saleCode,
-      this.cogs = const Money(0)})
-      : item = item ?? Item(),
-        transactionDate = transactionDate ?? DateTime.now();
+  Sale? sale;
+  SaleItem({
+    Item? item,
+    super.id,
+    this.itemCode = '',
+    this.row = 0,
+    this.quantity = 0,
+    this.price = const Money(0),
+    this.uom = '',
+    this.saleType = '',
+    this.itemName,
+    super.createdAt,
+    super.updatedAt,
+    this.itemTypeName,
+    this.brandName,
+    this.supplierCode,
+    this.sale,
+    DateTime? transactionDate,
+    this.subtotal = const Money(0),
+    this.discountAmount1 = 0,
+    this.discountPercentage2 = const Percentage(0),
+    this.discountPercentage3 = const Percentage(0),
+    this.discountPercentage4 = const Percentage(0),
+    this.taxAmount = const Money(0),
+    this.total = const Money(0),
+    this.systemSellPrice = '',
+    this.promoType = '',
+    this.freeQuantity = 0,
+    this.promoItemCode = '',
+    this.promoUom = '',
+    this.saleCode,
+    this.cogs = const Money(0),
+  }) : item = item ?? Item(),
+       transactionDate = transactionDate ?? DateTime.now();
 
   @override
   Map<String, dynamic> toMap() => {
-        'kodeitem': itemCode,
-        'jumlah': quantity,
-        'nobaris': row,
-        'harga': price,
-        'satuan': uom,
-        'subtotal': subtotal,
-        'potongan': discountAmount1,
-        'potongan2': discountPercentage2,
-        'potongan3': discountPercentage3,
-        'potongan4': discountPercentage4,
-        'pajak': taxAmount,
-        'total': total,
-        'notransaksi': saleCode,
-        'sistemhargajual': systemSellPrice,
-        'tipepromo': promoType,
-        'jmlgratis': freeQuantity,
-        'itempromo': promoItemCode,
-        'satuanpromo': promoUom,
-        'hppdasar': cogs,
-        'sale_type': saleType,
-        'item_type_name': itemTypeName,
-        'supplier_code': supplierCode,
-        'brand_name': brandName,
-        'item_name': itemName,
-        'transaction_date': transactionDate,
-      };
+    'kodeitem': itemCode,
+    'item_code': itemCode,
+    'item': item,
+    'jumlah': quantity,
+    'nobaris': row,
+    'harga': price,
+    'satuan': uom,
+    'subtotal': subtotal,
+    'potongan': discountAmount1,
+    'potongan2': discountPercentage2,
+    'potongan3': discountPercentage3,
+    'potongan4': discountPercentage4,
+    'pajak': taxAmount,
+    'total': total,
+    'notransaksi': saleCode,
+    'sistemhargajual': systemSellPrice,
+    'tipepromo': promoType,
+    'jmlgratis': freeQuantity,
+    'itempromo': promoItemCode,
+    'satuanpromo': promoUom,
+    'hppdasar': cogs,
+    'sale_type': saleType,
+    'item_type_name': itemTypeName,
+    'supplier_code': supplierCode,
+    'brand_name': brandName,
+    'item_name': itemName,
+    'sale': sale,
+    'transaction_date': transactionDate,
+  };
 
   @override
   String get modelName => 'sale_item';
+  @override
+  String get path => 'ipos/sale_items';
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -102,11 +109,19 @@ class SaleItem extends Model {
     var attributes = json['attributes'];
 
     if (included.isNotEmpty) {
-      item = ItemClass().findRelationData(
+      item =
+          ItemClass().findRelationData(
             included: included,
             relation: json['relationships']?['item'],
           ) ??
           Item();
+      sale =
+          SaleClass().findRelationData(
+            included: included,
+            relation: json['relationships']?['sale'],
+          ) ??
+          Sale(code: attributes['notransaksi']);
+
       promoItem = ItemClass().findRelationData(
         included: included,
         relation: json['relationships']?['promo_item'],
@@ -142,6 +157,8 @@ class SaleItem extends Model {
 
   @override
   String get modelValue => id.toString();
+
+  Money get totalDiscount => subtotal - (quantity * price.value);
 }
 
 class SaleItemClass extends ModelClass<SaleItem> {

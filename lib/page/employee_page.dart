@@ -20,15 +20,16 @@ class EmployeePage extends StatefulWidget {
 
 class _EmployeePageState extends State<EmployeePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late TableController _source;
   late final Server server;
-  String _searchText = '';
+  late final Setting setting;
+
   final cancelToken = CancelToken();
   late Flash flash;
   final _menuController = MenuController();
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
-  Map<int, Employee> _selected = {};
+  final Map<int, Employee> _selected = {};
   @override
   bool get wantKeepAlive => true;
 
@@ -36,7 +37,7 @@ class _EmployeePageState extends State<EmployeePage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    final setting = context.read<Setting>();
+    setting = context.read<Setting>();
     columns = setting.tableColumn('employee');
     super.initState();
   }
@@ -55,62 +56,80 @@ class _EmployeePageState extends State<EmployeePage>
 
   Future<DataTableResponse<Employee>> fetchEmployees(QueryRequest request) {
     request.filters = _filters;
-    request.searchText = _searchText;
     request.include = ['payroll', 'role'];
-    return EmployeeClass().finds(server, request).then(
-        (value) => DataTableResponse<Employee>(
+    return EmployeeClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<Employee>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void addForm() {
     Employee employee = Employee(
-        code: '',
-        name: '',
-        startWorkingDate: Date.today(),
-        role: Role(name: ''));
+      code: '',
+      name: '',
+      startWorkingDate: Date.today(),
+      role: Role(name: ''),
+    );
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Tambah Karyawan',
-          EmployeeFormPage(key: ObjectKey(employee), employee: employee));
+      tabManager.addTab(
+        'Tambah Karyawan',
+        EmployeeFormPage(key: ObjectKey(employee), employee: employee),
+      );
     });
   }
 
   void editForm(Employee employee) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Edit Karyawan ${employee.code}',
-          EmployeeFormPage(key: ObjectKey(employee), employee: employee));
+      tabManager.addTab(
+        'Edit Karyawan ${employee.code}',
+        EmployeeFormPage(key: ObjectKey(employee), employee: employee),
+      );
     });
   }
 
   void toggleStatus(Employee employee) {
-    final statusPath =
-        employee.status == EmployeeStatus.active ? 'deactivate' : 'activate';
-    final statusName =
-        employee.status == EmployeeStatus.active ? 'nonaktifkan' : 'aktifkan';
+    final statusPath = employee.status == EmployeeStatus.active
+        ? 'deactivate'
+        : 'activate';
+    final statusName = employee.status == EmployeeStatus.active
+        ? 'nonaktifkan'
+        : 'aktifkan';
     showConfirmDialog(
-        message: 'Apakah yakin $statusName ${employee.name}?',
-        onSubmit: () {
-          server.post('employees/${employee.id}/$statusPath').then((response) {
-            setState(() {
-              employee.status = employee.status == EmployeeStatus.active
-                  ? EmployeeStatus.inactive
-                  : EmployeeStatus.active;
-            });
-            _source.refreshTable();
-            flash.showBanner(
-                title: 'Sukses',
-                description: 'karyawan ${employee.code} sukses $statusName',
-                messageType: ToastificationType.success,
-                duration: const Duration(seconds: 3));
-          }, onError: (error, stack) {
-            defaultErrorResponse(error: error);
-          });
-        });
+      message: 'Apakah yakin $statusName ${employee.name}?',
+      onSubmit: () {
+        server
+            .post('employees/${employee.id}/$statusPath')
+            .then(
+              (response) {
+                setState(() {
+                  employee.status = employee.status == EmployeeStatus.active
+                      ? EmployeeStatus.inactive
+                      : EmployeeStatus.active;
+                });
+                _source.refreshTable();
+                flash.showBanner(
+                  title: 'Sukses',
+                  description: 'karyawan ${employee.code} sukses $statusName',
+                  messageType: ToastificationType.success,
+                  duration: const Duration(seconds: 3),
+                );
+              },
+              onError: (error, stack) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
   void activateSelected() {
@@ -118,23 +137,25 @@ class _EmployeePageState extends State<EmployeePage>
       return;
     }
     showConfirmDialog(
-        message: 'Apakah yakin aktifkan ${_selected.values.length} karyawan?',
-        onSubmit: () async {
-          try {
-            for (final employee in _selected.values) {
-              var response =
-                  await server.post('employees/${employee.id}/activate');
-              if (response.statusCode == 200) {
-                setState(() {
-                  employee.setFromJson(response.data['data']);
-                });
-              }
+      message: 'Apakah yakin aktifkan ${_selected.values.length} karyawan?',
+      onSubmit: () async {
+        try {
+          for (final employee in _selected.values) {
+            var response = await server.post(
+              'employees/${employee.id}/activate',
+            );
+            if (response.statusCode == 200) {
+              setState(() {
+                employee.setFromJson(response.data['data']);
+              });
             }
-            _source.refreshTable();
-          } catch (e) {
-            defaultErrorResponse(error: e);
           }
-        });
+          _source.refreshTable();
+        } catch (e) {
+          defaultErrorResponse(error: e);
+        }
+      },
+    );
   }
 
   void deactivateSelected() {
@@ -142,48 +163,36 @@ class _EmployeePageState extends State<EmployeePage>
       return;
     }
     showConfirmDialog(
-        message:
-            'Apakah yakin nonaktifkan ${_selected.values.length} karyawan?',
-        onSubmit: () async {
-          try {
-            for (final employee in _selected.values) {
-              var response =
-                  await server.post('employees/${employee.id}/deactivate');
-              if (response.statusCode == 200) {
-                setState(() {
-                  employee.setFromJson(response.data['data']);
-                });
-              }
+      message: 'Apakah yakin nonaktifkan ${_selected.values.length} karyawan?',
+      onSubmit: () async {
+        try {
+          for (final employee in _selected.values) {
+            var response = await server.post(
+              'employees/${employee.id}/deactivate',
+            );
+            if (response.statusCode == 200) {
+              setState(() {
+                employee.setFromJson(response.data['data']);
+              });
             }
-            _source.refreshTable();
-          } catch (e) {
-            defaultErrorResponse(error: e);
           }
-        });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+          _source.refreshTable();
+        } catch (e) {
+          defaultErrorResponse(error: e);
+        }
+      },
+    );
   }
 
   List<Widget> actionButtons(Employee employee, int index) {
     return <Widget>[
       IconButton(
-          onPressed: () {
-            editForm(employee);
-          },
-          tooltip: 'Edit karyawan',
-          icon: const Icon(Icons.edit)),
+        onPressed: () {
+          editForm(employee);
+        },
+        tooltip: 'Edit karyawan',
+        icon: const Icon(Icons.edit),
+      ),
       IconButton(
         onPressed: () {
           setState(() {
@@ -193,10 +202,11 @@ class _EmployeePageState extends State<EmployeePage>
         tooltip: 'Aktivasi/deaktivasi karyawan',
         icon: Icon(
           Icons.lightbulb,
-          color:
-              employee.status == EmployeeStatus.active ? Colors.yellow : null,
+          color: employee.status == EmployeeStatus.active
+              ? Colors.yellow
+              : null,
         ),
-      )
+      ),
     ];
   }
 
@@ -225,54 +235,36 @@ class _EmployeePageState extends State<EmployeePage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(
-                        controller: _menuController,
-                        menuChildren: [
-                          MenuItemButton(
-                            child: const Text('Tambah Karyawan'),
-                            onPressed: () {
-                              _menuController.close();
-                              addForm();
-                            },
-                          ),
-                          MenuItemButton(
-                            child: const Text('Aktifkan Karyawan'),
-                            onPressed: () {
-                              _menuController.close();
-                              activateSelected();
-                            },
-                          ),
-                          MenuItemButton(
-                            child: const Text('nonaktifkan Karyawan'),
-                            onPressed: () {
-                              _menuController.close();
-                              deactivateSelected();
-                            },
-                          ),
-                        ],
-                        child: const Icon(Icons.table_rows_rounded)),
-                  )
+                      controller: _menuController,
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah Karyawan'),
+                          onPressed: () {
+                            _menuController.close();
+                            addForm();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('Aktifkan Karyawan'),
+                          onPressed: () {
+                            _menuController.close();
+                            activateSelected();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('nonaktifkan Karyawan'),
+                          onPressed: () {
+                            _menuController.close();
+                            deactivateSelected();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -282,26 +274,31 @@ class _EmployeePageState extends State<EmployeePage>
                 renderAction: (employee) => Row(
                   spacing: 10,
                   children: [
-                    IconButton(
+                    if (setting.isAuthorize('employees', 'update'))
+                      IconButton(
                         onPressed: () {
                           editForm(employee);
                         },
                         tooltip: 'Edit karyawan',
-                        icon: const Icon(Icons.edit)),
-                    IconButton(
-                      onPressed: () {
-                        setState(() {
-                          toggleStatus(employee);
-                        });
-                      },
-                      tooltip: 'Aktivasi/deaktivasi karyawan',
-                      icon: Icon(
-                        Icons.lightbulb,
-                        color: employee.status == EmployeeStatus.active
-                            ? Colors.yellow
-                            : null,
+                        icon: const Icon(Icons.edit),
                       ),
-                    )
+                    if (setting.isAuthorize('employees', 'deactivate') ||
+                        setting.isAuthorize('employees', 'activate') &&
+                            setting.canShow('employee', 'status'))
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            toggleStatus(employee);
+                          });
+                        },
+                        tooltip: 'Aktivasi/deaktivasi karyawan',
+                        icon: Icon(
+                          Icons.lightbulb,
+                          color: employee.status == EmployeeStatus.active
+                              ? Colors.yellow
+                              : null,
+                        ),
+                      ),
                   ],
                 ),
                 onRowChecked: (event) {

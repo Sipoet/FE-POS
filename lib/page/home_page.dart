@@ -3,6 +3,8 @@ import 'package:fe_pos/model/sales_transaction_report.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/tool/default_response.dart';
+
+import 'package:fe_pos/widget/last_item_sales_transaction_widget.dart';
 import 'package:fe_pos/widget/last_sales_transaction_widget.dart';
 import 'package:fe_pos/widget/period_sales_goal.dart';
 import 'package:fe_pos/widget/sales_traffic_report_widget.dart';
@@ -23,12 +25,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage>
     with AppUpdater, AutomaticKeepAliveClientMixin, DefaultResponse {
   final TransactionReportController controller = TransactionReportController(
-      DateTimeRange(start: DateTime.now(), end: DateTime.now()));
+    DateTimeRange(start: DateTime.now(), end: DateTime.now()),
+  );
   bool _isCustom = false;
   late List<Widget> _panels;
   late final Setting setting;
   final pickerController = DateRangeEditingController(
-      DateTimeRange(start: DateTime.now(), end: DateTime.now()));
+    DateTimeRange(start: DateTime.now(), end: DateTime.now()),
+  );
   Money? totalSales;
   final Period period = Period.week;
 
@@ -37,50 +41,50 @@ class _HomePageState extends State<HomePage>
     setting = context.read<Setting>();
     final server = context.read<Server>();
     checkUpdate(server);
-    // if (setting.isAuthorize('sale', 'transactionReport')) {
+    // if (setting.isAuthorize('ipos/sales', 'transactionReport')) {
     //   getPeriodSalesTotal(period, server);
     // }
     _panels = [
-      if (setting.isAuthorize('sale', 'transactionReport'))
-        SalesTransactionReportWidget(
-          controller: controller,
-        ),
-      if (setting.isAuthorize('sale', 'index'))
-        LastSalesTransactionWidget(
-          controller: controller,
-          limit: 5,
-        ),
-      if (setting.isAuthorize('saleTrafficReport', 'index'))
-        SalesTrafficReportWidget(
-          controller: controller,
-        ),
+      if (setting.isAuthorize('ipos/sales', 'transactionReport'))
+        SalesTransactionReportWidget(controller: controller),
+      if (setting.isAuthorize('ipos/sales', 'read'))
+        LastSalesTransactionWidget(controller: controller, limit: 5),
+      if (setting.isAuthorize('sale_traffic_reports', 'read'))
+        SalesTrafficReportWidget(controller: controller),
     ];
-    if (setting.isAuthorize('saleItem', 'transactionReport')) {
+    if (setting.isAuthorize('ipos/sale_items', 'transactionReport')) {
       _panels += [
+        LastItemSalesTransactionWidget(controller: controller, limit: 5),
         ItemSalesTransactionReportWidget(
-            key: const ValueKey('brand'),
-            controller: controller,
-            groupKey: 'brand',
-            limit: '5',
-            label: 'Merek Terjual Terbanyak'),
+          key: const ValueKey('brandSalesTransactionReport'),
+          controller: controller,
+          groupKey: 'brand',
+          limit: '5',
+          label: 'Merek Terjual Terbanyak',
+        ),
         ItemSalesTransactionReportWidget(
-            key: const ValueKey('item_type'),
-            controller: controller,
-            groupKey: 'item_type',
-            limit: '5',
-            label: 'Departemen Terjual Terbanyak'),
+          key: const ValueKey('itemTypeSalesTransactionReport'),
+          controller: controller,
+          groupKey: 'item_type',
+          limit: '5',
+          label: 'Departemen Terjual Terbanyak',
+        ),
         ItemSalesTransactionReportWidget(
-            key: const ValueKey('supplier'),
-            groupKey: 'supplier',
-            controller: controller,
-            limit: '5',
-            label: 'Supplier Terjual Terbanyak'),
+          key: const ValueKey('supplierSalesTransactionReport'),
+          groupKey: 'supplier',
+          controller: controller,
+          limit: '5',
+          label: 'Supplier Terjual Terbanyak',
+        ),
       ];
     }
     final now = DateTime.now();
 
-    var startTime = DateTime.now()
-        .copyWith(hour: separateHourWithinDay, minute: 0, second: 0);
+    var startTime = DateTime.now().copyWith(
+      hour: separateHourWithinDay,
+      minute: 0,
+      second: 0,
+    );
     if (now.hour < separateHourWithinDay) {
       startTime = startTime.subtract(const Duration(days: 1));
     }
@@ -88,16 +92,15 @@ class _HomePageState extends State<HomePage>
         .add(const Duration(days: 1))
         .subtract(const Duration(seconds: 1));
     _rangeDateList = {
-      'day': DateTimeRange(
-        start: startTime,
-        end: endTime,
-      ),
+      'day': DateTimeRange(start: startTime, end: endTime),
       'yesterday': DateTimeRange(
-          start: startTime.subtract(const Duration(days: 1)),
-          end: endTime.subtract(const Duration(days: 1))),
+        start: startTime.subtract(const Duration(days: 1)),
+        end: endTime.subtract(const Duration(days: 1)),
+      ),
       '2 day Ago': DateTimeRange(
-          start: startTime.subtract(const Duration(days: 2)),
-          end: endTime.subtract(const Duration(days: 2))),
+        start: startTime.subtract(const Duration(days: 2)),
+        end: endTime.subtract(const Duration(days: 2)),
+      ),
       'week': DateTimeRange(
         start: startTime.subtract(const Duration(days: 7)),
         end: endTime,
@@ -129,10 +132,7 @@ class _HomePageState extends State<HomePage>
         start: startTime.copyWith(year: startTime.year - 1, month: 1, day: 1),
         end: endTime.copyWith(year: startTime.year - 1, month: 12, day: 31),
       ),
-      'custom': DateTimeRange(
-        start: startTime,
-        end: endTime,
-      ),
+      'custom': DateTimeRange(start: startTime, end: endTime),
     };
 
     arrangeDate('day');
@@ -149,7 +149,8 @@ class _HomePageState extends State<HomePage>
   void arrangeDate(String rangeType) {
     _isCustom = rangeType == 'custom';
     if (!_isCustom) {
-      DateTimeRange range = _rangeDateList[rangeType] ??
+      DateTimeRange range =
+          _rangeDateList[rangeType] ??
           DateTimeRange(start: DateTime.now(), end: DateTime.now());
       controller.changeDate(range);
       pickerController.value = range;
@@ -177,34 +178,41 @@ class _HomePageState extends State<HomePage>
         endDate = Date.today().endOfWeek();
         break;
     }
-    server.get('sales/transaction_report', queryParam: {
-      'start_time': startDate.toDateTime().toIso8601String(),
-      'end_time': endDate
-          .add(const Duration(days: 1))
-          .toDateTime()
-          .copyWith(hour: 6, minute: 59, second: 59, millisecond: 99)
-          .toIso8601String()
-    }).then((response) {
-      if (mounted && response.statusCode == 200) {
-        var data = response.data['data'];
-        final salesTransactionReport =
-            SalesTransactionReportClass().fromJson(data);
-        setState(() {
-          totalSales = salesTransactionReport.totalSales;
-          _panels.insert(
-              0,
-              PeriodSalesGoal(
-                totalSales: totalSales ?? const Money(0),
-                period: period,
-                expectedSales: const Money(140000000),
-                salesTransactionReports: const [],
-              ));
-        });
-      }
-    }, onError: (error, stack) => defaultErrorResponse(error: error));
+    server
+        .get(
+          'ipos/sales/transaction_report',
+          queryParam: {
+            'start_time': startDate.toDateTime().toIso8601String(),
+            'end_time': endDate
+                .add(const Duration(days: 1))
+                .toDateTime()
+                .copyWith(hour: 6, minute: 59, second: 59, millisecond: 99)
+                .toIso8601String(),
+          },
+        )
+        .then((response) {
+          if (mounted && response.statusCode == 200) {
+            var data = response.data['data'];
+            final salesTransactionReport = SalesTransactionReportClass()
+                .fromJson(data);
+            setState(() {
+              totalSales = salesTransactionReport.totalSales;
+              _panels.insert(
+                0,
+                PeriodSalesGoal(
+                  totalSales: totalSales ?? const Money(0),
+                  period: period,
+                  expectedSales: const Money(140000000),
+                  salesTransactionReports: const [],
+                ),
+              );
+            });
+          }
+        }, onError: (error, stack) => defaultErrorResponse(error: error));
   }
 
   final textController = BoardDateTimeTextController();
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -228,103 +236,91 @@ class _HomePageState extends State<HomePage>
                     border: OutlineInputBorder(),
                   ),
                   menuStyle: MenuStyle(
-                      backgroundColor: WidgetStatePropertyAll(
-                          colorScheme.secondaryContainer),
-                      surfaceTintColor: WidgetStatePropertyAll(
-                          colorScheme.onSecondaryContainer),
-                      shadowColor: WidgetStatePropertyAll(colorScheme.outline)),
+                    backgroundColor: WidgetStatePropertyAll(
+                      colorScheme.secondaryContainer,
+                    ),
+                    surfaceTintColor: WidgetStatePropertyAll(
+                      colorScheme.onSecondaryContainer,
+                    ),
+                    shadowColor: WidgetStatePropertyAll(colorScheme.outline),
+                  ),
                   textStyle: TextStyle(
-                      fontSize: 16, color: colorScheme.onPrimaryContainer),
+                    fontSize: 16,
+                    color: colorScheme.onPrimaryContainer,
+                  ),
                   enableSearch: false,
                   initialSelection: 'day',
                   dropdownMenuEntries: const [
-                    DropdownMenuEntry(
-                      value: 'day',
-                      label: 'Hari ini',
-                    ),
-                    DropdownMenuEntry(
-                      value: 'yesterday',
-                      label: 'Kemarin',
-                    ),
+                    DropdownMenuEntry(value: 'day', label: 'Hari ini'),
+                    DropdownMenuEntry(value: 'yesterday', label: 'Kemarin'),
                     DropdownMenuEntry(
                       value: '2 day Ago',
                       label: '2 Hari yang lalu',
                     ),
-                    DropdownMenuEntry(
-                      value: 'week',
-                      label: 'Minggu ini',
-                    ),
+                    DropdownMenuEntry(value: 'week', label: 'Minggu ini'),
                     DropdownMenuEntry(
                       value: 'weekAgo',
                       label: 'Minggu yang lalu',
                     ),
-                    DropdownMenuEntry(
-                      value: 'month',
-                      label: 'Bulan ini',
-                    ),
+                    DropdownMenuEntry(value: 'month', label: 'Bulan ini'),
                     DropdownMenuEntry(
                       value: 'monthAgo',
                       label: 'Bulan yang lalu',
                     ),
-                    DropdownMenuEntry(
-                      value: 'year',
-                      label: 'Tahun ini',
-                    ),
+                    DropdownMenuEntry(value: 'year', label: 'Tahun ini'),
                     DropdownMenuEntry(
                       value: 'yearAgo',
                       label: 'Tahun yang lalu',
                     ),
-                    DropdownMenuEntry(
-                      value: 'custom',
-                      label: 'Kustom',
-                    ),
+                    DropdownMenuEntry(value: 'custom', label: 'Kustom'),
                   ],
                   onSelected: ((value) => setState(() {
-                        arrangeDate(value ?? '');
-                      })),
+                    arrangeDate(value ?? '');
+                  })),
                 ),
                 Container(
                   constraints: const BoxConstraints(maxWidth: 350),
                   child: DateRangeFormField(
                     enabled: _isCustom,
                     textStyle: const TextStyle(
-                        fontSize: 16, fontStyle: FontStyle.italic),
-                    initialDateRange: controller.range,
-                    controller: pickerController,
+                      fontSize: 16,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    rangeType: DateTimeRangeType(),
+                    initialValue: controller.range,
                     onChanged: (DateTimeRange? range) {
                       if (range == null) {
                         return;
                       }
                       controller.changeDate(range);
                     },
+                    controller: pickerController,
                   ),
                 ),
                 IconButton.filled(
-                    onPressed: () {
-                      controller.changeDate(controller.range);
-                    },
-                    tooltip: 'Refresh Laporan',
-                    icon: const Icon(
-                      Icons.refresh,
-                    )),
+                  onPressed: () {
+                    controller.changeDate(controller.range);
+                  },
+                  tooltip: 'Refresh Laporan',
+                  icon: const Icon(Icons.refresh),
+                ),
               ],
             ),
             const Divider(),
             Expanded(
               child: ListView.separated(
                 itemBuilder: (context, index) => Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer,
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10)),
-                        border:
-                            Border.all(color: colorScheme.outline, width: 1)),
-                    child: _panels[index]),
-                itemCount: _panels.length,
-                separatorBuilder: (context, index) => const SizedBox(
-                  height: 10,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    border: Border.all(color: colorScheme.outline, width: 1),
+                  ),
+                  child: _panels[index],
                 ),
+                itemCount: _panels.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 10),
               ),
             ),
           ],

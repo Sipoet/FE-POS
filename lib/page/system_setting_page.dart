@@ -18,9 +18,9 @@ class SystemSettingPage extends StatefulWidget {
 
 class _SystemSettingPageState extends State<SystemSettingPage>
     with DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
-  String _searchText = '';
+
   final cancelToken = CancelToken();
   late Flash flash;
   List<SystemSetting> records = [];
@@ -31,33 +31,18 @@ class _SystemSettingPageState extends State<SystemSettingPage>
     server = context.read<Server>();
     flash = Flash();
     final setting = context.read<Setting>();
-    final actionColumn = TableColumn(
-      clientWidth: 100,
-      name: 'action',
-      type: TableColumnType.action,
-      humanizeName: 'Action',
-      frozen: TrinaColumnFrozen.end,
-      renderBody: (rendererContext) {
-        return Row(
-          children: [
-            IconButton(
-              onPressed: () => _openEditForm(rendererContext.rowIdx),
-              icon: Icon(Icons.edit),
-            )
-          ],
-        );
-      },
-    );
-    columns = setting.tableColumn('setting')..add(actionColumn);
+
+    columns = setting.tableColumn('setting');
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }
 
-  void _openEditForm(int index) {
-    final record = records[index];
+  void _openEditForm(SystemSetting record) {
     final tabManager = context.read<TabManager>();
-    tabManager.addTab('Edit System Setting ${record.key}',
-        SystemSettingFormPage(systemSetting: record));
+    tabManager.addTab(
+      'Edit System Setting ${record.key}',
+      SystemSettingFormPage(systemSetting: record),
+    );
   }
 
   @override
@@ -71,28 +56,20 @@ class _SystemSettingPageState extends State<SystemSettingPage>
   }
 
   Future<DataTableResponse<SystemSetting>> fetchSystemSettings(
-      QueryRequest request) {
-    return SystemSettingClass().finds(server, request).then(
-        (value) => DataTableResponse<SystemSetting>(
+    QueryRequest request,
+  ) {
+    return SystemSettingClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<SystemSetting>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   @override
@@ -102,36 +79,17 @@ class _SystemSettingPageState extends State<SystemSettingPage>
         padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 10, bottom: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                ],
-              ),
-            ),
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<SystemSetting>(
+                renderAction: (model) => Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => _openEditForm(model),
+                      icon: Icon(Icons.edit),
+                    ),
+                  ],
+                ),
                 onLoaded: (stateManager) => _source = stateManager,
                 fixedLeftColumns: 0,
                 fetchData: fetchSystemSettings,

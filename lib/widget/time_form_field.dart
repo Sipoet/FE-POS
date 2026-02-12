@@ -13,19 +13,20 @@ class TimeFormField extends StatefulWidget {
   final void Function(TimeOfDay?)? onSaved;
   final void Function(TimeOfDay? date)? onChanged;
   final String? Function(TimeOfDay?)? validator;
-  const TimeFormField(
-      {super.key,
-      this.label,
-      this.controller,
-      this.firstDate,
-      this.lastDate,
-      this.onSaved,
-      this.helpText,
-      this.focusNode,
-      this.onChanged,
-      this.validator,
-      this.allowClear = false,
-      this.initialValue});
+  const TimeFormField({
+    super.key,
+    this.label,
+    this.controller,
+    this.firstDate,
+    this.lastDate,
+    this.onSaved,
+    this.helpText,
+    this.focusNode,
+    this.onChanged,
+    this.validator,
+    this.allowClear = false,
+    this.initialValue,
+  });
 
   @override
   State<TimeFormField> createState() => _TimeFormFieldState();
@@ -49,15 +50,17 @@ class _TimeFormFieldState extends State<TimeFormField> {
   void initState() {
     widget.controller?.addListener(() {
       _controller.text = widget.controller!.text;
-      _date = TimeDay.parse(widget.controller!.text);
+      _date = TimeDay.tryParse(widget.controller!.text);
     });
     if (widget.initialValue != null) {
       _date = widget.initialValue;
-    } else if (widget.controller != null) {
-      _date = TimeDay.parse(widget.controller!.text);
+    } else if (widget.controller != null &&
+        widget.controller!.text.isNotEmpty) {
+      _date = TimeDay.tryParse(widget.controller!.text);
     }
-    _controller.text =
-        _date == null ? '' : (_date ?? TimeOfDay.now()).format24Hour();
+    _controller.text = _date == null
+        ? ''
+        : (_date ?? TimeOfDay.now()).format24Hour();
 
     super.initState();
   }
@@ -124,7 +127,8 @@ class _TimeFormFieldState extends State<TimeFormField> {
                     widget.onChanged!(_date);
                   }
                 },
-                icon: const Icon(Icons.close))
+                icon: const Icon(Icons.close),
+              )
             : null,
       ),
       controller: _controller,

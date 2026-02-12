@@ -21,15 +21,16 @@ class ItemTypePage extends StatefulWidget {
 
 class _ItemTypePageState extends State<ItemTypePage>
     with DefaultResponse, PlatformChecker, LoadingPopup {
-  TrinaGridStateManager? _source;
+  TableController<ItemType>? _source;
   late final Server server;
-  String _searchText = '';
+
   final cancelToken = CancelToken();
   List<CustomTreeNode<ItemType>> tree = [];
   late Flash flash;
   late final Setting setting;
   late final TabManager tabManager;
   final _treeController = TreeController();
+  String _searchText = '';
   static const minSearchLength = 2;
   @override
   void initState() {

@@ -19,43 +19,26 @@ class ItemPage extends StatefulWidget {
 }
 
 class _ItemPageState extends State<ItemPage> with DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
-  String _searchText = '';
+
   List<Item> items = [];
   CancelToken cancelToken = CancelToken();
   late Flash flash;
   late final List<TableColumn> columns;
+  late final Setting setting;
 
   @override
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    final setting = context.read<Setting>();
+    setting = context.read<Setting>();
 
-    final actionColumn = TableColumn(
-      clientWidth: 100,
-      name: 'action',
-      type: TableColumnType.action,
-      humanizeName: 'Action',
-      frozen: TrinaColumnFrozen.end,
-      renderBody: (rendererContext) {
-        return Row(
-          children: [
-            IconButton(
-              onPressed: () => _openEditForm(rendererContext.rowIdx),
-              icon: Icon(Icons.edit),
-            )
-          ],
-        );
-      },
-    );
-    columns = setting.tableColumn('ipos::Item')..add(actionColumn);
+    columns = setting.tableColumn('ipos::Item');
     super.initState();
   }
 
-  void _openEditForm(int index) {
-    final item = items[index];
+  void _openEditForm(Item item) {
     final tabManager = context.read<TabManager>();
     tabManager.addTab('Edit item ${item.code}', ItemFormPage(item: item));
   }
@@ -67,30 +50,18 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
   }
 
   Future<DataTableResponse<Item>> fetchItems(QueryRequest request) {
+    request.includeAddAll(['supplier', 'brand', 'item_type']);
+
     return ItemClass().finds(server, request).then(
-        (value) => DataTableResponse<Item>(
-            models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      cancelToken.cancel();
-      cancelToken = CancelToken();
-      refreshTable();
-    }
+      (value) => DataTableResponse<Item>(
+        models: value.models,
+        totalPage: value.metadata['total_pages'],
+      ),
+      onError: (error) {
+        defaultErrorResponse(error: error);
+        return DataTableResponse.empty();
+      },
+    );
   }
 
   void refreshTable() {
@@ -106,31 +77,21 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
             padding: const EdgeInsets.only(left: 10, bottom: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _searchText = '';
-                    });
-                    refreshTable();
-                  },
-                  tooltip: 'Reset Table',
-                  icon: const Icon(Icons.refresh),
-                ),
-                SizedBox(
-                  width: 150,
-                  child: TextField(
-                    decoration: const InputDecoration(hintText: 'Search Text'),
-                    onChanged: searchChanged,
-                    onSubmitted: searchChanged,
-                  ),
-                ),
-              ],
+              children: [],
             ),
           ),
           SizedBox(
             height: bodyScreenHeight,
             child: CustomAsyncDataTable<Item>(
+              renderAction: (model) => Row(
+                children: [
+                  if (setting.isAuthorize('ipos/items', 'update'))
+                    IconButton(
+                      onPressed: () => _openEditForm(model),
+                      icon: Icon(Icons.edit),
+                    ),
+                ],
+              ),
               onLoaded: (stateManager) => _source = stateManager,
               fixedLeftColumns: 1,
               fetchData: fetchItems,

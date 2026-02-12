@@ -19,7 +19,7 @@ class PurchasePage extends StatefulWidget {
 
 class _PurchasePageState extends State<PurchasePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController<Purchase> _source;
   late final Server server;
   String _searchText = '';
   List<IposPurchaseHeader> items = [];
@@ -55,6 +55,7 @@ class _PurchasePageState extends State<PurchasePage>
       QueryRequest request) {
     request.filters = _filters;
     request.searchText = _searchText;
+    request.includeAddAll(['purchase_order', 'supplier']);
     return IposPurchaseHeaderClass().finds(server, request).then(
         (value) => DataTableResponse<IposPurchaseHeader>(
             models: value.models,
@@ -64,25 +65,13 @@ class _PurchasePageState extends State<PurchasePage>
     });
   }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
-  }
-
   void viewRecord(IposPurchaseHeader purchase) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Lihat Pembelian ${purchase.code}',
-          PurchaseFormPage(purchase: purchase));
+      tabManager.addTab(
+        'Lihat Pembelian ${purchase.code}',
+        PurchaseFormPage(purchase: purchase),
+      );
     });
   }
 
@@ -106,27 +95,7 @@ class _PurchasePageState extends State<PurchasePage>
               padding: const EdgeInsets.only(left: 10, bottom: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                ],
+                children: [],
               ),
             ),
             SizedBox(
@@ -136,15 +105,16 @@ class _PurchasePageState extends State<PurchasePage>
                   spacing: 10,
                   children: [
                     IconButton.filled(
-                        onPressed: () {
-                          viewRecord(purchase);
-                        },
-                        icon: const Icon(Icons.search_rounded)),
+                      onPressed: () {
+                        viewRecord(purchase);
+                      },
+                      icon: const Icon(Icons.search_rounded),
+                    ),
                   ],
                 ),
                 onLoaded: (stateManager) {
                   _source = stateManager;
-                  _source.sortDescending(_source.columns[2]);
+                  _source.sortDescending(_source.columns[4]);
                 },
                 columns: columns,
                 fetchData: fetchPurchases,

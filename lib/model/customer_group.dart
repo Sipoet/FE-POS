@@ -7,24 +7,25 @@ class CustomerGroup extends Model {
   int level;
   double powerPoint;
 
-  CustomerGroup(
-      {this.code = '',
-      this.name = '',
-      super.id,
-      this.level = 1,
-      this.powerPoint = 1,
-      this.discount = const Percentage(0)});
+  CustomerGroup({
+    this.code = '',
+    this.name = '',
+    super.id,
+    this.level = 1,
+    this.powerPoint = 1,
+    this.discount = const Percentage(0),
+  });
 
   @override
   Map<String, dynamic> toMap() => {
-        'kgrup': code,
-        'grup': name,
-        'potongan': discount,
-        'levelharga': level,
-        'kelipatanpoin': powerPoint,
-      };
+    'kgrup': code,
+    'grup': name,
+    'potongan': discount,
+    'levelharga': level,
+    'kelipatanpoin': powerPoint,
+  };
   @override
-  String get modelName => 'customer_group';
+  String get path => 'ipos/customer_groups';
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -37,7 +38,7 @@ class CustomerGroup extends Model {
   }
 
   @override
-  String get modelValue => "$code - $name";
+  String get modelValue => name;
 }
 
 class CustomerGroupClass extends ModelClass<CustomerGroup> {

@@ -20,17 +20,16 @@ class SaleItemPage extends StatefulWidget {
 
 class _SaleItemPageState extends State<SaleItemPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   late final Server server;
-  String _searchText = '';
+
   List<SaleItem> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
-  final _menuController = MenuController();
-
+  QueryRequest? queryRequest;
   @override
   bool get wantKeepAlive => true;
 
@@ -56,87 +55,94 @@ class _SaleItemPageState extends State<SaleItemPage>
 
   Future<DataTableResponse<SaleItem>> fetchSaleItems(QueryRequest request) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return SaleItemClass().finds(server, request).then(
-        (value) => DataTableResponse<SaleItem>(
+    request.include = ['item', 'sale'];
+    queryRequest = request;
+    return SaleItemClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<SaleItem>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
-  }
-
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void viewRecord(SaleItem saleItem) {
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('Lihat Penjualan ${saleItem.saleCode}',
-          SaleFormPage(sale: Sale(code: saleItem.saleCode ?? '')));
+      tabManager.addTab(
+        'Lihat Penjualan ${saleItem.saleCode}',
+        SaleFormPage(sale: Sale(code: saleItem.saleCode ?? '')),
+      );
     });
   }
 
   void download() {
-    flash.show(
-      const Text('Dalam proses.'),
-      ToastificationType.info,
+    flash.show(const Text('Dalam proses.'), ToastificationType.info);
+    queryRequest ??= QueryRequest(
+      filters: _filters,
+      include: ['item', 'sale'],
+      sorts: [SortData(key: 'kodeitem', isAscending: true)],
     );
-    Map<String, dynamic> param = {
-      'search_text': _searchText,
-      'include': 'item,sale',
-      'sort': 'kodeitem',
-      'report_type': 'xlsx',
-    };
-    for (final filterData in _filters) {
-      final entry = filterData.toEntryJson();
-      param[entry.key] = entry.value;
-    }
-
+    queryRequest!.include = ['item', 'sale'];
+    queryRequest!.sorts = [SortData(key: 'kodeitem', isAscending: true)];
+    queryRequest!.filters = _filters;
+    Map<String, dynamic> param = queryRequest!.toQueryParam();
+    param['report_type'] = 'xlsx';
     try {
       server
-          .get('sale_items',
-              queryParam: param, cancelToken: cancelToken, type: 'xlsx')
-          .then((response) {
-        flash.hide();
-        if (response.statusCode != 200) {
-          flash.show(
-              const Text('gagal simpan ke excel'), ToastificationType.error);
-          return;
-        }
-        String filename = response.headers.value('content-disposition') ?? '';
-        if (filename.isEmpty) {
-          return;
-        }
-        filename = filename.substring(filename.indexOf('filename="') + 10,
-            filename.indexOf('xlsx";') + 4);
-        var downloader = const FileSaver();
-        downloader.download(filename, response.data, 'xlsx',
-            onSuccess: (String path) {
-          flash.showBanner(
-              messageType: ToastificationType.success,
-              title: 'Sukses download',
-              description: 'sukses disimpan di $path');
-        });
-      },
-              onError: (error, stackTrace) =>
-                  defaultErrorResponse(error: error, valueWhenError: []));
+          .get(
+            'ipos/sale_items',
+            queryParam: param,
+            cancelToken: cancelToken,
+            type: 'xlsx',
+          )
+          .then(
+            (response) {
+              flash.hide();
+              if (response.statusCode != 200) {
+                flash.show(
+                  const Text('gagal simpan ke excel'),
+                  ToastificationType.error,
+                );
+                return;
+              }
+              String filename =
+                  response.headers.value('content-disposition') ?? '';
+              if (filename.isEmpty) {
+                return;
+              }
+              filename = filename.substring(
+                filename.indexOf('filename="') + 10,
+                filename.indexOf('xlsx";') + 4,
+              );
+              var downloader = const FileSaver();
+              downloader.download(
+                filename,
+                response.data,
+                'xlsx',
+                onSuccess: (String path) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses download',
+                    description: 'sukses disimpan di $path',
+                  );
+                },
+              );
+            },
+            onError: (error, stackTrace) =>
+                defaultErrorResponse(error: error, valueWhenError: []),
+          );
     } catch (e, trace) {
       flash.showBanner(
-          title: e.toString(),
-          description: trace.toString(),
-          messageType: ToastificationType.error);
+        title: e.toString(),
+        description: trace.toString(),
+        messageType: ToastificationType.error,
+      );
     }
   }
 
@@ -155,50 +161,12 @@ class _SaleItemPageState extends State<SaleItemPage>
                 _filters = value;
                 refreshTable();
               },
+              onDownload: (value) {
+                _filters = value;
+                download();
+              },
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10, bottom: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
-                  SizedBox(
-                    width: 50,
-                    child: SubmenuButton(
-                        controller: _menuController,
-                        menuChildren: [
-                          MenuItemButton(
-                            leadingIcon: const Icon(Icons.download),
-                            child: const Text('Download Excel'),
-                            onPressed: () {
-                              _menuController.close();
-                              download();
-                            },
-                          ),
-                        ],
-                        child: const Icon(Icons.table_rows_rounded)),
-                  )
-                ],
-              ),
-            ),
+
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<SaleItem>(
@@ -207,15 +175,16 @@ class _SaleItemPageState extends State<SaleItemPage>
                   spacing: 10,
                   children: [
                     IconButton.filled(
-                        onPressed: () {
-                          viewRecord(saleItem);
-                        },
-                        icon: const Icon(Icons.search_rounded)),
+                      onPressed: () {
+                        viewRecord(saleItem);
+                      },
+                      icon: const Icon(Icons.search_rounded),
+                    ),
                   ],
                 ),
                 onLoaded: (stateManager) {
                   _source = stateManager;
-                  _source.sortDescending(_source.columns[0]);
+                  _source.sortDescending(_source.columns[1]);
                 },
                 fetchData: fetchSaleItems,
                 columns: columns,

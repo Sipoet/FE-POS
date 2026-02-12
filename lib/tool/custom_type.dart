@@ -1,17 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pluralize/pluralize.dart';
+
+final plurale = Pluralize()
+  ..addSingularRule(RegExp(r'leaves', caseSensitive: false), 'leave')
+  ..addSingularRule(RegExp(r'ipos', caseSensitive: false), 'ipos');
 
 extension StringExt on String {
   String toSnakeCase() => unclassify().toLowerCase().replaceAll(' ', '_');
 
+  String toCamelCase() {
+    List<String> container = split(RegExp(r'[\s+_]'));
+    return '${container[0].toLowerCase()}${container.sublist(1).map((e) => e.toCapitalize()).join()}';
+  }
+
   String unclassify() => replaceAllMapped(
-      RegExp(r'\s*([A-Z])'), (Match match) => " ${match.group(1)}").trimLeft();
-  String toCapitalized() =>
+    RegExp(r'\s*([A-Z])'),
+    (Match match) => " ${match.group(1)}",
+  ).trimLeft();
+  String toCapitalize() =>
       length > 0 ? '${this[0].toUpperCase()}${substring(1).toLowerCase()}' : '';
-  String toTitleCase() => replaceAll(RegExp(' +'), ' ')
-      .split(' ')
-      .map<String>((str) => str.toCapitalized())
-      .join(' ');
+  String toTitleCase() => replaceAll(
+    RegExp(r'[_\s+]'),
+    ' ',
+  ).split(' ').map<String>((str) => str.toCapitalize()).join(' ');
+  String toSingularize() => plurale.singular(this);
+  String toPluralize() => plurale.plural(this);
+  String toClassify() => split('/')
+      .map(
+        (e) => e.toSingularize().toTitleCase().replaceAll(RegExp(r'[_\s]'), ''),
+      )
+      .join('::');
+
+  bool insensitiveContains(String text) =>
+      toLowerCase().contains(text.toLowerCase());
 }
 
 abstract class EnumTranslation {
@@ -21,14 +43,21 @@ abstract class EnumTranslation {
 extension DateTimeExt on DateTime {
   DateTime beginningOfDay() {
     return copyWith(
-        hour: 0, minute: 0, second: 0, microsecond: 0, millisecond: 0);
+      hour: 0,
+      minute: 0,
+      second: 0,
+      microsecond: 0,
+      millisecond: 0,
+    );
   }
 
   DateTime endOfDay() {
-    return add(Duration(days: 1))
-        .beginningOfDay()
-        .subtract(Duration(milliseconds: 1));
+    return add(
+      Duration(days: 1),
+    ).beginningOfDay().subtract(Duration(milliseconds: 1));
   }
+
+  String toJson() => format();
 
   DateTime beginningOfWeek() {
     int dayT = weekday;
@@ -52,8 +81,11 @@ extension DateTimeExt on DateTime {
     if (month == 12) {
       return DateTime(year, month, 31).endOfDay();
     } else {
-      return DateTime(year, month + 1, 1)
-          .subtract(const Duration(milliseconds: 1));
+      return DateTime(
+        year,
+        month + 1,
+        1,
+      ).subtract(const Duration(milliseconds: 1));
     }
   }
 
@@ -85,11 +117,7 @@ extension DateTimeRangeExt on DateTimeRange {
 }
 
 class Date extends DateTime {
-  Date(
-    super.year, [
-    super.month = 1,
-    super.day = 1,
-  ]);
+  Date(super.year, [super.month = 1, super.day = 1]);
   static Date parse(String value) {
     var datetime = DateTime.parse(value);
     return Date.parsingDateTime(datetime);
@@ -162,7 +190,12 @@ class Date extends DateTime {
     return '$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
   }
 
+  Date copyWith({int? year, int? month, int? day}) {
+    return Date(year ?? this.year, month ?? this.month, day ?? this.day);
+  }
+
   static Date parsingDateTime(DateTime value) {
+    value = value.toLocal();
     return Date(value.year, value.month, value.day);
   }
 }
@@ -205,8 +238,10 @@ class Money {
 
   String format({int? decimalDigits}) {
     return NumberFormat.currency(
-            locale: "id_ID", symbol: symbol, decimalDigits: decimalDigits)
-        .format(value);
+      locale: "id_ID",
+      symbol: symbol,
+      decimalDigits: decimalDigits,
+    ).format(value);
   }
 
   @override
@@ -218,12 +253,22 @@ class Money {
     return value.compareTo(other.value);
   }
 
-  Money operator *(var other) {
+  Money operator *(Object other) {
     if (other is Money) {
       return Money(value * other.value, symbol: symbol);
-    } else {
+    } else if (other is num) {
       return Money(value * other, symbol: symbol);
+    } else {
+      throw 'not supported power ${other.toString()}';
     }
+  }
+
+  String toJson() {
+    return value.toString();
+  }
+
+  DateTime? fromJson(String value) {
+    return DateTime.tryParse(value);
   }
 
   @override
@@ -232,6 +277,8 @@ class Money {
       return value == other.value;
     } else if (other is double) {
       return value == other;
+    } else if (other is int) {
+      return value == other.toDouble();
     } else {
       return false;
     }
@@ -308,14 +355,22 @@ class Percentage {
   }
 
   static Percentage? tryParse(String val) {
+    final isContainPercent = val.contains('%');
     val = val.replaceAll(RegExp('%'), '');
     var parsed = double.tryParse(val);
     if (parsed == null) return null;
+    parsed = isContainPercent ? parsed / 100 : parsed;
     return Percentage(parsed);
   }
 
   Percentage dup() {
     return Percentage(value);
+  }
+
+  static Percentage? inputParse(String val) {
+    var parsed = double.tryParse(val);
+    if (parsed == null) return null;
+    return Percentage(parsed / 100);
   }
 
   @override
@@ -328,6 +383,8 @@ class Percentage {
     }
     return ((value * 10000).round() / 100).toString();
   }
+
+  String toJson() => format();
 
   String format() {
     return "${toString()}%";
@@ -415,7 +472,7 @@ extension TimeDay on TimeOfDay {
   String format24Hour({bool showSecond = false, String separator = ':'}) {
     List<String> part = [
       hour.toString().padLeft(2, '0'),
-      minute.toString().padLeft(2, '0')
+      minute.toString().padLeft(2, '0'),
     ];
     if (showSecond) {
       part.add('00');

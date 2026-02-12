@@ -23,13 +23,13 @@ class DiscountPage extends StatefulWidget {
 class _DiscountPageState extends State<DiscountPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse, LoadingPopup {
   late final Server server;
-  String _searchText = '';
+
   final cancelToken = CancelToken();
   late Flash flash;
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
   final _controller = MenuController();
-  late final TrinaGridStateManager _source;
+  late final TableController _source;
   @override
   bool get wantKeepAlive => true;
 
@@ -57,36 +57,46 @@ class _DiscountPageState extends State<DiscountPage>
 
   Future<DataTableResponse<Discount>> fetchDiscounts(QueryRequest request) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    return DiscountClass().finds(server, request).then(
-        (value) => DataTableResponse<Discount>(
+
+    return DiscountClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<Discount>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void addForm() {
     Discount discount = Discount(
-        discount1: const Percentage(0.0),
-        discount2: const Percentage(0.0),
-        discount3: const Percentage(0.0),
-        discount4: const Percentage(0.0),
-        calculationType: DiscountCalculationType.percentage,
-        startTime: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
-        endTime: DateTime.now().copyWith(hour: 23, minute: 59, second: 59));
+      discount1: const Percentage(0.0),
+      discount2: const Percentage(0.0),
+      discount3: const Percentage(0.0),
+      discount4: const Percentage(0.0),
+      calculationType: DiscountCalculationType.percentage,
+      startTime: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
+      endTime: DateTime.now().copyWith(hour: 23, minute: 59, second: 59),
+    );
     var tabManager = context.read<TabManager>();
     setState(() {
-      tabManager.addTab('New Discount',
-          DiscountFormPage(key: ObjectKey(discount), discount: discount));
+      tabManager.addTab(
+        'New Discount',
+        DiscountFormPage(key: ObjectKey(discount), discount: discount),
+      );
     });
   }
 
   void editForm(Discount discount) {
     var tabManager = context.read<TabManager>();
-    tabManager.addTab('Edit Discount ${discount.code}',
-        DiscountFormPage(key: ObjectKey(discount), discount: discount));
+    tabManager.addTab(
+      'Edit Discount ${discount.code}',
+      DiscountFormPage(key: ObjectKey(discount), discount: discount),
+    );
   }
 
   void showConfirmDeleteDialog(discount) {
@@ -119,58 +129,83 @@ class _DiscountPageState extends State<DiscountPage>
   }
 
   void deleteRecord(discount) {
-    server.delete("discounts/${discount.id}").then((response) {
-      if (response.statusCode == 200) {
-        flash.showBanner(
-            messageType: ToastificationType.success,
-            description: response.data?['message']);
-        refreshTable();
-      } else if (response.statusCode == 409) {
-        var data = response.data;
-        flash.showBanner(
-            title: data['message'],
-            description: data['errors'].join('\n'),
-            messageType: ToastificationType.error);
-      }
-    }, onError: (error, stack) {
-      defaultErrorResponse(error: error);
-    });
+    server
+        .delete("discounts/${discount.id}")
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              flash.showBanner(
+                messageType: ToastificationType.success,
+                description: response.data?['message'],
+              );
+              refreshTable();
+            } else if (response.statusCode == 409) {
+              var data = response.data;
+              flash.showBanner(
+                title: data['message'],
+                description: data['errors'].join('\n'),
+                messageType: ToastificationType.error,
+              );
+            }
+          },
+          onError: (error, stack) {
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
   void refreshPromotion(Discount discount) {
-    server.post('discounts/${discount.id}/refresh_promotion').then((value) {
-      flash.showBanner(
-          title: 'Refresh akan diproses',
-          description: 'diskon ${discount.code} akan diproses',
-          messageType: ToastificationType.info,
-          duration: const Duration(seconds: 3));
-    }, onError: (error, stack) {
-      defaultErrorResponse(error: error);
-    });
+    server
+        .post('discounts/${discount.id}/refresh_promotion')
+        .then(
+          (value) {
+            flash.showBanner(
+              title: 'Refresh akan diproses',
+              description: 'diskon ${discount.code} akan diproses',
+              messageType: ToastificationType.info,
+              duration: const Duration(seconds: 3),
+            );
+          },
+          onError: (error, stack) {
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
   void refreshAllPromotion() {
-    server.post('discounts/refresh_all_promotion').then((value) {
-      flash.showBanner(
-          title: 'Refresh akan diproses',
-          description: 'Semua diskon akan diproses',
-          messageType: ToastificationType.info,
-          duration: const Duration(seconds: 3));
-    }, onError: (error, stack) {
-      defaultErrorResponse(error: error);
-    });
+    server
+        .post('discounts/refresh_all_promotion')
+        .then(
+          (value) {
+            flash.showBanner(
+              title: 'Refresh akan diproses',
+              description: 'Semua diskon akan diproses',
+              messageType: ToastificationType.info,
+              duration: const Duration(seconds: 3),
+            );
+          },
+          onError: (error, stack) {
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
   void deleteAllOldDiscount() {
-    server.delete('discounts/delete_inactive_past_discount').then((response) {
-      flash.showBanner(
-          title: response.data['message'],
-          description: 'Semua diskon akan diproses',
-          messageType: ToastificationType.success);
-      refreshTable();
-    }, onError: (error, stack) {
-      defaultErrorResponse(error: error);
-    });
+    server
+        .delete('discounts/delete_inactive_past_discount')
+        .then(
+          (response) {
+            flash.showBanner(
+              title: response.data['message'],
+              description: 'Semua diskon akan diproses',
+              messageType: ToastificationType.success,
+            );
+            refreshTable();
+          },
+          onError: (error, stack) {
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
   void massUploadDiscount() {
@@ -180,74 +215,78 @@ class _DiscountPageState extends State<DiscountPage>
     });
   }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
-  }
-
   void downloadActiveDiscountItems() {
     showLoadingPopup();
-    server.get('discounts/download_active_items', type: 'xlsx').then(
-        (response) async {
-      if (response.statusCode != 200) {
-        flash.showBanner(
-            title: 'Gagal Download',
-            description: 'Gagal Download Aktif discount item ',
-            messageType: ToastificationType.error);
-      }
-      String filename = response.headers.value('content-disposition') ?? '';
-      if (filename.isEmpty) {
-        return;
-      }
-      filename = filename.substring(
-          filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
-      var downloader = const FileSaver();
-      downloader.download(filename, response.data, 'xlsx',
-          onSuccess: (String path) {
-        flash.showBanner(
-            messageType: ToastificationType.success,
-            title: 'Sukses download',
-            description: 'sukses disimpan di $path');
-      });
-    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => hideLoadingPopup());
+    server
+        .get('discounts/download_active_items', type: 'xlsx')
+        .then((response) async {
+          if (response.statusCode != 200) {
+            flash.showBanner(
+              title: 'Gagal Download',
+              description: 'Gagal Download Aktif discount item ',
+              messageType: ToastificationType.error,
+            );
+          }
+          String filename = response.headers.value('content-disposition') ?? '';
+          if (filename.isEmpty) {
+            return;
+          }
+          filename = filename.substring(
+            filename.indexOf('filename="') + 10,
+            filename.indexOf('xlsx";') + 4,
+          );
+          var downloader = const FileSaver();
+          downloader.download(
+            filename,
+            response.data,
+            'xlsx',
+            onSuccess: (String path) {
+              flash.showBanner(
+                messageType: ToastificationType.success,
+                title: 'Sukses download',
+                description: 'sukses disimpan di $path',
+              );
+            },
+          );
+        }, onError: (error) => defaultErrorResponse(error: error))
+        .whenComplete(() => hideLoadingPopup());
   }
 
   void downloadDiscountItems(discount) {
     showLoadingPopup();
-    server.get('discounts/${discount.id}/download_items', type: 'xlsx').then(
-        (response) async {
-      if (response.statusCode != 200) {
-        flash.showBanner(
-            title: 'Gagal Download',
-            description: 'Gagal Download discount item ${discount.code}',
-            messageType: ToastificationType.error);
-      }
-      String filename = response.headers.value('content-disposition') ?? '';
-      if (filename.isEmpty) {
-        return;
-      }
-      filename = filename.substring(
-          filename.indexOf('filename="') + 10, filename.indexOf('xlsx";') + 4);
-      var downloader = const FileSaver();
-      downloader.download(filename, response.data, 'xlsx',
-          onSuccess: (String path) {
-        flash.showBanner(
-            messageType: ToastificationType.success,
-            title: 'Sukses download',
-            description: 'sukses disimpan di $path');
-      });
-    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => hideLoadingPopup());
+    server
+        .get('discounts/${discount.id}/download_items', type: 'xlsx')
+        .then((response) async {
+          if (response.statusCode != 200) {
+            flash.showBanner(
+              title: 'Gagal Download',
+              description: 'Gagal Download discount item ${discount.code}',
+              messageType: ToastificationType.error,
+            );
+          }
+          String filename = response.headers.value('content-disposition') ?? '';
+          if (filename.isEmpty) {
+            return;
+          }
+          filename = filename.substring(
+            filename.indexOf('filename="') + 10,
+            filename.indexOf('xlsx";') + 4,
+          );
+          var downloader = const FileSaver();
+          downloader.download(
+            filename,
+            response.data,
+            'xlsx',
+            onSuccess: (String path) {
+              flash.showBanner(
+                messageType: ToastificationType.success,
+                title: 'Sukses download',
+                description: 'sukses disimpan di $path',
+              );
+            },
+          );
+        }, onError: (error) => defaultErrorResponse(error: error))
+        .whenComplete(() => hideLoadingPopup());
   }
 
   @override
@@ -263,7 +302,7 @@ class _DiscountPageState extends State<DiscountPage>
               columns: columns,
               enums: const {
                 'calculation_type': DiscountCalculationType.values,
-                'discount_type': DiscountType.values
+                'discount_type': DiscountType.values,
               },
               onSubmit: (value) {
                 _filters = value;
@@ -275,68 +314,50 @@ class _DiscountPageState extends State<DiscountPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _searchText = '';
-                      });
-                      refreshTable();
-                    },
-                    tooltip: 'Reset Table',
-                    icon: const Icon(Icons.refresh),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      decoration:
-                          const InputDecoration(hintText: 'Search Text'),
-                      onChanged: searchChanged,
-                      onSubmitted: searchChanged,
-                    ),
-                  ),
                   SizedBox(
                     width: 50,
                     child: SubmenuButton(
-                        controller: _controller,
-                        menuChildren: [
-                          MenuItemButton(
-                            child: const Text('Tambah Diskon'),
-                            onPressed: () {
-                              _controller.close();
-                              addForm();
-                            },
-                          ),
-                          MenuItemButton(
-                            child: const Text('Refresh Semua promosi'),
-                            onPressed: () {
-                              _controller.close();
-                              refreshAllPromotion();
-                            },
-                          ),
-                          MenuItemButton(
-                            child: const Text('Hapus Semua Diskon lama'),
-                            onPressed: () {
-                              _controller.close();
-                              deleteAllOldDiscount();
-                            },
-                          ),
-                          MenuItemButton(
-                            child: const Text('Mass Upload'),
-                            onPressed: () {
-                              _controller.close();
-                              massUploadDiscount();
-                            },
-                          ),
-                          MenuItemButton(
-                            child: const Text('Download Aktif Diskon item'),
-                            onPressed: () {
-                              _controller.close();
-                              downloadActiveDiscountItems();
-                            },
-                          ),
-                        ],
-                        child: const Icon(Icons.table_rows_rounded)),
-                  )
+                      controller: _controller,
+                      menuChildren: [
+                        MenuItemButton(
+                          child: const Text('Tambah Diskon'),
+                          onPressed: () {
+                            _controller.close();
+                            addForm();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('Refresh Semua promosi'),
+                          onPressed: () {
+                            _controller.close();
+                            refreshAllPromotion();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('Hapus Semua Diskon lama'),
+                          onPressed: () {
+                            _controller.close();
+                            deleteAllOldDiscount();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('Mass Upload'),
+                          onPressed: () {
+                            _controller.close();
+                            massUploadDiscount();
+                          },
+                        ),
+                        MenuItemButton(
+                          child: const Text('Download Aktif Diskon item'),
+                          onPressed: () {
+                            _controller.close();
+                            downloadActiveDiscountItems();
+                          },
+                        ),
+                      ],
+                      child: const Icon(Icons.table_rows_rounded),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -348,35 +369,39 @@ class _DiscountPageState extends State<DiscountPage>
                   spacing: 10,
                   children: [
                     IconButton(
-                        onPressed: () {
-                          editForm(discount);
-                        },
-                        tooltip: 'Edit diskon',
-                        icon: const Icon(Icons.edit)),
+                      onPressed: () {
+                        editForm(discount);
+                      },
+                      tooltip: 'Edit diskon',
+                      icon: const Icon(Icons.edit),
+                    ),
                     IconButton(
-                        onPressed: () {
-                          refreshPromotion(discount);
-                        },
-                        tooltip: 'Refresh item promotion',
-                        icon: const Icon(Icons.refresh)),
+                      onPressed: () {
+                        refreshPromotion(discount);
+                      },
+                      tooltip: 'Refresh item promotion',
+                      icon: const Icon(Icons.refresh),
+                    ),
                     IconButton(
-                        onPressed: () {
-                          downloadDiscountItems(discount);
-                        },
-                        tooltip: 'Download diskon Item',
-                        icon: const Icon(Icons.download)),
+                      onPressed: () {
+                        downloadDiscountItems(discount);
+                      },
+                      tooltip: 'Download diskon Item',
+                      icon: const Icon(Icons.download),
+                    ),
                     IconButton(
-                        onPressed: () {
-                          showConfirmDeleteDialog(discount);
-                        },
-                        tooltip: 'Hapus diskon',
-                        icon: const Icon(Icons.delete)),
+                      onPressed: () {
+                        showConfirmDeleteDialog(discount);
+                      },
+                      tooltip: 'Hapus diskon',
+                      icon: const Icon(Icons.delete),
+                    ),
                   ],
                 ),
                 columns: columns,
                 onLoaded: (stateManager) {
                   _source = stateManager;
-                  _source.sortDescending(_source.columns[16]);
+                  _source.sortDescending(_source.columns[17]);
                 },
                 fetchData: fetchDiscounts,
                 fixedLeftColumns: 1,
