@@ -143,13 +143,23 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
     );
   }
 
+  final borderRadius = BorderRadius.only(
+    topLeft: Radius.circular(15),
+    topRight: Radius.circular(15),
+  );
   void openSortDialog() {
     String searchSortText = '';
+    final colorScheme = Theme.of(context).colorScheme;
     showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       enableDrag: true,
       scrollControlDisabledMaxHeightRatio: 600,
+      shape: RoundedRectangleBorder(
+        borderRadius: borderRadius,
+        side: BorderSide(color: colorScheme.outline),
+      ),
+      backgroundColor: colorScheme.tertiaryContainer,
       builder: (BuildContext context) {
         final navigator = Navigator.of(context);
         Map<String, SortData> sorts = {};
@@ -159,8 +169,6 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
         return StatefulBuilder(
           builder: (BuildContext context, setstateDialog) {
             final size = MediaQuery.of(context).size;
-            final colorScheme = Theme.of(context).colorScheme;
-
             final columns = widget.columns
                 .where(
                   (column) =>
@@ -170,7 +178,6 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                 .toList();
             return Container(
               height: size.height / 3 * 2,
-              color: colorScheme.tertiaryContainer,
               child: Column(
                 spacing: 15,
                 mainAxisSize: .min,
@@ -182,9 +189,10 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                         horizontal: BorderSide(color: colorScheme.outline),
                       ),
                       color: colorScheme.secondaryContainer,
+                      borderRadius: borderRadius,
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
                       child: Row(
                         mainAxisAlignment: .spaceBetween,
                         children: [
@@ -199,7 +207,10 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                           ),
                           IconButton(
                             onPressed: () => navigator.pop(false),
-                            icon: Icon(Icons.close),
+                            icon: Icon(
+                              Icons.close,
+                              color: colorScheme.onSecondaryContainer,
+                            ),
                           ),
                         ],
                       ),

@@ -44,11 +44,20 @@ class _TableFilterFormState extends State<TableFilterForm> {
     super.initState();
   }
 
+  final borderRadius = BorderRadius.only(
+    topLeft: Radius.circular(15),
+    topRight: Radius.circular(15),
+  );
   void _openFilterDialog() {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       enableDrag: true,
+      backgroundColor: colorScheme.tertiaryContainer,
+      shape: RoundedRectangleBorder(
+        borderRadius: borderRadius,
+        side: BorderSide(color: colorScheme.outline),
+      ),
       scrollControlDisabledMaxHeightRatio: 600,
       builder: (BuildContext context) {
         final size = MediaQuery.of(context).size;
@@ -58,13 +67,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
             .toList();
         final navigator = Navigator.of(context);
         return Container(
-          height: size.height / 3 * 2,
-          decoration: BoxDecoration(
-            color: colorScheme.tertiaryContainer,
-            border: BoxBorder.all(color: colorScheme.outline),
-            borderRadius: BorderRadius.circular(10),
-          ),
-
+          height: size.height * 2 / 3,
           child: Column(
             children: [
               Container(
@@ -72,6 +75,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
                   border: BoxBorder.symmetric(
                     horizontal: BorderSide(color: colorScheme.outline),
                   ),
+                  borderRadius: borderRadius,
                   color: colorScheme.secondaryContainer,
                 ),
                 child: Padding(
