@@ -224,22 +224,27 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                           SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final column = columns[index];
-                        return DecoratedBox(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.all(Radius.circular(6)),
-                            border: Border.fromBorderSide(
-                              BorderSide(width: 1, color: colorScheme.outline),
-                            ),
-                          ),
+                        return Material(
+                          color: colorScheme.tertiaryContainer,
                           child: ListTile(
                             dense: true,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(8),
+                              ),
+                              side: BorderSide(
+                                width: 1,
+                                color: colorScheme.outline,
+                              ),
+                            ),
                             textColor: colorScheme.onSecondaryContainer,
+                            tileColor: colorScheme.secondaryContainer,
                             subtitle: Text(
                               column.humanizeName,
                               overflow: .fade,
                               style: TextStyle(
                                 fontSize: 16,
-                                color: colorScheme.onTertiaryContainer,
+                                color: colorScheme.onSecondaryContainer,
                               ),
                             ),
                             onTap: () {
@@ -262,10 +267,13 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                             trailing: sorts[column.name] == null
                                 ? Icon(Icons.unfold_more)
                                 : sorts[column.name]!.isAscending
-                                ? Icon(Icons.arrow_drop_up, color: Colors.green)
+                                ? Icon(
+                                    Icons.keyboard_arrow_up_sharp,
+                                    color: colorScheme.primary,
+                                  )
                                 : Icon(
-                                    Icons.arrow_drop_down,
-                                    color: Colors.green,
+                                    Icons.keyboard_arrow_down_sharp,
+                                    color: colorScheme.primary,
                                   ),
                           ),
                         );
