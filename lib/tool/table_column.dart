@@ -618,7 +618,7 @@ class _NumberFilterFieldState<T> extends State<NumberFilterField<T>> {
         if (constraints.maxWidth < 550) {
           double numWidth = constraints.maxWidth < 230 ? 50 : 90;
           return SizedBox(
-            height: 120,
+            // height: 120,
             child: Wrap(
               crossAxisAlignment: .start,
               alignment: .spaceBetween,
@@ -677,6 +677,7 @@ class _NumberFilterFieldState<T> extends State<NumberFilterField<T>> {
                 ),
                 Visibility(
                   visible: operatorFilter == QueryOperator.between,
+                  maintainState: true,
                   child: SizedBox(
                     width: numWidth,
                     child: NumberFormField<T>(
@@ -759,6 +760,7 @@ class _NumberFilterFieldState<T> extends State<NumberFilterField<T>> {
                 ),
                 Visibility(
                   visible: operatorFilter == QueryOperator.between,
+                  maintainState: true,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     child: Text('-', style: TextStyle(fontSize: 16)),
@@ -766,6 +768,7 @@ class _NumberFilterFieldState<T> extends State<NumberFilterField<T>> {
                 ),
                 Visibility(
                   visible: operatorFilter == QueryOperator.between,
+                  maintainState: true,
                   child: SizedBox(
                     width: numWidth,
                     child: NumberFormField<T>(

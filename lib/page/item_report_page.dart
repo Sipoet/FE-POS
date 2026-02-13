@@ -132,7 +132,7 @@ class _ItemReportPageState extends State<ItemReportPage>
         spacing: 10,
         children: [
           TableFilterForm(
-            showCanopy: false,
+            showCanopy: true,
             onSubmit: (filter) {
               _source.queryRequest.filters = filter;
               _displayReport();
@@ -143,7 +143,6 @@ class _ItemReportPageState extends State<ItemReportPage>
             },
             columns: columns,
           ),
-          const Divider(),
           SizedBox(
             height: bodyScreenHeight,
             child: SyncDataTable<ItemReport>(

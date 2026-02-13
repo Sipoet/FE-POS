@@ -144,58 +144,103 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
   }
 
   void openSortDialog() {
-    showDialog<bool>(
+    String searchSortText = '';
+    showModalBottomSheet<bool>(
       context: context,
+      isScrollControlled: true,
+      enableDrag: true,
+      scrollControlDisabledMaxHeightRatio: 600,
       builder: (BuildContext context) {
         final navigator = Navigator.of(context);
         Map<String, SortData> sorts = {};
         for (final sort in controller.sorts) {
           sorts[sort.key] = sort;
         }
-        String searchSortText = '';
-        final columns = widget.columns
-            .where(
-              (column) =>
-                  column.canSort && searchSortText.isEmpty ||
-                  column.humanizeName.insensitiveContains(searchSortText),
-            )
-            .toList();
         return StatefulBuilder(
-          builder: (BuildContext context, setstateDialog) => AlertDialog(
-            title: const Text("Urutkan Berdasarkan:"),
-            content: SizedBox(
-              width: 350,
-              height: 400,
+          builder: (BuildContext context, setstateDialog) {
+            final size = MediaQuery.of(context).size;
+            final colorScheme = Theme.of(context).colorScheme;
+
+            final columns = widget.columns
+                .where(
+                  (column) =>
+                      column.canSort && searchSortText.isEmpty ||
+                      column.humanizeName.insensitiveContains(searchSortText),
+                )
+                .toList();
+            return Container(
+              height: size.height / 3 * 2,
+              color: colorScheme.tertiaryContainer,
               child: Column(
                 spacing: 15,
                 mainAxisSize: .min,
                 children: [
-                  TextField(
-                    decoration: InputDecoration(hintText: 'Cari'),
-                    onChanged: (val) => setstateDialog(() {
-                      searchSortText = val;
-                    }),
+                  Container(
+                    width: size.width,
+                    decoration: BoxDecoration(
+                      border: BoxBorder.symmetric(
+                        horizontal: BorderSide(color: colorScheme.outline),
+                      ),
+                      color: colorScheme.secondaryContainer,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                      child: Row(
+                        mainAxisAlignment: .spaceBetween,
+                        children: [
+                          Text(
+                            "Urutkan Berdasarkan",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: colorScheme.onSecondaryContainer,
+                            ),
+                            overflow: .clip,
+                          ),
+                          IconButton(
+                            onPressed: () => navigator.pop(false),
+                            icon: Icon(Icons.close),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: TextField(
+                      decoration: InputDecoration(hintText: 'Cari'),
+                      onChanged: (val) => setstateDialog(() {
+                        searchSortText = val;
+                      }),
+                    ),
                   ),
                   Expanded(
                     child: ListView.separated(
                       shrinkWrap: true,
                       primary: true,
                       itemCount: columns.length,
-                      separatorBuilder: (context, index) => SizedBox(height: 3),
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      separatorBuilder: (context, index) =>
+                          SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final column = columns[index];
-                        return Card(
-                          borderOnForeground: false,
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(width: 1, color: Colors.grey),
+                        return DecoratedBox(
+                          decoration: BoxDecoration(
                             borderRadius: BorderRadius.all(Radius.circular(6)),
+                            border: Border.fromBorderSide(
+                              BorderSide(width: 1, color: colorScheme.outline),
+                            ),
                           ),
                           child: ListTile(
                             dense: true,
+                            textColor: colorScheme.onSecondaryContainer,
                             subtitle: Text(
                               column.humanizeName,
                               overflow: .fade,
-                              style: TextStyle(fontSize: 16),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: colorScheme.onTertiaryContainer,
+                              ),
                             ),
                             onTap: () {
                               setstateDialog(() {
@@ -227,40 +272,50 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                       },
                     ),
                   ),
+                  Container(
+                    width: size.width,
+                    decoration: BoxDecoration(
+                      border: BoxBorder.symmetric(
+                        horizontal: BorderSide(color: colorScheme.outline),
+                      ),
+                      color: colorScheme.secondaryContainer,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: Wrap(
+                        runSpacing: 10.0,
+                        spacing: 10,
+                        alignment: .spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                            child: const Text("Submit"),
+                            onPressed: () {
+                              controller.sorts = sorts.values.toList();
+                              navigator.pop(true);
+                            },
+                          ),
+                          ElevatedButton(
+                            child: const Text("Reset"),
+                            onPressed: () {
+                              setstateDialog(() {
+                                sorts.clear();
+                              });
+                            },
+                          ),
+                          ElevatedButton(
+                            child: const Text("Kembali"),
+                            onPressed: () {
+                              navigator.pop(false);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
-
-            actions: [
-              ElevatedButton(
-                child: const Text("Submit"),
-                onPressed: () {
-                  controller.sorts = sorts.values.toList();
-                  navigator.pop(true);
-                },
-              ),
-              ElevatedButton(
-                child: const Text("Reset"),
-                onPressed: () {
-                  setstateDialog(() {
-                    sorts.clear();
-                  });
-                },
-              ),
-              ElevatedButton(
-                child: const Text("Kembali"),
-                onPressed: () {
-                  navigator.pop(false);
-                },
-              ),
-            ],
-            elevation: 5,
-            actionsAlignment: .spaceAround,
-            actionsPadding: EdgeInsets.only(bottom: 20, left: 10, right: 10),
-            actionsOverflowAlignment: .end,
-            actionsOverflowButtonSpacing: 5,
-            actionsOverflowDirection: .down,
-          ),
+            );
+          },
         );
       },
     ).then((result) {
