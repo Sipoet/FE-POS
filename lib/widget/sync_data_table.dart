@@ -174,7 +174,7 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
         stateManager.setShowColumnFilter(widget.showFilter);
         stateManager.setShowColumnFooter(widget.showSummary);
         setState(() {
-          stateManager.columnFooterHeight = 150.0;
+          stateManager.columnFooterHeight = TrinaTableDecorator.summaryHeight;
         });
         controller.trinaController = stateManager;
         if (!isLoaded && widget.onLoaded != null) {

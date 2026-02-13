@@ -66,6 +66,10 @@ abstract class Model with ChangeNotifier {
         );
   }
 
+  int compareTo(Model b) {
+    return modelValue.compareTo(b.modelValue);
+  }
+
   Map<String, dynamic> asMap() {
     Map<String, dynamic> value = toMap();
     if (createdAt != null) {

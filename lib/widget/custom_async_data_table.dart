@@ -323,7 +323,7 @@ class _CustomAsyncDataTableState<T extends Model>
         final source = event.stateManager;
         source.setShowColumnFilter(widget.showFilter);
         source.setShowColumnFooter(widget.showSummary);
-        source.columnFooterHeight = 130.0;
+        source.columnFooterHeight = TrinaTableDecorator.summaryHeight;
         source.eventManager!.listener((event) {
           if (event is TrinaGridChangeColumnFilterEvent) {
             final columType = event.column.type;

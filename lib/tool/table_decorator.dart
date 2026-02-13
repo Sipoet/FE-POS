@@ -21,6 +21,7 @@ mixin TrinaTableDecorator<T extends Model>
   final String _formatNumber = '#,###.#';
   final String _locale = 'id_ID';
   late final Server server;
+  static const double summaryHeight = 100;
   TrinaColumnType _parseColumnType(
     TableColumn tableColumn, {
     List<Enum>? listEnumValues,

@@ -143,59 +143,120 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
     );
   }
 
+  final borderRadius = BorderRadius.only(
+    topLeft: Radius.circular(15),
+    topRight: Radius.circular(15),
+  );
   void openSortDialog() {
-    showDialog<bool>(
+    String searchSortText = '';
+    final colorScheme = Theme.of(context).colorScheme;
+    showModalBottomSheet<bool>(
       context: context,
+      isScrollControlled: true,
+      enableDrag: true,
+      scrollControlDisabledMaxHeightRatio: 600,
+      shape: RoundedRectangleBorder(
+        borderRadius: borderRadius,
+        side: BorderSide(color: colorScheme.outline),
+      ),
+      backgroundColor: colorScheme.tertiaryContainer,
       builder: (BuildContext context) {
         final navigator = Navigator.of(context);
         Map<String, SortData> sorts = {};
         for (final sort in controller.sorts) {
           sorts[sort.key] = sort;
         }
-        String searchSortText = '';
-        final columns = widget.columns
-            .where(
-              (column) =>
-                  column.canSort && searchSortText.isEmpty ||
-                  column.humanizeName.insensitiveContains(searchSortText),
-            )
-            .toList();
         return StatefulBuilder(
-          builder: (BuildContext context, setstateDialog) => AlertDialog(
-            title: const Text("Urutkan Berdasarkan:"),
-            content: SizedBox(
-              width: 350,
-              height: 400,
+          builder: (BuildContext context, setstateDialog) {
+            final size = MediaQuery.of(context).size;
+            final columns = widget.columns
+                .where(
+                  (column) =>
+                      column.canSort && searchSortText.isEmpty ||
+                      column.humanizeName.insensitiveContains(searchSortText),
+                )
+                .toList();
+            return Container(
+              height: size.height / 3 * 2,
               child: Column(
                 spacing: 15,
                 mainAxisSize: .min,
                 children: [
-                  TextField(
-                    decoration: InputDecoration(hintText: 'Cari'),
-                    onChanged: (val) => setstateDialog(() {
-                      searchSortText = val;
-                    }),
+                  Container(
+                    width: size.width,
+                    decoration: BoxDecoration(
+                      border: BoxBorder.symmetric(
+                        horizontal: BorderSide(color: colorScheme.outline),
+                      ),
+                      color: colorScheme.secondaryContainer,
+                      borderRadius: borderRadius,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                      child: Row(
+                        mainAxisAlignment: .spaceBetween,
+                        children: [
+                          Text(
+                            "Urutkan Berdasarkan",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: colorScheme.onSecondaryContainer,
+                            ),
+                            overflow: .clip,
+                          ),
+                          IconButton(
+                            onPressed: () => navigator.pop(false),
+                            icon: Icon(
+                              Icons.close,
+                              color: colorScheme.onSecondaryContainer,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: TextField(
+                      decoration: InputDecoration(hintText: 'Cari'),
+                      onChanged: (val) => setstateDialog(() {
+                        searchSortText = val;
+                      }),
+                    ),
                   ),
                   Expanded(
                     child: ListView.separated(
                       shrinkWrap: true,
                       primary: true,
                       itemCount: columns.length,
-                      separatorBuilder: (context, index) => SizedBox(height: 3),
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      separatorBuilder: (context, index) =>
+                          SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final column = columns[index];
-                        return Card(
-                          borderOnForeground: false,
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(width: 1, color: Colors.grey),
-                            borderRadius: BorderRadius.all(Radius.circular(6)),
-                          ),
+                        return Material(
+                          color: colorScheme.tertiaryContainer,
                           child: ListTile(
                             dense: true,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(8),
+                              ),
+                              side: BorderSide(
+                                width: 1,
+                                color: colorScheme.outline,
+                              ),
+                            ),
+                            textColor: colorScheme.onSecondaryContainer,
+                            tileColor: colorScheme.secondaryContainer,
                             subtitle: Text(
                               column.humanizeName,
                               overflow: .fade,
-                              style: TextStyle(fontSize: 16),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: colorScheme.onSecondaryContainer,
+                              ),
                             ),
                             onTap: () {
                               setstateDialog(() {
@@ -217,50 +278,63 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                             trailing: sorts[column.name] == null
                                 ? Icon(Icons.unfold_more)
                                 : sorts[column.name]!.isAscending
-                                ? Icon(Icons.arrow_drop_up, color: Colors.green)
+                                ? Icon(
+                                    Icons.keyboard_arrow_up_sharp,
+                                    color: colorScheme.primary,
+                                  )
                                 : Icon(
-                                    Icons.arrow_drop_down,
-                                    color: Colors.green,
+                                    Icons.keyboard_arrow_down_sharp,
+                                    color: colorScheme.primary,
                                   ),
                           ),
                         );
                       },
                     ),
                   ),
+                  Container(
+                    width: size.width,
+                    decoration: BoxDecoration(
+                      border: BoxBorder.symmetric(
+                        horizontal: BorderSide(color: colorScheme.outline),
+                      ),
+                      color: colorScheme.secondaryContainer,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: Wrap(
+                        runSpacing: 10.0,
+                        spacing: 10,
+                        alignment: .spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                            child: const Text("Submit"),
+                            onPressed: () {
+                              controller.sorts = sorts.values.toList();
+                              navigator.pop(true);
+                            },
+                          ),
+                          ElevatedButton(
+                            child: const Text("Reset"),
+                            onPressed: () {
+                              setstateDialog(() {
+                                sorts.clear();
+                              });
+                            },
+                          ),
+                          ElevatedButton(
+                            child: const Text("Kembali"),
+                            onPressed: () {
+                              navigator.pop(false);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
-
-            actions: [
-              ElevatedButton(
-                child: const Text("Submit"),
-                onPressed: () {
-                  controller.sorts = sorts.values.toList();
-                  navigator.pop(true);
-                },
-              ),
-              ElevatedButton(
-                child: const Text("Reset"),
-                onPressed: () {
-                  setstateDialog(() {
-                    sorts.clear();
-                  });
-                },
-              ),
-              ElevatedButton(
-                child: const Text("Kembali"),
-                onPressed: () {
-                  navigator.pop(false);
-                },
-              ),
-            ],
-            elevation: 5,
-            actionsAlignment: .spaceAround,
-            actionsPadding: EdgeInsets.only(bottom: 20, left: 10, right: 10),
-            actionsOverflowAlignment: .end,
-            actionsOverflowButtonSpacing: 5,
-            actionsOverflowDirection: .down,
-          ),
+            );
+          },
         );
       },
     ).then((result) {
