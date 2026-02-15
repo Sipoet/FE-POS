@@ -176,7 +176,7 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                       column.humanizeName.insensitiveContains(searchSortText),
                 )
                 .toList();
-            return Container(
+            return SizedBox(
               height: size.height / 3 * 2,
               child: Column(
                 spacing: 15,

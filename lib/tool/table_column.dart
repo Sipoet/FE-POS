@@ -40,9 +40,9 @@ mixin ColumnTypeFinder {
       case 'bool':
         return BooleanTableColumnType();
       case 'date':
-        return DateTableColumnType(DateRangeType());
+        return DateTableColumnType<Date>(DateRangeType());
       case 'datetime':
-        return DateTableColumnType(DateTimeRangeType());
+        return DateTableColumnType<DateTime>(DateTimeRangeType());
       case 'time':
         return TimeTableColumnType();
       case 'money':
@@ -381,7 +381,11 @@ class DateTableColumnType<T extends DateTime> extends TableColumnType<T> {
     required TableColumn column,
     TabManager? tabManager,
   }) {
-    return Text(value?.toLocal().format() ?? '', textAlign: .right);
+    if (value is Date) {
+      return Text(value.format(), textAlign: .right);
+    } else {
+      return Text(value?.toLocal().format() ?? '', textAlign: .right);
+    }
   }
 
   @override

@@ -66,7 +66,7 @@ class _TableFilterFormState extends State<TableFilterForm> {
             .map<Widget>((column) => formFilter(column))
             .toList();
         final navigator = Navigator.of(context);
-        return Container(
+        return SizedBox(
           height: size.height * 2 / 3,
           child: Column(
             children: [

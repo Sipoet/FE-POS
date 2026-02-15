@@ -141,7 +141,7 @@ class _CustomerGroupDiscountFormPageState
                   Visibility(
                     visible: setting.canShow(
                       'customerGroupDiscount',
-                      'customer_group_code',
+                      'customer_group',
                     ),
                     child: AsyncDropdown<CustomerGroup>(
                       allowClear: false,

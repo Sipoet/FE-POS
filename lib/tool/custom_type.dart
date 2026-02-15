@@ -145,6 +145,9 @@ class Date extends DateTime {
     return toIso8601String();
   }
 
+  @override
+  Date toLocal() => throw UnimplementedError();
+
   Date beginningOfWeek() {
     int dayT = weekday;
     return subtract(Duration(days: dayT - 1));
