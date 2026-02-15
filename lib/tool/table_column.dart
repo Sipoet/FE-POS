@@ -377,14 +377,19 @@ class DateTableColumnType<T extends DateTime> extends TableColumnType<T> {
 
   @override
   Widget renderCell({
-    required T? value,
+    Object? value,
     required TableColumn column,
     TabManager? tabManager,
   }) {
+    if (value == null) {
+      return SizedBox();
+    }
     if (value is Date) {
       return Text(value.format(), textAlign: .right);
+    } else if (value is DateTime) {
+      return Text(value.toLocal().format(), textAlign: .right);
     } else {
-      return Text(value?.toLocal().format() ?? '', textAlign: .right);
+      return Text(value.toString(), textAlign: .right);
     }
   }
 
@@ -1037,11 +1042,15 @@ class PercentageTableColumnType extends TableColumnType<Percentage>
 
   @override
   Widget renderCell({
-    Percentage? value,
+    Object? value,
     required TableColumn column,
     TabManager? tabManager,
   }) {
-    return Text(value?.format() ?? '', textAlign: .right);
+    if (value is Percentage) {
+      return Text(value.format(), textAlign: .right);
+    } else {
+      return SizedBox();
+    }
   }
 
   @override
