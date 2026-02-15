@@ -110,8 +110,8 @@ class DateRangeType implements RangeType<Date> {
         return null;
       }
       return DateTimeRange<Date>(
-        start: onValue.start.toLocal().toDate(),
-        end: onValue.end.toLocal().toDate(),
+        start: onValue.start.toDate(),
+        end: onValue.end.toDate(),
       );
     });
   }

@@ -146,7 +146,7 @@ class Date extends DateTime {
   }
 
   @override
-  Date toLocal() => throw UnimplementedError();
+  Date toLocal() => this;
 
   Date beginningOfWeek() {
     int dayT = weekday;
