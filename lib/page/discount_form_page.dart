@@ -364,6 +364,9 @@ class _DiscountFormPageState extends State<DiscountFormPage>
               _codeController.text = discount.code;
             });
             _focusNode.requestFocus();
+            Future.delayed(Durations.extralong1, () {
+              setState(() {});
+            });
           }
         }, onError: (error) => defaultErrorResponse(error: error))
         .whenComplete(() => hideLoadingPopup());
@@ -844,8 +847,8 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                   child: DateRangeFormField(
                                     rangeType: DateTimeRangeType(),
                                     initialValue: DateTimeRange(
-                                      start: discount.startTime,
-                                      end: discount.endTime,
+                                      start: discount.startTime.toLocal(),
+                                      end: discount.endTime.toLocal(),
                                     ),
                                     onChanged: ((DateTimeRange? range) {
                                       if (range == null) {

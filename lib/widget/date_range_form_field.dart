@@ -58,8 +58,8 @@ class DateTimeRangeType implements RangeType<DateTime> {
           locale: 'id',
         ),
       ),
-      startDate: initialValue?.start,
-      endDate: initialValue?.end,
+      startDate: initialValue?.start.toLocal(),
+      endDate: initialValue?.end.toLocal(),
       showDragHandle: false,
       enableDrag: false,
       pickerType: DateTimePickerType.datetime,
@@ -92,7 +92,7 @@ class DateRangeType implements RangeType<Date> {
     required BuildContext context,
     required ColorScheme colorScheme,
     String? helpText,
-    DateTimeRange? initialValue,
+    DateTimeRange<Date>? initialValue,
   }) {
     return showDateRangePicker(
       context: context,
