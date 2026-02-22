@@ -346,8 +346,13 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     return result;
   }
 
+  bool showFilter = false;
   void fetchDiscount() {
     showLoadingPopup();
+    setState(() {
+      showFilter = false;
+    });
+
     server
         .get(
           '/discounts/${discount.id}',
@@ -362,11 +367,9 @@ class _DiscountFormPageState extends State<DiscountFormPage>
             setState(() {
               discount.setFromJson(json, included: response.data['included']);
               _codeController.text = discount.code;
+              showFilter = true;
             });
             _focusNode.requestFocus();
-            Future.delayed(Durations.extralong1, () {
-              setState(() {});
-            });
           }
         }, onError: (error) => defaultErrorResponse(error: error))
         .whenComplete(() => hideLoadingPopup());
@@ -612,226 +615,232 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                       Card(
                         child: Padding(
                           padding: const EdgeInsets.all(10.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(
-                                width: 400,
-                                child: AsyncDropdownMultiple<ItemType>(
-                                  selecteds: discount.itemTypes,
-                                  key: const ValueKey('itemTypeSelect'),
-                                  attributeKey: 'jenis',
-                                  label: const Text(
-                                    'Jenis/Departemen :',
-                                    style: labelStyle,
+                          child: Visibility(
+                            visible: showFilter,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: 400,
+                                  child: AsyncDropdownMultiple<ItemType>(
+                                    selecteds: discount.itemTypes,
+                                    key: const ValueKey('itemTypeSelect'),
+                                    attributeKey: 'jenis',
+                                    label: const Text(
+                                      'Jenis/Departemen :',
+                                      style: labelStyle,
+                                    ),
+                                    textOnSelected: (itemType) => itemType.name,
+                                    textOnSearch: (itemType) =>
+                                        '${itemType.name} - ${itemType.description}',
+                                    modelClass: ItemTypeClass(),
+                                    onChanged: (option) {
+                                      discount.itemTypes = option;
+                                    },
+                                    validator: (value) {
+                                      if (discount.items.isEmpty &&
+                                          discount.itemTypes.isEmpty &&
+                                          discount.brands.isEmpty &&
+                                          discount.suppliers.isEmpty) {
+                                        return 'salah satu filter harus diisi';
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  textOnSelected: (itemType) => itemType.name,
-                                  textOnSearch: (itemType) =>
-                                      '${itemType.name} - ${itemType.description}',
-                                  modelClass: ItemTypeClass(),
-                                  onChanged: (option) {
-                                    discount.itemTypes = option;
-                                  },
-                                  validator: (value) {
-                                    if (discount.items.isEmpty &&
-                                        discount.itemTypes.isEmpty &&
-                                        discount.brands.isEmpty &&
-                                        discount.suppliers.isEmpty) {
-                                      return 'salah satu filter harus diisi';
-                                    }
-                                    return null;
-                                  },
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                width: 400,
-                                child: AsyncDropdownMultiple<Supplier>(
-                                  key: const ValueKey('supplierSelect'),
-                                  selecteds: discount.suppliers,
-                                  attributeKey: 'kode',
-                                  textOnSelected: (supplier) => supplier.code,
-                                  textOnSearch: (supplier) =>
-                                      '${supplier.code} - ${supplier.name}',
-                                  modelClass: SupplierClass(),
-                                  label: const Text(
-                                    'Supplier:',
-                                    style: labelStyle,
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: 400,
+                                  child: AsyncDropdownMultiple<Supplier>(
+                                    key: const ValueKey('supplierSelect'),
+                                    selecteds: discount.suppliers,
+                                    attributeKey: 'kode',
+                                    textOnSelected: (supplier) => supplier.code,
+                                    textOnSearch: (supplier) =>
+                                        '${supplier.code} - ${supplier.name}',
+                                    modelClass: SupplierClass(),
+                                    label: const Text(
+                                      'Supplier:',
+                                      style: labelStyle,
+                                    ),
+                                    onChanged: (option) {
+                                      discount.suppliers = option;
+                                    },
+                                    validator: (value) {
+                                      if (discount.items.isEmpty &&
+                                          discount.itemTypes.isEmpty &&
+                                          discount.brands.isEmpty &&
+                                          discount.suppliers.isEmpty) {
+                                        return 'salah satu filter harus diisi';
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  onChanged: (option) {
-                                    discount.suppliers = option;
-                                  },
-                                  validator: (value) {
-                                    if (discount.items.isEmpty &&
-                                        discount.itemTypes.isEmpty &&
-                                        discount.brands.isEmpty &&
-                                        discount.suppliers.isEmpty) {
-                                      return 'salah satu filter harus diisi';
-                                    }
-                                    return null;
-                                  },
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                width: 400,
-                                child: AsyncDropdownMultiple<Brand>(
-                                  key: const ValueKey('brandSelect'),
-                                  selecteds: discount.brands,
-                                  attributeKey: 'merek',
-                                  textOnSearch: (brand) => brand.name,
-                                  modelClass: BrandClass(),
-                                  label: const Text(
-                                    'Merek:',
-                                    style: labelStyle,
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: 400,
+                                  child: AsyncDropdownMultiple<Brand>(
+                                    key: const ValueKey('brandSelect'),
+                                    selecteds: discount.brands,
+                                    attributeKey: 'merek',
+                                    textOnSearch: (brand) => brand.name,
+                                    modelClass: BrandClass(),
+                                    label: const Text(
+                                      'Merek:',
+                                      style: labelStyle,
+                                    ),
+                                    onChanged: (option) {
+                                      discount.brands = option;
+                                    },
+                                    validator: (value) {
+                                      if (discount.items.isEmpty &&
+                                          discount.itemTypes.isEmpty &&
+                                          discount.brands.isEmpty &&
+                                          discount.suppliers.isEmpty) {
+                                        return 'salah satu filter harus diisi';
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  onChanged: (option) {
-                                    discount.brands = option;
-                                  },
-                                  validator: (value) {
-                                    if (discount.items.isEmpty &&
-                                        discount.itemTypes.isEmpty &&
-                                        discount.brands.isEmpty &&
-                                        discount.suppliers.isEmpty) {
-                                      return 'salah satu filter harus diisi';
-                                    }
-                                    return null;
-                                  },
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                width: 400,
-                                child: AsyncDropdownMultiple<Item>(
-                                  key: const ValueKey('itemSelect'),
-                                  selecteds: discount.items,
-                                  attributeKey: 'namaitem',
-                                  textOnSelected: (item) => item.code,
-                                  textOnSearch: (item) =>
-                                      "${item.code} - ${item.name}",
-                                  modelClass: ItemClass(),
-                                  label: const Text('Item:', style: labelStyle),
-                                  onChanged: (option) {
-                                    discount.items = option;
-                                  },
-                                  validator: (value) {
-                                    if (discount.items.isEmpty &&
-                                        discount.itemTypes.isEmpty &&
-                                        discount.brands.isEmpty &&
-                                        discount.suppliers.isEmpty) {
-                                      return 'salah satu filter harus diisi';
-                                    }
-                                    return null;
-                                  },
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: 400,
+                                  child: AsyncDropdownMultiple<Item>(
+                                    key: const ValueKey('itemSelect'),
+                                    selecteds: discount.items,
+                                    attributeKey: 'namaitem',
+                                    textOnSelected: (item) => item.code,
+                                    textOnSearch: (item) =>
+                                        "${item.code} - ${item.name}",
+                                    modelClass: ItemClass(),
+                                    label: const Text(
+                                      'Item:',
+                                      style: labelStyle,
+                                    ),
+                                    onChanged: (option) {
+                                      discount.items = option;
+                                    },
+                                    validator: (value) {
+                                      if (discount.items.isEmpty &&
+                                          discount.itemTypes.isEmpty &&
+                                          discount.brands.isEmpty &&
+                                          discount.suppliers.isEmpty) {
+                                        return 'salah satu filter harus diisi';
+                                      }
+                                      return null;
+                                    },
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                width: 400,
-                                child: AsyncDropdownMultiple<ItemType>(
-                                  key: const ValueKey(
-                                    'blacklistItemTypeSelect',
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: 400,
+                                  child: AsyncDropdownMultiple<ItemType>(
+                                    key: const ValueKey(
+                                      'blacklistItemTypeSelect',
+                                    ),
+                                    selecteds: discount.blacklistItemTypes,
+                                    attributeKey: 'jenis',
+                                    textOnSelected: (itemType) => itemType.name,
+                                    textOnSearch: (itemType) =>
+                                        '${itemType.name} - ${itemType.description}',
+                                    modelClass: ItemTypeClass(),
+                                    label: const Text(
+                                      'Blacklist Jenis/Departemen :',
+                                      style: labelStyle,
+                                    ),
+                                    onChanged: (option) {
+                                      discount.blacklistItemTypes = option;
+                                    },
                                   ),
-                                  selecteds: discount.blacklistItemTypes,
-                                  attributeKey: 'jenis',
-                                  textOnSelected: (itemType) => itemType.name,
-                                  textOnSearch: (itemType) =>
-                                      '${itemType.name} - ${itemType.description}',
-                                  modelClass: ItemTypeClass(),
-                                  label: const Text(
-                                    'Blacklist Jenis/Departemen :',
-                                    style: labelStyle,
-                                  ),
-                                  onChanged: (option) {
-                                    discount.blacklistItemTypes = option;
-                                  },
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                width: 400,
-                                child: AsyncDropdownMultiple<Supplier>(
-                                  key: const ValueKey(
-                                    'blacklistSupplierSelect',
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: 400,
+                                  child: AsyncDropdownMultiple<Supplier>(
+                                    key: const ValueKey(
+                                      'blacklistSupplierSelect',
+                                    ),
+                                    selecteds: discount.blacklistSuppliers,
+                                    attributeKey: 'kode',
+                                    textOnSelected: (supplier) => supplier.code,
+                                    textOnSearch: (supplier) =>
+                                        '${supplier.code} - ${supplier.name}',
+                                    modelClass: SupplierClass(),
+                                    label: const Text(
+                                      'Blacklist Supplier:',
+                                      style: labelStyle,
+                                    ),
+                                    onChanged: (option) {
+                                      discount.blacklistSuppliers = option;
+                                    },
                                   ),
-                                  selecteds: discount.blacklistSuppliers,
-                                  attributeKey: 'kode',
-                                  textOnSelected: (supplier) => supplier.code,
-                                  textOnSearch: (supplier) =>
-                                      '${supplier.code} - ${supplier.name}',
-                                  modelClass: SupplierClass(),
-                                  label: const Text(
-                                    'Blacklist Supplier:',
-                                    style: labelStyle,
-                                  ),
-                                  onChanged: (option) {
-                                    discount.blacklistSuppliers = option;
-                                  },
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                width: 400,
-                                child: AsyncDropdownMultiple<Brand>(
-                                  key: const ValueKey('blacklistBrandSelect'),
-                                  selecteds: discount.blacklistBrands,
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: 400,
+                                  child: AsyncDropdownMultiple<Brand>(
+                                    key: const ValueKey('blacklistBrandSelect'),
+                                    selecteds: discount.blacklistBrands,
 
-                                  attributeKey: 'merek',
-                                  textOnSearch: (brand) => brand.name,
-                                  modelClass: BrandClass(),
-                                  label: const Text(
-                                    'Blacklist Merek:',
-                                    style: labelStyle,
+                                    attributeKey: 'merek',
+                                    textOnSearch: (brand) => brand.name,
+                                    modelClass: BrandClass(),
+                                    label: const Text(
+                                      'Blacklist Merek:',
+                                      style: labelStyle,
+                                    ),
+                                    onChanged: (option) {
+                                      discount.blacklistBrands = option;
+                                    },
                                   ),
-                                  onChanged: (option) {
-                                    discount.blacklistBrands = option;
-                                  },
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                width: 400,
-                                child: AsyncDropdownMultiple<Item>(
-                                  key: const ValueKey('blacklistItemSelect'),
-                                  selecteds: discount.blacklistItems,
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: 400,
+                                  child: AsyncDropdownMultiple<Item>(
+                                    key: const ValueKey('blacklistItemSelect'),
+                                    selecteds: discount.blacklistItems,
 
-                                  attributeKey: 'namaitem',
-                                  textOnSelected: (item) => item.code,
-                                  textOnSearch: (item) =>
-                                      "${item.code} - ${item.name}",
-                                  modelClass: ItemClass(),
-                                  label: const Text(
-                                    'Blacklist Item:',
-                                    style: labelStyle,
+                                    attributeKey: 'namaitem',
+                                    textOnSelected: (item) => item.code,
+                                    textOnSearch: (item) =>
+                                        "${item.code} - ${item.name}",
+                                    modelClass: ItemClass(),
+                                    label: const Text(
+                                      'Blacklist Item:',
+                                      style: labelStyle,
+                                    ),
+                                    onChanged: (option) {
+                                      discount.blacklistItems = option;
+                                    },
                                   ),
-                                  onChanged: (option) {
-                                    discount.blacklistItems = option;
-                                  },
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                width: 400,
-                                child: AsyncDropdown<CustomerGroup>(
-                                  key: const ValueKey('customerGroupCode'),
-                                  selected: discount.customerGroup,
-                                  attributeKey: 'grup',
-                                  textOnSelected: (customerGroup) =>
-                                      customerGroup.code,
-                                  textOnSearch: (customerGroup) =>
-                                      "${customerGroup.code} - ${customerGroup.name}",
-                                  modelClass: CustomerGroupClass(),
-                                  label: const Text(
-                                    'Grup Pelanggan:',
-                                    style: labelStyle,
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: 400,
+                                  child: AsyncDropdown<CustomerGroup>(
+                                    key: const ValueKey('customerGroupCode'),
+                                    selected: discount.customerGroup,
+                                    attributeKey: 'grup',
+                                    textOnSelected: (customerGroup) =>
+                                        customerGroup.code,
+                                    textOnSearch: (customerGroup) =>
+                                        "${customerGroup.code} - ${customerGroup.name}",
+                                    modelClass: CustomerGroupClass(),
+                                    label: const Text(
+                                      'Grup Pelanggan:',
+                                      style: labelStyle,
+                                    ),
+                                    onChanged: (option) {
+                                      discount.customerGroup = option;
+                                    },
                                   ),
-                                  onChanged: (option) {
-                                    discount.customerGroup = option;
-                                  },
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
