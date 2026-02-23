@@ -8,10 +8,10 @@ import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
-import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:fe_pos/widget/money_form_field.dart';
 import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/percentage_form_field.dart';
+import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/model/discount.dart';
@@ -42,7 +42,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   late final TextEditingController _discount4Controller;
   late final TextEditingController _codeController;
   late final TabController _tabController;
-  TableController? _source;
+  SyncTableController? _source;
   late final Server server;
   dynamic discount1;
   Percentage? discount2;
@@ -78,6 +78,11 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   @override
   void initState() {
     _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging && _tabController.index == 2) {
+        fetchItem();
+      }
+    });
     final setting = context.read<Setting>();
     setting.tableColumn('itemReport').forEach((TableColumn tableColumn) {
       if (_whitelistColumns.contains(tableColumn.name)) {
@@ -131,7 +136,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         },
       ),
       TableColumn(
-        clientWidth: 180,
+        clientWidth: 220,
         name: 'profit_after_discount',
         type: MoneyTableColumnType(),
         humanizeName: 'Jumlah Profit Setelah Diskon',
@@ -156,10 +161,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
         },
       ),
       TableColumn(
-        clientWidth: 180,
+        clientWidth: 220,
         name: 'profit_margin_after_discount',
         type: PercentageTableColumnType(),
-        humanizeName: 'Profit Setelah Diskon(%)',
+        humanizeName: 'Margin Setelah Diskon(%)',
         getValue: (model) {
           if (model is ItemReport) {
             Money sellPrice = model.sellPrice;
@@ -197,118 +202,60 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     );
     flash = Flash();
     _focusNode = FocusNode();
+    if (discount.isNewRecord) {
+      showFilter = true;
+    }
     super.initState();
     Future.delayed(Duration.zero, () {
-      if (discount.isNewRecord) {
-        setState(() {
-          showFilter = true;
-        });
-        if (_focusNode.canRequestFocus) {
-          _focusNode.requestFocus();
-        }
+      if (discount.isNewRecord && _focusNode.canRequestFocus) {
+        _focusNode.requestFocus();
       } else {
         fetchDiscount();
       }
     });
   }
 
-  Future<DataTableResponse<ItemReport>> fetchItem(QueryRequest request) {
+  void fetchItem() {
+    if (discount.discountFilters.isEmpty) {
+      return;
+    }
     _source?.setShowLoading(true);
-    setState(() {
-      discount1 = discount.discount1;
-      discount2 = discount.discount2;
-      discount3 = discount.discount3;
-      discount4 = discount.discount4;
-    });
-
-    if (discount.items.isNotEmpty) {
-      request.filters.add(
-        ComparisonFilterData(
-          key: 'item_code',
-          value: discount.items.map((line) => line.code).toList().join(','),
-        ),
-      );
-    }
-    if (discount.suppliers.isNotEmpty) {
-      request.filters.add(
-        ComparisonFilterData(
-          key: 'supplier_code',
-          value: discount.suppliers.map((line) => line.code).toList().join(','),
-        ),
-      );
-    }
-    if (discount.itemTypes.isNotEmpty) {
-      request.filters.add(
-        ComparisonFilterData(
-          key: 'item_type_name',
-          value: discount.itemTypes.map((line) => line.name).toList().join(','),
-        ),
-      );
-    }
-    if (discount.brands.isNotEmpty) {
-      request.filters.add(
-        ComparisonFilterData(
-          key: 'brand_name',
-          value: discount.brands.map((line) => line.name).toList().join(','),
-        ),
-      );
-    }
-    if (discount.blacklistItems.isNotEmpty) {
-      request.filters.add(
-        ComparisonFilterData(
-          key: 'item_code',
-          operator: QueryOperator.not,
-          value: discount.blacklistItems
-              .map((line) => line.code)
-              .toList()
-              .join(','),
-        ),
-      );
-    }
-    if (discount.blacklistSuppliers.isNotEmpty) {
-      request.filters.add(
-        ComparisonFilterData(
-          key: 'supplier_code',
-          operator: QueryOperator.not,
-          value: discount.blacklistSuppliers
-              .map((line) => line.code)
-              .toList()
-              .join(','),
-        ),
-      );
-    }
-    if (discount.blacklistItemTypes.isNotEmpty) {
-      request.filters.add(
-        ComparisonFilterData(
-          key: 'item_type_name',
-          operator: QueryOperator.not,
-          value: discount.blacklistItemTypes
-              .map((line) => line.name)
-              .toList()
-              .join(','),
-        ),
-      );
-    }
-    if (discount.blacklistBrands.isNotEmpty) {
-      request.filters.add(
-        ComparisonFilterData(
-          key: 'brand_name',
-          operator: QueryOperator.not,
-          value: discount.blacklistItemTypes
-              .map((line) => line.name)
-              .toList()
-              .join(','),
-        ),
-      );
-    }
-    return ItemReportClass()
-        .finds(server, request)
+    Map body = {
+      'data': {
+        'type': 'discount',
+        'attributes': discount.toJson(),
+        'relationships': {
+          'discount_filters': {
+            'data': discount.discountFilters
+                .map<Map>(
+                  (discountItem) => {
+                    'id': discountItem.id,
+                    'type': 'discount_filter',
+                    'attributes': discountItem.toJson(),
+                  },
+                )
+                .toList(),
+          },
+        },
+      },
+    };
+    server
+        .post('discounts/affected_items', body: body)
         .then(
           (response) {
-            return DataTableResponse<ItemReport>(
-              models: response.models,
-              totalPage: response.metadata['total_pages'],
-            );
+            if (response.statusCode != 200) {
+              defaultErrorResponse(error: response);
+              return DataTableResponse<ItemReport>.empty();
+            }
+            final models = response.data['data']
+                .map<ItemReport>(
+                  (json) => ItemReportClass().fromJson(
+                    json,
+                    included: response.data['included'] ?? [],
+                  ),
+                )
+                .toList();
+            _source?.setModels(models);
           },
           onError: (error) {
             defaultErrorResponse(error: error);
@@ -319,7 +266,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   }
 
   void refreshTable() {
-    _source?.refreshTable();
+    fetchItem();
   }
 
   Percentage _marginOf(Money sellPrice, Money buyPrice) {
@@ -359,10 +306,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     server
         .get(
           '/discounts/${discount.id}',
-          queryParam: {
-            'include':
-                'discount_items,discount_suppliers,discount_item_types,discount_brands,discount_brands.brand,discount_item_types.item_type,discount_suppliers.supplier,discount_items.item,customer_group',
-          },
+          queryParam: {'include': 'discount_filters,customer_group'},
         )
         .then((response) {
           if (response.statusCode == 200) {
@@ -370,61 +314,31 @@ class _DiscountFormPageState extends State<DiscountFormPage>
             setState(() {
               discount.setFromJson(json, included: response.data['included']);
               _codeController.text = discount.code;
-              showFilter = true;
             });
             _focusNode.requestFocus();
           }
         }, onError: (error) => defaultErrorResponse(error: error))
-        .whenComplete(() => hideLoadingPopup());
+        .whenComplete(() {
+          hideLoadingPopup();
+          setState(() {
+            showFilter = true;
+          });
+        });
   }
 
   void _submit() async {
-    final server = context.read<Server>();
     Map body = {
       'data': {
         'type': 'discount',
         'attributes': discount.toJson(),
         'relationships': {
-          'discount_items': {
-            'data': discount.discountItems
+          'discount_filters': {
+            'data': discount.discountFilters
                 .map<Map>(
                   (discountItem) => {
                     'id': discountItem.id,
-                    'type': 'discount_item',
+                    'type': 'discount_filter',
                     'attributes': discountItem.toJson(),
-                  },
-                )
-                .toList(),
-          },
-          'discount_item_types': {
-            'data': discount.discountItemTypes
-                .map<Map>(
-                  (discountItemType) => {
-                    'id': discountItemType.id,
-                    'type': 'discount_item_type',
-                    'attributes': discountItemType.toJson(),
-                  },
-                )
-                .toList(),
-          },
-          'discount_suppliers': {
-            'data': discount.discountSuppliers
-                .map<Map>(
-                  (discountSupplier) => {
-                    'id': discountSupplier.id,
-                    'type': 'discount_supplier',
-                    'attributes': discountSupplier.toJson(),
-                  },
-                )
-                .toList(),
-          },
-          'discount_brands': {
-            'data': discount.discountBrands
-                .map<Map>(
-                  (discountBrand) => {
-                    'id': discountBrand.id,
-                    'type': 'discount_brand',
-                    'attributes': discountBrand.toJson(),
                   },
                 )
                 .toList(),
@@ -819,6 +733,25 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     onChanged: (option) {
                                       discount.blacklistItems = option;
                                     },
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: 400,
+                                  child: DateRangeFormField(
+                                    key: const ValueKey(
+                                      'dateRange_purchase_date',
+                                    ),
+                                    rangeType: DateRangeType(),
+                                    initialValue: discount.purchaseDateRange,
+                                    label: const Text(
+                                      'Purchase Date:',
+                                      style: labelStyle,
+                                    ),
+                                    onChanged: (option) {
+                                      discount.purchaseDateRange = option;
+                                    },
+                                    allowClear: true,
                                   ),
                                 ),
                                 const SizedBox(height: 10),
@@ -1236,10 +1169,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                               Expanded(
                                 child: SizedBox(
                                   height: bodyScreenHeight,
-                                  child: CustomAsyncDataTable<ItemReport>(
+                                  child: SyncDataTable<ItemReport>(
                                     columns: _columns,
                                     showFilter: true,
-                                    fetchData: (request) => fetchItem(request),
+                                    showSummary: true,
                                     fixedLeftColumns: 2,
                                     onLoaded: (stateManager) =>
                                         _source = stateManager,

@@ -244,13 +244,15 @@ class _DateRangeFormFieldState<T extends DateTime>
           helpText: widget.helpText,
         )
         .then((DateTimeRange<T>? range) {
-          setState(() {
-            _dateRange = range;
-            _controller.text = _daterangeFormat();
-            if (widget.onChanged != null) {
-              widget.onChanged!(_dateRange);
-            }
-          });
+          if (range != null) {
+            setState(() {
+              _dateRange = range;
+              _controller.text = _daterangeFormat();
+            });
+          }
+          if (widget.onChanged != null) {
+            widget.onChanged!(_dateRange);
+          }
         });
   }
 

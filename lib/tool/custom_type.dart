@@ -217,22 +217,25 @@ class Money {
   }
 
   static Money parse(value) {
-    return Money(double.parse(value.toString()));
+    if (value is double) {
+      return Money(value);
+    } else if (value is num) {
+      return Money(value.toDouble());
+    } else if (value is String) {
+      var val = double.parse(value);
+      return Money(val);
+    } else {
+      var val = double.parse(value.toString());
+      return Money(val);
+    }
   }
 
   static Money? tryParse(value) {
-    if (value is double) {
-      return Money(value);
-    } else if (value is int) {
-      return Money(value.toDouble());
-    } else if (value is String) {
-      var val = double.tryParse(value);
-      if (val == null) return null;
-      return Money(val);
-    } else if (value == null) {
+    try {
+      return parse(value);
+    } catch (e) {
       return null;
     }
-    return null;
   }
 
   String format({int? decimalDigits}) {
@@ -346,18 +349,28 @@ class Percentage {
     }
   }
 
-  static Percentage parse(String val) {
-    val = val.replaceAll(RegExp('%'), '');
-    return Percentage(double.parse(val));
+  static Percentage parse(dynamic val) {
+    if (val is String) {
+      final isContainPercent = val.contains('%');
+      val = val.replaceAll(RegExp('%'), '');
+      var parsed = double.parse(val);
+      parsed = isContainPercent ? parsed / 100 : parsed;
+      return Percentage(parsed);
+    } else if (val is double) {
+      return Percentage(val);
+    } else if (val is num) {
+      return Percentage(val.toDouble());
+    } else {
+      return Percentage(double.parse(val.toString()));
+    }
   }
 
-  static Percentage? tryParse(String val) {
-    final isContainPercent = val.contains('%');
-    val = val.replaceAll(RegExp('%'), '');
-    var parsed = double.tryParse(val);
-    if (parsed == null) return null;
-    parsed = isContainPercent ? parsed / 100 : parsed;
-    return Percentage(parsed);
+  static Percentage? tryParse(dynamic val) {
+    try {
+      return parse(val);
+    } catch (e) {
+      return null;
+    }
   }
 
   static Percentage? inputParse(String val) {

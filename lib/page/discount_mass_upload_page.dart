@@ -37,104 +37,90 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    var headerStyle =
-        const TextStyle(fontWeight: FontWeight.bold, fontSize: 16);
+    var headerStyle = const TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 16,
+    );
 
     return SingleChildScrollView(
-        child: Container(
-      alignment: Alignment.center,
-      margin: const EdgeInsets.all(10),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
+      child: Container(
+        alignment: Alignment.center,
+        margin: const EdgeInsets.all(10),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
                   onPressed: () {
                     pickFile();
                   },
-                  child: const Text('Pilih file')),
-              ElevatedButton(
-                child: const Text('Template Excel Mass Upload Diskon'),
-                onPressed: () => downloadMassUploadFile(),
-              ),
-            ],
-          ),
-          Visibility(
-            visible: _discounts.isNotEmpty,
-            child: SizedBox(
-              child: PaginatedDataTable(
-                showFirstLastButtons: true,
-                rowsPerPage: 10,
-                columns: [
-                  DataColumn(
-                    label: Text('Kode Diskon', style: headerStyle),
-                  ),
-                  DataColumn(
-                    label: Text('Kode Supplier', style: headerStyle),
-                  ),
-                  DataColumn(
-                    label: Text('Merek', style: headerStyle),
-                  ),
-                  DataColumn(
-                    label: Text('Jenis/Departemen', style: headerStyle),
-                  ),
-                  DataColumn(
-                    label: Text('Kode Item', style: headerStyle),
-                  ),
-                  DataColumn(
-                    label: Text('Tipe Kalkulasi', style: headerStyle),
-                  ),
-                  DataColumn(
-                    label: Text('Level', style: headerStyle),
-                  ),
-                  DataColumn(
-                    label: Text('Diskon1', style: headerStyle),
-                  ),
-                  DataColumn(
-                    label: Text('Diskon2', style: headerStyle),
-                  ),
-                  DataColumn(
-                    label: Text('Diskon3', style: headerStyle),
-                  ),
-                  DataColumn(
-                    label: Text('Diskon4', style: headerStyle),
-                  ),
-                  DataColumn(
-                    label: Text('Tanggal Mulai', style: headerStyle),
-                  ),
-                  DataColumn(
-                    label: Text('Tanggal Akhir', style: headerStyle),
-                  ),
-                  DataColumn(
-                    label: Text('Status', style: headerStyle),
-                  ),
-                ],
-                source: _source,
+                  child: const Text('Pilih file'),
+                ),
+                ElevatedButton(
+                  child: const Text('Template Excel Mass Upload Diskon'),
+                  onPressed: () => downloadMassUploadFile(),
+                ),
+              ],
+            ),
+            Visibility(
+              visible: _discounts.isNotEmpty,
+              child: SizedBox(
+                child: PaginatedDataTable(
+                  showFirstLastButtons: true,
+                  rowsPerPage: 10,
+                  columns: [
+                    DataColumn(label: Text('Kode Diskon', style: headerStyle)),
+                    DataColumn(
+                      label: Text('Kode Supplier', style: headerStyle),
+                    ),
+                    DataColumn(label: Text('Merek', style: headerStyle)),
+                    DataColumn(
+                      label: Text('Jenis/Departemen', style: headerStyle),
+                    ),
+                    DataColumn(label: Text('Kode Item', style: headerStyle)),
+                    DataColumn(
+                      label: Text('Tipe Kalkulasi', style: headerStyle),
+                    ),
+                    DataColumn(label: Text('Level', style: headerStyle)),
+                    DataColumn(label: Text('Diskon1', style: headerStyle)),
+                    DataColumn(label: Text('Diskon2', style: headerStyle)),
+                    DataColumn(label: Text('Diskon3', style: headerStyle)),
+                    DataColumn(label: Text('Diskon4', style: headerStyle)),
+                    DataColumn(
+                      label: Text('Tanggal Mulai', style: headerStyle),
+                    ),
+                    DataColumn(
+                      label: Text('Tanggal Akhir', style: headerStyle),
+                    ),
+                    DataColumn(label: Text('Status', style: headerStyle)),
+                  ],
+                  source: _source,
+                ),
               ),
             ),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Visibility(
-            visible: _discounts.isNotEmpty,
-            child: ElevatedButton(
-              child: const Text('submit'),
-              onPressed: () {
-                submitDiscount();
-              },
+            const SizedBox(height: 10),
+            Visibility(
+              visible: _discounts.isNotEmpty,
+              child: ElevatedButton(
+                child: const Text('submit'),
+                onPressed: () {
+                  submitDiscount();
+                },
+              ),
             ),
-          )
-        ],
+          ],
+        ),
       ),
-    ));
+    );
   }
 
   void downloadMassUploadFile() async {
     var fileSaver = const FileSaver();
     String? path = await fileSaver.downloadPath(
-        'template_mass_upload_discount.xlsx', 'xlsx');
+      'template_mass_upload_discount.xlsx',
+      'xlsx',
+    );
     if (path != null) {
       _server.download('discounts/template_mass_upload_excel', 'xlsx', path);
     }
@@ -154,44 +140,19 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
         'type': 'discount',
         'attributes': discount.toJson(),
         'relationships': {
-          'discount_items': {
-            'data': discount.discountItems
-                .map<Map>((discountItem) => {
-                      'id': discountItem.id,
-                      'type': 'discount_item',
-                      'attributes': discountItem.toJson(),
-                    })
+          'discount_filters': {
+            'data': discount.discountFilters
+                .map<Map>(
+                  (discountFilter) => {
+                    'id': discountFilter.id,
+                    'type': 'discount_filter',
+                    'attributes': discountFilter.toJson(),
+                  },
+                )
                 .toList(),
           },
-          'discount_item_types': {
-            'data': discount.discountItemTypes
-                .map<Map>((discountItemType) => {
-                      'id': discountItemType.id,
-                      'type': 'discount_item_type',
-                      'attributes': discountItemType.toJson(),
-                    })
-                .toList(),
-          },
-          'discount_suppliers': {
-            'data': discount.discountSuppliers
-                .map<Map>((discountSupplier) => {
-                      'id': discountSupplier.id,
-                      'type': 'discount_supplier',
-                      'attributes': discountSupplier.toJson(),
-                    })
-                .toList(),
-          },
-          'discount_brands': {
-            'data': discount.discountBrands
-                .map<Map>((discountBrand) => {
-                      'id': discountBrand.id,
-                      'type': 'discount_brand',
-                      'attributes': discountBrand.toJson(),
-                    })
-                .toList(),
-          }
-        }
-      }
+        },
+      },
     };
     debugPrint(body.toString());
     dynamic request;
@@ -247,41 +208,40 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
           startTime: DateTime.parse(row[11]?.value.toString() ?? ''),
           endTime: DateTime.parse(row[12]?.value.toString() ?? ''),
         );
-        List? supplierCodes =
-            _cleanText(row[1]?.value?.toString())?.split(',').toList();
-        if (supplierCodes != null) {
-          discount.discountSuppliers = supplierCodes
-              .map<DiscountSupplier>(
-                  (value) => DiscountSupplier(supplier: Supplier(code: value)))
-              .toList();
-          discount.supplierCode = discount.discountSuppliers.first.supplierCode;
+        List<Supplier>? suppliers = _cleanText(row[1]?.value?.toString())
+            ?.split(',')
+            .map<Supplier>((value) => Supplier(id: value, code: value))
+            .toList();
+        if (suppliers != null) {
+          discount.suppliers = suppliers;
+          discount.supplierCode = suppliers.first.code;
         }
-        List? brandNames =
-            _cleanText(row[2]?.value?.toString())?.split(',').toList();
-        if (brandNames != null) {
-          discount.discountBrands = brandNames
-              .map<DiscountBrand>(
-                  (value) => DiscountBrand(brand: Brand(name: value)))
-              .toList();
-          discount.brandName = discount.discountBrands.first.brandName;
+        List<Brand>? brands = _cleanText(row[2]?.value?.toString())
+            ?.split(',')
+            .map<Brand>((value) => Brand(id: value, name: value))
+            .toList();
+        if (brands != null) {
+          discount.brands = brands;
+
+          discount.brandName = brands.first.name;
         }
-        List? itemTypeCodes =
-            _cleanText(row[3]?.value?.toString())?.split(',').toList();
-        if (itemTypeCodes != null) {
-          discount.discountItemTypes = itemTypeCodes
-              .map<DiscountItemType>(
-                  (value) => DiscountItemType(itemType: ItemType(name: value)))
-              .toList();
-          discount.itemType = discount.discountItemTypes.first.itemTypeName;
+        List<ItemType>? itemTypes = _cleanText(row[3]?.value?.toString())
+            ?.split(',')
+            .map<ItemType>((value) => ItemType(id: value, name: value))
+            .toList();
+        if (itemTypes != null) {
+          discount.itemTypes = itemTypes;
+
+          discount.itemTypeName = itemTypes.first.name;
         }
-        List? itemCodes =
-            _cleanText(row[4]?.value?.toString())?.split(',').toList();
-        if (itemCodes != null) {
-          discount.discountItems = itemCodes
-              .map<DiscountItem>(
-                  (value) => DiscountItem(item: Item(code: value)))
-              .toList();
-          discount.itemCode = discount.discountItems.first.itemCode;
+        List<Item>? items = _cleanText(row[4]?.value?.toString())
+            ?.split(',')
+            .map<Item>((value) => Item(id: value, code: value))
+            .toList();
+        if (items != null) {
+          discount.items = items;
+
+          discount.itemCode = items.first.code;
         }
 
         _discounts.add(discount);
@@ -340,7 +300,7 @@ class DiscountMassUploadDatatableSource extends DataTableSource
       DataCell(SelectableText(discount.code)),
       DataCell(SelectableText(discount.supplierCode ?? '')),
       DataCell(SelectableText(discount.brandName ?? '')),
-      DataCell(SelectableText(discount.itemType ?? '')),
+      DataCell(SelectableText(discount.itemTypeName ?? '')),
       DataCell(SelectableText(discount.itemCode ?? '')),
       DataCell(SelectableText(discount.calculationType.toString())),
       DataCell(SelectableText(discount.weight.toString())),
