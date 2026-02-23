@@ -200,6 +200,9 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     super.initState();
     Future.delayed(Duration.zero, () {
       if (discount.isNewRecord) {
+        setState(() {
+          showFilter = true;
+        });
         if (_focusNode.canRequestFocus) {
           _focusNode.requestFocus();
         }
