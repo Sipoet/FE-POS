@@ -46,6 +46,11 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
         setState(() {});
       }
     });
+    controller.loader.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
     super.initState();
   }
 

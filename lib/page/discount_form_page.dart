@@ -78,11 +78,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   @override
   void initState() {
     _tabController = TabController(length: 3, vsync: this);
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging && _tabController.index == 2) {
-        fetchItem();
-      }
-    });
     final setting = context.read<Setting>();
     setting.tableColumn('itemReport').forEach((TableColumn tableColumn) {
       if (_whitelistColumns.contains(tableColumn.name)) {
@@ -266,6 +261,12 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   }
 
   void refreshTable() {
+    setState(() {
+      discount1 = discount.discount1;
+      discount2 = discount.discount2;
+      discount3 = discount.discount3;
+      discount4 = discount.discount4;
+    });
     fetchItem();
   }
 
@@ -510,9 +511,12 @@ class _DiscountFormPageState extends State<DiscountFormPage>
               TabBar(
                 controller: _tabController,
                 onTap: (idx) {
-                  if (idx == 2) {
+                  if (idx == 2 && _tabController.indexIsChanging) {
                     refreshTable();
                   }
+                  debugPrint(
+                    'jenis: ${discount.itemTypes.firstOrNull?.name} , brand: ${discount.brands.firstOrNull?.name}',
+                  );
                 },
                 tabs: const [
                   Tab(child: Text('Filter Diskon')),
@@ -1141,29 +1145,31 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                               ),
                               const SizedBox(height: 10),
                               const Divider(),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  RichText(
-                                    text: TextSpan(
-                                      text: 'Preview Item ',
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 18,
+                              SizedBox(
+                                width: .infinity,
+                                child: Wrap(
+                                  alignment: .spaceBetween,
+                                  runSpacing: 15,
+                                  children: [
+                                    RichText(
+                                      maxLines: 2,
+                                      overflow: .clip,
+                                      text: TextSpan(
+                                        text: 'Preview Item ',
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 18,
+                                        ),
+                                        children: discountSummaryPreview(),
                                       ),
-                                      children: discountSummaryPreview(),
                                     ),
-                                  ),
-                                  Align(
-                                    alignment: Alignment.topRight,
-                                    child: ElevatedButton.icon(
+                                    ElevatedButton.icon(
                                       onPressed: refreshTable,
                                       icon: const Icon(Icons.refresh),
                                       label: const Text('Refresh Table'),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                               const SizedBox(height: 10),
                               Expanded(
@@ -1217,15 +1223,15 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     } else if (discount1 is Money) {
       textArr.add(TextSpan(text: discount1.format(), style: style));
     }
-    if (discount2 != null) {
+    if (discount2 != null && discount2?.value != 0) {
       textArr.add(const TextSpan(text: ', Diskon2: '));
       textArr.add(TextSpan(text: discount2!.format(), style: style));
     }
-    if (discount3 != null) {
+    if (discount3 != null && discount3?.value != 0) {
       textArr.add(const TextSpan(text: ', Diskon3: '));
       textArr.add(TextSpan(text: discount3!.format(), style: style));
     }
-    if (discount4 != null) {
+    if (discount4 != null && discount4?.value != 0) {
       textArr.add(const TextSpan(text: ', Diskon4: '));
       textArr.add(TextSpan(text: discount4!.format(), style: style));
     }
