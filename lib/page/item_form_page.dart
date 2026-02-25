@@ -221,7 +221,7 @@ class _ItemFormPageState extends State<ItemFormPage>
       'data': {'id': item.id, 'type': 'item', 'attributes': item.toJson()},
     };
     server
-        .put('items/${item.code}', body: params)
+        .put('ipos/items/${item.code}', body: params)
         .then((response) {
           if (mounted && response.statusCode == 200) {
             setState(() {
