@@ -35,7 +35,7 @@ class _ItemFormPageState extends State<ItemFormPage>
       _controller[key] = TextEditingController(text: value.toString());
     });
     super.initState();
-    if (item.rawData.isEmpty) {
+    if (!item.isNewRecord) {
       Future.delayed(Duration.zero, fetchItem);
     }
   }
@@ -43,7 +43,7 @@ class _ItemFormPageState extends State<ItemFormPage>
   void fetchItem() {
     showLoadingPopup();
     item
-        .refresh(_server)
+        .refresh(_server, include: ['brand', 'supplier', 'item_type'])
         .then((isSuccess) {
           if (isSuccess) {
             setState(() {

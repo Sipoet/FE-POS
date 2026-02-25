@@ -73,17 +73,17 @@ class Item extends Model {
     uom = attributes['uom'] ?? '';
     sellPrice = Money.tryParse(attributes['sell_price']) ?? sellPrice;
     supplier = SupplierClass().findRelationData(
-      relation: json['relationships']['supplier'],
+      relation: json['relationships']?['supplier'],
       included: included,
     );
     itemType =
         ItemTypeClass().findRelationData(
-          relation: json['relationships']['item_type'],
+          relation: json['relationships']?['item_type'],
           included: included,
         ) ??
         ItemType(name: itemTypeName);
     brand = BrandClass().findRelationData(
-      relation: json['relationships']['brand'],
+      relation: json['relationships']?['brand'],
       included: included,
     );
   }

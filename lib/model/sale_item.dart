@@ -120,7 +120,7 @@ class SaleItem extends Model {
             included: included,
             relation: json['relationships']?['sale'],
           ) ??
-          Sale(code: attributes['notransaksi']);
+          Sale(id: attributes['notransaksi'], code: attributes['notransaksi']);
 
       promoItem = ItemClass().findRelationData(
         included: included,
