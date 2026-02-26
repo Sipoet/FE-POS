@@ -102,8 +102,8 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
               alignmentOffset: Offset(-120, 10),
               menuChildren: [
                 MenuItemButton(
-                  child: const Text('Refresh table'),
                   onPressed: refreshTable,
+                  child: const Text('Refresh table'),
                 ),
                 ...widget.additionalMenuActions ?? [],
               ],

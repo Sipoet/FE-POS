@@ -210,6 +210,65 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     });
   }
 
+  Money? discountAmount(ItemReport model) {
+    Money sellPrice = model.sellPrice;
+    if (discount.calculationType == DiscountCalculationType.nominal) {
+      return discount.discount1Nominal;
+    } else if (discount.calculationType == DiscountCalculationType.percentage) {
+      return _calculateChanellingDiscount(sellPrice, discount);
+    } else if (discount.calculationType ==
+        DiscountCalculationType.specialPrice) {
+      return (sellPrice - discount.discount1Nominal);
+    }
+    return null;
+  }
+
+  Money? sellPriceAfterDiscount(ItemReport model) {
+    Money sellPrice = model.sellPrice;
+    if (discount.calculationType == DiscountCalculationType.nominal) {
+      return sellPrice - discount.discount1Nominal;
+    } else if (discount.calculationType == DiscountCalculationType.percentage) {
+      return sellPrice - _calculateChanellingDiscount(sellPrice, discount);
+    } else if (discount.calculationType ==
+        DiscountCalculationType.specialPrice) {
+      return discount.discount1Nominal;
+    }
+    return null;
+  }
+
+  Money profitAfterDiscount(ItemReport model) {
+    Money sellPrice = model.sellPrice;
+    Money cogs = model.cogs;
+    Money newPrice = sellPrice;
+    if (discount.calculationType == DiscountCalculationType.nominal) {
+      newPrice = sellPrice - discount.discount1Nominal;
+    } else if (discount.calculationType == DiscountCalculationType.percentage) {
+      newPrice = sellPrice - _calculateChanellingDiscount(sellPrice, discount);
+    } else if (discount.calculationType ==
+        DiscountCalculationType.specialPrice) {
+      newPrice = discount.discount1Nominal;
+    }
+    return newPrice - cogs;
+  }
+
+  Percentage profitMarginAfterDiscount(ItemReport model) {
+    Money sellPrice = model.sellPrice;
+    Money cogs = model.cogs;
+    Money newPrice = sellPrice;
+    if (discount.calculationType == DiscountCalculationType.nominal) {
+      newPrice = sellPrice - discount.discount1Nominal;
+    } else if (discount.calculationType == DiscountCalculationType.percentage) {
+      newPrice = sellPrice - _calculateChanellingDiscount(sellPrice, discount);
+    } else if (discount.calculationType ==
+        DiscountCalculationType.specialPrice) {
+      newPrice = discount.discount1Nominal;
+    }
+    if (cogs == Money(0)) {
+      return Percentage(0);
+    }
+    return _marginOf(newPrice, cogs);
+  }
+
   void fetchItem() {
     if (discount.discountFilters.isEmpty) {
       return;
@@ -242,14 +301,20 @@ class _DiscountFormPageState extends State<DiscountFormPage>
               defaultErrorResponse(error: response);
               return DataTableResponse<ItemReport>.empty();
             }
-            final models = response.data['data']
-                .map<ItemReport>(
-                  (json) => ItemReportClass().fromJson(
-                    json,
-                    included: response.data['included'] ?? [],
-                  ),
-                )
-                .toList();
+            final models = response.data['data'].map<ItemReport>((json) {
+              final result = ItemReportClass().fromJson(
+                json,
+                included: response.data['included'] ?? [],
+              );
+              result['discount_amount'] = discountAmount(result);
+              result['sell_price_after_discount'] = sellPriceAfterDiscount(
+                result,
+              );
+              result['profit_after_discount'] = profitAfterDiscount(result);
+              result['profit_margin_after_discount'] =
+                  profitMarginAfterDiscount(result);
+              return result;
+            }).toList();
             _source?.setModels(models);
           },
           onError: (error) {

@@ -12,6 +12,7 @@ abstract class Model with ChangeNotifier {
   DateTime? createdAt;
   DateTime? updatedAt;
   Map<String, dynamic> rawData;
+  Map<String, dynamic> altData = {};
   dynamic id;
 
   List<String> _errors = [];
@@ -71,7 +72,8 @@ abstract class Model with ChangeNotifier {
   }
 
   Map<String, dynamic> asMap() {
-    Map<String, dynamic> value = toMap();
+    Map<String, dynamic> value = toMap()..addAll(altData);
+
     if (createdAt != null) {
       value['created_at'] = createdAt;
     }
@@ -111,6 +113,10 @@ abstract class Model with ChangeNotifier {
 
   dynamic operator [](String key) {
     return asMap()[key];
+  }
+
+  operator []=(String key, dynamic value) {
+    altData[key] = value;
   }
 
   void reset() {
