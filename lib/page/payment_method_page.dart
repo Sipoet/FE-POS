@@ -154,7 +154,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<PaymentMethod>(
-                renderAction: (paymentMethod) => IconButton(
+                rowAction: (paymentMethod) => IconButton(
                   onPressed: () {
                     editForm(paymentMethod);
                   },

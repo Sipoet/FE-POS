@@ -171,7 +171,7 @@ class _SaleItemPageState extends State<SaleItemPage>
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<SaleItem>(
                 key: const ObjectKey('saleItemTable'),
-                renderAction: (saleItem) => Row(
+                rowAction: (saleItem) => Row(
                   spacing: 10,
                   children: [
                     IconButton.filled(

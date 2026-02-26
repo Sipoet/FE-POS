@@ -32,18 +32,18 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
   final OnRowCheckedCallback? onRowChecked;
   final OnSelectedCallback? onSelected;
   final OnRowDoubleTapCallback? onRowDoubleTap;
-  final double? actionColumnWidth;
+  final double? rowActionColumnWidth;
   final bool showFilter;
   final bool isPaginated;
-  final Widget Function(T model)? renderAction;
+  final Widget Function(T model)? rowAction;
   final void Function(QueryRequest queryRequest)? onQueryChanged;
 
   const SyncDataTable({
     super.key,
     this.actions,
     this.onLoaded,
-    this.renderAction,
-    this.actionColumnWidth,
+    this.rowAction,
+    this.rowActionColumnWidth,
     this.showFilter = true,
     this.onQueryChanged,
     List<TableColumn>? columns,
@@ -96,15 +96,15 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
           enableContextMenu: false,
           enableEditingMode: false,
           type: TrinaColumnType.text(defaultValue: null),
-          hide: widget.renderAction == null,
+          hide: widget.rowAction == null,
           frozen: TrinaColumnFrozen.end,
-          renderer: widget.renderAction == null
+          renderer: widget.rowAction == null
               ? null
               : (TrinaColumnRendererContext rendererContext) =>
-                    widget.renderAction!(rendererContext.cell.value as T),
-          width: widget.renderAction == null
+                    widget.rowAction!(rendererContext.cell.value as T),
+          width: widget.rowAction == null
               ? 0
-              : widget.actionColumnWidth ?? TrinaGridSettings.columnWidth,
+              : widget.rowActionColumnWidth ?? TrinaGridSettings.columnWidth,
           minWidth: 0,
         ),
       );
@@ -158,7 +158,8 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
           return MobileTable<T>(
             controller: controller.mobileController,
             columns: widget.columns,
-            renderAction: widget.renderAction,
+            additionalMenuActions: widget.actions,
+            rowAction: widget.rowAction,
           );
         }
       },
@@ -242,8 +243,9 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
           ),
           SizedBox(
             width: 50,
-            child: SubmenuButton(
+            child: MenuAnchor(
               controller: _menuController,
+              alignmentOffset: Offset(-120, 10),
               menuChildren: [
                 MenuItemButton(
                   child: const Text('hide/show column'),
@@ -253,14 +255,24 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
                   },
                 ),
                 MenuItemButton(
-                  child: const Text('Refresh Data'),
+                  child: const Text('Refresh table'),
                   onPressed: () {
                     stateManager.refreshTable();
                     _menuController.close();
                   },
                 ),
+                ...widget.actions ?? [],
               ],
-              child: const Icon(Icons.more_vert),
+              child: IconButton(
+                icon: Icon(Icons.menu),
+                onPressed: () {
+                  if (_menuController.isOpen) {
+                    _menuController.close();
+                  } else {
+                    _menuController.open();
+                  }
+                },
+              ),
             ),
           ),
         ],

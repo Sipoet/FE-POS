@@ -166,7 +166,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<PaymentType>(
-                renderAction: (paymentType) => Row(
+                rowAction: (paymentType) => Row(
                   spacing: 10,
                   children: [
                     if (setting.isAuthorize('payment_types', 'update'))

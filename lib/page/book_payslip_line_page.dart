@@ -161,7 +161,7 @@ class _BookPayslipLinePageState extends State<BookPayslipLinePage>
           SizedBox(
             height: bodyScreenHeight,
             child: CustomAsyncDataTable<BookPayslipLine>(
-              renderAction: (bookPayslipLine) => Row(
+              rowAction: (bookPayslipLine) => Row(
                 spacing: 10,
                 children: [
                   IconButton(

@@ -185,7 +185,7 @@ class _EmployeeLeavePageState extends State<EmployeeLeavePage>
               height: <double>[bodyScreenHeight, 570].min,
               child: CustomAsyncDataTable<EmployeeLeave>(
                 enums: {'leave_type': LeaveType.values},
-                renderAction: (employeeLeave) => Row(
+                rowAction: (employeeLeave) => Row(
                   spacing: 10,
                   children: [
                     if (setting.isAuthorize('employee_leaves', 'update'))

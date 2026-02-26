@@ -38,7 +38,7 @@ class CustomAsyncDataTable<T extends Model> extends StatefulWidget {
   final OnRowDoubleTapCallback? onRowDoubleTap;
   final bool showFilter;
   final String primaryKey;
-  final Widget Function(T model)? renderAction;
+  final Widget Function(T model)? rowAction;
   final double? actionColumnWidth;
 
   const CustomAsyncDataTable({
@@ -53,7 +53,7 @@ class CustomAsyncDataTable<T extends Model> extends StatefulWidget {
     required this.columns,
     this.enums = const {},
     this.onRowChecked,
-    this.renderAction,
+    this.rowAction,
     this.onRowDoubleTap,
     this.onSelected,
     this.showSummary = false,
@@ -100,7 +100,7 @@ class _CustomAsyncDataTableState<T extends Model>
             title: ' ',
             field: 'model',
             type: TrinaColumnType.text(defaultValue: null),
-            hide: widget.renderAction == null,
+            hide: widget.rowAction == null,
             frozen: TrinaColumnFrozen.end,
             enableFilterMenuItem: false,
             enableAutoEditing: false,
@@ -109,11 +109,11 @@ class _CustomAsyncDataTableState<T extends Model>
             enableHideColumnMenuItem: false,
             enableContextMenu: false,
             enableEditingMode: false,
-            renderer: widget.renderAction == null
+            renderer: widget.rowAction == null
                 ? null
                 : (TrinaColumnRendererContext rendererContext) =>
-                      widget.renderAction!(rendererContext.cell.value as T),
-            width: widget.renderAction == null
+                      widget.rowAction!(rendererContext.cell.value as T),
+            width: widget.rowAction == null
                 ? 0
                 : widget.actionColumnWidth ?? TrinaGridSettings.columnWidth,
             minWidth: 0,
@@ -306,7 +306,7 @@ class _CustomAsyncDataTableState<T extends Model>
           return MobileTable<T>(
             controller: mobileController,
             columns: widget.columns,
-            renderAction: widget.renderAction,
+            rowAction: widget.rowAction,
           );
         }
       },

@@ -230,6 +230,8 @@ class Money {
     }
   }
 
+  bool get isNaM => value.isNaN || value.isInfinite;
+
   static Money? tryParse(value) {
     try {
       return parse(value);
@@ -292,16 +294,20 @@ class Money {
   Money operator /(var other) {
     if (other is Money) {
       return Money(value / other.value, symbol: symbol);
-    } else {
+    } else if (other is num) {
       return Money(value / other, symbol: symbol);
+    } else {
+      return Money(double.nan, symbol: symbol);
     }
   }
 
   Money operator -(var other) {
     if (other is Money) {
       return Money(value - other.value, symbol: symbol);
-    } else {
+    } else if (other is num) {
       return Money(value - other, symbol: symbol);
+    } else {
+      return Money(double.nan, symbol: symbol);
     }
   }
 

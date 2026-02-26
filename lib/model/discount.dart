@@ -137,6 +137,7 @@ class Discount extends Model {
     this.blacklistItemCode,
     this.supplierCode,
     this.customerGroup,
+    List<DiscountFilter>? discountFilters,
     required this.calculationType,
     required this.discount1,
     this.discount2,
@@ -155,7 +156,7 @@ class Discount extends Model {
     required this.startTime,
     required this.endTime,
     this.weight = 1,
-  });
+  }) : discountFilters = discountFilters ?? [];
 
   @override
   String get modelName => 'discount';

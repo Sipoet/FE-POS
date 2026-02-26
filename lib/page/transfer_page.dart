@@ -107,7 +107,7 @@ class _TransferPageState extends State<TransferPage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<Transfer>(
-                renderAction: (transfer) => Row(
+                rowAction: (transfer) => Row(
                   spacing: 10,
                   children: [
                     IconButton.filled(

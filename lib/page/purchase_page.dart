@@ -105,7 +105,7 @@ class _PurchasePageState extends State<PurchasePage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<Purchase>(
-                renderAction: (purchase) => Row(
+                rowAction: (purchase) => Row(
                   spacing: 10,
                   children: [
                     IconButton.filled(

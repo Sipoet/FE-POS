@@ -85,7 +85,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
           SizedBox(
             height: bodyScreenHeight,
             child: CustomAsyncDataTable<Item>(
-              renderAction: (model) => Row(
+              rowAction: (model) => Row(
                 children: [
                   if (setting.isAuthorize('ipos/items', 'update'))
                     IconButton(

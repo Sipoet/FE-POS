@@ -365,7 +365,7 @@ class _DiscountPageState extends State<DiscountPage>
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<Discount>(
                 actionColumnWidth: 220,
-                renderAction: (discount) => Row(
+                rowAction: (discount) => Row(
                   spacing: 10,
                   children: [
                     IconButton(

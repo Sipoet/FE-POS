@@ -12,8 +12,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class MobileTable<T extends Model> extends StatefulWidget {
-  final Widget Function(T model)? renderAction;
+  final Widget Function(T model)? rowAction;
   final List<TableColumn> columns;
+  final List<Widget>? additionalMenuActions;
   // final void Function() onChanged;
   final MobileTableController<T> controller;
   final List<T>? rows;
@@ -21,7 +22,8 @@ class MobileTable<T extends Model> extends StatefulWidget {
     super.key,
     required this.columns,
     required this.controller,
-    required this.renderAction,
+    this.rowAction,
+    this.additionalMenuActions,
     this.rows,
   });
 
@@ -36,6 +38,7 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
   final scrollController = ScrollController();
   MobileTableController<T> get controller => widget.controller;
   CancelableOperation<String>? searchOperation;
+  final _menuController = MenuController();
   @override
   void initState() {
     tabManager = context.read<TabManager>();
@@ -94,7 +97,27 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                 color: controller.sorts.isNotEmpty ? Colors.green : null,
               ),
             ),
-            IconButton(onPressed: refreshTable, icon: Icon(Icons.refresh)),
+            MenuAnchor(
+              controller: _menuController,
+              alignmentOffset: Offset(-120, 10),
+              menuChildren: [
+                MenuItemButton(
+                  child: const Text('Refresh table'),
+                  onPressed: refreshTable,
+                ),
+                ...widget.additionalMenuActions ?? [],
+              ],
+              child: IconButton(
+                icon: Icon(Icons.menu),
+                onPressed: () {
+                  if (_menuController.isOpen) {
+                    _menuController.close();
+                  } else {
+                    _menuController.open();
+                  }
+                },
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 10),
@@ -124,9 +147,9 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                       model: model,
                       columns: widget.columns,
                       tabManager: tabManager,
-                      action: widget.renderAction == null
+                      action: widget.rowAction == null
                           ? null
-                          : widget.renderAction!(model),
+                          : widget.rowAction!(model),
                     ),
                   )
                   .toList(),

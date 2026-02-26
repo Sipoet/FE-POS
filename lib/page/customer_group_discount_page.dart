@@ -189,7 +189,7 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
               height: bodyScreenHeight,
               width: 900,
               child: CustomAsyncDataTable<CustomerGroupDiscount>(
-                renderAction: (customerGroupDiscount) => Row(
+                rowAction: (customerGroupDiscount) => Row(
                   spacing: 10,
                   children: [
                     IconButton(

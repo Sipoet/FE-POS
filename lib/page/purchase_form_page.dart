@@ -52,6 +52,23 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
       ..removeWhere(
         (column) => ['purchase', 'transaction_date'].contains(column.name),
       );
+    _columns.insert(
+      9,
+      TableColumn(
+        clientWidth: 180,
+        name: 'margin',
+        humanizeName: 'Margin(%)',
+        type: PercentageTableColumnType(),
+        getValue: (Model model) {
+          model as PurchaseItem;
+          final result = (model.sellPrice - model.price) / model.price;
+          if (result.isNaM) {
+            return Percentage(0);
+          }
+          return Percentage(result.value);
+        },
+      ),
+    );
     if (purchase.id != null) {
       Future.delayed(Duration.zero, () => fetchPurchase());
     }
