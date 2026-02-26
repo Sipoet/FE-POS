@@ -152,7 +152,7 @@ mixin AppUpdater<T extends StatefulWidget> on State<T>
               });
               server.dio
                   .download(
-                    "$path?v=${Random().nextInt(99999999).toString()}",
+                    "$path?vrandom=${Random().nextInt(99999999).toString()}",
                     filePath,
                     onReceiveProgress: (actualBytes, int totalBytes) {
                       final progress = (actualBytes / totalBytes * 100)
