@@ -408,6 +408,7 @@ class Discount extends Model {
     'supplier_code': supplierCode,
     'calculation_type': calculationType,
     'discount_type': discountType,
+    'customer_group': customerGroup,
     'blacklist_item_type.jenis': blacklistItemType,
     'blacklist_brand.merek': blacklistBrandName,
     'blacklist_supplier.kode': blacklistSupplierCode,

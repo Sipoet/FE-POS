@@ -57,7 +57,7 @@ class _DiscountPageState extends State<DiscountPage>
 
   Future<DataTableResponse<Discount>> fetchDiscounts(QueryRequest request) {
     request.filters = _filters;
-    request.include = ['discount_filters'];
+    request.include = ['discount_filters', 'customer_group'];
     return DiscountClass()
         .finds(server, request)
         .then(

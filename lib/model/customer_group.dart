@@ -30,6 +30,7 @@ class CustomerGroup extends Model {
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
+    super.setFromJson(json);
     code = attributes['kgrup'] ?? '';
     name = attributes['grup'];
     level = attributes['levelharga'];
@@ -38,7 +39,7 @@ class CustomerGroup extends Model {
   }
 
   @override
-  String get modelValue => name;
+  String get modelValue => code;
 }
 
 class CustomerGroupClass extends ModelClass<CustomerGroup> {
