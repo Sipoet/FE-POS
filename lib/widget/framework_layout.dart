@@ -114,7 +114,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             icon: Icons.calendar_month,
             isClosed: true,
             label: 'BOOK PAYSLIP LINE',
-            isDisabled: !setting.isAuthorize('book_payslip_Lines', 'read'),
+            isDisabled: !setting.isAuthorize('book_payslip_lines', 'read'),
             pageFunct: () => const BookPayslipLinePage(),
             key: 'bookPayslipLine',
           ),
