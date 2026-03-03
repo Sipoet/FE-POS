@@ -146,64 +146,64 @@ mixin AppUpdater<T extends StatefulWidget> on State<T>
         .downloadPath('allegra-pos', extFile)
         .then(
           (String? filePath) {
-            if (filePath != null) {
-              setStateDialog(() {
-                _message = 'Downloading.';
-              });
-              server.dio
-                  .download(
-                    "$path?vrandom=${Random().nextInt(99999999).toString()}",
-                    filePath,
-                    onReceiveProgress: (actualBytes, int totalBytes) {
-                      final progress = (actualBytes / totalBytes * 100)
-                          .floor()
-                          .toString();
-                      setStateDialog(() {
-                        _message = 'Downloading. $progress%';
-                      });
-                    },
-                  )
-                  .then(
-                    (value) async {
-                      setStateDialog(() {
-                        _isDownloading = false;
-                        _message = 'Download Complete.';
-                      });
-                      if (platform == TargetPlatform.android ||
-                          platform == TargetPlatform.iOS) {
-                        final type = platform == TargetPlatform.android
-                            ? 'application/vnd.android.package-archive'
-                            : null;
-                        OpenFile.open(filePath, type: type).then(
-                          (openFileResponse) {
-                            if (openFileResponse.type != ResultType.done) {
-                              return;
-                            } else {
-                              navigator.pop();
-                            }
-                          },
-                          onError: (error) =>
-                              defaultErrorResponse(error: error),
-                        );
-                      } else if (platform == TargetPlatform.windows) {
-                        await installApp(filePath);
-                      } else {
-                        Flash().showBanner(
-                          messageType: ToastificationType.success,
-                          title: 'Sukses download APP',
-                          description: 'file installer terinstall di $filePath',
-                        );
-                      }
-                    },
-                    onError: (error) {
-                      setStateDialog(() {
-                        _message = 'gagal download installer';
-                        _isDownloading = false;
-                      });
-                      defaultErrorResponse(error: error);
-                    },
-                  );
+            if (filePath == null) {
+              return;
             }
+            setStateDialog(() {
+              _message = 'Downloading.';
+            });
+            server.dio
+                .download(
+                  "$path?vrandom=${Random().nextInt(99999999).toString()}",
+                  filePath,
+                  onReceiveProgress: (actualBytes, int totalBytes) {
+                    final progress = (actualBytes / totalBytes * 100)
+                        .floor()
+                        .toString();
+                    setStateDialog(() {
+                      _message = 'Downloading. $progress%';
+                    });
+                  },
+                )
+                .then(
+                  (value) async {
+                    setStateDialog(() {
+                      _isDownloading = false;
+                      _message = 'Download Complete.';
+                    });
+                    if (platform == TargetPlatform.android ||
+                        platform == TargetPlatform.iOS) {
+                      final type = platform == TargetPlatform.android
+                          ? 'application/vnd.android.package-archive'
+                          : null;
+                      OpenFile.open(filePath, type: type).then(
+                        (openFileResponse) {
+                          if (openFileResponse.type != ResultType.done) {
+                            return;
+                          } else {
+                            navigator.pop();
+                          }
+                        },
+                        onError: (error) => defaultErrorResponse(error: error),
+                      );
+                    } else if (platform == TargetPlatform.windows) {
+                      await installApp(filePath);
+                    } else {
+                      Flash().showBanner(
+                        messageType: ToastificationType.success,
+                        title: 'Sukses download APP',
+                        description: 'file installer terinstall di $filePath',
+                      );
+                    }
+                  },
+                  onError: (error) {
+                    setStateDialog(() {
+                      _message = 'gagal download installer';
+                      _isDownloading = false;
+                    });
+                    defaultErrorResponse(error: error);
+                  },
+                );
           },
           onError: (error) {
             _message = 'gagal cari lokasi download';
