@@ -76,7 +76,11 @@ class _SaleItemPageState extends State<SaleItemPage>
     setState(() {
       tabManager.addTab(
         'Lihat Penjualan ${saleItem.saleCode}',
-        SaleFormPage(sale: Sale(code: saleItem.saleCode ?? '')),
+        SaleFormPage(
+          sale:
+              saleItem.sale ??
+              Sale(id: saleItem.saleCode, code: saleItem.saleCode ?? ''),
+        ),
       );
     });
   }

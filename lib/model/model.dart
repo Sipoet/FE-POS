@@ -197,7 +197,7 @@ abstract class ModelClass<T extends Model> {
 
   Future<T?> find(Server server, dynamic id) async {
     return server
-        .get("$path/${id.toString()}")
+        .get("$path/${Uri.encodeComponent(id.toString())}")
         .then(
           (response) {
             if (response.statusCode == 200) {
