@@ -45,10 +45,10 @@ packages:
     dependency: "direct main"
     description:
       name: board_datetime_picker
-      sha256: "6808b7f6ba04b02063f4f4396ad73bebd99d48ff0f894b31b14977c9f42676b9"
+      sha256: "1817070f4f0e9655764cee81ad17114ecce35970c630e0172e61c4155fe0d06b"
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.0"
+    version: "2.8.5"
   boolean_selector:
     dependency: transitive
     description:
@@ -165,18 +165,18 @@ packages:
     dependency: "direct main"
     description:
       name: dio
-      sha256: "5598aa796bbf4699afd5c67c0f5f6e2ed542afc956884b9cd58c306966efc260"
+      sha256: aff32c08f92787a557dd5c0145ac91536481831a01b4648136373cddb0e64f8c
       url: "https://pub.dev"
     source: hosted
-    version: "5.7.0"
+    version: "5.9.2"
   dio_web_adapter:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: dio_web_adapter
-      sha256: "33259a9276d6cea88774a0000cfae0d861003497755969c92faa223108620dc8"
+      sha256: "2f9e64323a7c3c7ef69567d5c800424a11f8337b8b228bad02524c9fb3c1f340"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0"
+    version: "2.1.2"
   dropdown_search:
     dependency: "direct main"
     description:
@@ -277,10 +277,10 @@ packages:
     dependency: "direct main"
     description:
       name: fl_chart
-      sha256: "5276944c6ffc975ae796569a826c38a62d2abcf264e26b88fa6f482e107f4237"
+      sha256: "7ca9a40f4eb85949190e54087be8b4d6ac09dc4c54238d782a34cf1f7c011de9"
       url: "https://pub.dev"
     source: hosted
-    version: "0.70.2"
+    version: "1.1.1"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -593,10 +593,10 @@ packages:
     dependency: "direct main"
     description:
       name: month_picker_dialog
-      sha256: "8196c59bbd3339ea57de2c372ca51a8cfdbb242d6e45100925b9e1982ba4617d"
+      sha256: caf59acf07fb392fdab45ee5da62cb58c3b622e1b993faed0724f09619a5eb4e
       url: "https://pub.dev"
     source: hosted
-    version: "6.5.0"
+    version: "6.7.2"
   msix:
     dependency: "direct dev"
     description:
@@ -1150,10 +1150,10 @@ packages:
     dependency: "direct main"
     description:
       name: yaml
-      sha256: "75769501ea3489fca56601ff33454fe45507ea3bfb014161abc3b43ae25989d5"
+      sha256: b9da305ac7c39faa3f030eccd175340f968459dae4af175130b3fc47e40d76ce
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.2"
+    version: "3.1.3"
 sdks:
   dart: ">=3.10.0 <4.0.0"
   flutter: ">=3.38.0"
