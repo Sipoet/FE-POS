@@ -61,8 +61,7 @@ class _ItemFormPageState extends State<ItemFormPage>
     return Column(
       crossAxisAlignment: .start,
       children: [
-        SizedBox(
-          height: bodyScreenHeight,
+        Expanded(
           child: VerticalBodyScroll(
             child: Column(
               spacing: 10,
