@@ -149,6 +149,7 @@ class _AsyncDropdownMultipleState<T extends Model>
 
   late final FocusNode _focusNode;
   List<Widget> pills = [];
+  Map<T, bool> tempSelected = {};
   @override
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
@@ -250,11 +251,25 @@ class _AsyncDropdownMultipleState<T extends Model>
           ? PopupPropsMultiSelection.dialog(
               searchDelay: widget.delayedSearch,
               searchFieldProps: TextFieldProps(focusNode: _focusNode),
-              onItemAdded: (selectedItems, addedItem) =>
-                  _focusNode.requestFocus(),
+              onItemAdded: (selectedItems, addedItem) {
+                setState(() {
+                  tempSelected[addedItem] = true;
+                });
+                _focusNode.requestFocus();
+              },
+              onItemRemoved: (selectedItems, removedItem) => setState(() {
+                tempSelected[removedItem] = false;
+              }),
               showSearchBox: true,
               showSelectedItems: true,
               disableFilter: true,
+              checkBoxBuilder: (context, item, isDisabled, isSelected) =>
+                  Checkbox(
+                    value: tempSelected[item] == null
+                        ? controller.value.contains(item)
+                        : tempSelected[item],
+                    onChanged: (value) {},
+                  ),
               infiniteScrollProps: InfiniteScrollProps(
                 loadingMoreBuilder: (p0, loadedItems) => Text('Loading data'),
                 loadProps: LoadProps(skip: 0, take: widget.recordLimit),
@@ -263,11 +278,26 @@ class _AsyncDropdownMultipleState<T extends Model>
           : PopupPropsMultiSelection.menu(
               searchDelay: widget.delayedSearch,
               searchFieldProps: TextFieldProps(focusNode: _focusNode),
-              onItemAdded: (selectedItems, addedItem) =>
-                  _focusNode.requestFocus(),
+              onItemAdded: (selectedItems, addedItem) {
+                setState(() {
+                  tempSelected[addedItem] = true;
+                });
+                _focusNode.requestFocus();
+              },
               showSearchBox: true,
               showSelectedItems: true,
               disableFilter: true,
+              onDismissed: () => tempSelected = {},
+              onItemRemoved: (selectedItems, removedItem) => setState(() {
+                tempSelected[removedItem] = false;
+              }),
+              checkBoxBuilder: (context, item, isDisabled, isSelected) =>
+                  Checkbox(
+                    value: tempSelected[item] == null
+                        ? controller.value.contains(item)
+                        : tempSelected[item],
+                    onChanged: (value) {},
+                  ),
               infiniteScrollProps: InfiniteScrollProps(
                 loadingMoreBuilder: (p0, loadedItems) => Text('Loading data'),
                 loadProps: LoadProps(skip: 0, take: widget.recordLimit),

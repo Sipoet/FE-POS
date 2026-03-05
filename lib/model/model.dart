@@ -67,6 +67,17 @@ abstract class Model with ChangeNotifier {
         );
   }
 
+  @override
+  bool operator ==(Object other) {
+    if (other is Model) {
+      return id == other.id && runtimeType == other.runtimeType;
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => '$modelName|$id'.hashCode;
+
   int compareTo(Model b) {
     return modelValue.compareTo(b.modelValue);
   }

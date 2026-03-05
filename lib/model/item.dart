@@ -41,6 +41,8 @@ class Item extends Model {
 
   @override
   String get path => 'ipos/items';
+  @override
+  String get id => code;
 
   @override
   Map<String, dynamic> toMap() => {
