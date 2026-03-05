@@ -918,10 +918,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                   ),
                                 ),
                                 Visibility(
-                                  child: Text('Hari Aktif:', style: labelStyle),
                                   visible:
                                       discount.discountType ==
                                       DiscountType.dayOfWeek,
+                                  child: Text('Hari Aktif:', style: labelStyle),
                                 ),
                                 Visibility(
                                   visible:

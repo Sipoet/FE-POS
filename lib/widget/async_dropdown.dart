@@ -265,9 +265,8 @@ class _AsyncDropdownMultipleState<T extends Model>
               disableFilter: true,
               checkBoxBuilder: (context, item, isDisabled, isSelected) =>
                   Checkbox(
-                    value: tempSelected[item] == null
-                        ? controller.value.contains(item)
-                        : tempSelected[item],
+                    value:
+                        tempSelected[item] ?? controller.value.contains(item),
                     onChanged: (value) {},
                   ),
               infiniteScrollProps: InfiniteScrollProps(
@@ -293,9 +292,8 @@ class _AsyncDropdownMultipleState<T extends Model>
               }),
               checkBoxBuilder: (context, item, isDisabled, isSelected) =>
                   Checkbox(
-                    value: tempSelected[item] == null
-                        ? controller.value.contains(item)
-                        : tempSelected[item],
+                    value:
+                        tempSelected[item] ?? controller.value.contains(item),
                     onChanged: (value) {},
                   ),
               infiniteScrollProps: InfiniteScrollProps(
