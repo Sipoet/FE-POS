@@ -6,6 +6,7 @@ import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
+import 'package:fe_pos/widget/table_filter_form.dart';
 
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:file_picker/file_picker.dart';
@@ -30,6 +31,7 @@ class _StockLocationPageState extends State<StockLocationPage>
   late final Flash flash;
   late final List<TableColumn> columns;
   late final Setting setting;
+  List<FilterData> _filters = [];
 
   @override
   void initState() {
@@ -51,7 +53,7 @@ class _StockLocationPageState extends State<StockLocationPage>
     QueryRequest request,
   ) {
     request.includeAddAll(['item', 'location']);
-
+    request.filters = _filters;
     return StockLocationClass()
         .finds(server, request)
         .then(
@@ -167,6 +169,14 @@ class _StockLocationPageState extends State<StockLocationPage>
     return VerticalBodyScroll(
       child: Column(
         children: [
+          TableFilterForm(
+            columns: columns,
+            onSubmit: (value) {
+              _filters = value;
+              refreshTable();
+            },
+          ),
+
           Padding(
             padding: const EdgeInsets.only(left: 10, bottom: 10),
             child: Wrap(
@@ -192,7 +202,7 @@ class _StockLocationPageState extends State<StockLocationPage>
               fixedLeftColumns: 1,
               fetchData: fetchStockLocations,
               columns: columns,
-              showFilter: true,
+              showFilter: false,
             ),
           ),
         ],
