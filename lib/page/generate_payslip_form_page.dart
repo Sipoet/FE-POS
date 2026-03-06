@@ -106,19 +106,17 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
         clientWidth: 180,
         type: NumberTableColumnType(IntegerType()),
       ),
-      TableColumn(
+      TableColumn<Payslip>(
         name: 'detail',
         humanizeName: 'Detail',
         frozen: TrinaColumnFrozen.end,
         clientWidth: 180,
-        renderBody: (rendererContext) => Row(
+        renderBody: (model) => Row(
           children: [
             IconButton(
               onPressed: () => tabManager.setSafeAreaContent(
-                'Edit Slip Gaji ${rendererContext.row.modelOf<Payslip>().id}',
-                PayslipFormPage(
-                  payslip: rendererContext.row.modelOf<Payslip>(),
-                ),
+                'Edit Slip Gaji ${model.id}',
+                PayslipFormPage(payslip: model as Payslip),
               ),
               icon: Icon(Icons.edit),
             ),

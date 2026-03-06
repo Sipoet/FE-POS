@@ -441,6 +441,13 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             isDisabled: !setting.isAuthorize('ipos/transfers', 'read'),
             pageFunct: () => const TransferItemPage(),
           ),
+          Menu(
+            icon: Icons.shelves,
+            label: 'Lokasi Item',
+            key: 'stockLocation',
+            isDisabled: !setting.isAuthorize('ipos/item_stocks', 'read'),
+            pageFunct: () => const StockLocationPage(),
+          ),
         ],
         key: 'inventory',
       ),

@@ -72,7 +72,7 @@ class TableColumn<T extends Model> {
   double? excelWidth;
   String name;
   TableColumnType type;
-  Widget Function(TrinaColumnRendererContext rendererContext)? renderBody;
+  Widget Function(Model model)? renderBody;
   dynamic Function(Model model)? getValue;
   String humanizeName;
   bool canSort;

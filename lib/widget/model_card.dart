@@ -73,6 +73,9 @@ class ModelCard<T extends Model> extends StatelessWidget with TextFormatter {
     if (value == null) {
       return SizedBox();
     }
+    if (column.renderBody != null) {
+      return column.renderBody!(model);
+    }
     return column.type.renderCell(
       value: value,
       column: column,

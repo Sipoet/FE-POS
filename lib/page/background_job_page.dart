@@ -40,11 +40,11 @@ class _BackgroundJobPageState extends State<BackgroundJobPage>
         name: 'created_at',
         humanizeName: 'Tgl Buat',
       ),
-      TableColumn(
+      TableColumn<BackgroundJob>(
         clientWidth: 150,
         name: 'action',
-        renderBody: (rendererContext) {
-          final record = records[rendererContext.rowIdx];
+        renderBody: (record) {
+          record as BackgroundJob;
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [

@@ -344,6 +344,11 @@ class Money {
   }
 }
 
+extension DoubleFormat on double {
+  String format({String pattern = ',##0.##'}) =>
+      NumberFormat(pattern, "en_US").format(this);
+}
+
 class Percentage {
   final double value;
   const Percentage(this.value);

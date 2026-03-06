@@ -95,6 +95,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                   included: response.data['included'] ?? [],
                 );
                 _source.setModels(purchaseOrder.purchaseItems);
+                _source.refreshTable();
               });
             }
           },

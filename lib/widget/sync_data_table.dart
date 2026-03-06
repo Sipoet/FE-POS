@@ -25,6 +25,7 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
   final List<Widget>? actions;
   final bool showCheckboxColumn;
   final bool showSummary;
+  final bool showSearch;
   final List<T>? rows;
   final List<TableColumn> columns;
   final Map<String, List<Enum>> enums;
@@ -45,6 +46,7 @@ class SyncDataTable<T extends Model> extends StatefulWidget {
     this.rowAction,
     this.rowActionColumnWidth,
     this.showFilter = true,
+    this.showSearch = true,
     this.onQueryChanged,
     List<TableColumn>? columns,
     this.rows,
@@ -160,6 +162,7 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
             columns: widget.columns,
             additionalMenuActions: widget.actions,
             rowAction: widget.rowAction,
+            showSearch: widget.showSearch,
           );
         }
       },
@@ -210,9 +213,8 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
           Flexible(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: widget.onQueryChanged == null
-                  ? SizedBox()
-                  : TextFormField(
+              child: widget.showSearch
+                  ? TextFormField(
                       onFieldSubmitted: (value) {
                         controller.searchText = value;
                         controller.page = 1;
@@ -238,7 +240,8 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
                         isDense: true,
                         prefixIcon: Icon(Icons.search, size: 20),
                       ),
-                    ),
+                    )
+                  : SizedBox(),
             ),
           ),
           SizedBox(
@@ -336,12 +339,13 @@ class SyncTableController<T extends Model> extends ChangeNotifier {
   }
 
   void setModels(List<T> value) {
-    if (models.equals(value)) {
-      return;
-    }
+    bool isSame = models.equals(value);
     models.clear();
     models.addAll(value);
     trinaController.setModels(value);
+    if (isSame) {
+      return;
+    }
     trinaController.refreshTable();
     _refreshMobileModel();
     notifyListeners();

@@ -15,6 +15,7 @@ class MobileTable<T extends Model> extends StatefulWidget {
   final Widget Function(T model)? rowAction;
   final List<TableColumn> columns;
   final List<Widget>? additionalMenuActions;
+  final bool showSearch;
   // final void Function() onChanged;
   final MobileTableController<T> controller;
   final List<T>? rows;
@@ -23,6 +24,7 @@ class MobileTable<T extends Model> extends StatefulWidget {
     required this.columns,
     required this.controller,
     this.rowAction,
+    this.showSearch = true,
     this.additionalMenuActions,
     this.rows,
   });
@@ -64,29 +66,32 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
         Row(
           mainAxisAlignment: .spaceBetween,
           children: [
-            Flexible(
-              child: TextFormField(
-                onFieldSubmitted: (value) {
-                  controller.searchText = value;
-                  controller.currentPage = 1;
-                  controller.notifyChanged();
-                },
-                initialValue: controller.searchText,
-                onChanged: (value) {
-                  searchOperation?.cancel();
-                  searchOperation = CancelableOperation<String>.fromFuture(
-                    Future<String>.delayed(Durations.long1, () => value),
-                    onCancel: () => debugPrint('search cancel'),
-                  );
-                  searchOperation!.value.then((value) {
+            Visibility(
+              visible: widget.showSearch,
+              child: Flexible(
+                child: TextFormField(
+                  onFieldSubmitted: (value) {
                     controller.searchText = value;
                     controller.currentPage = 1;
                     controller.notifyChanged();
-                  });
-                },
-                decoration: InputDecoration(
-                  hintText: 'Search',
-                  prefixIcon: Icon(Icons.search),
+                  },
+                  initialValue: controller.searchText,
+                  onChanged: (value) {
+                    searchOperation?.cancel();
+                    searchOperation = CancelableOperation<String>.fromFuture(
+                      Future<String>.delayed(Durations.long1, () => value),
+                      onCancel: () => debugPrint('search cancel'),
+                    );
+                    searchOperation!.value.then((value) {
+                      controller.searchText = value;
+                      controller.currentPage = 1;
+                      controller.notifyChanged();
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search',
+                    prefixIcon: Icon(Icons.search),
+                  ),
                 ),
               ),
             ),

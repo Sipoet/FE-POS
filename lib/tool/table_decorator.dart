@@ -71,10 +71,11 @@ mixin TrinaTableDecorator<T extends Model>
     );
     bool showFooter = tableColumn.isNumeric();
     final format = _formatNumber;
-    final renderer =
-        tableColumn.renderBody ??
-        (TrinaColumnRendererContext rendererContext) =>
-            defaultRenderBody(rendererContext, tableColumn, tabManager);
+    final renderer = tableColumn.renderBody == null
+        ? (TrinaColumnRendererContext rendererContext) =>
+              defaultRenderBody(rendererContext, tableColumn, tabManager)
+        : (TrinaColumnRendererContext rendererContext) =>
+              tableColumn.renderBody!(rendererContext.row.modelOf());
 
     return TrinaColumn(
       readOnly: true,
