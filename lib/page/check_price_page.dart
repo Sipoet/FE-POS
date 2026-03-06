@@ -3,12 +3,12 @@ import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
-import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_barcode_scanner_plus/flutter_barcode_scanner_plus.dart';
+import 'package:async/async.dart';
 
 class CheckPricePage extends StatefulWidget {
   const CheckPricePage({super.key});
@@ -21,60 +21,73 @@ class _CheckPricePageState extends State<CheckPricePage>
     with DefaultResponse, PlatformChecker, LoadingPopup {
   String? finalSearch;
   late final Server _server;
-  bool _isLoading = false;
   final _controller = TextEditingController();
   SyncTableController? _source;
   List<ItemWithDiscount> models = [];
-  final List<TableColumn> _columns = [
-    TableColumn(
-      clientWidth: 120,
-      frozen: TrinaColumnFrozen.start,
-      name: 'item_code',
-      humanizeName: 'Kode Item',
-    ),
-    TableColumn(clientWidth: 200, name: 'item_name', humanizeName: 'Nama Item'),
-    TableColumn(
-      clientWidth: 100,
-      type: NumberTableColumnType(DoubleType()),
-      name: 'store_stock',
-      humanizeName: 'Stok Toko',
-    ),
-    TableColumn(
-      clientWidth: 160,
-      type: MoneyTableColumnType(),
-      name: 'sell_price',
-      humanizeName: 'Harga Normal',
-    ),
-    TableColumn(
-      clientWidth: 200,
-      name: 'discount_desc',
-      humanizeName: 'Promo Diskon',
-    ),
-    TableColumn(
-      clientWidth: 160,
-      type: MoneyTableColumnType(),
-      name: 'discount_amount',
-      humanizeName: 'Jumlah Diskon',
-    ),
-    TableColumn(clientWidth: 90, name: 'uom', humanizeName: 'Satuan'),
-    TableColumn(
-      clientWidth: 110,
-      type: NumberTableColumnType(DoubleType()),
-      name: 'warehouse_stock',
-      humanizeName: 'Stok Gudang',
-    ),
-    TableColumn(
-      clientWidth: 160,
-      type: MoneyTableColumnType(),
-      name: 'sell_price_after_discount',
-      humanizeName: 'Harga Setelah Diskon',
-      frozen: TrinaColumnFrozen.end,
-    ),
-  ];
+  CancelableOperation? searchOperation;
+  late final List<TableColumn> _columns;
 
   @override
   void initState() {
     _server = context.read<Server>();
+    _columns = [
+      TableColumn(
+        clientWidth: 120,
+        frozen: TrinaColumnFrozen.start,
+        name: 'item_code',
+        humanizeName: 'Kode Item',
+      ),
+      TableColumn(
+        clientWidth: 200,
+        name: 'item_name',
+        humanizeName: 'Nama Item',
+      ),
+      TableColumn(
+        clientWidth: 160,
+        type: MoneyTableColumnType(),
+        name: 'sell_price',
+        humanizeName: 'Harga Normal',
+      ),
+      TableColumn(
+        clientWidth: 200,
+        name: 'discount_desc',
+        humanizeName: 'Promo Diskon',
+      ),
+      TableColumn(
+        clientWidth: 160,
+        type: MoneyTableColumnType(),
+        name: 'discount_amount',
+        humanizeName: 'Jumlah Diskon',
+      ),
+      TableColumn(
+        clientWidth: 160,
+        type: MoneyTableColumnType(),
+        name: 'sell_price_after_discount',
+        humanizeName: 'Harga Setelah Diskon',
+        // frozen: TrinaColumnFrozen.end,
+      ),
+      TableColumn<ItemWithDiscount>(
+        clientWidth: 120,
+        type: TextTableColumnType(),
+        renderBody: (model) {
+          model as ItemWithDiscount;
+          return GestureDetector(
+            onTap: () => model.stockLeft == 0 ? null : showStockDialog(model),
+            child: Text(
+              model.stockLeft.format(),
+              textAlign: .right,
+              style: model.stockLeft == 0
+                  ? null
+                  : TextStyle(fontStyle: .italic, decoration: .underline),
+            ),
+          );
+        },
+        name: 'stock_left',
+        humanizeName: 'Stok',
+      ),
+
+      TableColumn(clientWidth: 90, name: 'uom', humanizeName: 'Satuan'),
+    ];
     super.initState();
   }
 
@@ -94,12 +107,246 @@ class _CheckPricePageState extends State<CheckPricePage>
     });
   }
 
+  void showStockDialog(ItemWithDiscount model) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        bool onEdit = false;
+        bool isProgress = false;
+        return StatefulBuilder(
+          builder: (context, setStateDialog) => AlertDialog(
+            title: Row(
+              mainAxisAlignment: .spaceBetween,
+              children: [
+                Text('Stok ${model.code}'),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: Icon(Icons.close),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: .min,
+              mainAxisAlignment: .start,
+              crossAxisAlignment: .start,
+              spacing: 10,
+              children: [
+                Text('Nama Item: ${model.name}'),
+                Table(
+                  border: TableBorder.symmetric(inside: BorderSide()),
+                  columnWidths: {
+                    0: FlexColumnWidth(0.5),
+                    2: FixedColumnWidth(65),
+                  },
+                  children: [
+                    TableRow(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 5.0, top: 10),
+                          child: Text('Lokasi', style: labelStyle),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 5.0),
+                          child: Row(
+                            mainAxisAlignment: .spaceBetween,
+                            children: [
+                              Text('Rak', style: labelStyle),
+                              Visibility(
+                                visible: onEdit,
+                                replacement: IconButton(
+                                  onPressed: () => setStateDialog(() {
+                                    onEdit = true;
+                                  }),
+                                  icon: Icon(Icons.edit),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: .spaceEvenly,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () => setStateDialog(() {
+                                        onEdit = false;
+                                        isProgress = true;
+                                        saveRack(model, setStateDialog).then(
+                                          (value) => setStateDialog(() {
+                                            isProgress = false;
+                                          }),
+                                        );
+                                      }),
+                                      icon: Icon(Icons.check),
+                                    ),
+
+                                    IconButton(
+                                      onPressed: () => setStateDialog(() {
+                                        onEdit = false;
+                                        isProgress = true;
+                                        Future.delayed(Durations.short2, () {
+                                          setStateDialog(() {
+                                            isProgress = false;
+                                          });
+                                        });
+                                      }),
+                                      icon: Icon(Icons.cancel),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 5.0, top: 10),
+                          child: Text(
+                            'Jumlah',
+                            style: labelStyle,
+                            textAlign: .right,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (!isProgress)
+                      ...model.stockLocations.map<TableRow>(
+                        (stock) => TableRow(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: Text(stock.locationCode),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: TextFormField(
+                                readOnly: !onEdit,
+                                initialValue: stock.rack,
+                                onChanged: (value) => setStateDialog(() {
+                                  stock['tempRack'] = value;
+                                }),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: Text(
+                                stock.quantity.format(),
+                                textAlign: .right,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (isProgress)
+                      TableRow(
+                        children: [
+                          const SizedBox(),
+                          Padding(
+                            padding: const EdgeInsets.all(15.0),
+                            child: loadingWidget(),
+                          ),
+                          const SizedBox(),
+                        ],
+                      ),
+                    if (!isProgress)
+                      TableRow(
+                        children: [
+                          SizedBox(),
+                          Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: Text(
+                              'Total',
+                              style: labelStyle,
+                              textAlign: .right,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: Text(
+                              model.stockLeft.format(),
+                              textAlign: .right,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<List> saveRack(
+    ItemWithDiscount model,
+    StateSetter setStateDialog,
+  ) async {
+    final server = context.read<Server>();
+    return Future.wait(
+      model.stockLocations.map<Future>((stockLocation) {
+        stockLocation['beforeRack'] = stockLocation.rack;
+        stockLocation.rack = stockLocation['tempRack'];
+        return server
+            .put(
+              'ipos/item_stocks/${stockLocation.itemCode}',
+              body: {
+                'data': {
+                  'id': stockLocation.itemCode,
+                  'type': 'item_stock',
+                  'attributes': stockLocation.toJson(),
+                },
+              },
+            )
+            .then(
+              (response) {
+                setStateDialog(() {
+                  if (response.statusCode != 200) {
+                    stockLocation.rack = stockLocation['beforeRack'];
+                    return;
+                  }
+                  stockLocation.setFromJson(
+                    response.data['data'],
+                    included: response.data['included'] ?? [],
+                  );
+                });
+              },
+              onError: (error) {
+                setStateDialog(() {
+                  stockLocation.rack = stockLocation['beforeRack'];
+                });
+                defaultErrorResponse(error: error);
+              },
+            );
+      }),
+    );
+  }
+
+  Widget decorateStock(ItemWithDiscount model) => Column(
+    mainAxisAlignment: .start,
+    crossAxisAlignment: .start,
+    mainAxisSize: .min,
+    children:
+        model.stockLocations
+            .map<Widget>(
+              (group) => Text(
+                '${group.locationCode}: RAK ${group.rack}. jumlah: ${group.quantity} ${model.uom}',
+              ),
+            )
+            .toList()
+          ..add(Text('Total: ${model.stockLeft.format()}')),
+  );
+
+  void openStockFormDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) {
+          return AlertDialog();
+        },
+      ),
+    );
+  }
+
   static const labelStyle = TextStyle(fontWeight: FontWeight.bold);
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final size = MediaQuery.of(context).size;
     return VerticalBodyScroll(
       child: Column(
         children: [
@@ -116,6 +363,19 @@ class _CheckPricePageState extends State<CheckPricePage>
           ),
           TextFormField(
             controller: _controller,
+            onChanged: (value) {
+              searchOperation?.cancel();
+              searchOperation = CancelableOperation<String>.fromFuture(
+                Future<String>.delayed(Durations.extralong3, () => value),
+                onCancel: () => debugPrint('search cancel'),
+              );
+              searchOperation!.value.then((value) {
+                setState(() {
+                  finalSearch = value;
+                  _searchItem();
+                });
+              });
+            },
             onFieldSubmitted: (value) {
               setState(() {
                 finalSearch = value;
@@ -147,223 +407,11 @@ class _CheckPricePageState extends State<CheckPricePage>
           ),
           SizedBox(
             height: bodyScreenHeight,
-            child: LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) {
-                if (size.height > size.width || size.height <= 420) {
-                  if (_isLoading) return loadingWidget();
-                  return ListView(
-                    children: models
-                        .map<Widget>(
-                          (model) => Card(
-                            surfaceTintColor: colorScheme.outline,
-                            child: ListTile(
-                              key: ValueKey(model.code),
-                              title: RichText(
-                                text: TextSpan(
-                                  text: "Kode Item: ",
-                                  style: TextStyle(color: Colors.black),
-                                  children: [
-                                    TextSpan(
-                                      text: model.code,
-                                      style: labelStyle,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Table(
-                                    columnWidths: {
-                                      0: FlexColumnWidth(1),
-                                      1: FlexColumnWidth(2),
-                                    },
-                                    border: TableBorder(
-                                      horizontalInside: BorderSide(
-                                        color: Colors.grey.shade400.withValues(
-                                          alpha: 0.5,
-                                        ),
-                                      ),
-                                    ),
-                                    children: [
-                                      TableRow(
-                                        children: [
-                                          TableCell(
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(
-                                                5.0,
-                                              ),
-                                              child: Text(
-                                                'Nama Item',
-                                                style: labelStyle,
-                                              ),
-                                            ),
-                                          ),
-                                          TableCell(
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(
-                                                5.0,
-                                              ),
-                                              child: Text(model.name),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      TableRow(
-                                        children: [
-                                          TableCell(
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(
-                                                5.0,
-                                              ),
-                                              child: Text(
-                                                'Harga Normal',
-                                                style: labelStyle,
-                                              ),
-                                            ),
-                                          ),
-                                          TableCell(
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Align(
-                                                alignment: Alignment.topRight,
-                                                child: Text(
-                                                  model.sellPrice.format(
-                                                    decimalDigits: 0,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      if (model.discountDesc != null &&
-                                          model.discountDesc!.isNotEmpty)
-                                        TableRow(
-                                          children: [
-                                            TableCell(
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(
-                                                  5.0,
-                                                ),
-                                                child: Text(
-                                                  'Diskon',
-                                                  style: labelStyle,
-                                                ),
-                                              ),
-                                            ),
-                                            TableCell(
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(
-                                                  5.0,
-                                                ),
-                                                child: Text(
-                                                  model.discountDesc ?? '',
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      if (model.sellPrice !=
-                                          model.sellPriceAfterDiscount)
-                                        TableRow(
-                                          children: [
-                                            TableCell(
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(
-                                                  8.0,
-                                                ),
-                                                child: Text(
-                                                  'Harga Setelah Diskon',
-                                                  style: labelStyle,
-                                                ),
-                                              ),
-                                            ),
-                                            TableCell(
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(
-                                                  8.0,
-                                                ),
-                                                child: Align(
-                                                  alignment: Alignment.topRight,
-                                                  child: Text(
-                                                    model.sellPriceAfterDiscount
-                                                        .format(
-                                                          decimalDigits: 0,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      TableRow(
-                                        children: [
-                                          TableCell(
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Text(
-                                                'Stok',
-                                                style: labelStyle,
-                                              ),
-                                            ),
-                                          ),
-                                          TableCell(
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Text(
-                                                "TOKO: ${model.storeStock}, Gudang: ${model.warehouseStock}",
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      TableRow(
-                                        children: [
-                                          TableCell(
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Text(
-                                                'Satuan',
-                                                style: labelStyle,
-                                              ),
-                                            ),
-                                          ),
-                                          TableCell(
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Text(model.uom),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  );
-                } else {
-                  return SyncDataTable<ItemWithDiscount>(
-                    showFilter: false,
-                    columns: _columns,
-                    onLoaded: (stateManager) => _source = stateManager,
-                  );
-                }
-              },
+            child: SyncDataTable<ItemWithDiscount>(
+              showSearch: false,
+              showFilter: false,
+              columns: _columns,
+              onLoaded: (stateManager) => _source = stateManager,
             ),
           ),
         ],
@@ -375,9 +423,6 @@ class _CheckPricePageState extends State<CheckPricePage>
     if (finalSearch == null || finalSearch!.trim().isEmpty) {
       return;
     }
-    setState(() {
-      _isLoading = true;
-    });
     _source?.setShowLoading(true);
     _server
         .get(
@@ -386,6 +431,7 @@ class _CheckPricePageState extends State<CheckPricePage>
             'search_text': finalSearch,
             'page[page]': '1',
             'page[limit]': '100',
+            'include': 'stocks',
           },
         )
         .then((response) {
@@ -407,9 +453,6 @@ class _CheckPricePageState extends State<CheckPricePage>
         }, onError: (error) => defaultErrorResponse(error: error))
         .whenComplete(() {
           _source?.setShowLoading(false);
-          setState(() {
-            _isLoading = false;
-          });
         });
   }
 }

@@ -32,3 +32,5 @@ export 'package:fe_pos/model/sale.dart';
 export 'package:fe_pos/model/sale_item.dart';
 export 'package:fe_pos/model/transfer.dart';
 export 'package:fe_pos/model/transfer_item.dart';
+export 'package:fe_pos/model/stock_location.dart';
+export 'package:fe_pos/model/location.dart';

@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/model.dart';
-
+import 'package:fe_pos/model/stock_location.dart';
+export 'package:fe_pos/model/stock_location.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
 class ItemWithDiscount extends Model {
@@ -7,38 +8,41 @@ class ItemWithDiscount extends Model {
   String name;
   Money sellPriceAfterDiscount;
   Money sellPrice;
+  double stockLeft;
   String? discountDesc;
-  double warehouseStock;
-  double storeStock;
+  List<StockLocation> stockLocations = [];
+
   String uom;
-  ItemWithDiscount(
-      {this.code = '',
-      this.name = '',
-      this.discountDesc,
-      this.uom = '',
-      this.warehouseStock = 0,
-      this.storeStock = 0,
-      Money? sellPrice,
-      Money? sellPriceAfterDiscount,
-      super.id})
-      : sellPriceAfterDiscount = sellPriceAfterDiscount ?? const Money(0),
-        sellPrice = sellPrice ?? const Money(0);
+  ItemWithDiscount({
+    this.code = '',
+    this.name = '',
+    this.discountDesc,
+    this.uom = '',
+    this.stockLeft = 0,
+    List<StockLocation>? stockLocations,
+
+    Money? sellPrice,
+    Money? sellPriceAfterDiscount,
+    super.id,
+  }) : sellPriceAfterDiscount = sellPriceAfterDiscount ?? const Money(0),
+       sellPrice = sellPrice ?? const Money(0),
+       stockLocations = stockLocations ?? [];
 
   @override
   String get modelName => 'item';
 
   @override
   Map<String, dynamic> toMap() => {
-        'item_code': code,
-        'item_name': name,
-        'warehouse_stock': warehouseStock,
-        'store_stock': storeStock,
-        'discount_desc': discountDesc,
-        'sell_price': sellPrice,
-        'discount_amount': discountAmount,
-        'sell_price_after_discount': sellPriceAfterDiscount,
-        'uom': uom,
-      };
+    'item_code': code,
+    'item_name': name,
+    'stock_left': stockLeft,
+    'stock_locations': stockLocations,
+    'discount_desc': discountDesc,
+    'sell_price': sellPrice,
+    'discount_amount': discountAmount,
+    'sell_price_after_discount': sellPriceAfterDiscount,
+    'uom': uom,
+  };
 
   Money get discountAmount => sellPrice - sellPriceAfterDiscount;
 
@@ -49,12 +53,16 @@ class ItemWithDiscount extends Model {
     code = attributes['item_code'];
     name = attributes['item_name'];
     discountDesc = attributes['discount_desc'];
-    storeStock = double.parse(attributes['store_stock']);
-    warehouseStock = double.parse(attributes['warehouse_stock']);
+    stockLocations = StockLocationClass().findRelationsData(
+      relation: json['relationships']?['stocks'],
+      included: included,
+    );
+
     sellPriceAfterDiscount =
         Money.tryParse(attributes['sell_price_after_discount']) ??
-            sellPriceAfterDiscount;
+        sellPriceAfterDiscount;
     uom = attributes['uom'] ?? '';
+    stockLeft = double.tryParse(attributes['stock_left'] ?? '') ?? 0;
     sellPrice = Money.tryParse(attributes['sell_price']) ?? sellPrice;
   }
 
