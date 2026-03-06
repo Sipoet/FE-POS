@@ -108,6 +108,9 @@ class _CheckPricePageState extends State<CheckPricePage>
   }
 
   void showStockDialog(ItemWithDiscount model) {
+    for (final stockLocation in model.stockLocations) {
+      stockLocation['tempRack'] = stockLocation.rack;
+    }
     showDialog(
       context: context,
       builder: (context) {
@@ -215,7 +218,7 @@ class _CheckPricePageState extends State<CheckPricePage>
                               padding: const EdgeInsets.all(5.0),
                               child: TextFormField(
                                 readOnly: !onEdit,
-                                initialValue: stock.rack,
+                                initialValue: stock['tempRack'],
                                 onChanged: (value) => setStateDialog(() {
                                   stock['tempRack'] = value;
                                 }),
