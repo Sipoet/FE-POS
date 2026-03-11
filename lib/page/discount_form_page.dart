@@ -627,10 +627,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                           'Jenis/Departemen :',
                                           style: labelStyle,
                                         ),
-                                        textOnSelected: (itemType) =>
-                                            itemType.name,
                                         textOnSearch: (itemType) =>
-                                            '${itemType.name} - ${itemType.description}',
+                                            itemType.name,
+                                        // textOnSearch: (itemType) =>
+                                        //     '${itemType.name} - ${itemType.description}',
                                         modelClass: ItemTypeClass(),
                                         onChanged: (option) {
                                           discount.itemTypes = option;
@@ -653,10 +653,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                         key: const ValueKey('supplierSelect'),
                                         selecteds: discount.suppliers,
                                         attributeKey: 'kode',
-                                        textOnSelected: (supplier) =>
-                                            supplier.code,
                                         textOnSearch: (supplier) =>
-                                            '${supplier.code} - ${supplier.name}',
+                                            supplier.code,
+                                        // textOnSearch: (supplier) =>
+                                        //     '${supplier.code} - ${supplier.name}',
                                         modelClass: SupplierClass(),
                                         label: const Text(
                                           'Supplier:',
@@ -710,16 +710,18 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                         key: const ValueKey('itemSelect'),
                                         selecteds: discount.items,
                                         attributeKey: 'namaitem',
-                                        textOnSelected: (item) => item.code,
-                                        textOnSearch: (item) =>
-                                            "${item.code} - ${item.name}",
+                                        textOnSearch: (item) => item.code,
+                                        // textOnSearch: (item) =>
+                                        //     "${item.code} - ${item.name}",
                                         modelClass: ItemClass(),
                                         label: const Text(
                                           'Item:',
                                           style: labelStyle,
                                         ),
                                         onChanged: (option) {
-                                          discount.items = option;
+                                          setState(() {
+                                            discount.items = option;
+                                          });
                                         },
                                         validator: (value) {
                                           if (discount.items.isEmpty &&
@@ -732,6 +734,11 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                         },
                                       ),
                                     ),
+                                    Text(
+                                      discount.items
+                                          .map((e) => e.code)
+                                          .join(','),
+                                    ),
                                     const SizedBox(height: 10),
                                     SizedBox(
                                       width: 400,
@@ -741,10 +748,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                         ),
                                         selecteds: discount.blacklistItemTypes,
                                         attributeKey: 'jenis',
-                                        textOnSelected: (itemType) =>
-                                            itemType.name,
                                         textOnSearch: (itemType) =>
-                                            '${itemType.name} - ${itemType.description}',
+                                            itemType.name,
+                                        // textOnSearch: (itemType) =>
+                                        //     '${itemType.name} - ${itemType.description}',
                                         modelClass: ItemTypeClass(),
                                         label: const Text(
                                           'Blacklist Jenis/Departemen :',
@@ -764,10 +771,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                         ),
                                         selecteds: discount.blacklistSuppliers,
                                         attributeKey: 'kode',
-                                        textOnSelected: (supplier) =>
-                                            supplier.code,
                                         textOnSearch: (supplier) =>
-                                            '${supplier.code} - ${supplier.name}',
+                                            supplier.code,
+                                        // textOnSearch: (supplier) =>
+                                        //     '${supplier.code} - ${supplier.name}',
                                         modelClass: SupplierClass(),
                                         label: const Text(
                                           'Blacklist Supplier:',
@@ -809,9 +816,9 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                         selecteds: discount.blacklistItems,
 
                                         attributeKey: 'namaitem',
-                                        textOnSelected: (item) => item.code,
-                                        textOnSearch: (item) =>
-                                            "${item.code} - ${item.name}",
+                                        textOnSearch: (item) => item.code,
+                                        // textOnSearch: (item) =>
+                                        //     "${item.code} - ${item.name}",
                                         modelClass: ItemClass(),
                                         label: const Text(
                                           'Blacklist Item:',
