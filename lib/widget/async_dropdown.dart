@@ -225,25 +225,28 @@ class _AsyncDropdownMultipleState<T extends Model>
             ),
           );
         }).toList();
-        return SortableWrap(
-          onSorted: (int oldIndex, int newIndex) {
-            setState(() {
-              controller.switchIndex(oldIndex, newIndex);
-            });
-          },
-          spacing: 10,
-          runSpacing: 15,
-          children: [
-            ...pills,
-            if (controller.valueLength > widget.selectedDisplayLimit)
-              IgnorePointer(
-                ignoring: true,
-                child: Text(
-                  '.....',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+        return Tooltip(
+          message: controller.value.map(textFormat).join(', '),
+          child: SortableWrap(
+            onSorted: (int oldIndex, int newIndex) {
+              setState(() {
+                controller.switchIndex(oldIndex, newIndex);
+              });
+            },
+            spacing: 10,
+            runSpacing: 15,
+            children: [
+              ...pills,
+              if (controller.valueLength > widget.selectedDisplayLimit)
+                IgnorePointer(
+                  ignoring: true,
+                  child: Text(
+                    '.....',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         );
       },
       popupProps: isMobile()

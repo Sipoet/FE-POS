@@ -734,11 +734,6 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                         },
                                       ),
                                     ),
-                                    Text(
-                                      discount.items
-                                          .map((e) => e.code)
-                                          .join(','),
-                                    ),
                                     const SizedBox(height: 10),
                                     SizedBox(
                                       width: 400,
