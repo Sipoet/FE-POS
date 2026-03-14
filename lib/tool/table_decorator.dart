@@ -210,7 +210,7 @@ mixin TrinaTableDecorator<T extends Model>
       return SizedBox();
     }
     if (value is String && tableColumn.type is ModelTableColumnType) {
-      return Text(value);
+      return SelectableText(value);
     }
     return tableColumn.type.renderCell(
       value: tableColumn.type.convert(value),

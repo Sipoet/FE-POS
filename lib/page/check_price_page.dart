@@ -43,24 +43,13 @@ class _CheckPricePageState extends State<CheckPricePage>
         humanizeName: 'Nama Item',
       ),
       TableColumn(
-        clientWidth: 160,
+        clientWidth: 140,
         type: MoneyTableColumnType(),
         name: 'sell_price',
         humanizeName: 'Harga Normal',
       ),
       TableColumn(
-        clientWidth: 200,
-        name: 'discount_desc',
-        humanizeName: 'Promo Diskon',
-      ),
-      TableColumn(
-        clientWidth: 160,
-        type: MoneyTableColumnType(),
-        name: 'discount_amount',
-        humanizeName: 'Jumlah Diskon',
-      ),
-      TableColumn(
-        clientWidth: 160,
+        clientWidth: 180,
         type: MoneyTableColumnType(),
         name: 'sell_price_after_discount',
         humanizeName: 'Harga Setelah Diskon',
@@ -73,17 +62,36 @@ class _CheckPricePageState extends State<CheckPricePage>
           model as ItemWithDiscount;
           return GestureDetector(
             onTap: () => model.stockLeft == 0 ? null : showStockDialog(model),
-            child: Text(
-              model.stockLeft.format(),
-              textAlign: .right,
-              style: model.stockLeft == 0
-                  ? null
-                  : TextStyle(fontStyle: .italic, decoration: .underline),
+            child: Tooltip(
+              message: model.stockLocations
+                  .map(
+                    (e) =>
+                        'Lokasi ${e.locationCode} : RAK ${e.rack ?? '-'} :${e.quantity.format()}',
+                  )
+                  .join('\n'),
+              child: Text(
+                model.stockLeft.format(),
+                textAlign: .right,
+                style: model.stockLeft == 0
+                    ? null
+                    : TextStyle(fontStyle: .italic, decoration: .underline),
+              ),
             ),
           );
         },
         name: 'stock_left',
         humanizeName: 'Stok',
+      ),
+      TableColumn(
+        clientWidth: 200,
+        name: 'discount_desc',
+        humanizeName: 'Promo Diskon',
+      ),
+      TableColumn(
+        clientWidth: 160,
+        type: MoneyTableColumnType(),
+        name: 'discount_amount',
+        humanizeName: 'Jumlah Diskon',
       ),
 
       TableColumn(clientWidth: 90, name: 'uom', humanizeName: 'Satuan'),

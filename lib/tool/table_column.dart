@@ -189,7 +189,7 @@ class TextTableColumnType extends TableColumnType<String> {
     required TableColumn column,
     TabManager? tabManager,
   }) {
-    return Text(value?.toString() ?? '');
+    return SelectableText(value?.toString() ?? '');
   }
 
   @override
@@ -385,11 +385,11 @@ class DateTableColumnType<T extends DateTime> extends TableColumnType<T> {
       return SizedBox();
     }
     if (value is Date) {
-      return Text(value.format(), textAlign: .right);
+      return SelectableText(value.format(), textAlign: .right);
     } else if (value is DateTime) {
-      return Text(value.toLocal().format(), textAlign: .right);
+      return SelectableText(value.toLocal().format(), textAlign: .right);
     } else {
-      return Text(value.toString(), textAlign: .right);
+      return SelectableText(value.toString(), textAlign: .right);
     }
   }
 
@@ -490,11 +490,11 @@ class TimeTableColumnType extends TableColumnType<TimeOfDay> {
     TabManager? tabManager,
   }) {
     if (value is TimeOfDay) {
-      return Text(value.format24Hour());
+      return SelectableText(value.format24Hour());
     } else if (value is DateTime) {
-      return Text(TimeOfDay.fromDateTime(value).format24Hour());
+      return SelectableText(TimeOfDay.fromDateTime(value).format24Hour());
     } else {
-      return Text(value.toString());
+      return SelectableText(value.toString());
     }
   }
 
@@ -544,10 +544,10 @@ class NumberTableColumnType<T> extends TableColumnType<T> with TextFormatter {
     TabManager? tabManager,
   }) {
     if (value is T) {
-      return Text(numberFormat(value), textAlign: .right);
+      return SelectableText(numberFormat(value), textAlign: .right);
     } else {
       final newValue = convert(value);
-      return Text(numberFormat(newValue), textAlign: .right);
+      return SelectableText(numberFormat(newValue), textAlign: .right);
     }
   }
 
@@ -857,11 +857,11 @@ class MoneyTableColumnType extends TableColumnType<Money> {
     TabManager? tabManager,
   }) {
     if (value is Money) {
-      return Text(value.format(), textAlign: .right);
+      return SelectableText(value.format(), textAlign: .right);
     } else if (value is num) {
-      return Text(Money.parse(value).format(), textAlign: .right);
+      return SelectableText(Money.parse(value).format(), textAlign: .right);
     } else {
-      return Text(value.toString(), textAlign: .right);
+      return SelectableText(value.toString(), textAlign: .right);
     }
   }
 
