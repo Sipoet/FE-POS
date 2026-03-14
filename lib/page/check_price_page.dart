@@ -355,7 +355,7 @@ class _CheckPricePageState extends State<CheckPricePage>
   }
 
   static const labelStyle = TextStyle(fontWeight: FontWeight.bold);
-
+  final _focusNode = FocusNode();
   @override
   Widget build(BuildContext context) {
     return VerticalBodyScroll(
@@ -374,6 +374,7 @@ class _CheckPricePageState extends State<CheckPricePage>
           ),
           TextFormField(
             controller: _controller,
+            focusNode: _focusNode,
             onChanged: (value) {
               searchOperation?.cancel();
               searchOperation = CancelableOperation<String>.fromFuture(
@@ -393,6 +394,7 @@ class _CheckPricePageState extends State<CheckPricePage>
                 _controller.text = '';
               });
               _searchItem();
+              _focusNode.requestFocus();
             },
             decoration: InputDecoration(
               label: Text('Barcode / keterangan barang'),
