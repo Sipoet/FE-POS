@@ -414,14 +414,14 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             isDisabled: !setting.isAuthorize('ipos/sale_items', 'read'),
             pageFunct: () => const SaleItemPage(),
           ),
-          Menu(
-            icon: Icons.monetization_on,
-            label: 'Cek Harga',
-            key: 'check_price',
-            isDisabled: !setting.isAuthorize('ipos/items', 'withDiscount'),
-            pageFunct: () => const CheckPricePage(),
-          ),
         ],
+      ),
+      Menu(
+        icon: Icons.monetization_on,
+        label: 'Cek Harga',
+        key: 'check_price',
+        isDisabled: !setting.isAuthorize('ipos/items', 'withDiscount'),
+        pageFunct: () => const CheckPricePage(),
       ),
       Menu(
         icon: Icons.inventory,

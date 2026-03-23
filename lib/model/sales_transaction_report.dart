@@ -11,23 +11,26 @@ class SalesTransactionReport extends Model {
   Money totalOnline;
   Money totalDiscount;
   int totalTransaction;
+  double totalItem;
   Money grossProfit;
   List debitDetails = [];
   List creditDetails = [];
-  SalesTransactionReport(
-      {required this.range,
-      this.totalSales = const Money(0.0),
-      this.totalDebit = const Money(0.0),
-      this.totalCash = const Money(0.0),
-      this.totalCredit = const Money(0.0),
-      this.totalQRIS = const Money(0.0),
-      this.totalOnline = const Money(0.0),
-      this.totalDiscount = const Money(0.0),
-      this.grossProfit = const Money(0.0),
-      this.totalTransaction = 0,
-      this.debitDetails = const [],
-      this.creditDetails = const [],
-      super.id});
+  SalesTransactionReport({
+    required this.range,
+    this.totalSales = const Money(0.0),
+    this.totalDebit = const Money(0.0),
+    this.totalCash = const Money(0.0),
+    this.totalCredit = const Money(0.0),
+    this.totalQRIS = const Money(0.0),
+    this.totalOnline = const Money(0.0),
+    this.totalDiscount = const Money(0.0),
+    this.grossProfit = const Money(0.0),
+    this.totalTransaction = 0,
+    this.totalItem = 0,
+    this.debitDetails = const [],
+    this.creditDetails = const [],
+    super.id,
+  });
 
   @override
   String get modelName => 'sales_transaction_report';
@@ -52,6 +55,7 @@ class SalesTransactionReport extends Model {
         Money.tryParse(attributes['discount_total']) ?? const Money(0);
     totalTransaction = attributes['num_of_transaction'] ?? 0;
     grossProfit = Money.tryParse(attributes['gross_profit']) ?? const Money(0);
+    totalItem = double.tryParse(attributes['num_of_item'].toString()) ?? 0.0;
   }
 
   DateTime get startDate => range.start;
@@ -59,18 +63,19 @@ class SalesTransactionReport extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'sales_total': totalSales,
-        'debit_total': totalDebit,
-        'credit_total': totalCredit,
-        'cash_total': totalCash,
-        'online_total': totalOnline,
-        'qris_total': totalQRIS,
-        'discount_total': totalDiscount,
-        'num_of_transaction': totalTransaction,
-        'gross_profit': grossProfit,
-        'start_time': range.start,
-        'end_time': range.end,
-      };
+    'sales_total': totalSales,
+    'debit_total': totalDebit,
+    'credit_total': totalCredit,
+    'cash_total': totalCash,
+    'online_total': totalOnline,
+    'qris_total': totalQRIS,
+    'discount_total': totalDiscount,
+    'num_of_transaction': totalTransaction,
+    'gross_profit': grossProfit,
+    'start_time': range.start,
+    'end_time': range.end,
+    'num_of_item': totalItem,
+  };
 
   @override
   String get modelValue => id.toString();
@@ -79,5 +84,6 @@ class SalesTransactionReport extends Model {
 class SalesTransactionReportClass extends ModelClass<SalesTransactionReport> {
   @override
   SalesTransactionReport initModel() => SalesTransactionReport(
-      range: DateTimeRange(start: DateTime.now(), end: DateTime.now()));
+    range: DateTimeRange(start: DateTime.now(), end: DateTime.now()),
+  );
 }

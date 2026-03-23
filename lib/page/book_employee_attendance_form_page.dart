@@ -253,7 +253,8 @@ class _BookEmployeeAttendanceFormPageState
                       modelClass: EmployeeClass(),
                       allowClear: false,
                       selected: bookEmployeeAttendance.employee,
-                      textOnSearch: (employee) => employee.name,
+                      textOnSearch: (employee) =>
+                          '${employee.code} - ${employee.name}',
                       onChanged: (employee) => bookEmployeeAttendance.employee =
                           employee ?? Employee(),
                       onSaved: (employee) => bookEmployeeAttendance.employee =

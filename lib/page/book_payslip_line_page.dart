@@ -182,7 +182,10 @@ class _BookPayslipLinePageState extends State<BookPayslipLinePage>
               ),
               columns: columns,
               fetchData: fetchData,
-              onLoaded: (stateManager) => _source = stateManager,
+              onLoaded: (stateManager) {
+                _source = stateManager;
+                _source.sortDescending(_source.columns[0]);
+              },
               fixedLeftColumns: 2,
             ),
           ),

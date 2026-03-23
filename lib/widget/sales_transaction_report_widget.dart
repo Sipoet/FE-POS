@@ -239,6 +239,27 @@ class _SalesTransactionReportWidgetState
                   TableCell(
                     child: Padding(
                       padding: const EdgeInsets.all(5),
+                      child: Text('Jumlah Item', style: labelStyle),
+                    ),
+                  ),
+                  TableCell(child: const Text(':')),
+                  TableCell(
+                    child: Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Text(
+                        numberFormat(salesTransactionReport.totalItem),
+                        textAlign: TextAlign.right,
+                        style: valueStyle,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              TableRow(
+                children: [
+                  TableCell(
+                    child: Padding(
+                      padding: const EdgeInsets.all(5),
                       child: Text('Total Diskon', style: labelStyle),
                     ),
                   ),
@@ -256,6 +277,12 @@ class _SalesTransactionReportWidgetState
                 ],
               ),
               TableRow(
+                decoration: BoxDecoration(
+                  color: colorScheme.secondaryContainer,
+                  border: Border.symmetric(
+                    horizontal: BorderSide(color: colorScheme.outline),
+                  ),
+                ),
                 children: [
                   TableCell(
                     child: Padding(
@@ -277,12 +304,6 @@ class _SalesTransactionReportWidgetState
                 ],
               ),
               TableRow(
-                decoration: BoxDecoration(
-                  color: colorScheme.secondaryContainer,
-                  border: Border.symmetric(
-                    horizontal: BorderSide(color: colorScheme.outline),
-                  ),
-                ),
                 children: [
                   TableCell(
                     child: Padding(
@@ -304,6 +325,12 @@ class _SalesTransactionReportWidgetState
                 ],
               ),
               TableRow(
+                decoration: BoxDecoration(
+                  color: colorScheme.secondaryContainer,
+                  border: Border.symmetric(
+                    horizontal: BorderSide(color: colorScheme.outline),
+                  ),
+                ),
                 children: [
                   TableCell(
                     child: Padding(
@@ -325,12 +352,6 @@ class _SalesTransactionReportWidgetState
                 ],
               ),
               TableRow(
-                decoration: BoxDecoration(
-                  color: colorScheme.secondaryContainer,
-                  border: Border.symmetric(
-                    horizontal: BorderSide(color: colorScheme.outline),
-                  ),
-                ),
                 children: [
                   TableCell(
                     child: Padding(
@@ -352,6 +373,12 @@ class _SalesTransactionReportWidgetState
                 ],
               ),
               TableRow(
+                decoration: BoxDecoration(
+                  color: colorScheme.secondaryContainer,
+                  border: Border.symmetric(
+                    horizontal: BorderSide(color: colorScheme.outline),
+                  ),
+                ),
                 children: [
                   TableCell(
                     child: Padding(
