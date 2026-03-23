@@ -161,7 +161,7 @@ class _HolidayPageState extends State<HolidayPage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<Holiday>(
-                renderAction: (holiday) => Row(
+                rowAction: (holiday) => Row(
                   spacing: 10,
                   children: [
                     IconButton(

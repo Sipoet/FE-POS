@@ -15,6 +15,9 @@ class Brand extends Model {
   String get path => 'ipos/brands';
 
   @override
+  String get id => name;
+
+  @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
     super.setFromJson(json, included: included);

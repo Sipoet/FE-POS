@@ -52,17 +52,23 @@ class _PurchasePageState extends State<PurchasePage>
   }
 
   Future<DataTableResponse<IposPurchaseHeader>> fetchPurchases(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
     request.searchText = _searchText;
     request.includeAddAll(['purchase_order', 'supplier']);
-    return IposPurchaseHeaderClass().finds(server, request).then(
-        (value) => DataTableResponse<IposPurchaseHeader>(
+    return IposPurchaseHeaderClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<IposPurchaseHeader>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse<IposPurchaseHeader>.empty();
-    });
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse<IposPurchaseHeader>.empty();
+          },
+        );
   }
 
   void viewRecord(IposPurchaseHeader purchase) {
@@ -101,7 +107,7 @@ class _PurchasePageState extends State<PurchasePage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<IposPurchaseHeader>(
-                renderAction: (purchase) => Row(
+                rowAction: (purchase) => Row(
                   spacing: 10,
                   children: [
                     IconButton.filled(

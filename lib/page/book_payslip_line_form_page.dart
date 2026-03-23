@@ -51,6 +51,12 @@ class _BookPayslipLineFormPageState extends State<BookPayslipLineFormPage>
     if (request != null) {
       return;
     }
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      showLoadingPopup();
+    } else {
+      return;
+    }
     Map body = {
       'data': {
         'type': 'book_payslip_line',
@@ -66,41 +72,43 @@ class _BookPayslipLineFormPageState extends State<BookPayslipLineFormPage>
         body: body,
       );
     }
-    request?.then(
-      (response) {
-        request = null;
-        if ([200, 201].contains(response.statusCode)) {
-          var data = response.data['data'];
-          setState(() {
-            bookPayslipLine.setFromJson(
-              data,
-              included: response.data['included'] ?? [],
-            );
-            var tabManager = context.read<TabManager>();
-            tabManager.changeTabHeader(
-              widget,
-              'Edit BookPayslipLine ${bookPayslipLine.id}',
-            );
-          });
+    request
+        ?.then(
+          (response) {
+            request = null;
+            if ([200, 201].contains(response.statusCode)) {
+              var data = response.data['data'];
+              setState(() {
+                bookPayslipLine.setFromJson(
+                  data,
+                  included: response.data['included'] ?? [],
+                );
+                var tabManager = context.read<TabManager>();
+                tabManager.changeTabHeader(
+                  widget,
+                  'Edit BookPayslipLine ${bookPayslipLine.id}',
+                );
+              });
 
-          flash.show(
-            const Text('Berhasil disimpan'),
-            ToastificationType.success,
-          );
-        } else if (response.statusCode == 409) {
-          var data = response.data;
-          flash.showBanner(
-            title: data['message'],
-            description: (data['errors'] ?? []).join('\n'),
-            messageType: ToastificationType.error,
-          );
-        }
-      },
-      onError: (error, stackTrace) {
-        request = null;
-        defaultErrorResponse(error: error);
-      },
-    );
+              flash.show(
+                const Text('Berhasil disimpan'),
+                ToastificationType.success,
+              );
+            } else if (response.statusCode == 409) {
+              var data = response.data;
+              flash.showBanner(
+                title: data['message'],
+                description: (data['errors'] ?? []).join('\n'),
+                messageType: ToastificationType.error,
+              );
+            }
+          },
+          onError: (error, stackTrace) {
+            request = null;
+            defaultErrorResponse(error: error);
+          },
+        )
+        .whenComplete(() => hideLoadingPopup());
   }
 
   @override
@@ -182,7 +190,8 @@ class _BookPayslipLineFormPageState extends State<BookPayslipLineFormPage>
                     modelClass: EmployeeClass(),
                     allowClear: false,
                     selected: bookPayslipLine.employee,
-                    textOnSearch: (employee) => employee.name,
+                    textOnSearch: (employee) =>
+                        '${employee.code} - ${employee.name}',
                     onChanged: (employee) =>
                         bookPayslipLine.employee = employee ?? Employee(),
                     onSaved: (employee) =>
@@ -238,21 +247,27 @@ class _BookPayslipLineFormPageState extends State<BookPayslipLineFormPage>
                     },
                   ),
                   const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10, bottom: 10),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          _formKey.currentState!.save();
-                          flash.show(
-                            const Text('Loading'),
-                            ToastificationType.info,
+                  Row(
+                    spacing: 15,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _submit,
+                        child: const Text('submit'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          bookPayslipLine.id = null;
+                          bookPayslipLine.createdAt = null;
+                          bookPayslipLine.updatedAt = null;
+                          final tabManager = context.read<TabManager>();
+                          tabManager.changeTabHeader(
+                            widget,
+                            'Buat baru Book Payslip Line',
                           );
-                          _submit();
-                        }
-                      },
-                      child: const Text('submit'),
-                    ),
+                        },
+                        child: const Text('Duplikasi'),
+                      ),
+                    ],
                   ),
                 ],
               ),

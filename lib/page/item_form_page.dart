@@ -35,7 +35,7 @@ class _ItemFormPageState extends State<ItemFormPage>
       _controller[key] = TextEditingController(text: value.toString());
     });
     super.initState();
-    if (item.rawData.isEmpty) {
+    if (!item.isNewRecord) {
       Future.delayed(Duration.zero, fetchItem);
     }
   }
@@ -43,7 +43,7 @@ class _ItemFormPageState extends State<ItemFormPage>
   void fetchItem() {
     showLoadingPopup();
     item
-        .refresh(_server)
+        .refresh(_server, include: ['brand', 'supplier', 'item_type'])
         .then((isSuccess) {
           if (isSuccess) {
             setState(() {
@@ -58,158 +58,164 @@ class _ItemFormPageState extends State<ItemFormPage>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: .start,
-      children: [
-        SizedBox(
-          height: bodyScreenHeight,
-          child: VerticalBodyScroll(
-            child: Column(
-              spacing: 10,
-              crossAxisAlignment: .start,
-              children: [
-                Visibility(
-                  visible: _setting.canShow('ipos::Item', 'code'),
-                  child: TextFormField(
-                    controller: _controller['code'],
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      label: Text(_setting.columnName('ipos::Item', 'code')),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: _setting.canShow('ipos::Item', 'name'),
-                  child: TextFormField(
-                    controller: _controller['name'],
-                    decoration: InputDecoration(
-                      label: Text(_setting.columnName('ipos::Item', 'name')),
-                      border: OutlineInputBorder(),
-                    ),
-                    onChanged: (value) => item.name = value,
-                  ),
-                ),
-                Visibility(
-                  visible: _setting.canShow('ipos::Item', 'brand_name'),
-                  child: IgnorePointer(
-                    ignoring: !_setting.isAuthorize('ipos/brands', 'read'),
-                    child: AsyncDropdown<Brand>(
-                      allowClear: false,
-                      textOnSearch: (e) => e.modelValue,
-                      modelClass: BrandClass(),
-                      label: Text(
-                        _setting.columnName('ipos::Item', 'brand_name'),
+    return SizedBox(
+      height: bodyScreenHeight,
+      child: Column(
+        crossAxisAlignment: .start,
+        children: [
+          Expanded(
+            child: VerticalBodyScroll(
+              child: Column(
+                spacing: 10,
+                crossAxisAlignment: .start,
+                children: [
+                  Visibility(
+                    visible: _setting.canShow('ipos::Item', 'code'),
+                    child: TextFormField(
+                      controller: _controller['code'],
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        label: Text(_setting.columnName('ipos::Item', 'code')),
+                        border: OutlineInputBorder(),
                       ),
-                      onChanged: (model) => item.brand = model,
-                      selected: item.brand,
                     ),
                   ),
-                ),
-                Visibility(
-                  visible: _setting.canShow('ipos::Item', 'item_type_name'),
-                  child: IgnorePointer(
-                    ignoring: !_setting.isAuthorize('ipos/item_types', 'read'),
-                    child: AsyncDropdown<ItemType>(
-                      allowClear: false,
-                      textOnSearch: (model) =>
-                          '${model.name} - ${model.description}',
-                      modelClass: ItemTypeClass(),
-                      label: Text(
-                        _setting.columnName('ipos::Item', 'item_type_name'),
+                  Visibility(
+                    visible: _setting.canShow('ipos::Item', 'name'),
+                    child: TextFormField(
+                      controller: _controller['name'],
+                      decoration: InputDecoration(
+                        label: Text(_setting.columnName('ipos::Item', 'name')),
+                        border: OutlineInputBorder(),
                       ),
-                      onChanged: (model) =>
-                          item.itemType = model ?? item.itemType,
-                      selected: item.itemType,
+                      onChanged: (value) => item.name = value,
                     ),
                   ),
-                ),
-                Visibility(
-                  visible: _setting.canShow('ipos::Item', 'supplier_code'),
-                  child: IgnorePointer(
-                    ignoring: !_setting.isAuthorize('ipos/suppliers', 'read'),
-                    child: AsyncDropdown<Supplier>(
-                      allowClear: false,
-                      textOnSearch: (model) => '${model.code} - ${model.name}',
-                      modelClass: SupplierClass(),
-                      label: Text(
-                        _setting.columnName('ipos::Item', 'supplier_code'),
+                  Visibility(
+                    visible: _setting.canShow('ipos::Item', 'brand_name'),
+                    child: IgnorePointer(
+                      ignoring: !_setting.isAuthorize('ipos/brands', 'read'),
+                      child: AsyncDropdown<Brand>(
+                        allowClear: false,
+                        textOnSearch: (e) => e.modelValue,
+                        modelClass: BrandClass(),
+                        label: Text(
+                          _setting.columnName('ipos::Item', 'brand_name'),
+                        ),
+                        onChanged: (model) => item.brand = model,
+                        selected: item.brand,
                       ),
-                      onChanged: (model) =>
-                          item.supplier = model ?? item.supplier,
-                      selected: item.supplier,
                     ),
                   ),
-                ),
-                Visibility(
-                  visible: _setting.canShow('ipos::Item', 'uom'),
-                  child: TextFormField(
-                    controller: _controller['uom'],
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      label: Text(_setting.columnName('ipos::Item', 'uom')),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: _setting.canShow('ipos::Item', 'description'),
-                  child: TextFormField(
-                    controller: _controller['description'],
-                    minLines: 3,
-                    maxLines: 5,
-                    decoration: InputDecoration(
-                      label: Text(
-                        _setting.columnName('ipos::Item', 'description'),
+                  Visibility(
+                    visible: _setting.canShow('ipos::Item', 'item_type_name'),
+                    child: IgnorePointer(
+                      ignoring: !_setting.isAuthorize(
+                        'ipos/item_types',
+                        'read',
                       ),
-                      border: OutlineInputBorder(),
-                    ),
-                    onChanged: (value) => item.description = value,
-                  ),
-                ),
-                Visibility(
-                  visible: _setting.canShow('ipos::Item', 'cogs'),
-                  child: MoneyFormField(
-                    controller: _controller['cogs'],
-                    onChanged: (value) {
-                      setState(() {
-                        item.cogs = value ?? item.cogs;
-                      });
-                    },
-                    label: Text(_setting.columnName('ipos::Item', 'cogs')),
-                  ),
-                ),
-                Visibility(
-                  visible: _setting.canShow('ipos::Item', 'sell_price'),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('Margin: ${item.margin.format()}'),
-                  ),
-                ),
-                Visibility(
-                  visible: _setting.canShow('ipos::Item', 'sell_price'),
-                  child: MoneyFormField(
-                    controller: _controller['sell_price'],
-                    onChanged: (value) {
-                      setState(() {
-                        item.sellPrice = value ?? item.sellPrice;
-                      });
-                    },
-                    label: Text(
-                      _setting.columnName('ipos::Item', 'sell_price'),
+                      child: AsyncDropdown<ItemType>(
+                        allowClear: false,
+                        textOnSearch: (model) =>
+                            '${model.name} - ${model.description}',
+                        modelClass: ItemTypeClass(),
+                        label: Text(
+                          _setting.columnName('ipos::Item', 'item_type_name'),
+                        ),
+                        onChanged: (model) =>
+                            item.itemType = model ?? item.itemType,
+                        selected: item.itemType,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  Visibility(
+                    visible: _setting.canShow('ipos::Item', 'supplier_code'),
+                    child: IgnorePointer(
+                      ignoring: !_setting.isAuthorize('ipos/suppliers', 'read'),
+                      child: AsyncDropdown<Supplier>(
+                        allowClear: false,
+                        textOnSearch: (model) =>
+                            '${model.code} - ${model.name}',
+                        modelClass: SupplierClass(),
+                        label: Text(
+                          _setting.columnName('ipos::Item', 'supplier_code'),
+                        ),
+                        onChanged: (model) =>
+                            item.supplier = model ?? item.supplier,
+                        selected: item.supplier,
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: _setting.canShow('ipos::Item', 'uom'),
+                    child: TextFormField(
+                      controller: _controller['uom'],
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        label: Text(_setting.columnName('ipos::Item', 'uom')),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: _setting.canShow('ipos::Item', 'description'),
+                    child: TextFormField(
+                      controller: _controller['description'],
+                      minLines: 3,
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                        label: Text(
+                          _setting.columnName('ipos::Item', 'description'),
+                        ),
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (value) => item.description = value,
+                    ),
+                  ),
+                  Visibility(
+                    visible: _setting.canShow('ipos::Item', 'cogs'),
+                    child: MoneyFormField(
+                      controller: _controller['cogs'],
+                      onChanged: (value) {
+                        setState(() {
+                          item.cogs = value ?? item.cogs;
+                        });
+                      },
+                      label: Text(_setting.columnName('ipos::Item', 'cogs')),
+                    ),
+                  ),
+                  Visibility(
+                    visible: _setting.canShow('ipos::Item', 'sell_price'),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('Margin: ${item.margin.format()}'),
+                    ),
+                  ),
+                  Visibility(
+                    visible: _setting.canShow('ipos::Item', 'sell_price'),
+                    child: MoneyFormField(
+                      controller: _controller['sell_price'],
+                      onChanged: (value) {
+                        setState(() {
+                          item.sellPrice = value ?? item.sellPrice;
+                        });
+                      },
+                      label: Text(
+                        _setting.columnName('ipos::Item', 'sell_price'),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        const Divider(),
-        Padding(
-          padding: const EdgeInsets.only(top: 15.0, left: 10),
-          child: ElevatedButton(onPressed: _submit, child: Text('Submit')),
-        ),
-      ],
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.only(top: 15.0, left: 10),
+            child: ElevatedButton(onPressed: _submit, child: Text('Submit')),
+          ),
+        ],
+      ),
     );
   }
 
@@ -221,7 +227,7 @@ class _ItemFormPageState extends State<ItemFormPage>
       'data': {'id': item.id, 'type': 'item', 'attributes': item.toJson()},
     };
     server
-        .put('items/${item.code}', body: params)
+        .put('ipos/items/${item.code}', body: params)
         .then((response) {
           if (mounted && response.statusCode == 200) {
             setState(() {

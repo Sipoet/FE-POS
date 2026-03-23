@@ -82,7 +82,7 @@ class _SystemSettingPageState extends State<SystemSettingPage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<SystemSetting>(
-                renderAction: (model) => Row(
+                rowAction: (model) => Row(
                   children: [
                     IconButton(
                       onPressed: () => _openEditForm(model),

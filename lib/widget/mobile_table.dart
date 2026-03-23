@@ -12,8 +12,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class MobileTable<T extends Model> extends StatefulWidget {
-  final Widget Function(T model)? renderAction;
+  final Widget Function(T model)? rowAction;
   final List<TableColumn> columns;
+  final List<Widget>? additionalMenuActions;
+  final bool showSearch;
   // final void Function() onChanged;
   final MobileTableController<T> controller;
   final List<T>? rows;
@@ -21,7 +23,9 @@ class MobileTable<T extends Model> extends StatefulWidget {
     super.key,
     required this.columns,
     required this.controller,
-    required this.renderAction,
+    this.rowAction,
+    this.showSearch = true,
+    this.additionalMenuActions,
     this.rows,
   });
 
@@ -36,12 +40,18 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
   final scrollController = ScrollController();
   MobileTableController<T> get controller => widget.controller;
   CancelableOperation<String>? searchOperation;
+  final _menuController = MenuController();
   @override
   void initState() {
     tabManager = context.read<TabManager>();
 
     Future.delayed(Duration.zero, refreshTable);
     controller.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+    controller.loader.addListener(() {
       if (mounted) {
         setState(() {});
       }
@@ -56,29 +66,32 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
         Row(
           mainAxisAlignment: .spaceBetween,
           children: [
-            Flexible(
-              child: TextFormField(
-                onFieldSubmitted: (value) {
-                  controller.searchText = value;
-                  controller.currentPage = 1;
-                  controller.notifyChanged();
-                },
-                initialValue: controller.searchText,
-                onChanged: (value) {
-                  searchOperation?.cancel();
-                  searchOperation = CancelableOperation<String>.fromFuture(
-                    Future<String>.delayed(Durations.long1, () => value),
-                    onCancel: () => debugPrint('search cancel'),
-                  );
-                  searchOperation!.value.then((value) {
+            Visibility(
+              visible: widget.showSearch,
+              child: Flexible(
+                child: TextFormField(
+                  onFieldSubmitted: (value) {
                     controller.searchText = value;
                     controller.currentPage = 1;
                     controller.notifyChanged();
-                  });
-                },
-                decoration: InputDecoration(
-                  hintText: 'Search',
-                  prefixIcon: Icon(Icons.search),
+                  },
+                  initialValue: controller.searchText,
+                  onChanged: (value) {
+                    searchOperation?.cancel();
+                    searchOperation = CancelableOperation<String>.fromFuture(
+                      Future<String>.delayed(Durations.long1, () => value),
+                      onCancel: () => debugPrint('search cancel'),
+                    );
+                    searchOperation!.value.then((value) {
+                      controller.searchText = value;
+                      controller.currentPage = 1;
+                      controller.notifyChanged();
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search',
+                    prefixIcon: Icon(Icons.search),
+                  ),
                 ),
               ),
             ),
@@ -89,7 +102,27 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                 color: controller.sorts.isNotEmpty ? Colors.green : null,
               ),
             ),
-            IconButton(onPressed: refreshTable, icon: Icon(Icons.refresh)),
+            MenuAnchor(
+              controller: _menuController,
+              alignmentOffset: Offset(-120, 10),
+              menuChildren: [
+                MenuItemButton(
+                  onPressed: refreshTable,
+                  child: const Text('Refresh table'),
+                ),
+                ...widget.additionalMenuActions ?? [],
+              ],
+              child: IconButton(
+                icon: Icon(Icons.menu),
+                onPressed: () {
+                  if (_menuController.isOpen) {
+                    _menuController.close();
+                  } else {
+                    _menuController.open();
+                  }
+                },
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 10),
@@ -119,9 +152,9 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                       model: model,
                       columns: widget.columns,
                       tabManager: tabManager,
-                      action: widget.renderAction == null
+                      action: widget.rowAction == null
                           ? null
-                          : widget.renderAction!(model),
+                          : widget.rowAction!(model),
                     ),
                   )
                   .toList(),
@@ -143,59 +176,120 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
     );
   }
 
+  final borderRadius = BorderRadius.only(
+    topLeft: Radius.circular(15),
+    topRight: Radius.circular(15),
+  );
   void openSortDialog() {
-    showDialog<bool>(
+    String searchSortText = '';
+    final colorScheme = Theme.of(context).colorScheme;
+    showModalBottomSheet<bool>(
       context: context,
+      isScrollControlled: true,
+      enableDrag: true,
+      scrollControlDisabledMaxHeightRatio: 600,
+      shape: RoundedRectangleBorder(
+        borderRadius: borderRadius,
+        side: BorderSide(color: colorScheme.outline),
+      ),
+      backgroundColor: colorScheme.tertiaryContainer,
       builder: (BuildContext context) {
         final navigator = Navigator.of(context);
         Map<String, SortData> sorts = {};
         for (final sort in controller.sorts) {
           sorts[sort.key] = sort;
         }
-        String searchSortText = '';
-        final columns = widget.columns
-            .where(
-              (column) =>
-                  column.canSort && searchSortText.isEmpty ||
-                  column.humanizeName.insensitiveContains(searchSortText),
-            )
-            .toList();
         return StatefulBuilder(
-          builder: (BuildContext context, setstateDialog) => AlertDialog(
-            title: const Text("Urutkan Berdasarkan:"),
-            content: SizedBox(
-              width: 350,
-              height: 400,
+          builder: (BuildContext context, setstateDialog) {
+            final size = MediaQuery.of(context).size;
+            final columns = widget.columns
+                .where(
+                  (column) =>
+                      column.canSort && searchSortText.isEmpty ||
+                      column.humanizeName.insensitiveContains(searchSortText),
+                )
+                .toList();
+            return SizedBox(
+              height: size.height / 3 * 2,
               child: Column(
                 spacing: 15,
                 mainAxisSize: .min,
                 children: [
-                  TextField(
-                    decoration: InputDecoration(hintText: 'Cari'),
-                    onChanged: (val) => setstateDialog(() {
-                      searchSortText = val;
-                    }),
+                  Container(
+                    width: size.width,
+                    decoration: BoxDecoration(
+                      border: BoxBorder.symmetric(
+                        horizontal: BorderSide(color: colorScheme.outline),
+                      ),
+                      color: colorScheme.secondaryContainer,
+                      borderRadius: borderRadius,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                      child: Row(
+                        mainAxisAlignment: .spaceBetween,
+                        children: [
+                          Text(
+                            "Urutkan Berdasarkan",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: colorScheme.onSecondaryContainer,
+                            ),
+                            overflow: .clip,
+                          ),
+                          IconButton(
+                            onPressed: () => navigator.pop(false),
+                            icon: Icon(
+                              Icons.close,
+                              color: colorScheme.onSecondaryContainer,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: TextField(
+                      decoration: InputDecoration(hintText: 'Cari'),
+                      onChanged: (val) => setstateDialog(() {
+                        searchSortText = val;
+                      }),
+                    ),
                   ),
                   Expanded(
                     child: ListView.separated(
                       shrinkWrap: true,
                       primary: true,
                       itemCount: columns.length,
-                      separatorBuilder: (context, index) => SizedBox(height: 3),
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      separatorBuilder: (context, index) =>
+                          SizedBox(height: 10),
                       itemBuilder: (context, index) {
                         final column = columns[index];
-                        return Card(
-                          borderOnForeground: false,
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(width: 1, color: Colors.grey),
-                            borderRadius: BorderRadius.all(Radius.circular(6)),
-                          ),
+                        return Material(
+                          color: colorScheme.tertiaryContainer,
                           child: ListTile(
                             dense: true,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(8),
+                              ),
+                              side: BorderSide(
+                                width: 1,
+                                color: colorScheme.outline,
+                              ),
+                            ),
+                            textColor: colorScheme.onSecondaryContainer,
+                            tileColor: colorScheme.secondaryContainer,
                             subtitle: Text(
                               column.humanizeName,
                               overflow: .fade,
-                              style: TextStyle(fontSize: 16),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: colorScheme.onSecondaryContainer,
+                              ),
                             ),
                             onTap: () {
                               setstateDialog(() {
@@ -217,50 +311,63 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                             trailing: sorts[column.name] == null
                                 ? Icon(Icons.unfold_more)
                                 : sorts[column.name]!.isAscending
-                                ? Icon(Icons.arrow_drop_up, color: Colors.green)
+                                ? Icon(
+                                    Icons.keyboard_arrow_up_sharp,
+                                    color: colorScheme.primary,
+                                  )
                                 : Icon(
-                                    Icons.arrow_drop_down,
-                                    color: Colors.green,
+                                    Icons.keyboard_arrow_down_sharp,
+                                    color: colorScheme.primary,
                                   ),
                           ),
                         );
                       },
                     ),
                   ),
+                  Container(
+                    width: size.width,
+                    decoration: BoxDecoration(
+                      border: BoxBorder.symmetric(
+                        horizontal: BorderSide(color: colorScheme.outline),
+                      ),
+                      color: colorScheme.secondaryContainer,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: Wrap(
+                        runSpacing: 10.0,
+                        spacing: 10,
+                        alignment: .spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                            child: const Text("Submit"),
+                            onPressed: () {
+                              controller.sorts = sorts.values.toList();
+                              navigator.pop(true);
+                            },
+                          ),
+                          ElevatedButton(
+                            child: const Text("Reset"),
+                            onPressed: () {
+                              setstateDialog(() {
+                                sorts.clear();
+                              });
+                            },
+                          ),
+                          ElevatedButton(
+                            child: const Text("Kembali"),
+                            onPressed: () {
+                              navigator.pop(false);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
-
-            actions: [
-              ElevatedButton(
-                child: const Text("Submit"),
-                onPressed: () {
-                  controller.sorts = sorts.values.toList();
-                  navigator.pop(true);
-                },
-              ),
-              ElevatedButton(
-                child: const Text("Reset"),
-                onPressed: () {
-                  setstateDialog(() {
-                    sorts.clear();
-                  });
-                },
-              ),
-              ElevatedButton(
-                child: const Text("Kembali"),
-                onPressed: () {
-                  navigator.pop(false);
-                },
-              ),
-            ],
-            elevation: 5,
-            actionsAlignment: .spaceAround,
-            actionsPadding: EdgeInsets.only(bottom: 20, left: 10, right: 10),
-            actionsOverflowAlignment: .end,
-            actionsOverflowButtonSpacing: 5,
-            actionsOverflowDirection: .down,
-          ),
+            );
+          },
         );
       },
     ).then((result) {

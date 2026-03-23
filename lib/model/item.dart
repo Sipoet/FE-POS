@@ -39,30 +39,32 @@ class Item extends Model {
     Money? cogs,
     ItemType? itemType,
     super.id,
-  })  : itemType = itemType ?? ItemType(),
-        discountRules = discountRules ?? [],
-        cogs = cogs ?? const Money(0),
-        sellPrice = sellPrice ?? const Money(0);
+  }) : itemType = itemType ?? ItemType(),
+       discountRules = discountRules ?? [],
+       cogs = cogs ?? const Money(0),
+       sellPrice = sellPrice ?? const Money(0);
 
   @override
   String get path => 'ipos/items';
+  @override
+  String get id => code;
 
   @override
   Map<String, dynamic> toMap() => {
-        'code': code,
-        'name': name,
-        'supplier': supplier,
-        'brand': brand,
-        'item_type': itemType,
-        'supplier_name': supplier?.name,
-        'supplier_code': supplier?.code ?? supplierCode,
-        'brand_name': brand?.name ?? brandName,
-        'item_type_name': itemType.name,
-        'sell_price': sellPrice,
-        'description': description,
-        'cogs': cogs,
-        'uom': uom,
-      };
+    'code': code,
+    'name': name,
+    'supplier': supplier,
+    'brand': brand,
+    'item_type': itemType,
+    'supplier_name': supplier?.name,
+    'supplier_code': supplier?.code ?? supplierCode,
+    'brand_name': brand?.name ?? brandName,
+    'item_type_name': itemType.name,
+    'sell_price': sellPrice,
+    'description': description,
+    'cogs': cogs,
+    'uom': uom,
+  };
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -78,18 +80,19 @@ class Item extends Model {
     uom = attributes['uom'] ?? '';
     sellPrice = Money.tryParse(attributes['sell_price']) ?? sellPrice;
     supplier = SupplierClass().findRelationData(
-      relation: json['relationships']['supplier'],
+      relation: json['relationships']?['supplier'],
       included: included,
     );
-    itemType = ItemTypeClass().findRelationData(
-          relation: json['relationships']['item_type'],
+    itemType =
+        ItemTypeClass().findRelationData(
+          relation: json['relationships']?['item_type'],
           included: included,
         ) ??
         ItemType(name: itemTypeName);
     brand = BrandClass().findRelationData(
-        relation: json['relationships']['brand'], included: included);
-    discountRules = DiscountRuleClass().findRelationsData(
-        relation: json['relationships']['discount_rules'], included: included);
+      relation: json['relationships']?['brand'],
+      included: included,
+    );
   }
 
   Percentage get margin => cogs == Money(0)

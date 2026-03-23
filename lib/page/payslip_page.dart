@@ -311,7 +311,7 @@ class _PayslipPageState extends State<PayslipPage>
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<Payslip>(
                 actionColumnWidth: 220,
-                renderAction: (payslip) => Row(
+                rowAction: (payslip) => Row(
                   spacing: 10,
                   children: [
                     IconButton(

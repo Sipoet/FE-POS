@@ -160,7 +160,7 @@ class _PayrollPageState extends State<PayrollPage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<Payroll>(
-                renderAction: (payroll) => Row(
+                rowAction: (payroll) => Row(
                   spacing: 10,
                   children: [
                     if (setting.isAuthorize('payrolls', 'update'))

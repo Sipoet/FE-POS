@@ -21,6 +21,7 @@ mixin TrinaTableDecorator<T extends Model>
   final String _formatNumber = '#,###.#';
   final String _locale = 'id_ID';
   late final Server server;
+  static const double summaryHeight = 100;
   TrinaColumnType _parseColumnType(
     TableColumn tableColumn, {
     List<Enum>? listEnumValues,
@@ -70,10 +71,11 @@ mixin TrinaTableDecorator<T extends Model>
     );
     bool showFooter = tableColumn.isNumeric();
     final format = _formatNumber;
-    final renderer =
-        tableColumn.renderBody ??
-        (TrinaColumnRendererContext rendererContext) =>
-            defaultRenderBody(rendererContext, tableColumn, tabManager);
+    final renderer = tableColumn.renderBody == null
+        ? (TrinaColumnRendererContext rendererContext) =>
+              defaultRenderBody(rendererContext, tableColumn, tabManager)
+        : (TrinaColumnRendererContext rendererContext) =>
+              tableColumn.renderBody!(rendererContext.row.modelOf());
 
     return TrinaColumn(
       readOnly: true,
@@ -208,7 +210,7 @@ mixin TrinaTableDecorator<T extends Model>
       return SizedBox();
     }
     if (value is String && tableColumn.type is ModelTableColumnType) {
-      return Text(value);
+      return SelectableText(value);
     }
     return tableColumn.type.renderCell(
       value: tableColumn.type.convert(value),

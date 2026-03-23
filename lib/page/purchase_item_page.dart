@@ -52,30 +52,34 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
   }
 
   Future<DataTableResponse<IposPurchaseItem>> fetchPurchaseItems(
-      QueryRequest request) {
+    QueryRequest request,
+  ) {
     request.filters = _filters;
     request.searchText = _searchText;
     request.include = ['item', 'purchase'];
-    return IposPurchaseItemClass().finds(server, request).then(
-      (value) => DataTableResponse<IposPurchaseItem>(
-        models: value.models,
-        totalPage: value.metadata['total_pages'],
-      ),
-      onError: (error) {
-        defaultErrorResponse(error: error);
-        return DataTableResponse.empty();
-      },
-    );
+    return IposPurchaseItemClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<IposPurchaseItem>(
+            models: value.models,
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void viewRecord(IposPurchaseItem purchaseItem) {
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-          'Lihat Pembelian ${purchaseItem.purchaseCode}',
-          PurchaseFormPage(
-              purchase:
-                  IposPurchaseHeader(code: purchaseItem.purchaseCode ?? '')));
+        'Lihat Pembelian ${purchaseItem.purchaseCode}',
+        PurchaseFormPage(
+          purchase: IposPurchaseHeader(code: purchaseItem.purchaseCode ?? ''),
+        ),
+      );
     });
   }
 
@@ -105,7 +109,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<IposPurchaseItem>(
-                renderAction: (purchaseItem) => Row(
+                rowAction: (purchaseItem) => Row(
                   spacing: 10,
                   children: [
                     IconButton.filled(

@@ -164,7 +164,7 @@ class _PayrollTypePageState extends State<PayrollTypePage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<PayrollType>(
-                renderAction: (payrollType) => Row(
+                rowAction: (payrollType) => Row(
                   children: [
                     IconButton(
                       onPressed: () {

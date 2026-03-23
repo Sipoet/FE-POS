@@ -20,6 +20,8 @@ class ItemType extends Model {
 
   @override
   String get path => 'ipos/item_types';
+  @override
+  String get id => name;
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
