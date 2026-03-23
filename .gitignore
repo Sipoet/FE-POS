@@ -112,3 +112,5 @@ coverage/
 # End of https://www.toptal.com/developers/gitignore/api/flutter
 
 *.iss
+
+CERTIFICATE.pfx
