@@ -57,7 +57,7 @@ class _DiscountPageState extends State<DiscountPage>
 
   Future<DataTableResponse<Discount>> fetchDiscounts(QueryRequest request) {
     request.filters = _filters;
-
+    request.include = ['discount_filters', 'customer_group'];
     return DiscountClass()
         .finds(server, request)
         .then(
@@ -365,7 +365,7 @@ class _DiscountPageState extends State<DiscountPage>
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<Discount>(
                 actionColumnWidth: 220,
-                renderAction: (discount) => Row(
+                rowAction: (discount) => Row(
                   spacing: 10,
                   children: [
                     IconButton(

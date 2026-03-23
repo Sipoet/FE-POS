@@ -9,7 +9,7 @@ class ItemReport extends Model {
   String supplierCode;
   String supplierName;
   String? brandName;
-  Percentage percentageSales;
+  Percentage? percentageSales;
   Money sellPrice;
   Money avgBuyPrice;
   int numberOfSales;
@@ -29,8 +29,8 @@ class ItemReport extends Model {
   ItemType itemType;
   Money cogs;
   Money lastBuyPrice;
-  Percentage margin;
-  Percentage limitProfitDiscount;
+  Percentage? margin;
+  Percentage? limitProfitDiscount;
   int numberOfReturn;
 
   ItemReport({
@@ -79,26 +79,28 @@ class ItemReport extends Model {
     id = json['id'];
     itemCode = attributes['item_code'];
     itemName = attributes['item_name'];
-    itemTypeName = attributes['item_type_name'];
-    itemTypeDesc = attributes['item_type_desc'];
-    supplierCode = attributes['supplier_code'];
-    supplierName = attributes['supplier_name'];
-    storeStock = attributes['store_stock'];
-    warehouseStock = attributes['warehouse_stock'];
+    itemTypeName = attributes['item_type_name'] ?? '';
+    itemTypeDesc = attributes['item_type_desc'] ?? '';
+    supplierCode = attributes['supplier_code'] ?? '';
+    supplierName = attributes['supplier_name'] ?? '';
+    storeStock = attributes['store_stock'] ?? storeStock;
+    warehouseStock = attributes['warehouse_stock'] ?? warehouseStock;
     brandName = attributes['brand_name'] ?? '';
-    isConsignment = attributes['is_consignment'];
-    stockLeft = double.tryParse(attributes['stock_left'].toString()) ?? 0;
-    percentageSales = Percentage(attributes['percentage_sales']);
-    margin = Percentage(attributes['margin'] ?? -1);
-    limitProfitDiscount = Percentage(attributes['limit_profit_discount'] ?? -1);
+    isConsignment = attributes['is_consignment'] ?? isConsignment;
+    stockLeft = double.tryParse(attributes['stock_left']) ?? 0;
+    percentageSales = Percentage.tryParse(attributes['percentage_sales']);
+    margin = Percentage.tryParse(attributes['margin']);
+    limitProfitDiscount = Percentage.tryParse(
+      attributes['limit_profit_discount'],
+    );
     cogs = Money.parse(attributes['cogs'] ?? '0');
-    numberOfReturn = attributes['qty_return'];
+    numberOfReturn = attributes['qty_return'] ?? 0;
     sellPrice = Money.tryParse(attributes['sell_price']) ?? const Money(0);
     avgBuyPrice = Money.tryParse(attributes['avg_buy_price']) ?? const Money(0);
-    numberOfSales = attributes['number_of_sales'];
+    numberOfSales = attributes['number_of_sales'] ?? 0;
     salesTotal = Money.tryParse(attributes['sales_total']) ?? const Money(0);
-    numberOfPurchase = attributes['number_of_purchase'];
-    itemOut = attributes['item_out'];
+    numberOfPurchase = attributes['number_of_purchase'] ?? 0;
+    itemOut = attributes['item_out'] ?? 0;
     purchaseTotal =
         Money.tryParse(attributes['purchase_total']) ?? const Money(0);
     grossProfit = Money.tryParse(attributes['gross_profit']) ?? const Money(0);

@@ -1,13 +1,13 @@
+import 'package:collection/collection.dart';
 import 'package:fe_pos/model/customer_group.dart';
 import 'package:fe_pos/model/model.dart';
-import 'package:fe_pos/model/discount_item.dart';
-export 'package:fe_pos/model/discount_item.dart';
-import 'package:fe_pos/model/discount_supplier.dart';
-export 'package:fe_pos/model/discount_supplier.dart';
-import 'package:fe_pos/model/discount_brand.dart';
-export 'package:fe_pos/model/discount_brand.dart';
-import 'package:fe_pos/model/discount_item_type.dart';
-export 'package:fe_pos/model/discount_item_type.dart';
+
+import 'package:fe_pos/model/discount_filter.dart';
+import 'package:fe_pos/model/item.dart';
+import 'package:flutter/material.dart';
+export 'package:fe_pos/model/item.dart';
+export 'package:fe_pos/model/discount_filter.dart';
+
 export 'package:fe_pos/tool/custom_type.dart';
 
 enum DiscountCalculationType implements EnumTranslation {
@@ -98,7 +98,7 @@ enum DiscountType implements EnumTranslation {
 
 class Discount extends Model {
   String? itemCode;
-  String? itemType;
+  String? itemTypeName;
   String? brandName;
   String? supplierCode;
   String? blacklistItemType;
@@ -113,10 +113,7 @@ class Discount extends Model {
   DateTime endTime;
   DiscountCalculationType calculationType;
   CustomerGroup? customerGroup;
-  List<DiscountItem> discountItems = [];
-  List<DiscountBrand> discountBrands = [];
-  List<DiscountItemType> discountItemTypes = [];
-  List<DiscountSupplier> discountSuppliers = [];
+  List<DiscountFilter> discountFilters = [];
 
   String code;
   int weight;
@@ -132,7 +129,7 @@ class Discount extends Model {
     super.id,
     this.code = '',
     this.itemCode,
-    this.itemType,
+    this.itemTypeName,
     this.brandName,
     this.blacklistBrandName,
     this.blacklistItemType,
@@ -140,6 +137,7 @@ class Discount extends Model {
     this.blacklistItemCode,
     this.supplierCode,
     this.customerGroup,
+    List<DiscountFilter>? discountFilters,
     required this.calculationType,
     required this.discount1,
     this.discount2,
@@ -158,7 +156,7 @@ class Discount extends Model {
     required this.startTime,
     required this.endTime,
     this.weight = 1,
-  });
+  }) : discountFilters = discountFilters ?? [];
 
   @override
   String get modelName => 'discount';
@@ -169,7 +167,7 @@ class Discount extends Model {
     super.setFromJson(json, included: included);
     code = attributes['code']?.trim();
     itemCode = attributes['item_code'];
-    itemType = attributes['item_type_name'];
+    itemTypeName = attributes['item_type_name'];
     supplierCode = attributes['supplier_code'];
     brandName = attributes['brand_name'];
     if (attributes['calculation_type'] != null) {
@@ -201,24 +199,9 @@ class Discount extends Model {
     week6 = attributes['week6'];
     week7 = attributes['week7'];
     final relationships = json['relationships'];
-    discountItems = DiscountItemClass().findRelationsData(
+    discountFilters = DiscountFilterClass().findRelationsData(
       included: included,
-      relation: relationships['discount_items'],
-    );
-
-    discountSuppliers = DiscountSupplierClass().findRelationsData(
-      included: included,
-      relation: relationships['discount_suppliers'],
-    );
-
-    discountBrands = DiscountBrandClass().findRelationsData(
-      included: included,
-      relation: relationships['discount_brands'],
-    );
-
-    discountItemTypes = DiscountItemTypeClass().findRelationsData(
-      included: included,
-      relation: relationships['discount_item_types'],
+      relation: relationships['discount_filters'],
     );
 
     customerGroup = CustomerGroupClass().findRelationData(
@@ -231,104 +214,188 @@ class Discount extends Model {
   }
 
   String? get customerGroupCode => customerGroup?.code;
+  DateTimeRange<Date>? get purchaseDateRange {
+    final discountFilter = discountFilters.firstWhereOrNull(
+      (e) => e.filterKey == 'purchase_date',
+    );
+    if (discountFilter == null) {
+      return null;
+    }
+    final dates = discountFilter.value
+        .split('|')
+        .map((value) => Date.parse(value))
+        .toList();
+    return DateTimeRange<Date>(start: dates.first, end: dates.last);
+  }
 
-  List<Brand> get brands => discountBrands
-      .where((element) => element.isExclude == false && element.brand != null)
-      .map<Brand>((e) => e.brand as Brand)
-      .toList();
-  List<Brand> get blacklistBrands => discountBrands
-      .where((element) => element.isExclude == true && element.brand != null)
-      .map<Brand>((e) => e.brand as Brand)
-      .toList();
+  set purchaseDateRange(DateTimeRange<Date>? dateRange) {
+    discountFilters.removeWhere((e) => e.filterKey == 'purchase_date');
+    if (dateRange != null) {
+      String value =
+          "${dateRange.start.toIso8601String()}|${dateRange.end.toIso8601String()}";
+      discountFilters.add(
+        DiscountFilter(
+          filterKey: 'purchase_date',
+          value: value,
+          isExclude: false,
+        ),
+      );
+    }
+  }
 
-  List<Item> get items => discountItems
-      .where((element) => element.isExclude == false && element.item != null)
-      .map<Item>((e) => e.item as Item)
-      .toList();
-  List<Item> get blacklistItems => discountItems
-      .where((element) => element.isExclude == true && element.item != null)
-      .map<Item>((e) => e.item as Item)
-      .toList();
-
-  List<Supplier> get suppliers => discountSuppliers
+  List<Brand> get brands => discountFilters
       .where(
-        (element) => element.isExclude == false && element.supplier != null,
+        (element) => element.isExclude == false && element.filterKey == 'brand',
       )
-      .map<Supplier>((e) => e.supplier as Supplier)
+      .map<Brand>((e) => Brand(id: e.value, name: e.value))
       .toList();
-  List<Supplier> get blacklistSuppliers => discountSuppliers
-      .where((element) => element.isExclude == true && element.supplier != null)
-      .map<Supplier>((e) => e.supplier as Supplier)
+  List<Brand> get blacklistBrands => discountFilters
+      .where(
+        (element) => element.isExclude == true && element.filterKey == 'brand',
+      )
+      .map<Brand>((e) => Brand(id: e.value, name: e.value))
       .toList();
 
-  List<ItemType> get itemTypes => discountItemTypes
+  List<Item> get items => discountFilters
       .where(
-        (element) => element.isExclude == false && element.itemType != null,
+        (element) => element.isExclude == false && element.filterKey == 'item',
       )
-      .map<ItemType>((e) => e.itemType as ItemType)
+      .map<Item>((e) => Item(id: e.value, code: e.value))
       .toList();
-  List<ItemType> get blacklistItemTypes => discountItemTypes
-      .where((element) => element.isExclude == true && element.itemType != null)
-      .map<ItemType>((e) => e.itemType as ItemType)
+  List<Item> get blacklistItems => discountFilters
+      .where(
+        (element) => element.isExclude == true && element.filterKey == 'item',
+      )
+      .map<Item>((e) => Item(id: e.value, code: e.value))
+      .toList();
+
+  List<Supplier> get suppliers => discountFilters
+      .where(
+        (element) =>
+            element.isExclude == false && element.filterKey == 'supplier',
+      )
+      .map<Supplier>((e) => Supplier(id: e.value, code: e.value))
+      .toList();
+  List<Supplier> get blacklistSuppliers => discountFilters
+      .where(
+        (element) =>
+            element.isExclude == true && element.filterKey == 'supplier',
+      )
+      .map<Supplier>((e) => Supplier(id: e.value, code: e.value))
+      .toList();
+
+  List<ItemType> get itemTypes => discountFilters
+      .where(
+        (element) =>
+            element.isExclude == false && element.filterKey == 'item_type',
+      )
+      .map<ItemType>((e) => ItemType(id: e.value, name: e.value))
+      .toList();
+  List<ItemType> get blacklistItemTypes => discountFilters
+      .where(
+        (element) =>
+            element.isExclude == true && element.filterKey == 'item_type',
+      )
+      .map<ItemType>((e) => ItemType(id: e.value, name: e.value))
       .toList();
 
   set brands(List<Brand> newBrands) {
-    discountBrands.removeWhere((element) => !element.isExclude);
+    discountFilters.removeWhere(
+      (element) => !element.isExclude && element.filterKey == 'brand',
+    );
     for (final newBrand in newBrands) {
-      discountBrands.add(DiscountBrand(brand: newBrand));
+      discountFilters.add(
+        DiscountFilter(filterKey: 'brand', value: newBrand.id),
+      );
     }
   }
 
   set blacklistBrands(List<Brand> newBrands) {
-    discountBrands.removeWhere((element) => element.isExclude);
+    discountFilters.removeWhere(
+      (element) => element.isExclude && element.filterKey == 'brand',
+    );
     for (final newBrand in newBrands) {
-      discountBrands.add(DiscountBrand(brand: newBrand, isExclude: true));
+      discountFilters.add(
+        DiscountFilter(filterKey: 'brand', isExclude: true, value: newBrand.id),
+      );
     }
   }
 
   set itemTypes(List<ItemType> newItemTypes) {
-    discountItemTypes.removeWhere((element) => !element.isExclude);
-    for (final newItemType in newItemTypes) {
-      discountItemTypes.add(DiscountItemType(itemType: newItemType));
+    discountFilters.removeWhere(
+      (element) => !element.isExclude && element.filterKey == 'item_type',
+    );
+    for (final model in newItemTypes) {
+      discountFilters.add(
+        DiscountFilter(
+          filterKey: 'item_type',
+          isExclude: false,
+          value: model.id,
+        ),
+      );
     }
   }
 
   set blacklistItemTypes(List<ItemType> newItemTypes) {
-    discountItemTypes.removeWhere((element) => element.isExclude);
-    for (final newItemType in newItemTypes) {
-      discountItemTypes.add(
-        DiscountItemType(itemType: newItemType, isExclude: true),
+    discountFilters.removeWhere(
+      (element) => element.isExclude && element.filterKey == 'item_type',
+    );
+    for (final model in newItemTypes) {
+      discountFilters.add(
+        DiscountFilter(
+          filterKey: 'item_type',
+          isExclude: true,
+          value: model.id,
+        ),
       );
     }
   }
 
   set suppliers(List<Supplier> newSuppliers) {
-    discountSuppliers.removeWhere((element) => !element.isExclude);
-    for (final newSupplier in newSuppliers) {
-      discountSuppliers.add(DiscountSupplier(supplier: newSupplier));
+    discountFilters.removeWhere(
+      (element) => !element.isExclude && element.filterKey == 'supplier',
+    );
+    for (final model in newSuppliers) {
+      discountFilters.add(
+        DiscountFilter(
+          filterKey: 'supplier',
+          isExclude: false,
+          value: model.id,
+        ),
+      );
     }
   }
 
   set blacklistSuppliers(List<Supplier> newSuppliers) {
-    discountSuppliers.removeWhere((element) => element.isExclude);
-    for (final newSupplier in newSuppliers) {
-      discountSuppliers.add(
-        DiscountSupplier(supplier: newSupplier, isExclude: true),
+    discountFilters.removeWhere(
+      (element) => element.isExclude && element.filterKey == 'supplier',
+    );
+    for (final model in newSuppliers) {
+      discountFilters.add(
+        DiscountFilter(filterKey: 'supplier', isExclude: true, value: model.id),
       );
     }
   }
 
   set items(List<Item> newItems) {
-    discountItems.removeWhere((element) => !element.isExclude);
-    for (final newItem in newItems) {
-      discountItems.add(DiscountItem(item: newItem));
+    discountFilters.removeWhere(
+      (element) => !element.isExclude && element.filterKey == 'item',
+    );
+    for (final model in newItems) {
+      discountFilters.add(
+        DiscountFilter(filterKey: 'item', isExclude: false, value: model.id),
+      );
     }
   }
 
   set blacklistItems(List<Item> newItems) {
-    discountItems.removeWhere((element) => element.isExclude);
-    for (final newItem in newItems) {
-      discountItems.add(DiscountItem(item: newItem, isExclude: true));
+    discountFilters.removeWhere(
+      (element) => element.isExclude && element.filterKey == 'item',
+    );
+    for (final model in newItems) {
+      discountFilters.add(
+        DiscountFilter(filterKey: 'item', isExclude: true, value: model.id),
+      );
     }
   }
 
@@ -336,15 +403,12 @@ class Discount extends Model {
   Map<String, dynamic> toMap() => {
     'code': code.trim(),
     'item_code': itemCode,
-    'item_type_name': itemType,
+    'item_type_name': itemTypeName,
     'brand_name': brandName,
     'supplier_code': supplierCode,
-    'item.kodeitem': itemCode,
-    'item_type.jenis': itemType,
-    'brand.merek': brandName,
-    'supplier.kode': supplierCode,
     'calculation_type': calculationType,
     'discount_type': discountType,
+    'customer_group': customerGroup,
     'blacklist_item_type.jenis': blacklistItemType,
     'blacklist_brand.merek': blacklistBrandName,
     'blacklist_supplier.kode': blacklistSupplierCode,

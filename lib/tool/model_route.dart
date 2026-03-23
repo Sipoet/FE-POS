@@ -120,7 +120,12 @@ class ModelRoute {
   }
 
   ModelClass modelClassOf(String className) {
-    return _modelClasses[className]!;
+    try {
+      return _modelClasses[className]!;
+    } catch (e) {
+      debugPrint('className: $className not found');
+      rethrow;
+    }
   }
 
   static final Map<String, ModelClass> _modelClasses = Map.unmodifiable({
@@ -154,5 +159,7 @@ class ModelRoute {
     'Ipos::TransferItem': TransferItemClass(),
     'Ipos::ConsignmentIn': ConsignmentInClass(),
     'Ipos::ConsignmentInOrder': ConsignmentInOrderClass(),
+    'Ipos::StockLocation': StockLocationClass(),
+    'Ipos::Location': LocationClass(),
   });
 }

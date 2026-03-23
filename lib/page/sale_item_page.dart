@@ -76,7 +76,11 @@ class _SaleItemPageState extends State<SaleItemPage>
     setState(() {
       tabManager.addTab(
         'Lihat Penjualan ${saleItem.saleCode}',
-        SaleFormPage(sale: Sale(code: saleItem.saleCode ?? '')),
+        SaleFormPage(
+          sale:
+              saleItem.sale ??
+              Sale(id: saleItem.saleCode, code: saleItem.saleCode ?? ''),
+        ),
       );
     });
   }
@@ -171,7 +175,7 @@ class _SaleItemPageState extends State<SaleItemPage>
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<SaleItem>(
                 key: const ObjectKey('saleItemTable'),
-                renderAction: (saleItem) => Row(
+                rowAction: (saleItem) => Row(
                   spacing: 10,
                   children: [
                     IconButton.filled(

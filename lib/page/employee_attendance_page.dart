@@ -201,7 +201,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<EmployeeAttendance>(
-                renderAction: (employeeAttendance) => Row(
+                rowAction: (employeeAttendance) => Row(
                   spacing: 10,
                   children: [
                     if (setting.isAuthorize('employee_attendances', 'update'))

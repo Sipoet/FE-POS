@@ -12,8 +12,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class MobileTable<T extends Model> extends StatefulWidget {
-  final Widget Function(T model)? renderAction;
+  final Widget Function(T model)? rowAction;
   final List<TableColumn> columns;
+  final List<Widget>? additionalMenuActions;
+  final bool showSearch;
   // final void Function() onChanged;
   final MobileTableController<T> controller;
   final List<T>? rows;
@@ -21,7 +23,9 @@ class MobileTable<T extends Model> extends StatefulWidget {
     super.key,
     required this.columns,
     required this.controller,
-    required this.renderAction,
+    this.rowAction,
+    this.showSearch = true,
+    this.additionalMenuActions,
     this.rows,
   });
 
@@ -36,12 +40,18 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
   final scrollController = ScrollController();
   MobileTableController<T> get controller => widget.controller;
   CancelableOperation<String>? searchOperation;
+  final _menuController = MenuController();
   @override
   void initState() {
     tabManager = context.read<TabManager>();
 
     Future.delayed(Duration.zero, refreshTable);
     controller.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+    controller.loader.addListener(() {
       if (mounted) {
         setState(() {});
       }
@@ -56,29 +66,32 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
         Row(
           mainAxisAlignment: .spaceBetween,
           children: [
-            Flexible(
-              child: TextFormField(
-                onFieldSubmitted: (value) {
-                  controller.searchText = value;
-                  controller.currentPage = 1;
-                  controller.notifyChanged();
-                },
-                initialValue: controller.searchText,
-                onChanged: (value) {
-                  searchOperation?.cancel();
-                  searchOperation = CancelableOperation<String>.fromFuture(
-                    Future<String>.delayed(Durations.long1, () => value),
-                    onCancel: () => debugPrint('search cancel'),
-                  );
-                  searchOperation!.value.then((value) {
+            Visibility(
+              visible: widget.showSearch,
+              child: Flexible(
+                child: TextFormField(
+                  onFieldSubmitted: (value) {
                     controller.searchText = value;
                     controller.currentPage = 1;
                     controller.notifyChanged();
-                  });
-                },
-                decoration: InputDecoration(
-                  hintText: 'Search',
-                  prefixIcon: Icon(Icons.search),
+                  },
+                  initialValue: controller.searchText,
+                  onChanged: (value) {
+                    searchOperation?.cancel();
+                    searchOperation = CancelableOperation<String>.fromFuture(
+                      Future<String>.delayed(Durations.long1, () => value),
+                      onCancel: () => debugPrint('search cancel'),
+                    );
+                    searchOperation!.value.then((value) {
+                      controller.searchText = value;
+                      controller.currentPage = 1;
+                      controller.notifyChanged();
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search',
+                    prefixIcon: Icon(Icons.search),
+                  ),
                 ),
               ),
             ),
@@ -89,7 +102,27 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                 color: controller.sorts.isNotEmpty ? Colors.green : null,
               ),
             ),
-            IconButton(onPressed: refreshTable, icon: Icon(Icons.refresh)),
+            MenuAnchor(
+              controller: _menuController,
+              alignmentOffset: Offset(-120, 10),
+              menuChildren: [
+                MenuItemButton(
+                  onPressed: refreshTable,
+                  child: const Text('Refresh table'),
+                ),
+                ...widget.additionalMenuActions ?? [],
+              ],
+              child: IconButton(
+                icon: Icon(Icons.menu),
+                onPressed: () {
+                  if (_menuController.isOpen) {
+                    _menuController.close();
+                  } else {
+                    _menuController.open();
+                  }
+                },
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 10),
@@ -119,9 +152,9 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                       model: model,
                       columns: widget.columns,
                       tabManager: tabManager,
-                      action: widget.renderAction == null
+                      action: widget.rowAction == null
                           ? null
-                          : widget.renderAction!(model),
+                          : widget.rowAction!(model),
                     ),
                   )
                   .toList(),
@@ -176,7 +209,7 @@ class _MobileTableState<T extends Model> extends State<MobileTable<T>>
                       column.humanizeName.insensitiveContains(searchSortText),
                 )
                 .toList();
-            return Container(
+            return SizedBox(
               height: size.height / 3 * 2,
               child: Column(
                 spacing: 15,

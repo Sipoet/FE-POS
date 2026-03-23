@@ -158,7 +158,7 @@ class _RolePageState extends State<RolePage>
               height: bodyScreenHeight,
               width: 900,
               child: CustomAsyncDataTable<Role>(
-                renderAction: (role) => Row(
+                rowAction: (role) => Row(
                   spacing: 10,
                   children: [
                     if (setting.isAuthorize('roles', 'update'))

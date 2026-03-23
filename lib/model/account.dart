@@ -6,17 +6,18 @@ class Account extends Model {
   String? parentCode;
   bool cashBank;
   String? currency;
-  Account(
-      {super.id,
-      this.parentCode,
-      super.updatedAt,
-      this.cashBank = false,
-      this.currency = '',
-      this.code = '',
-      this.name = ''});
+  Account({
+    super.id,
+    this.parentCode,
+    super.updatedAt,
+    this.cashBank = false,
+    this.currency = '',
+    this.code = '',
+    this.name = '',
+  });
 
   @override
-  String get modelName => 'account';
+  String get path => 'ipos/accounts';
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -31,13 +32,13 @@ class Account extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'code': code,
-        'name': name,
-        'parentacc': parentCode,
-        'updated_at': updatedAt,
-        'matauang': currency,
-        'kasbank': cashBank
-      };
+    'code': code,
+    'name': name,
+    'parentacc': parentCode,
+    'updated_at': updatedAt,
+    'matauang': currency,
+    'kasbank': cashBank,
+  };
 
   @override
   String get modelValue => '$code - $name';

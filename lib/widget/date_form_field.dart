@@ -30,7 +30,7 @@ class DateType with TextFormatter {
           locale: 'id',
         ),
       ),
-      initialDate: initialDate,
+      initialDate: initialDate?.toLocal(),
       pickerType: DateTimePickerType.date,
     );
   }
@@ -66,7 +66,7 @@ class DateTimeType with TextFormatter implements DateType {
           locale: 'id',
         ),
       ),
-      initialDate: initialDate,
+      initialDate: initialDate?.toLocal(),
       pickerType: DateTimePickerType.datetime,
     );
   }
@@ -102,7 +102,7 @@ class TimeType with TextFormatter implements DateType {
           locale: 'id',
         ),
       ),
-      initialDate: initialDate,
+      initialDate: initialDate?.toLocal(),
       pickerType: DateTimePickerType.time,
     );
   }

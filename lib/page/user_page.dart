@@ -184,7 +184,7 @@ class _UserPageState extends State<UserPage>
               height: bodyScreenHeight,
               width: 825,
               child: CustomAsyncDataTable<User>(
-                renderAction: (user) => Row(
+                rowAction: (user) => Row(
                   spacing: 10,
                   children: [
                     if (setting.isAuthorize('users', 'update'))

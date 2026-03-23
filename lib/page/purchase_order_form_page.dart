@@ -52,6 +52,23 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
     _server = context.read<Server>();
     _columns = setting.tableColumn('ipos::PurchaseOrderItem')
       ..removeWhere((line) => line.name == 'notransaksi');
+    _columns.insert(
+      6,
+      TableColumn(
+        clientWidth: 180,
+        name: 'margin',
+        humanizeName: 'Margin(%)',
+        type: PercentageTableColumnType(),
+        getValue: (Model model) {
+          model as PurchaseOrderItem;
+          final result = (model.sellPrice - model.price) / model.price;
+          if (result.isNaM) {
+            return Percentage(0);
+          }
+          return Percentage(result.value);
+        },
+      ),
+    );
     if (purchaseOrder.id != null) {
       Future.delayed(Duration.zero, () => fetchPurchaseOrder());
     }
@@ -78,6 +95,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                   included: response.data['included'] ?? [],
                 );
                 _source.setModels(purchaseOrder.purchaseItems);
+                _source.refreshTable();
               });
             }
           },

@@ -32,8 +32,10 @@ class SalesPerformanceChart extends StatefulWidget {
 }
 
 class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
-  static const TextStyle _filterLabelStyle =
-      TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
+  static const TextStyle _filterLabelStyle = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.bold,
+  );
 
   String _lastBottomText = '';
   SalesChartController get controller => widget.controller;
@@ -43,29 +45,32 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Center(
-            child: Text(widget.title,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
-        SizedBox(
-          height: 25,
+          child: Text(
+            widget.title,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
         ),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: widget.filterForm,
-        ),
+        SizedBox(height: 25),
+        Wrap(spacing: 10, runSpacing: 10, children: widget.filterForm),
         const SizedBox(height: 10),
         Visibility(
-            visible: controller.filteredDetails.isNotEmpty,
-            child: RichText(
-                text: TextSpan(
-                    text: 'Filter: ',
-                    style: TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.bold),
-                    children: [
-                  TextSpan(
-                      text: controller.filteredDetails.join(', '),
-                      style: TextStyle(fontWeight: FontWeight.normal))
-                ]))),
+          visible: controller.filteredDetails.isNotEmpty,
+          child: RichText(
+            text: TextSpan(
+              text: 'Filter: ',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+              children: [
+                TextSpan(
+                  text: controller.filteredDetails.join(', '),
+                  style: TextStyle(fontWeight: FontWeight.normal),
+                ),
+              ],
+            ),
+          ),
+        ),
         const SizedBox(height: 10),
         Visibility(
           visible: !controller.isLoading && controller.lineDetails.isEmpty,
@@ -88,8 +93,10 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   spacing: 10,
                   runSpacing: 10,
-                  children: controller.lineDetails
-                      .mapIndexed<Widget>((int index, LineDetail lineDetail) {
+                  children: controller.lineDetails.mapIndexed<Widget>((
+                    int index,
+                    LineDetail lineDetail,
+                  ) {
                     final lineTitle = lineDetail.lineTitle;
                     return Tooltip(
                       message: lineTitle.description,
@@ -107,11 +114,12 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
                               width: 20,
                               height: 10,
                               decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: lineDetail.isDisplayed
-                                      ? lineDetail.color
-                                      : Colors.grey.shade500,
-                                  border: Border.all(color: lineDetail.color)),
+                                shape: BoxShape.circle,
+                                color: lineDetail.isDisplayed
+                                    ? lineDetail.color
+                                    : Colors.grey.shade500,
+                                border: Border.all(color: lineDetail.color),
+                              ),
                             ),
                             const SizedBox(width: 5),
                             Text(lineTitle.name),
@@ -127,129 +135,151 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
                 padding: const EdgeInsets.only(right: 20, bottom: 10),
                 child: SizedBox(
                   height: 500,
-                  child: LineChart(LineChartData(
-                    minY: 0,
-                    lineTouchData: LineTouchData(
-                      getTouchedSpotIndicator: (
-                        _,
-                        indicators,
-                      ) {
-                        return indicators
-                            .map((int index) => const TouchedSpotIndicatorData(
+                  child: LineChart(
+                    LineChartData(
+                      minY: 0,
+                      lineTouchData: LineTouchData(
+                        getTouchedSpotIndicator: (_, indicators) {
+                          return indicators
+                              .map(
+                                (int index) => const TouchedSpotIndicatorData(
                                   FlLine(color: Colors.transparent),
                                   FlDotData(show: false),
-                                ))
-                            .toList();
-                      },
-                      distanceCalculator:
-                          (Offset touchPoint, Offset spotPixelCoordinates) =>
-                              (touchPoint - spotPixelCoordinates).distance,
-                      touchTooltipData: LineTouchTooltipData(
-                        fitInsideHorizontally: true,
-                        // fitInsideVertically: true,
-                        maxContentWidth: 260,
-                        getTooltipColor: (touchedSpot) => Colors.grey.shade900,
-                        getTooltipItems: (touchedSpots) => touchedSpots
-                            .mapIndexed<LineTooltipItem>(
-                                (int index, LineBarSpot spot) {
-                          final formattedYValue = widget.spotYFormat(spot.y);
-                          LineDetail linedetail =
-                              controller.lineDetails[spot.barIndex];
+                                ),
+                              )
+                              .toList();
+                        },
+                        distanceCalculator:
+                            (Offset touchPoint, Offset spotPixelCoordinates) =>
+                                (touchPoint - spotPixelCoordinates).distance,
+                        touchTooltipData: LineTouchTooltipData(
+                          fitInsideHorizontally: true,
+                          // fitInsideVertically: true,
+                          maxContentWidth: 260,
+                          getTooltipColor: (touchedSpot) =>
+                              Colors.grey.shade900,
+                          getTooltipItems: (touchedSpots) =>
+                              touchedSpots.mapIndexed<LineTooltipItem>((
+                                int index,
+                                LineBarSpot spot,
+                              ) {
+                                final formattedYValue = widget.spotYFormat(
+                                  spot.y,
+                                );
+                                LineDetail linedetail =
+                                    controller.lineDetails[spot.barIndex];
 
-                          LineTitle lineTitle = linedetail.lineTitle;
-                          if (index == 0) {
-                            return LineTooltipItem(
-                                "- ${xFormatDetail(spot.x).toString()} -",
-                                TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
-                                    color: Colors.white),
-                                textAlign: TextAlign.right,
-                                children: [
-                                  TextSpan(
-                                      text: "\n ${lineTitle.name}",
-                                      style: TextStyle(
+                                LineTitle lineTitle = linedetail.lineTitle;
+                                if (index == 0) {
+                                  return LineTooltipItem(
+                                    "- ${xFormatDetail(spot.x).toString()} -",
+                                    TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.right,
+                                    children: [
+                                      TextSpan(
+                                        text: "\n ${lineTitle.name}",
+                                        style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 14,
-                                          color: linedetail.color)),
-                                  TextSpan(
-                                      text: ' : $formattedYValue',
-                                      style: TextStyle(
+                                          color: linedetail.color,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: ' : $formattedYValue',
+                                        style: TextStyle(
                                           fontWeight: FontWeight.normal,
                                           fontSize: 14,
-                                          color: Colors.white)),
-                                ]);
-                          }
-                          return LineTooltipItem(
-                              lineTitle.name,
-                              TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                  color: linedetail.color),
-                              textAlign: TextAlign.right,
-                              children: [
-                                TextSpan(
-                                    text: ' : $formattedYValue',
-                                    style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }
+                                return LineTooltipItem(
+                                  lineTitle.name,
+                                  TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: linedetail.color,
+                                  ),
+                                  textAlign: TextAlign.right,
+                                  children: [
+                                    TextSpan(
+                                      text: ' : $formattedYValue',
+                                      style: TextStyle(
                                         fontWeight: FontWeight.normal,
                                         fontSize: 14,
-                                        color: Colors.white)),
-                              ]);
-                        }).toList(),
-                      ),
-                    ),
-                    lineBarsData: controller.lineDetails
-                        .mapIndexed(
-                          (int index, LineDetail lineDetail) =>
-                              LineChartBarData(
-                            show: lineDetail.isDisplayed,
-                            color: lineDetail.color,
-                            barWidth: 2,
-                            isStrokeCapRound: true,
-                            dotData: FlDotData(show: true),
-                            isCurved: false,
-                            spots: lineDetail.spots,
-                          ),
-                        )
-                        .toList(),
-                    titlesData: FlTitlesData(
-                      topTitles:
-                          AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      rightTitles: AxisTitles(
-                          sideTitles:
-                              SideTitles(showTitles: false, reservedSize: 50)),
-                      bottomTitles: AxisTitles(
-                        axisNameWidget: Text(
-                          widget.xTitle,
-                          style: _filterLabelStyle,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
                         ),
-                        axisNameSize: 22,
-                        sideTitles: SideTitles(
+                      ),
+                      lineBarsData: controller.lineDetails
+                          .mapIndexed(
+                            (int index, LineDetail lineDetail) =>
+                                LineChartBarData(
+                                  show: lineDetail.isDisplayed,
+                                  color: lineDetail.color,
+                                  barWidth: 2,
+                                  isStrokeCapRound: true,
+                                  dotData: FlDotData(show: true),
+                                  isCurved: false,
+                                  spots: lineDetail.spots,
+                                ),
+                          )
+                          .toList(),
+                      titlesData: FlTitlesData(
+                        topTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: false,
+                            reservedSize: 50,
+                          ),
+                        ),
+                        bottomTitles: AxisTitles(
+                          axisNameWidget: Text(
+                            widget.xTitle,
+                            style: _filterLabelStyle,
+                          ),
+                          axisNameSize: 22,
+                          sideTitles: SideTitles(
                             getTitlesWidget: getBottomTitles,
                             showTitles: true,
                             maxIncluded: true,
                             minIncluded: true,
-                            reservedSize: 35),
-                      ),
-                      leftTitles: AxisTitles(
-                        sideTitles: SideTitles(
+                            reservedSize: 35,
+                          ),
+                        ),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
                             getTitlesWidget: getLeftTitles,
                             showTitles: true,
                             minIncluded: false,
-                            reservedSize: 50),
+                            reservedSize: 50,
+                          ),
+                        ),
                       ),
-                    ),
-                    gridData: FlGridData(
-                      show: true,
-                    ),
-                    borderData: FlBorderData(
+                      gridData: FlGridData(show: true),
+                      borderData: FlBorderData(
                         show: true,
                         border: Border(
-                            left: BorderSide(color: Colors.black87),
-                            bottom: BorderSide(color: Colors.black87),
-                            top: BorderSide.none,
-                            right: BorderSide.none)),
-                  )),
+                          left: BorderSide(color: Colors.black87),
+                          bottom: BorderSide(color: Colors.black87),
+                          top: BorderSide.none,
+                          right: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -267,8 +297,10 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
     final text = bottomText(valueX, meta);
     return SideTitleWidget(
       meta: meta,
-      fitInside:
-          SideTitleFitInsideData.fromTitleMeta(meta, distanceFromEdge: 0),
+      fitInside: SideTitleFitInsideData.fromTitleMeta(
+        meta,
+        distanceFromEdge: 0,
+      ),
       space: 10,
       child: Text(text),
     );
@@ -294,9 +326,10 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
       return '';
     }
 
-    double lengthSep = (((meta.max - meta.min) / widget.xTitleDividerTotal) *
-            (controller.visibleBottomTitles.length + 1))
-        .ceilToDouble();
+    double lengthSep =
+        (((meta.max - meta.min) / widget.xTitleDividerTotal) *
+                (controller.visibleBottomTitles.length + 1))
+            .ceilToDouble();
     if (controller.visibleBottomTitles.contains(valueX)) {
       return formattedX;
     }
@@ -313,19 +346,15 @@ class _SalesPerformanceChartState extends State<SalesPerformanceChart> {
 
   Widget getLeftTitles(double valueY, TitleMeta meta) {
     final text = widget.yFormat(valueY);
-    return SideTitleWidget(
-      meta: meta,
-      space: 5,
-      child: Text(text),
-    );
+    return SideTitleWidget(meta: meta, space: 5, child: Text(text));
   }
 }
 
 class LineTitle {
-  final String name;
-  final String description;
+  String name;
+  String description;
 
-  const LineTitle({required this.name, this.description = ''});
+  LineTitle({required this.name, this.description = ''});
 }
 
 class LineDetail {
@@ -333,11 +362,12 @@ class LineDetail {
   List<FlSpot> spots;
   bool isDisplayed;
   Color color;
-  LineDetail(
-      {required this.lineTitle,
-      required this.color,
-      this.isDisplayed = true,
-      this.spots = const []});
+  LineDetail({
+    required this.lineTitle,
+    required this.color,
+    this.isDisplayed = true,
+    this.spots = const [],
+  });
 }
 
 class SalesChartController with ChangeNotifier {
@@ -375,14 +405,18 @@ class SalesChartController with ChangeNotifier {
   }) {
     visibleBottomTitles.clear();
     _lines = lines.keys
-        .mapIndexed<LineDetail>((int index, LineTitle lineTitle) => LineDetail(
+        .mapIndexed<LineDetail>(
+          (int index, LineTitle lineTitle) => LineDetail(
             lineTitle: lineTitle,
             color: _getLineColor(index),
-            spots: lines[lineTitle] ?? []))
+            spots: lines[lineTitle] ?? [],
+          ),
+        )
         .toList()
         .sorted(sortFromHighestTotal);
-    _lines.forEachIndexed((int index, LineDetail lineDetail) =>
-        lineDetail.isDisplayed = index < 8);
+    _lines.forEachIndexed(
+      (int index, LineDetail lineDetail) => lineDetail.isDisplayed = index < 8,
+    );
     _identifierList = identifierList;
     _startDate = startDate;
     _endDate = endDate;
@@ -402,5 +436,259 @@ class SalesChartController with ChangeNotifier {
 
   Color _getLineColor(int index) {
     return Colors.primaries[index % Colors.primaries.length];
+  }
+}
+
+class CustomLineChart extends StatefulWidget {
+  final String title;
+  final Widget? descriptionWidget;
+  final List<LineDetail> lineDetails;
+  final String Function(double valueY) spotYFormat;
+  final String Function(double valueX) spotXFormat;
+  final String xTitle;
+  final String yTitle;
+  const CustomLineChart({
+    super.key,
+    this.title = '',
+    required this.spotXFormat,
+    required this.spotYFormat,
+    this.xTitle = '',
+    this.yTitle = '',
+    this.descriptionWidget,
+    this.lineDetails = const [],
+  });
+
+  @override
+  State<CustomLineChart> createState() => _CustomLineChartState();
+}
+
+class _CustomLineChartState extends State<CustomLineChart> {
+  static const TextStyle _filterLabelStyle = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.bold,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Center(
+          child: Text(
+            widget.title,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ),
+        SizedBox(height: 25),
+        // Wrap(spacing: 10, runSpacing: 10, children: widget.filterForm),
+        const SizedBox(height: 10),
+        if (widget.descriptionWidget != null) widget.descriptionWidget!,
+        const SizedBox(height: 10),
+        Visibility(
+          visible: widget.lineDetails.isNotEmpty,
+          replacement: Center(child: Text('Data Tidak Ditemukan')),
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.only(left: 50.0),
+                child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: widget.lineDetails.mapIndexed<Widget>((
+                    int index,
+                    LineDetail lineDetail,
+                  ) {
+                    final lineTitle = lineDetail.lineTitle;
+                    return Tooltip(
+                      message: lineTitle.description,
+                      triggerMode: TooltipTriggerMode.longPress,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            lineDetail.isDisplayed = !lineDetail.isDisplayed;
+                          });
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 20,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: lineDetail.isDisplayed
+                                    ? lineDetail.color
+                                    : Colors.grey.shade500,
+                                border: Border.all(color: lineDetail.color),
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(lineTitle.name),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.only(right: 20, bottom: 10),
+                child: SizedBox(
+                  height: 500,
+                  child: LineChart(
+                    LineChartData(
+                      minY: 0,
+                      lineTouchData: LineTouchData(
+                        getTouchedSpotIndicator: (_, indicators) {
+                          return indicators
+                              .map(
+                                (int index) => const TouchedSpotIndicatorData(
+                                  FlLine(color: Colors.transparent),
+                                  FlDotData(show: false),
+                                ),
+                              )
+                              .toList();
+                        },
+                        distanceCalculator:
+                            (Offset touchPoint, Offset spotPixelCoordinates) =>
+                                (touchPoint - spotPixelCoordinates).distance,
+                        touchTooltipData: LineTouchTooltipData(
+                          fitInsideHorizontally: true,
+                          // fitInsideVertically: true,
+                          maxContentWidth: 260,
+                          getTooltipColor: (touchedSpot) =>
+                              Colors.grey.shade900,
+                          getTooltipItems: (touchedSpots) =>
+                              touchedSpots.mapIndexed<LineTooltipItem>((
+                                int index,
+                                LineBarSpot spot,
+                              ) {
+                                final formattedYValue = widget.spotYFormat(
+                                  spot.y,
+                                );
+                                LineDetail linedetail =
+                                    widget.lineDetails[spot.barIndex];
+
+                                LineTitle lineTitle = linedetail.lineTitle;
+                                if (index == 0) {
+                                  return LineTooltipItem(
+                                    "- ${widget.spotXFormat(spot.x).toString()} -",
+                                    TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.right,
+                                    children: [
+                                      TextSpan(
+                                        text: "\n ${lineTitle.name}",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: linedetail.color,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: ' : $formattedYValue',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.normal,
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }
+                                return LineTooltipItem(
+                                  lineTitle.name,
+                                  TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: linedetail.color,
+                                  ),
+                                  textAlign: TextAlign.right,
+                                  children: [
+                                    TextSpan(
+                                      text: ' : $formattedYValue',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.normal,
+                                        fontSize: 14,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                        ),
+                      ),
+                      lineBarsData: widget.lineDetails
+                          .mapIndexed(
+                            (int index, LineDetail lineDetail) =>
+                                LineChartBarData(
+                                  show: lineDetail.isDisplayed,
+                                  color: lineDetail.color,
+                                  barWidth: 2,
+                                  isStrokeCapRound: true,
+                                  dotData: FlDotData(show: true),
+                                  isCurved: false,
+                                  spots: lineDetail.spots,
+                                ),
+                          )
+                          .toList(),
+                      titlesData: FlTitlesData(
+                        topTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: false,
+                            reservedSize: 50,
+                          ),
+                        ),
+                        bottomTitles: AxisTitles(
+                          axisNameWidget: Text(
+                            widget.xTitle,
+                            style: _filterLabelStyle,
+                          ),
+                          axisNameSize: 22,
+                          sideTitles: SideTitles(
+                            // getTitlesWidget: getBottomTitles,
+                            showTitles: true,
+                            maxIncluded: true,
+                            minIncluded: true,
+                            reservedSize: 35,
+                          ),
+                        ),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            // getTitlesWidget: getLeftTitles,
+                            showTitles: true,
+                            minIncluded: false,
+                            reservedSize: 50,
+                          ),
+                        ),
+                      ),
+                      gridData: FlGridData(show: true),
+                      borderData: FlBorderData(
+                        show: true,
+                        border: Border(
+                          left: BorderSide(color: Colors.black87),
+                          bottom: BorderSide(color: Colors.black87),
+                          top: BorderSide.none,
+                          right: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }

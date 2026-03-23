@@ -145,6 +145,9 @@ class Date extends DateTime {
     return toIso8601String();
   }
 
+  @override
+  Date toLocal() => this;
+
   Date beginningOfWeek() {
     int dayT = weekday;
     return subtract(Duration(days: dayT - 1));
@@ -214,22 +217,27 @@ class Money {
   }
 
   static Money parse(value) {
-    return Money(double.parse(value.toString()));
-  }
-
-  static Money? tryParse(value) {
     if (value is double) {
       return Money(value);
-    } else if (value is int) {
+    } else if (value is num) {
       return Money(value.toDouble());
     } else if (value is String) {
-      var val = double.tryParse(value);
-      if (val == null) return null;
+      var val = double.parse(value);
       return Money(val);
-    } else if (value == null) {
+    } else {
+      var val = double.parse(value.toString());
+      return Money(val);
+    }
+  }
+
+  bool get isNaM => value.isNaN || value.isInfinite;
+
+  static Money? tryParse(value) {
+    try {
+      return parse(value);
+    } catch (e) {
       return null;
     }
-    return null;
   }
 
   Money dup() {
@@ -290,8 +298,10 @@ class Money {
   Money operator /(var other) {
     if (other is Money) {
       return Money(value / other.value, symbol: symbol);
-    } else {
+    } else if (other is num) {
       return Money(value / other, symbol: symbol);
+    } else {
+      return Money(double.nan, symbol: symbol);
     }
   }
 
@@ -300,8 +310,10 @@ class Money {
       return this;
     } else if (other is Money) {
       return Money(value - other.value, symbol: symbol);
-    } else {
+    } else if (other is num) {
       return Money(value - other, symbol: symbol);
+    } else {
+      return Money(double.nan, symbol: symbol);
     }
   }
 
@@ -338,6 +350,11 @@ class Money {
   }
 }
 
+extension DoubleFormat on double {
+  String format({String pattern = ',##0.##'}) =>
+      NumberFormat(pattern, "en_US").format(this);
+}
+
 class Percentage {
   final double value;
   const Percentage(this.value);
@@ -349,18 +366,28 @@ class Percentage {
     }
   }
 
-  static Percentage parse(String val) {
-    val = val.replaceAll(RegExp('%'), '');
-    return Percentage(double.parse(val));
+  static Percentage parse(dynamic val) {
+    if (val is String) {
+      final isContainPercent = val.contains('%');
+      val = val.replaceAll(RegExp('%'), '');
+      var parsed = double.parse(val);
+      parsed = isContainPercent ? parsed / 100 : parsed;
+      return Percentage(parsed);
+    } else if (val is double) {
+      return Percentage(val);
+    } else if (val is num) {
+      return Percentage(val.toDouble());
+    } else {
+      return Percentage(double.parse(val.toString()));
+    }
   }
 
-  static Percentage? tryParse(String val) {
-    final isContainPercent = val.contains('%');
-    val = val.replaceAll(RegExp('%'), '');
-    var parsed = double.tryParse(val);
-    if (parsed == null) return null;
-    parsed = isContainPercent ? parsed / 100 : parsed;
-    return Percentage(parsed);
+  static Percentage? tryParse(dynamic val) {
+    try {
+      return parse(val);
+    } catch (e) {
+      return null;
+    }
   }
 
   Percentage dup() {

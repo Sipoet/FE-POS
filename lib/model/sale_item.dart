@@ -120,7 +120,7 @@ class SaleItem extends Model {
             included: included,
             relation: json['relationships']?['sale'],
           ) ??
-          Sale(code: attributes['notransaksi']);
+          Sale(id: attributes['notransaksi'], code: attributes['notransaksi']);
 
       promoItem = ItemClass().findRelationData(
         included: included,
@@ -158,7 +158,7 @@ class SaleItem extends Model {
   @override
   String get modelValue => id.toString();
 
-  Money get totalDiscount => subtotal - (quantity * price.value);
+  Money get totalDiscount => subtotal - total;
 }
 
 class SaleItemClass extends ModelClass<SaleItem> {

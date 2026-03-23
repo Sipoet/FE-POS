@@ -12,6 +12,7 @@ abstract class Model with ChangeNotifier {
   DateTime? createdAt;
   DateTime? updatedAt;
   Map<String, dynamic> rawData;
+  Map<String, dynamic> altData = {};
   dynamic id;
 
   List<String> _errors = [];
@@ -66,12 +67,24 @@ abstract class Model with ChangeNotifier {
         );
   }
 
+  @override
+  bool operator ==(Object other) {
+    if (other is Model) {
+      return id == other.id && runtimeType == other.runtimeType;
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => '$modelName|$id'.hashCode;
+
   int compareTo(Model b) {
     return modelValue.compareTo(b.modelValue);
   }
 
   Map<String, dynamic> asMap() {
-    Map<String, dynamic> value = toMap();
+    Map<String, dynamic> value = toMap()..addAll(altData);
+
     if (createdAt != null) {
       value['created_at'] = createdAt;
     }
@@ -111,6 +124,10 @@ abstract class Model with ChangeNotifier {
 
   dynamic operator [](String key) {
     return asMap()[key];
+  }
+
+  operator []=(String key, dynamic value) {
+    altData[key] = value;
   }
 
   void reset() {
@@ -191,7 +208,7 @@ abstract class ModelClass<T extends Model> {
 
   Future<T?> find(Server server, dynamic id) async {
     return server
-        .get("$path/${id.toString()}")
+        .get("$path/${Uri.encodeComponent(id.toString())}")
         .then(
           (response) {
             if (response.statusCode == 200) {

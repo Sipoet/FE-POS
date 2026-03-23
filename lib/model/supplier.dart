@@ -29,6 +29,9 @@ class Supplier extends Model {
   String get path => 'ipos/suppliers';
 
   @override
+  String get id => code;
+
+  @override
   Map<String, dynamic> toMap() => {
     'code': code,
     'name': name,

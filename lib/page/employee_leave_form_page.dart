@@ -30,7 +30,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
     start: Date.today(),
     end: Date.today(),
   );
-  List<EmployeeLeave> _employeeLeaves = [];
+  final List<EmployeeLeave> _employeeLeaves = [];
   @override
   bool get wantKeepAlive => true;
   late final Server server;

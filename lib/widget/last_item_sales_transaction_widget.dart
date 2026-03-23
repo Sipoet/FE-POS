@@ -269,7 +269,7 @@ class _LastItemSalesTransactionWidgetState
                                   padding: EdgeInsets.all(8.0),
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: Text('Subtotal', style: labelStyle),
+                                    child: Text('Total', style: labelStyle),
                                   ),
                                 ),
                               ),
@@ -372,7 +372,7 @@ class _LastItemSalesTransactionWidgetState
                                       child: Align(
                                         alignment: Alignment.centerRight,
                                         child: SelectableText(
-                                          moneyFormat(saleItem.subtotal),
+                                          moneyFormat(saleItem.total),
                                         ),
                                       ),
                                     ),

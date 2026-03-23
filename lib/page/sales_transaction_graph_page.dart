@@ -164,7 +164,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
           clientWidth: 180,
           name: 'group_key',
           canFilter: true,
-          renderBody: (model) => Text(model.cell.value.toString()),
+          renderBody: (model) => Text(model['group_key'].toString()),
           humanizeName: groupKeyLocales[_groupType] ?? '',
         ),
         if (_groupType != 'period' || _groupPeriod != 'dow')
@@ -172,8 +172,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
             clientWidth: 180,
             name: 'description',
             canFilter: true,
-            renderBody: (model) =>
-                Text(model.row.cells['description']?.value.toString() ?? ''),
+            renderBody: (model) => Text(model['description'].toString()),
             humanizeName: 'Deskripsi',
           ),
         if (_separatePurchaseYear)

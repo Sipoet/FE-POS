@@ -58,8 +58,8 @@ class DateTimeRangeType implements RangeType<DateTime> {
           locale: 'id',
         ),
       ),
-      startDate: initialValue?.start,
-      endDate: initialValue?.end,
+      startDate: initialValue?.start.toLocal(),
+      endDate: initialValue?.end.toLocal(),
       showDragHandle: false,
       enableDrag: false,
       pickerType: DateTimePickerType.datetime,
@@ -92,7 +92,7 @@ class DateRangeType implements RangeType<Date> {
     required BuildContext context,
     required ColorScheme colorScheme,
     String? helpText,
-    DateTimeRange? initialValue,
+    DateTimeRange<Date>? initialValue,
   }) {
     return showDateRangePicker(
       context: context,
@@ -110,8 +110,8 @@ class DateRangeType implements RangeType<Date> {
         return null;
       }
       return DateTimeRange<Date>(
-        start: onValue.start.toLocal().toDate(),
-        end: onValue.end.toLocal().toDate(),
+        start: onValue.start.toDate(),
+        end: onValue.end.toDate(),
       );
     });
   }
@@ -244,13 +244,15 @@ class _DateRangeFormFieldState<T extends DateTime>
           helpText: widget.helpText,
         )
         .then((DateTimeRange<T>? range) {
-          setState(() {
-            _dateRange = range;
-            _controller.text = _daterangeFormat();
-            if (widget.onChanged != null) {
-              widget.onChanged!(_dateRange);
-            }
-          });
+          if (range != null) {
+            setState(() {
+              _dateRange = range;
+              _controller.text = _daterangeFormat();
+            });
+          }
+          if (widget.onChanged != null) {
+            widget.onChanged!(_dateRange);
+          }
         });
   }
 

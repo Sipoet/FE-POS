@@ -135,21 +135,18 @@ class _EmployeeAttendanceMassUploadPageState
     if (result == null) {
       return;
     }
+    final path = 'employee_attendances/mass_upload';
     Future<dynamic> request;
     if (isWeb()) {
       final file = result.files.first;
       request = _server.upload(
-        'employee_attendances/mass_upload',
+        path,
         bytes: file.bytes!.toList(),
         filename: file.name,
       );
     } else {
       final file = result.xFiles.first;
-      request = _server.upload(
-        'employee_attendances/mass_upload',
-        file: file,
-        filename: file.name,
-      );
+      request = _server.upload(path, file: file, filename: file.name);
     }
 
     showLoadingPopup();

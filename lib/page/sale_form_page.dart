@@ -45,7 +45,7 @@ class _SaleFormPageState extends State<SaleFormPage>
 
     _columns = setting.tableColumn('ipos::SaleItem');
 
-    if (sale.id != null) {
+    if (!sale.isNewRecord) {
       Future.delayed(Duration.zero, () => fetchSale());
     }
     super.initState();

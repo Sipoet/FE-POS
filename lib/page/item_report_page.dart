@@ -1,8 +1,11 @@
+import 'package:fe_pos/model/all_model.dart';
+import 'package:fe_pos/page/discount_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/model/item_report.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/table_filter_form.dart';
@@ -24,14 +27,16 @@ class _ItemReportPageState extends State<ItemReportPage>
   String? _reportType;
   double minimumColumnWidth = 150;
   late final SyncTableController<ItemReport> _source;
-  late Flash flash;
+  late final Flash flash;
   late final List<TableColumn> columns;
+  late final TabManager _tabManager;
   // List<ItemReport> itemReports = [];
 
   @override
   void initState() {
     server = context.read<Server>();
     final setting = context.read<Setting>();
+    _tabManager = context.read<TabManager>();
     columns = setting.tableColumn('itemReport');
     flash = Flash();
     super.initState();
@@ -122,6 +127,31 @@ class _ItemReportPageState extends State<ItemReportPage>
     );
   }
 
+  void addNewDiscount() {
+    if (_source.models.isEmpty) {
+      return;
+    }
+    Discount discount = Discount(
+      calculationType: .percentage,
+      discount1: Percentage(0),
+      startTime: DateTime.now().toLocal().beginningOfDay(),
+      endTime: DateTime.now().toLocal().endOfDay(),
+      discountFilters: _source.models
+          .map<DiscountFilter>(
+            (model) => DiscountFilter(
+              filterKey: 'item',
+              isExclude: false,
+              value: model.itemCode,
+            ),
+          )
+          .toList(),
+    );
+    _tabManager.addTab(
+      'Tambah Diskon Baru',
+      DiscountFormPage(discount: discount, key: ObjectKey(discount)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -143,13 +173,21 @@ class _ItemReportPageState extends State<ItemReportPage>
             },
             columns: columns,
           ),
+
           SizedBox(
             height: bodyScreenHeight,
             child: SyncDataTable<ItemReport>(
               showFilter: false,
               showSummary: true,
               isPaginated: true,
-              // rows: itemReports,
+              actions: [
+                MenuItemButton(
+                  overflowAxis: .horizontal,
+
+                  onPressed: addNewDiscount,
+                  child: Text('Tambah ke Diskon Baru'),
+                ),
+              ],
               columns: columns,
               onQueryChanged: (queryRequest) {
                 _displayReport();

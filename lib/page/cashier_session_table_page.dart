@@ -105,7 +105,7 @@ class _CashierSessionTablePageState extends State<CashierSessionTablePage>
                   _source = stateManager;
                   _source.sortDescending(_source.columns[0]);
                 },
-                renderAction: (cashierSession) => Row(
+                rowAction: (cashierSession) => Row(
                   spacing: 10,
                   children: [
                     IconButton.filled(

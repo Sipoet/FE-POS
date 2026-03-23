@@ -62,6 +62,7 @@ export 'consignment_in_page.dart';
 // inventory
 export 'transfer_page.dart';
 export 'transfer_item_page.dart';
+export 'stock_location_page.dart';
 
 // finance
 export 'payment_type_page.dart';

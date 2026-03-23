@@ -11,9 +11,9 @@ class FileSaver with PlatformChecker {
   Future webDownload(String filename, List<int> bytes) async {
     final base64 = base64Encode(bytes);
     // Create the link with the file
-    final anchor =
-        html.AnchorElement(href: 'data:application/octet-stream;base64,$base64')
-          ..target = 'blank';
+    final anchor = html.AnchorElement(
+      href: 'data:application/octet-stream;base64,$base64',
+    )..target = 'blank';
     anchor.download = filename;
     // trigger download
     html.document.body?.append(anchor);
@@ -28,17 +28,25 @@ class FileSaver with PlatformChecker {
       outputFile = "${dir?.path}/$filename";
     } else if (isDesktop()) {
       outputFile = await FilePicker.platform.saveFile(
-          dialogTitle: 'Please select an output file:',
-          fileName: filename,
-          type: FileType.custom,
-          allowedExtensions: [extFile]);
+        dialogTitle: 'Please select an output file:',
+        fileName: filename,
+        type: FileType.custom,
+        allowedExtensions: [extFile],
+      );
+      if (outputFile != null && !outputFile.contains('.$extFile')) {
+        outputFile = '$outputFile.$extFile';
+      }
     }
     return outputFile;
   }
 
-  void download(String filename, List<int> bytes, String extFile,
-      {void Function(String path)? onSuccess,
-      void Function(String path)? onFailed}) async {
+  void download(
+    String filename,
+    List<int> bytes,
+    String extFile, {
+    void Function(String path)? onSuccess,
+    void Function(String path)? onFailed,
+  }) async {
     if (isWeb()) {
       await webDownload(filename, bytes);
       return;

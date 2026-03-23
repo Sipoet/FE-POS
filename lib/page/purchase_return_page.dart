@@ -109,7 +109,7 @@ class _PurchaseReturnPageState extends State<PurchaseReturnPage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<PurchaseReturn>(
-                renderAction: (purchase) => Row(
+                rowAction: (purchase) => Row(
                   spacing: 10,
                   children: [
                     IconButton.filled(
