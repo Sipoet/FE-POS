@@ -83,8 +83,10 @@ abstract class Model with ChangeNotifier {
   }
 
   Map<String, dynamic> asMap() {
-    Map<String, dynamic> value = toMap()..addAll(altData);
-
+    Map<String, dynamic> value = toMap();
+    if (altData.isNotEmpty) {
+      value.addAll(altData);
+    }
     if (createdAt != null) {
       value['created_at'] = createdAt;
     }

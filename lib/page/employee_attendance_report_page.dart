@@ -1,10 +1,9 @@
 import 'package:fe_pos/model/employee.dart';
-import 'package:fe_pos/model/payslip.dart';
-import 'package:fe_pos/page/payslip_form_page.dart';
+import 'package:fe_pos/model/employee_attendance_report.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
-import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:fe_pos/tool/setting.dart';
 
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
@@ -13,15 +12,16 @@ import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class GeneratePayslipFormPage extends StatefulWidget {
-  const GeneratePayslipFormPage({super.key});
+class EmployeeAttendanceReportPage extends StatefulWidget {
+  const EmployeeAttendanceReportPage({super.key});
 
   @override
-  State<GeneratePayslipFormPage> createState() =>
-      _GeneratePayslipFormPageState();
+  State<EmployeeAttendanceReportPage> createState() =>
+      _EmployeeAttendanceReportPageState();
 }
 
-class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
+class _EmployeeAttendanceReportPageState
+    extends State<EmployeeAttendanceReportPage>
     with AutomaticKeepAliveClientMixin, LoadingPopup, DefaultResponse {
   Date startDate = Date.today()
       .beginningOfMonth()
@@ -31,8 +31,9 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
   final formKey = GlobalKey<FormState>();
   List<String> _employeeIds = [];
   List<Payroll> _payrolls = [];
-  EmployeeStatus? employeeStatus;
+  EmployeeStatus? employeeStatus = .active;
   late final Server _server;
+  late final Setting _setting;
   late final Flash flash;
   final _focusNode = FocusNode();
   late final SyncTableController _source;
@@ -43,7 +44,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
   @override
   void initState() {
     _server = context.read<Server>();
-    final tabManager = context.read<TabManager>();
+    _setting = context.read<Setting>();
     _columns = [
       TableColumn(
         name: 'employee_name',
@@ -51,14 +52,6 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
         clientWidth: 180,
         frozen: TrinaColumnFrozen.start,
         type: TextTableColumnType(),
-        getValue: (model) {
-          if (model is Payslip) {
-            return model.employee.name.toTitleCase();
-          } else if (model is Employee) {
-            return model.name.toTitleCase();
-          }
-          return model.toString();
-        },
       ),
       TableColumn(
         name: 'start_date',
@@ -73,58 +66,74 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
         type: DateTableColumnType(DateRangeType()),
       ),
       TableColumn(
-        name: 'gross_salary',
-        humanizeName: 'Gaji Kotor',
-        clientWidth: 180,
-        type: MoneyTableColumnType(),
-      ),
-      TableColumn(
-        name: 'nett_salary',
-        humanizeName: 'Gaji Bersih',
-        clientWidth: 180,
-        type: MoneyTableColumnType(),
-      ),
-      TableColumn(
         name: 'work_days',
         humanizeName: 'Hari Kerja',
         clientWidth: 180,
+        renderBody: (model) {
+          model as EmployeeAttendanceReport;
+          return Tooltip(
+            message:
+                "Tanggal Kerja ${model.employeeName}:\n${model.workHourDetails.join(' jam\n')}",
+            child: Text(model.workDays.toString(), textAlign: .right),
+          );
+        },
         type: NumberTableColumnType(DoubleType()),
+      ),
+      TableColumn(
+        name: 'late',
+        humanizeName: 'Jumlah Telat(Hari)',
+        clientWidth: 180,
+        renderBody: (model) {
+          model as EmployeeAttendanceReport;
+          return Tooltip(
+            message:
+                "Tanggal Telat ${model.employeeName}:\n${model.lateDates.map((e) => e.format()).join('\n')}",
+            child: Text(model.late.toString(), textAlign: .right),
+          );
+        },
+        type: NumberTableColumnType(IntegerType()),
       ),
       TableColumn(
         name: 'sick_leave',
         humanizeName: 'Jumlah Sakit(Hari)',
         clientWidth: 180,
+        renderBody: (model) {
+          model as EmployeeAttendanceReport;
+          return Tooltip(
+            message:
+                "Tanggal Sakit ${model.employeeName}:\n${model.sickLeaveDates.map((e) => e.format()).join('\n')}",
+            child: Text(model.sickLeave.toString(), textAlign: .right),
+          );
+        },
         type: NumberTableColumnType(IntegerType()),
       ),
       TableColumn(
         name: 'known_absence',
         humanizeName: 'Jumlah Izin(Hari)',
         clientWidth: 180,
+        renderBody: (model) {
+          model as EmployeeAttendanceReport;
+          return Tooltip(
+            message:
+                "Tanggal izin ${model.employeeName}:\n${model.knownAbsenceDates.map((e) => e.format()).join('\n')}",
+            child: Text(model.knownAbsence.toString(), textAlign: .right),
+          );
+        },
         type: NumberTableColumnType(IntegerType()),
       ),
       TableColumn(
         name: 'unknown_absence',
         humanizeName: 'Jumlah Alpha/Tanpa kabar(Hari)',
         clientWidth: 180,
+        renderBody: (model) {
+          model as EmployeeAttendanceReport;
+          return Tooltip(
+            message:
+                "Tanggal Alpha ${model.employeeName}:\n${model.unknownAbsenceDates.map((e) => e.format()).join('\n')}",
+            child: Text(model.unknownAbsence.toString(), textAlign: .right),
+          );
+        },
         type: NumberTableColumnType(IntegerType()),
-      ),
-      TableColumn<Payslip>(
-        name: 'detail',
-        humanizeName: 'Detail',
-        frozen: TrinaColumnFrozen.end,
-        clientWidth: 180,
-        renderBody: (model) => Row(
-          children: [
-            IconButton(
-              onPressed: () => tabManager.setSafeAreaContent(
-                'Edit Slip Gaji ${model.id}',
-                PayslipFormPage(payslip: model as Payslip),
-              ),
-              icon: Icon(Icons.edit),
-            ),
-          ],
-        ),
-        type: TextTableColumnType(),
       ),
     ];
 
@@ -168,15 +177,18 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                         label: const Text('Periode', style: labelStyle),
                       ),
                     ),
-                    SizedBox(
-                      width: 300,
-                      child: AsyncDropdownMultiple<Payroll>(
-                        label: const Text('Payroll', style: labelStyle),
-                        onChanged: (values) {
-                          _payrolls = values;
-                        },
-                        textOnSearch: (payroll) => payroll.name,
-                        modelClass: PayrollClass(),
+                    Visibility(
+                      visible: _setting.isAuthorize('payrolls', 'read'),
+                      child: SizedBox(
+                        width: 300,
+                        child: AsyncDropdownMultiple<Payroll>(
+                          label: const Text('Payroll', style: labelStyle),
+                          onChanged: (values) {
+                            _payrolls = values;
+                          },
+                          textOnSearch: (payroll) => payroll.name,
+                          modelClass: PayrollClass(),
+                        ),
                       ),
                     ),
 
@@ -224,7 +236,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                 ElevatedButton(
                   onPressed: () {
                     if (formKey.currentState!.validate()) {
-                      _generatePayslip();
+                      _generateReporr();
                     }
                   },
                   child: const Text('generate'),
@@ -232,7 +244,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                 const Text('Hasil :', style: labelStyle),
                 Container(
                   constraints: BoxConstraints(maxHeight: bodyScreenHeight),
-                  child: SyncDataTable<Payslip>(
+                  child: SyncDataTable<EmployeeAttendanceReport>(
                     showFilter: true,
                     onLoaded: (stateManager) => _source = stateManager,
                     columns: _columns,
@@ -246,16 +258,16 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
     );
   }
 
-  void _generatePayslip() async {
+  void _generateReporr() async {
     _source.setShowLoading(true);
     _server
-        .post(
-          'payslips/generate_payslip',
-          body: {
-            'employee_ids': _employeeIds,
+        .get(
+          'employee_attendances/report',
+          queryParam: {
+            'employee_ids[]': _employeeIds,
             if (employeeStatus != null)
               'employee_status': employeeStatus.toString(),
-            'payroll_ids': _payrolls
+            'payroll_ids[]': _payrolls
                 .map<String>((e) => e.id.toString())
                 .toList(),
             'start_date': startDate.toIso8601String(),
@@ -263,12 +275,12 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
           },
         )
         .then((response) {
-          if (response.statusCode == 201) {
+          if (response.statusCode == 200) {
             final responseBody = response.data['data'] as List;
             setState(() {
               final payslips = responseBody
-                  .map<Payslip>(
-                    (row) => PayslipClass().fromJson(
+                  .map<EmployeeAttendanceReport>(
+                    (row) => EmployeeAttendanceReportClass().fromJson(
                       row,
                       included: response.data['included'] ?? [],
                     ),
@@ -280,7 +292,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
           } else {
             flash.showBanner(
               messageType: ToastificationType.error,
-              title: 'gagal buat slip gaji',
+              title: 'gagal buat laporan absensi karyawan',
               description: response.data['message'] ?? '',
             );
           }
