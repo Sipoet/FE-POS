@@ -19,6 +19,7 @@ export 'brand_sales_performance_report_page.dart';
 export 'item_type_sales_performance_report_page.dart';
 export 'monthly_expense_report_page.dart';
 export 'cash_transaction_report_page.dart';
+export 'employee_attendance_report_page.dart';
 // session
 export 'login_page.dart';
 

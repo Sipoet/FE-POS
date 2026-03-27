@@ -306,6 +306,17 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                 isDisabled: !setting.isAuthorize('payrolls', 'report'),
                 pageFunct: () => const PayrollReportPage(),
               ),
+              Menu(
+                icon: Icons.calendar_month,
+                isClosed: true,
+                label: 'Laporan Absensi Karyawan',
+                key: 'employeeAttendanceReport',
+                isDisabled: !setting.isAuthorize(
+                  'employee_attendances',
+                  'report',
+                ),
+                pageFunct: () => const EmployeeAttendanceReportPage(),
+              ),
             ],
           ),
         ],
