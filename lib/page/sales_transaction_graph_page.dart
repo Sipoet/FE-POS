@@ -7,6 +7,7 @@ import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
+import 'package:fe_pos/widget/color_field.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/widget/number_form_field.dart';
@@ -36,16 +37,19 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   String _groupPeriod = 'daily';
   String _generatedGroupPeriod = 'daily';
   SyncTableController? _source;
-
+  List<RowPeriod> periods = [
+    RowPeriod(
+      dateRange: DateTimeRange(
+        start: Date.today().beginningOfMonth(),
+        end: Date.today().endOfMonth(),
+      ),
+      color: Colors.primaries.first,
+    ),
+  ];
   String fieldKey = 'sales_total';
   static const TextStyle _filterLabelStyle = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.bold,
-  );
-
-  DateTimeRange<Date> _dateRange = DateTimeRange(
-    start: Date.today().beginningOfMonth(),
-    end: Date.today().endOfMonth(),
   );
   final salesReportController = SalesChartController();
   final yearNow = DateTime.now().year;
@@ -98,66 +102,20 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
     super.dispose();
   }
 
-  Future _refreshGraph() async {
-    await _fetchGraph();
-  }
-
-  Future _fetchGraph() async {
+  void _refreshGraph() async {
+    List<Future<LineDetail>> fetching = [];
     setState(() {
       salesReportController.isLoading = true;
     });
-    final response = await server.get(
-      'item_sales_performance_reports/group_by',
-      queryParam: {
-        'start_date': _dateRange.start.toIso8601String(),
-        'end_date': _dateRange.end.toIso8601String(),
-        'item_type_names[]': _itemTypes.map<String>((e) => e.name).toList(),
-        'supplier_codes[]': _suppliers.map<String>((e) => e.code).toList(),
-        'item_codes[]': _items.map<String>((e) => e.code).toList(),
-        'brand_names[]': _brands.map<String>((e) => e.name).toList(),
-        'group_type': _groupType,
-        'group_period': _groupPeriod,
-        'value_type': fieldKey,
-        'separate_purchase_year': _separatePurchaseYear ? '1' : '0',
-        'last_purchase_years[]': _lastPurchaseYears,
-      },
-    );
-    if (response.statusCode != 200) {
-      setState(() {
-        salesReportController.isLoading = false;
-      });
-      if (response.statusCode == 409) {
-        flash.showBanner(
-          messageType: ToastificationType.error,
-          title: response.data['message'],
-          description: response.data['errors'].join(','),
-        );
-      }
-      return;
+    for (final rowPeriod in periods) {
+      fetching.add(_fetchGraph(rowPeriod));
     }
+    final results = await Future.wait<LineDetail>(fetching);
+    setState(() {
+      lineDetails = results;
+      salesReportController.isLoading = false;
+    });
     _generatedGroupPeriod = _groupPeriod;
-    final data = response.data;
-    final metadata = data['metadata'];
-    final startDate = DateTime.parse(metadata['start_date']);
-    final endDate = DateTime.parse(metadata['end_date']);
-    final identifierList = metadata['identifier_list']
-        .map<String>((e) => e.toString())
-        .toList();
-    final filteredDetails = getFilteredTitle(data);
-    Map<LineTitle, List<FlSpot>> lines = {};
-    for (var detail in data['data']) {
-      String name, description;
-      if (detail['last_purchase_year'] == null) {
-        name = (detail['name'] ?? '').toString();
-        description = detail['description'] ?? '';
-      } else {
-        name = "${detail['name']} (${detail['last_purchase_year']})";
-        description =
-            "${detail['description']} (${detail['last_purchase_year']})";
-      }
-      LineTitle lineTitle = LineTitle(name: name, description: description);
-      lines[lineTitle] = convertDataToSpots(detail['spots'], identifierList);
-    }
     setState(() {
       _columns = [
         TableColumn<HashModel>(
@@ -211,23 +169,90 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
           humanizeName: fieldKeyLocales[fieldKey] ?? '',
         ),
       ];
-      final groupModels = convertResponseToHashModels(data);
+      // final groupModels = convertResponseToHashModels(data);
 
       if (_source != null) {
         _source?.setTableColumns(_columns, tabManager: tabManager);
-        _source?.setModels(groupModels);
+        // _source?.setModels(groupModels);
         _source?.sortAscending(_source!.columns.first);
       }
-
-      salesReportController.setChartData(
-        lines: lines,
-        filteredDetails: filteredDetails,
-        identifierList: identifierList,
-        startDate: startDate,
-        endDate: endDate,
-      );
+      // Map<LineTitle, List<FlSpot>> lines = {};
+      // for (RowPeriod rowPeriod in results) {
+      //   final lineTitle = LineTitle(name: rowPeriod.name, description: '');
+      //   lines[lineTitle] = rowPeriod.spots;
+      // }
+      // salesReportController.setChartData(
+      //   lines: lines,
+      //   filteredDetails: filteredDetails,
+      //   identifierList: identifierList,
+      //   startDate: periods.first.dateRange.start,
+      //   endDate: periods.first.dateRange.end,
+      // );
       salesReportController.isLoading = false;
     });
+  }
+
+  List<LineDetail> lineDetails = [];
+  Future<LineDetail> _fetchGraph(RowPeriod rowPeriod) async {
+    setState(() {
+      salesReportController.isLoading = true;
+    });
+    final response = await server.get(
+      'item_sales_performance_reports/group_by',
+      queryParam: {
+        'start_date': rowPeriod.dateRange.start.toIso8601String(),
+        'end_date': rowPeriod.dateRange.end.toIso8601String(),
+        'item_type_names[]': _itemTypes.map<String>((e) => e.name).toList(),
+        'supplier_codes[]': _suppliers.map<String>((e) => e.code).toList(),
+        'item_codes[]': _items.map<String>((e) => e.code).toList(),
+        'brand_names[]': _brands.map<String>((e) => e.name).toList(),
+        'group_type': _groupType,
+        'group_period': _groupPeriod,
+        'value_type': fieldKey,
+        'separate_purchase_year': _separatePurchaseYear ? '1' : '0',
+        'last_purchase_years[]': _lastPurchaseYears,
+      },
+    );
+    if (response.statusCode != 200) {
+      setState(() {
+        salesReportController.isLoading = false;
+      });
+      if (response.statusCode == 409) {
+        flash.showBanner(
+          messageType: ToastificationType.error,
+          title: response.data['message'],
+          description: response.data['errors'].join(','),
+        );
+      }
+      throw response.data['message'];
+    }
+    _generatedGroupPeriod = _groupPeriod;
+    final lineDetail = LineDetail(
+      lineTitle: LineTitle(name: rowPeriod.name),
+      color: rowPeriod.color,
+    );
+    final data = response.data;
+    final metadata = data['metadata'];
+    // final startDate = DateTime.parse(metadata['start_date']);
+    // final endDate = DateTime.parse(metadata['end_date']);
+    final identifierList = metadata['identifier_list']
+        .map<String>((e) => e.toString())
+        .toList();
+    // filteredDetails = getFilteredTitle(data);
+    var detail = data['data'].first;
+    if (detail['last_purchase_year'] == null) {
+      lineDetail.lineTitle.description = <String?>[
+        detail['name'],
+        detail['description'],
+      ].where((e) => e != null).join(' - ');
+    } else {
+      rowPeriod.name = "${detail['name']} (${detail['last_purchase_year']})";
+      rowPeriod.description =
+          "${detail['description']} (${detail['last_purchase_year']})";
+    }
+    lineDetail.spots = convertDataToSpots(detail['spots'], identifierList);
+
+    return lineDetail;
   }
 
   List<HashModel> convertResponseToHashModels(Map data) {
@@ -412,20 +437,15 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
           ),
           const Divider(),
           const SizedBox(height: 15),
+          Text(
+            'Filter',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
           Wrap(
             spacing: 10,
             runSpacing: 10,
             children: [
-              SizedBox(
-                width: 300,
-                child: DateRangeFormField(
-                  label: Text('Rentang Periode'),
-                  rangeType: DateRangeType(),
-                  initialValue: _dateRange,
-                  onChanged: (range) => _dateRange = range ?? _dateRange,
-                  allowClear: false,
-                ),
-              ),
               DropdownMenu(
                 dropdownMenuEntries: [
                   DropdownMenuEntry(value: 'hourly', label: 'Jam'),
@@ -580,6 +600,84 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
               ),
             ],
           ),
+          SizedBox(
+            width: 600,
+            child: Row(
+              mainAxisAlignment: .spaceBetween,
+              children: [
+                Text(
+                  'Rentang Periode',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                IconButton.filled(
+                  onPressed: () {
+                    setState(() {
+                      periods.add(
+                        RowPeriod(
+                          dateRange: DateTimeRange<Date>(
+                            start: Date.today(),
+                            end: Date.today(),
+                          ),
+                          color: Colors.primaries[periods.length],
+                        ),
+                      );
+                    });
+                  },
+                  icon: Icon(Icons.add),
+                ),
+              ],
+            ),
+          ),
+          ...periods.map<Widget>(
+            (rowPeriod) => Row(
+              key: ObjectKey(rowPeriod),
+              spacing: 15,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: SizedBox(
+                    width: 300,
+                    child: DateRangeFormField(
+                      label: Text('Rentang Periode', style: _filterLabelStyle),
+                      rangeType: DateRangeType(),
+                      initialValue: rowPeriod.dateRange,
+                      onChanged: (range) => setState(() {
+                        rowPeriod.dateRange = range ?? rowPeriod.dateRange;
+                      }),
+                      allowClear: false,
+                    ),
+                  ),
+                ),
+                ColorField(
+                  initialValue: rowPeriod.color,
+                  onChanged: (color) => setState(() {
+                    rowPeriod.color = color;
+                  }),
+                ),
+                Flexible(
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      label: Text('Nama', style: _filterLabelStyle),
+                      border: OutlineInputBorder(),
+                    ),
+                    initialValue: rowPeriod.name,
+                    onChanged: (value) => setState(() {
+                      rowPeriod.name = value;
+                    }),
+                  ),
+                ),
+                IconButton.filled(
+                  onPressed: () {
+                    setState(() {
+                      periods.remove(rowPeriod);
+                    });
+                  },
+                  icon: Icon(Icons.delete),
+                ),
+              ],
+            ),
+          ),
+
           const SizedBox(height: 10),
           DropdownMenu<String>(
             label: Text('Berdasarkan'),
@@ -614,17 +712,13 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
           ),
           const SizedBox(height: 10),
           Card(
-            child: SalesPerformanceChart(
-              controller: salesReportController,
-              xFormat: (double valueX, SalesChartController control) =>
-                  xFormatBasedPeriod(
-                    valueX,
-                    control.identifierList,
-                    control.startDate ?? DateTime.now(),
-                  ),
-              yFormat: fieldKey == 'sales_through_rate'
-                  ? percentageFormat
-                  : compactNumberFormat,
+            child: CustomLineChart(
+              lineDetails: lineDetails,
+              xTitle: 'Hari puasa - lebaran',
+              spotXFormat: (double valueX) => valueX.toString(),
+              // yFormat: fieldKey == 'sales_through_rate'
+              //     ? percentageFormat
+              //     : compactNumberFormat,
               spotYFormat: _tooltipFormat,
             ),
           ),
@@ -632,4 +726,18 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
       ),
     );
   }
+}
+
+class RowPeriod {
+  String name;
+  String description;
+  DateTimeRange<Date> dateRange;
+  Color color;
+  List<FlSpot> spots = [];
+  RowPeriod({
+    required this.dateRange,
+    this.description = '',
+    this.name = '',
+    required this.color,
+  });
 }
