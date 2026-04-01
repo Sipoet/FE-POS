@@ -31,6 +31,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
   final formKey = GlobalKey<FormState>();
   List<String> _employeeIds = [];
   List<Payroll> _payrolls = [];
+  List<Role> _roles = [];
   EmployeeStatus? employeeStatus;
   late final Server _server;
   late final Flash flash;
@@ -179,7 +180,6 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                         modelClass: PayrollClass(),
                       ),
                     ),
-
                     SizedBox(
                       width: 300,
                       child: AsyncDropdownMultiple<Employee>(
@@ -193,6 +193,15 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                             "${employee.code} - ${employee.name}",
                         textOnSelected: (employee) => employee.code,
                         modelClass: EmployeeClass(),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 300,
+                      child: AsyncDropdownMultiple<Role>(
+                        label: const Text('Jabatan', style: labelStyle),
+                        onChanged: (values) => _roles = values,
+                        textOnSearch: (role) => role.name,
+                        modelClass: RoleClass(),
                       ),
                     ),
                     DropdownMenu<EmployeeStatus?>(
@@ -258,6 +267,7 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
             'payroll_ids': _payrolls
                 .map<String>((e) => e.id.toString())
                 .toList(),
+            'role_ids': _roles.map<String>((e) => e.id.toString()).toList(),
             'start_date': startDate.toIso8601String(),
             'end_date': endDate.toIso8601String(),
           },

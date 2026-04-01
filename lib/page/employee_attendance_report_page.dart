@@ -31,6 +31,7 @@ class _EmployeeAttendanceReportPageState
   final formKey = GlobalKey<FormState>();
   List<String> _employeeIds = [];
   List<Payroll> _payrolls = [];
+  List<Role> _roles = [];
   EmployeeStatus? employeeStatus = .active;
   late final Server _server;
   late final Setting _setting;
@@ -191,7 +192,18 @@ class _EmployeeAttendanceReportPageState
                         ),
                       ),
                     ),
-
+                    Visibility(
+                      visible: _setting.isAuthorize('roles', 'read'),
+                      child: SizedBox(
+                        width: 300,
+                        child: AsyncDropdownMultiple<Role>(
+                          label: const Text('Jabatan', style: labelStyle),
+                          onChanged: (values) => _roles = values,
+                          textOnSearch: (role) => role.name,
+                          modelClass: RoleClass(),
+                        ),
+                      ),
+                    ),
                     SizedBox(
                       width: 300,
                       child: AsyncDropdownMultiple<Employee>(
@@ -270,6 +282,7 @@ class _EmployeeAttendanceReportPageState
             'payroll_ids[]': _payrolls
                 .map<String>((e) => e.id.toString())
                 .toList(),
+            'role_ids[]': _roles.map<String>((e) => e.id.toString()).toList(),
             'start_date': startDate.toIso8601String(),
             'end_date': endDate.toIso8601String(),
           },
