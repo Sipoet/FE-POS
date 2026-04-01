@@ -250,7 +250,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
                   'item_reports',
                   'groupedReport',
                 ),
-                pageFunct: () => const SalesGroupBySupplierReportPage(),
+                pageFunct: () => const SalesGroupReportPage(),
                 key: 'salesGroupBySupplierReport',
               ),
             ],

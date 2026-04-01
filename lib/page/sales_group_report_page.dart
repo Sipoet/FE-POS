@@ -1,10 +1,11 @@
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:fe_pos/model/sales_group_by_supplier.dart';
+import 'package:fe_pos/model/sales_group_report.dart';
 import 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
@@ -13,16 +14,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/file_saver.dart';
 
-class SalesGroupBySupplierReportPage extends StatefulWidget {
-  const SalesGroupBySupplierReportPage({super.key});
+class SalesGroupReportPage extends StatefulWidget {
+  const SalesGroupReportPage({super.key});
 
   @override
-  State<SalesGroupBySupplierReportPage> createState() =>
-      _SalesGroupBySupplierReportPageState();
+  State<SalesGroupReportPage> createState() => _SalesGroupReportPageState();
 }
 
-class _SalesGroupBySupplierReportPageState
-    extends State<SalesGroupBySupplierReportPage>
+class _SalesGroupReportPageState extends State<SalesGroupReportPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   static const TextStyle _filterLabelStyle = TextStyle(
     fontSize: 14,
@@ -32,6 +31,7 @@ class _SalesGroupBySupplierReportPageState
   String? _reportType;
   late SyncTableController _source;
   late Flash flash;
+  DateTimeRange<Date>? _dateRange;
   List _brands = [];
   List _suppliers = [];
   List _itemTypes = [];
@@ -40,7 +40,7 @@ class _SalesGroupBySupplierReportPageState
     'supplier_name',
     'brand_name',
     'item_type_name',
-    'last_purchase_date',
+    'last_purchase_year',
   ];
   final _cancelToken = CancelToken();
   final _formState = GlobalKey<FormState>();
@@ -51,7 +51,7 @@ class _SalesGroupBySupplierReportPageState
     server = context.read<Server>();
     _setting = context.read<Setting>();
     flash = Flash();
-    _tableColumns = _setting.tableColumn('salesGroupBySupplierReport');
+    _tableColumns = _setting.tableColumn('salesGroupReport');
     super.initState();
   }
 
@@ -80,6 +80,8 @@ class _SalesGroupBySupplierReportPageState
     return server.get(
       'item_reports/grouped_report',
       queryParam: {
+        'start_date': _dateRange?.start.toIso8601String(),
+        'end_date': _dateRange?.end.toIso8601String(),
         'suppliers[]': _suppliers,
         'brands[]': _brands,
         'item_types[]': _itemTypes,
@@ -131,8 +133,8 @@ class _SalesGroupBySupplierReportPageState
     final tabManager = context.read<TabManager>();
     var data = response.data;
     setState(() {
-      var rawData = data['data'].map<SalesGroupBySupplier>((row) {
-        return SalesGroupBySupplierClass().fromJson(row);
+      var rawData = data['data'].map<SalesGroupReport>((row) {
+        return SalesGroupReportClass().fromJson(row);
       }).toList();
 
       _source.setTableColumns(
@@ -172,47 +174,50 @@ class _SalesGroupBySupplierReportPageState
     super.build(context);
 
     return VerticalBodyScroll(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Filter',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          Form(
-            key: _formState,
-            child: Wrap(
+      child: Form(
+        key: _formState,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 350,
+              child: DropdownSearch<String>.multiSelection(
+                decoratorProps: const DropDownDecoratorProps(
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    label: Text('Group Berdasarkan', style: _filterLabelStyle),
+                  ),
+                ),
+                items: (searchText, props) => groupList,
+                onChanged: (value) => _groupKeys = value,
+                validator: (value) {
+                  if (value?.isEmpty ?? true) {
+                    return 'harus diisi';
+                  }
+                  return null;
+                },
+                itemAsString: (item) {
+                  return _setting.columnName('salesGroupReport', item);
+                },
+              ),
+            ),
+            const Text(
+              'Filter',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
               direction: Axis.horizontal,
               spacing: 10,
               runSpacing: 10,
               children: [
                 SizedBox(
                   width: 350,
-                  child: DropdownSearch<String>.multiSelection(
-                    decoratorProps: const DropDownDecoratorProps(
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        label: Text(
-                          'Group Berdasarkan',
-                          style: _filterLabelStyle,
-                        ),
-                      ),
-                    ),
-                    items: (searchText, props) => groupList,
-                    onChanged: (value) => _groupKeys = value,
-                    validator: (value) {
-                      if (value?.isEmpty ?? true) {
-                        return 'harus diisi';
-                      }
-                      return null;
-                    },
-                    itemAsString: (item) {
-                      return _setting.columnName(
-                        'salesGroupBySupplierReport',
-                        item,
-                      );
-                    },
+                  child: DateRangeFormField(
+                    label: const Text('Periode :', style: _filterLabelStyle),
+                    rangeType: DateRangeType(),
+                    allowClear: true,
+                    onChanged: (range) => _dateRange = range,
                   ),
                 ),
                 SizedBox(
@@ -265,44 +270,44 @@ class _SalesGroupBySupplierReportPageState
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            runSpacing: 10,
-            spacing: 10,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  if (_formState.currentState!.validate()) {
-                    _formState.currentState!.save();
-                    _displayReport();
-                  }
-                },
-                child: const Text('Tampilkan'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formState.currentState!.validate()) {
-                    _formState.currentState!.save();
-                    _downloadReport();
-                  }
-                },
-                child: const Text('Download'),
-              ),
-            ],
-          ),
-          const Divider(),
-          SizedBox(
-            height: bodyScreenHeight,
-            child: SyncDataTable<SalesGroupBySupplier>(
-              showSummary: true,
-              showFilter: false,
-              columns: _tableColumns,
-              onLoaded: (stateManager) => _source = stateManager,
-              fixedLeftColumns: _groupKeys.length,
+            const SizedBox(height: 10),
+            Wrap(
+              runSpacing: 10,
+              spacing: 10,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formState.currentState!.validate()) {
+                      _formState.currentState!.save();
+                      _displayReport();
+                    }
+                  },
+                  child: const Text('Tampilkan'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_formState.currentState!.validate()) {
+                      _formState.currentState!.save();
+                      _downloadReport();
+                    }
+                  },
+                  child: const Text('Download'),
+                ),
+              ],
             ),
-          ),
-        ],
+            const Divider(),
+            SizedBox(
+              height: bodyScreenHeight,
+              child: SyncDataTable<SalesGroupReport>(
+                showSummary: true,
+                showFilter: false,
+                columns: _tableColumns,
+                onLoaded: (stateManager) => _source = stateManager,
+                fixedLeftColumns: _groupKeys.length,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
