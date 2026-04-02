@@ -22,6 +22,8 @@ class _PayrollReportPageState extends State<PayrollReportPage>
     with LoadingPopup, DefaultResponse, ColumnTypeFinder {
   SyncTableController? tableStateManager;
   List<PayrollType> payrollTypes = [];
+  List<Payroll> payrolls = [];
+  EmployeeStatus? employeeStatus;
   List<Employee> employees = [];
   List<TableColumn> tableColumns = [];
   late final Server server;
@@ -131,8 +133,12 @@ class _PayrollReportPageState extends State<PayrollReportPage>
     final params = {
       'date': _date.toIso8601String(),
       'report_type': reportType,
+      if (employeeStatus != null) 'employee_status': employeeStatus.toString(),
       'payroll_type_ids[]': payrollTypes
           .map((payrollType) => payrollType.id.toString())
+          .toList(),
+      'payroll_ids[]': payrolls
+          .map((payroll) => payroll.id.toString())
           .toList(),
       'employee_ids[]': employees
           .map((employee) => employee.id.toString())
@@ -155,13 +161,14 @@ class _PayrollReportPageState extends State<PayrollReportPage>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
                 children: [
                   SizedBox(
-                    width: 350,
+                    width: 300,
                     child: DateFormField(
                       focusNode: _focusNode,
                       label: const Text('Tanggal'),
@@ -171,8 +178,9 @@ class _PayrollReportPageState extends State<PayrollReportPage>
                     ),
                   ),
                   SizedBox(
-                    width: 350,
+                    width: 300,
                     child: AsyncDropdownMultiple<Employee>(
+                      label: Text('Karyawan'),
                       textOnSearch: (employee) => employee.name,
 
                       onChanged: (newEmployees) => employees = newEmployees,
@@ -180,7 +188,41 @@ class _PayrollReportPageState extends State<PayrollReportPage>
                     ),
                   ),
                   SizedBox(
-                    width: 350,
+                    width: 300,
+                    child: AsyncDropdownMultiple<Payroll>(
+                      label: Text('Payroll'),
+                      textOnSearch: (payroll) => payroll.name,
+
+                      onChanged: (newPayrolls) => payrolls = newPayrolls,
+                      modelClass: PayrollClass(),
+                    ),
+                  ),
+                  DropdownMenu<EmployeeStatus?>(
+                    width: 300,
+                    label: Text('Status Karyawan'),
+                    initialSelection: employeeStatus,
+                    dropdownMenuEntries:
+                        EmployeeStatus.values
+                            .map(
+                              (e) => DropdownMenuEntry<EmployeeStatus?>(
+                                value: e,
+                                label: e.humanize(),
+                              ),
+                            )
+                            .toList()
+                          ..insert(
+                            0,
+                            DropdownMenuEntry<EmployeeStatus?>(
+                              value: null,
+                              label: '',
+                            ),
+                          ),
+                    onSelected: (value) => setState(() {
+                      employeeStatus = value;
+                    }),
+                  ),
+                  SizedBox(
+                    width: 300,
                     child: AsyncDropdownMultiple<PayrollType>(
                       textOnSearch: (payrollType) => payrollType.name,
 

@@ -30,6 +30,9 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
   Date endDate = Date.today().copyWith(day: 25);
   final formKey = GlobalKey<FormState>();
   List<String> _employeeIds = [];
+  List<Payroll> _payrolls = [];
+  List<Role> _roles = [];
+  EmployeeStatus? employeeStatus;
   late final Server _server;
   late final Flash flash;
   final _focusNode = FocusNode();
@@ -144,13 +147,15 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
             key: formKey,
             child: Column(
               spacing: 10,
+              crossAxisAlignment: .start,
               children: [
-                Container(
-                  constraints: BoxConstraints.loose(const Size.fromWidth(600)),
-                  child: Column(
-                    spacing: 10,
-                    children: [
-                      DateRangeFormField(
+                Wrap(
+                  spacing: 15,
+                  runSpacing: 10,
+                  children: [
+                    SizedBox(
+                      width: 300,
+                      child: DateRangeFormField(
                         focusNode: _focusNode,
                         rangeType: DateRangeType(),
                         onChanged: (range) {
@@ -161,12 +166,23 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                           start: startDate,
                           end: endDate,
                         ),
-                        key: const ValueKey('generate_payslip-periode'),
                         label: const Text('Periode', style: labelStyle),
                       ),
-                      AsyncDropdownMultiple<Employee>(
-                        key: const ValueKey('generate_payslip-karyawan'),
-                        attributeKey: 'name',
+                    ),
+                    SizedBox(
+                      width: 300,
+                      child: AsyncDropdownMultiple<Payroll>(
+                        label: const Text('Payroll', style: labelStyle),
+                        onChanged: (values) {
+                          _payrolls = values;
+                        },
+                        textOnSearch: (payroll) => payroll.name,
+                        modelClass: PayrollClass(),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 300,
+                      child: AsyncDropdownMultiple<Employee>(
                         label: const Text('Nama Karyawan', style: labelStyle),
                         onChanged: (values) {
                           _employeeIds = values
@@ -177,34 +193,50 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
                             "${employee.code} - ${employee.name}",
                         textOnSelected: (employee) => employee.code,
                         modelClass: EmployeeClass(),
-                        request:
-                            ({
-                              int page = 1,
-                              int limit = 20,
-                              String searchText = '',
-                              required CancelToken cancelToken,
-                            }) {
-                              return _server.get(
-                                'employees',
-                                queryParam: {
-                                  'field[employee]': 'code,name',
-                                  'search_text': searchText,
-                                  'page[limit]': '20',
-                                },
-                                cancelToken: cancelToken,
-                              );
-                            },
                       ),
-                      ElevatedButton(
-                        onPressed: () {
-                          if (formKey.currentState!.validate()) {
-                            _generatePayslip();
-                          }
-                        },
-                        child: const Text('generate'),
+                    ),
+                    SizedBox(
+                      width: 300,
+                      child: AsyncDropdownMultiple<Role>(
+                        label: const Text('Jabatan', style: labelStyle),
+                        onChanged: (values) => _roles = values,
+                        textOnSearch: (role) => role.name,
+                        modelClass: RoleClass(),
                       ),
-                    ],
-                  ),
+                    ),
+                    DropdownMenu<EmployeeStatus?>(
+                      width: 300,
+                      label: Text('Status Karyawan'),
+                      initialSelection: employeeStatus,
+                      dropdownMenuEntries:
+                          EmployeeStatus.values
+                              .map(
+                                (e) => DropdownMenuEntry<EmployeeStatus?>(
+                                  value: e,
+                                  label: e.humanize(),
+                                ),
+                              )
+                              .toList()
+                            ..insert(
+                              0,
+                              DropdownMenuEntry<EmployeeStatus?>(
+                                value: null,
+                                label: '',
+                              ),
+                            ),
+                      onSelected: (value) => setState(() {
+                        employeeStatus = value;
+                      }),
+                    ),
+                  ],
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (formKey.currentState!.validate()) {
+                      _generatePayslip();
+                    }
+                  },
+                  child: const Text('generate'),
                 ),
                 const Text('Hasil :', style: labelStyle),
                 Container(
@@ -230,6 +262,12 @@ class _GeneratePayslipFormPageState extends State<GeneratePayslipFormPage>
           'payslips/generate_payslip',
           body: {
             'employee_ids': _employeeIds,
+            if (employeeStatus != null)
+              'employee_status': employeeStatus.toString(),
+            'payroll_ids': _payrolls
+                .map<String>((e) => e.id.toString())
+                .toList(),
+            'role_ids': _roles.map<String>((e) => e.id.toString()).toList(),
             'start_date': startDate.toIso8601String(),
             'end_date': endDate.toIso8601String(),
           },

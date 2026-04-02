@@ -8,7 +8,7 @@ export 'item_report_page.dart';
 export 'sales_transaction_report_page.dart';
 export 'sales_transaction_graph_page.dart';
 export 'item_sales_period_report_page.dart';
-export 'sales_group_by_supplier_report_page.dart';
+export 'sales_group_report_page.dart';
 export 'payslip_report_page.dart';
 export 'payroll_report_page.dart';
 export 'purchase_report_page.dart';
@@ -19,6 +19,7 @@ export 'brand_sales_performance_report_page.dart';
 export 'item_type_sales_performance_report_page.dart';
 export 'monthly_expense_report_page.dart';
 export 'cash_transaction_report_page.dart';
+export 'employee_attendance_report_page.dart';
 // session
 export 'login_page.dart';
 

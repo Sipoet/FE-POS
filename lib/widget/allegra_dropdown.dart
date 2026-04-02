@@ -64,6 +64,8 @@ abstract class DropdownValue<T extends Object> {
   });
 
   void onDataSelected(T value);
+
+  Widget selectedBuilder(BuildContext context, StateSetter setState);
 }
 
 class SingleDropdownValue<T extends Object> extends DropdownValue<T> {
@@ -74,12 +76,14 @@ class SingleDropdownValue<T extends Object> extends DropdownValue<T> {
   final void Function(T? value)? onSaved;
 
   final String? Function(T? value)? validator;
+  final bool allowClear;
   SingleDropdownValue({
     T? initialValue,
     this.onChanged,
     this.onSaved,
     this.validator,
     this.controller,
+    this.allowClear = false,
     required super.selectionText,
   }) : _selected = initialValue;
 
@@ -90,6 +94,27 @@ class SingleDropdownValue<T extends Object> extends DropdownValue<T> {
     if (onChanged != null) {
       onChanged!(_selected);
     }
+  }
+
+  @override
+  Widget selectedBuilder(BuildContext context, StateSetter setState) {
+    if (_selected == null) {
+      return const SizedBox();
+    }
+    String text = selectionText(_selected!);
+    return Row(
+      mainAxisAlignment: .spaceBetween,
+      children: [
+        Text(
+          text,
+          style: TextStyle(fontStyle: .italic, fontWeight: .w500),
+        ),
+        Visibility(
+          visible: allowClear,
+          child: IconButton(onPressed: removeSelected, icon: Icon(Icons.close)),
+        ),
+      ],
+    );
   }
 
   void removeSelected() {
@@ -235,6 +260,30 @@ class MultipleDropdownValue<T extends Object> extends DropdownValue<T> {
   }
 
   @override
+  Widget selectedBuilder(BuildContext context, StateSetter setState) {
+    if (_selecteds.isEmpty) {
+      return const SizedBox();
+    }
+    return Row(
+      mainAxisAlignment: .spaceBetween,
+      children: [
+        Flexible(
+          child: Pills<T>(
+            controller: controller!,
+            selectionText: selectionText,
+            pillsLimit: pillsLimit,
+          ),
+        ),
+        if (_selecteds.isNotEmpty)
+          IconButton(
+            onPressed: () => setState(removeAllSelected),
+            icon: Icon(Icons.close),
+          ),
+      ],
+    );
+  }
+
+  @override
   void onDataSelected(value) {
     _selecteds.add(value);
     controller?.add(value, notify: true);
@@ -351,31 +400,49 @@ class _AllegraDropdownState<T extends Object>
   DropdownOption<T> get dropdownOption => widget.dropdownOption;
   DropdownValue<T> get dropdownValue => widget.dropdownValue;
   TextEditingController? _textController;
+  final _menuController = MenuController();
 
   @override
   Widget build(BuildContext context) {
-    return Autocomplete<T>(
-      textEditingController: _textController,
-      displayStringForOption: widget.searchText ?? dropdownValue.selectionText,
-      fieldViewBuilder:
-          (context, textController, focusNode, onFieldSubmitted) =>
-              dropdownValue.fieldViewBuilder(
-                context: context,
-                textController: textController,
-                focusNode: focusNode,
-                label: widget.label,
-                onFieldSubmitted: onFieldSubmitted,
-                isDense: widget.isDense,
-              ),
-      onSelected: (option) => setState(() {
-        dropdownValue.onDataSelected(option);
-        Future.delayed(
-          Duration(microseconds: 100),
-          () => _textController?.text = ' ',
-        );
-      }),
-      optionsBuilder: widget.dropdownOption.optionsBuilder,
+    return MenuAnchor(
+      controller: _menuController,
+      menuChildren: [TextField()],
+
+      child: Container(
+        decoration: BoxDecoration(),
+        child: Row(
+          children: [
+            dropdownValue.selectedBuilder(context, setState),
+            IconButton(
+              onPressed: () => _menuController.open(),
+              icon: Icon(Icons.arrow_drop_down_sharp),
+            ),
+          ],
+        ),
+      ),
     );
+    // return Autocomplete<T>(
+    //   textEditingController: _textController,
+    //   displayStringForOption: widget.searchText ?? dropdownValue.selectionText,
+    //   fieldViewBuilder:
+    //       (context, textController, focusNode, onFieldSubmitted) =>
+    //           dropdownValue.fieldViewBuilder(
+    //             context: context,
+    //             textController: textController,
+    //             focusNode: focusNode,
+    //             label: widget.label,
+    //             onFieldSubmitted: onFieldSubmitted,
+    //             isDense: widget.isDense,
+    //           ),
+    //   onSelected: (option) => setState(() {
+    //     dropdownValue.onDataSelected(option);
+    //     Future.delayed(
+    //       Duration(microseconds: 100),
+    //       () => _textController?.text = ' ',
+    //     );
+    //   }),
+    //   optionsBuilder: widget.dropdownOption.optionsBuilder,
+    // );
   }
 }
 
