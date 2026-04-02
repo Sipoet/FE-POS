@@ -181,7 +181,7 @@ class _SalesCashierPageState extends State<SalesCashierPage>
             SizedBox(
               height: 600,
               child: CustomAsyncDataTable<SalesCashier>(
-                renderAction: (sale) => Row(
+                rowAction: (sale) => Row(
                   children: [
                     IconButton.filled(
                       onPressed: () {

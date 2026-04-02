@@ -60,7 +60,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
         humanizeName: 'Margin(%)',
         type: PercentageTableColumnType(),
         getValue: (Model model) {
-          model as PurchaseItem;
+          model as IposPurchaseItem;
           final result = (model.sellPrice - model.price) / model.price;
           if (result.isNaM) {
             return Percentage(0);
