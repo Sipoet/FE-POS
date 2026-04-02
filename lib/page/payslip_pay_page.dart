@@ -26,6 +26,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
   final _formKey = GlobalKey<FormState>();
   List<Employee> employees = [];
   List<Payroll> payrolls = [];
+  List<Role> roles = [];
   late final Server server;
   DateTimeRange? _range;
   bool isNotify = true;
@@ -52,6 +53,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
             'paid_at': paidAt!.toIso8601String(),
             'employee_ids': employees.map((e) => e.id.toString()).toList(),
             'payroll_ids': payrolls.map((e) => e.id.toString()).toList(),
+            'role_ids': roles.map((e) => e.id.toString()).toList(),
             'start_date': _range?.start.toDate().toIso8601String(),
             'end_date': _range?.end.toDate().toIso8601String(),
             'cash_account': account!.id,
@@ -118,12 +120,13 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
                 textOnSearch: (model) => model.modelValue,
                 modelClass: PayrollClass(),
                 onChanged: (model) => payrolls = model,
-                validator: (model) {
-                  if (model == null) {
-                    return "harus diisi";
-                  }
-                  return null;
-                },
+              ),
+              const SizedBox(height: 10),
+              AsyncDropdownMultiple<Role>(
+                label: Text('Jabatan', style: _filterLabelStyle),
+                textOnSearch: (model) => model.modelValue,
+                modelClass: RoleClass(),
+                onChanged: (model) => roles = model,
               ),
               const SizedBox(height: 10),
               DateFormField(
