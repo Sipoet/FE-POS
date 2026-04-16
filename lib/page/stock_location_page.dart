@@ -116,7 +116,7 @@ class _StockLocationPageState extends State<StockLocationPage>
   }
 
   void uploadRacksheet() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    FilePickerResult? result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['xlsx'],
     );

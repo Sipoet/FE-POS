@@ -5,7 +5,7 @@ import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:excel/excel.dart';
+import 'package:excel_community/excel_community.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -117,13 +117,11 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
 
   void downloadMassUploadFile() async {
     var fileSaver = const FileSaver();
-    String? path = await fileSaver.downloadPath(
-      'template_mass_upload_discount.xlsx',
-      'xlsx',
+    fileSaver.downloadRemote(
+      urlPath: 'discounts/template_mass_upload_excel',
+      server: _server,
+      extFile: 'xlsx',
     );
-    if (path != null) {
-      _server.download('discounts/template_mass_upload_excel', 'xlsx', path);
-    }
   }
 
   void submitDiscount() async {
@@ -182,7 +180,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
   }
 
   void pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    FilePickerResult? result = await FilePicker.pickFiles();
     if (result == null) {
       return;
     }
