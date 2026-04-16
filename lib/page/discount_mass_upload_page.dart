@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fe_pos/model/discount.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/file_saver.dart';
@@ -6,7 +8,6 @@ import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:excel_community/excel_community.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class DiscountMassUploadPage extends StatefulWidget {
@@ -184,7 +185,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
     if (result == null) {
       return;
     }
-    var bytes = await XFile(result.files.single.path!).readAsBytes();
+    var bytes = await File(result.files.single.path!).readAsBytes();
     var excel = Excel.decodeBytes(bytes);
 
     setState(() {

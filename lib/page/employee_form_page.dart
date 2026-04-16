@@ -7,13 +7,12 @@ import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
+import 'package:file_picker/file_picker.dart';
 
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/date_form_field.dart';
 import 'package:fe_pos/model/employee.dart';
 import 'package:flutter/services.dart';
-
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class EmployeeFormPage extends StatefulWidget {
@@ -33,7 +32,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
   late Flash flash;
   final codeInputWidget = TextEditingController();
   final scrollController = ScrollController();
-  final ImagePicker _picker = ImagePicker();
+
   final _formKey = GlobalKey<FormState>();
   Employee get employee => widget.employee;
   late final Server _server;
@@ -163,13 +162,16 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
   }
 
   void pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
+    final result = await FilePicker.pickFiles(
+      dialogTitle: 'Pilih Gambar',
+      type: .image,
+      withData: true,
     );
-    if (pickedFile == null) {
+    final file = result?.files.firstOrNull;
+    if (file == null) {
       return;
     }
-    if (await pickedFile.length() > 1024000000) {
+    if (file.size > 1024000000) {
       flash.showBanner(
         messageType: ToastificationType.error,
         title: 'Gagal Upload gambar',
@@ -178,7 +180,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
       return;
     }
 
-    _server.upload('assets', file: pickedFile, filename: pickedFile.name).then((
+    _server.upload('assets', filepath: file.path, filename: file.name).then((
       response,
     ) {
       if (response.statusCode == 201) {

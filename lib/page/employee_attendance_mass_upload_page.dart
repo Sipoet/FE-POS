@@ -146,7 +146,7 @@ class _EmployeeAttendanceMassUploadPageState
       );
     } else {
       final file = result.xFiles.first;
-      request = _server.upload(path, file: file, filename: file.name);
+      request = _server.upload(path, filepath: file.path, filename: file.name);
     }
 
     showLoadingPopup();

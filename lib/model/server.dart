@@ -8,7 +8,6 @@ export 'package:dio/dio.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 class Server extends ChangeNotifier {
   String host;
@@ -95,13 +94,13 @@ class Server extends ChangeNotifier {
     String path, {
     List<int>? bytes,
     String? filename,
-    XFile? file,
+    String? filepath,
   }) async {
     FormData formData;
     formData = FormData.fromMap({
       "file": bytes != null
           ? MultipartFile.fromBytes(bytes, filename: filename)
-          : await MultipartFile.fromFile(file!.path, filename: filename),
+          : await MultipartFile.fromFile(filepath!, filename: filename),
     });
     Uri url = generateUrl(path, {});
     return dio.postUri(

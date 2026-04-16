@@ -134,7 +134,7 @@ class _StockLocationPageState extends State<StockLocationPage>
       );
     } else {
       final file = result.xFiles.first;
-      request = server.upload(path, file: file, filename: file.name);
+      request = server.upload(path, filepath: file.path, filename: file.name);
     }
 
     showLoadingPopup();

@@ -69,12 +69,17 @@ class _CheckPricePageState extends State<CheckPricePage>
                         'Lokasi ${e.locationCode} : RAK ${e.rack ?? '-'} :${e.quantity.format()}',
                   )
                   .join('\n'),
+              textStyle: TextStyle(fontSize: 18),
               child: Text(
                 model.stockLeft.format(),
                 textAlign: .right,
                 style: model.stockLeft == 0
                     ? null
-                    : TextStyle(fontStyle: .italic, decoration: .underline),
+                    : TextStyle(
+                        fontSize: 16,
+                        fontStyle: .italic,
+                        decoration: .underline,
+                      ),
               ),
             ),
           );

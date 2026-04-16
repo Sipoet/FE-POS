@@ -45,12 +45,12 @@ dependencies:
   permission_handler: ^11.1.0
   device_info_plus: ^11.3.3
   excel_community: ^1.0.8
-  image_picker: ^1.2.1
   package_info_plus: ^8.0.0
   open_file: ^3.3.2
   yaml: ^3.1.3
   collection: ^1.18.0
   trina_grid: ^1.6.12
+  image: ^4.8.0
   board_datetime_picker: ^2.8.5
   toastification: ^2.3.0
   pluto_menu_bar: ^3.0.1
