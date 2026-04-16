@@ -113,6 +113,9 @@ class PurchasePaymentHistory extends Model {
   String get paymentAccountCode => paymentAccount.code;
 
   @override
+  String get path => 'purchase_payment_histories';
+
+  @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
 
