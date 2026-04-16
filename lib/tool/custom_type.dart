@@ -279,9 +279,7 @@ class Money {
   bool operator ==(var other) {
     if (other is Money) {
       return value == other.value;
-    } else if (other is double) {
-      return value == other;
-    } else if (other is int) {
+    } else if (other is num) {
       return value == other.toDouble();
     } else {
       return false;
