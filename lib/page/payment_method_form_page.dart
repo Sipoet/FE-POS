@@ -43,7 +43,7 @@ class _PaymentMethodFormPageState extends State<PaymentMethodFormPage>
       'data': {
         'type': 'payment_method',
         'id': paymentMethod.id,
-        'attributes': paymentMethod.toJson(),
+        'attributes': paymentMethod.asJson(),
       },
     };
     var request = paymentMethod.id == null

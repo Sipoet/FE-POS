@@ -153,7 +153,7 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
           SizedBox(
             height: bodyScreenHeight,
             child: CustomAsyncDataTable<Product>(
-              renderAction: (model) => Row(
+              rowAction: (model) => Row(
                 children: [
                   IconButton(
                     onPressed: () => openForm(model),

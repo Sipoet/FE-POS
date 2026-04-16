@@ -354,7 +354,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
       'data': {
         'type': 'cashier_sessions',
         'id': cashierSession.id.toString(),
-        'attributes': cashierSession.toJson(),
+        'attributes': cashierSession.asJson(),
         'relationships': {
           'edc_settlements': {
             'data': cashierSession.edcSettlements
@@ -362,7 +362,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
                   (edcSettlement) => {
                     'id': edcSettlement.id,
                     'type': 'edc_settlement',
-                    'attributes': edcSettlement.toJson(),
+                    'attributes': edcSettlement.asJson(),
                   },
                 )
                 .toList(),

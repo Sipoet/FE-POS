@@ -356,7 +356,7 @@ class _ProductFormPageState extends State<ProductFormPage>
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: AsyncDropdown<Tag>(
-              textOnSearch: (tag) => tag.name,
+              textOnSearch: (tag) => tag.value,
               path: 'tags',
               isDense: true,
               allowClear: false,

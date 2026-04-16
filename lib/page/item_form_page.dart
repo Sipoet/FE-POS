@@ -224,7 +224,7 @@ class _ItemFormPageState extends State<ItemFormPage>
     final server = context.read<Server>();
     if (item.isNewRecord) return;
     final params = {
-      'data': {'id': item.id, 'type': 'item', 'attributes': item.toJson()},
+      'data': {'id': item.id, 'type': 'item', 'attributes': item.asJson()},
     };
     server
         .put('ipos/items/${item.code}', body: params)

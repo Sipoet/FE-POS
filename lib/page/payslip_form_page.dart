@@ -80,7 +80,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
     Map body = {
       'data': {
         'type': 'payslip',
-        'attributes': payslip.toJson(),
+        'attributes': payslip.asJson(),
         'relationships': {
           'payslip_lines': {
             'data': payslip.lines
@@ -88,7 +88,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
                   (payslipLine) => {
                     'id': payslipLine.id,
                     'type': 'payslip_line',
-                    'attributes': payslipLine.toJson(),
+                    'attributes': payslipLine.asJson(),
                   },
                 )
                 .toList(),

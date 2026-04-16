@@ -7,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/flash.dart';
 
 mixin DefaultResponse<T extends StatefulWidget> on State<T> {
-  static const labelStyle =
-      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+  static const labelStyle = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+  );
 
   dynamic defaultErrorResponse({required var error, final valueWhenError}) {
     Flash flash = Flash();

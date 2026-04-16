@@ -61,26 +61,29 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
 
   void fetchEmployee() {
     showLoadingPopup();
-    _server.get(
-      'employees/${employee.id}',
-      queryParam: {
-        'include': 'work_schedules,employee_day_offs,payroll,role',
-      },
-    ).then(
-      (response) {
-        if (response.statusCode == 200) {
-          setState(() {
-            employee.setFromJson(
-              response.data['data'],
-              included: response.data['included'],
-            );
-          });
-        }
-      },
-      onError: (error) {
-        defaultErrorResponse(error: error);
-      },
-    ).whenComplete(() => hideLoadingPopup());
+    _server
+        .get(
+          'employees/${employee.id}',
+          queryParam: {
+            'include': 'work_schedules,employee_day_offs,payroll,role',
+          },
+        )
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              setState(() {
+                employee.setFromJson(
+                  response.data['data'],
+                  included: response.data['included'],
+                );
+              });
+            }
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+          },
+        )
+        .whenComplete(() => hideLoadingPopup());
   }
 
   Future? request;
@@ -91,7 +94,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     Map body = {
       'data': {
         'type': 'employee',
-        'attributes': employee.toJson(),
+        'attributes': employee.asJson(),
         'relationships': {
           'work_schedules': {
             'data': employee.schedules
@@ -99,7 +102,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   (workSchedule) => {
                     'id': workSchedule.id,
                     'type': 'work_schedule',
-                    'attributes': workSchedule.toJson(),
+                    'attributes': workSchedule.asJson(),
                   },
                 )
                 .toList(),
@@ -110,7 +113,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                   (employeeDayOff) => {
                     'id': employeeDayOff.id,
                     'type': 'employee_day_off',
-                    'attributes': employeeDayOff.toJson(),
+                    'attributes': employeeDayOff.asJson(),
                   },
                 )
                 .toList(),
@@ -312,7 +315,8 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                       ),
                       const SizedBox(height: 10),
                       Visibility(
-                        visible: setting.isAuthorize('roles', 'read') &&
+                        visible:
+                            setting.isAuthorize('roles', 'read') &&
                             setting.canShow('employee', 'role'),
                         child: Flexible(
                           child: AsyncDropdown<Role>(
@@ -364,7 +368,8 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                       ),
                       const SizedBox(height: 10),
                       Visibility(
-                        visible: setting.isAuthorize('payrolls', 'read') &&
+                        visible:
+                            setting.isAuthorize('payrolls', 'read') &&
                             setting.canShow('employee', 'payroll'),
                         child: AsyncDropdown<Payroll>(
                           label: const Text('Payroll', style: labelStyle),
@@ -739,8 +744,9 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                                       DropdownMenu<int>(
                                         initialSelection:
                                             employeeDayOff.dayOfWeek,
-                                        onSelected: ((value) => employeeDayOff
-                                            .dayOfWeek = value ?? 0),
+                                        onSelected: ((value) =>
+                                            employeeDayOff.dayOfWeek =
+                                                value ?? 0),
                                         dropdownMenuEntries: const [
                                           DropdownMenuEntry(
                                             value: 1,
@@ -777,14 +783,17 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                                       DropdownMenu<ActiveWeekDayOff>(
                                         initialSelection:
                                             employeeDayOff.activeWeek,
-                                        onSelected: ((value) => employeeDayOff
-                                                .activeWeek =
-                                            value ?? ActiveWeekDayOff.allWeek),
+                                        onSelected: ((value) =>
+                                            employeeDayOff.activeWeek =
+                                                value ??
+                                                ActiveWeekDayOff.allWeek),
                                         dropdownMenuEntries: ActiveWeekDayOff
                                             .values
                                             .map<
-                                                DropdownMenuEntry<
-                                                    ActiveWeekDayOff>>(
+                                              DropdownMenuEntry<
+                                                ActiveWeekDayOff
+                                              >
+                                            >(
                                               (activeWeek) => DropdownMenuEntry(
                                                 value: activeWeek,
                                                 label: activeWeek.humanize(),

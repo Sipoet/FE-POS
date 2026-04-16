@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/custom_type.dart';
@@ -7,6 +8,8 @@ import 'package:fe_pos/tool/query_data.dart';
 import 'package:flutter/material.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 export 'package:fe_pos/tool/query_data.dart';
+
+final jsonEncoder = JsonEncoder();
 
 abstract class Model with ChangeNotifier {
   DateTime? createdAt;
@@ -36,7 +39,7 @@ abstract class Model with ChangeNotifier {
 
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     final attributes = json['attributes'] ?? {};
-    id = json['id'];
+    id = int.tryParse(json['id'] ?? '') ?? json['id'];
     createdAt = DateTime.tryParse(attributes?['created_at'] ?? '');
     updatedAt = DateTime.tryParse(attributes?['updated_at'] ?? '');
     rawData = {'data': json, 'included': included};
@@ -44,6 +47,9 @@ abstract class Model with ChangeNotifier {
   }
 
   Future<bool> refresh(Server server, {List<String> include = const []}) {
+    if (isNewRecord) {
+      return Future.value(false);
+    }
     return server
         .get(
           "$path/${id.toString()}",
@@ -70,13 +76,13 @@ abstract class Model with ChangeNotifier {
   @override
   bool operator ==(Object other) {
     if (other is Model) {
-      return id == other.id && runtimeType == other.runtimeType;
+      return toJson() == other.toJson() && runtimeType == other.runtimeType;
     }
     return false;
   }
 
   @override
-  int get hashCode => '$modelName|$id'.hashCode;
+  int get hashCode => asJson().hashCode;
 
   int compareTo(Model b) {
     return modelValue.compareTo(b.modelValue);
@@ -100,7 +106,9 @@ abstract class Model with ChangeNotifier {
     return value;
   }
 
-  Map<String, dynamic> toJson() {
+  String toJson() => jsonEncoder.convert(asJson());
+
+  Map<String, dynamic> asJson() {
     var json = asMap();
     json.forEach((key, object) {
       if (object is Money) {
@@ -116,7 +124,7 @@ abstract class Model with ChangeNotifier {
       } else if (object is String) {
         json[key] = object.trim();
       } else if (object is TimeOfDay) {
-        json[key] = object.toJson();
+        json[key] = object.asJson();
       }
     });
     return json;
@@ -272,24 +280,27 @@ abstract class ModelClass<T extends Model> {
 }
 
 mixin SaveNDestroyModel on Model {
-  Future<bool> save(Server server) async {
+  Future<bool> save(
+    Server server, {
+    Map<String, dynamic>? includeAttributes,
+  }) async {
     Future request;
+    Map<String, dynamic> attributes = asJson();
+    if (includeAttributes != null) {
+      attributes.addAll(includeAttributes);
+    }
     if (isNewRecord) {
       request = server.post(
         path,
         body: {
-          'data': {'type': modelName, 'attributes': toJson()},
+          'data': {'type': modelName, 'attributes': attributes},
         },
       );
     } else {
       request = server.put(
         "$path/$id",
         body: {
-          'data': {
-            'id': id.toString(),
-            'type': modelName,
-            'attributes': toJson(),
-          },
+          'data': {'id': id, 'type': modelName, 'attributes': attributes},
         },
       );
     }

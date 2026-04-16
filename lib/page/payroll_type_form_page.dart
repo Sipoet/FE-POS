@@ -43,8 +43,8 @@ class _PayrollTypeFormPageState extends State<PayrollTypeFormPage>
       'data': {
         'type': 'payrollType',
         'id': payrollType.id,
-        'attributes': payrollType.toJson(),
-      }
+        'attributes': payrollType.asJson(),
+      },
     };
     Future request;
     if (payrollType.id == null) {
@@ -52,33 +52,44 @@ class _PayrollTypeFormPageState extends State<PayrollTypeFormPage>
     } else {
       request = server.put('payroll_types/${payrollType.id}', body: body);
     }
-    request.then((response) {
-      if ([200, 201].contains(response.statusCode)) {
-        var data = response.data['data'];
-        setState(() {
-          payrollType.setFromJson(
-            data,
-            included: response.data['included'] ?? [],
+    request.then(
+      (response) {
+        if ([200, 201].contains(response.statusCode)) {
+          var data = response.data['data'];
+          setState(() {
+            payrollType.setFromJson(
+              data,
+              included: response.data['included'] ?? [],
+            );
+            var tabManager = context.read<TabManager>();
+            tabManager.changeTabHeader(
+              widget,
+              'Edit Payroll Type ${payrollType.name}',
+            );
+          });
+          flash.show(
+            const Text('Berhasil disimpan'),
+            ToastificationType.success,
           );
-          var tabManager = context.read<TabManager>();
-          tabManager.changeTabHeader(
-              widget, 'Edit Payroll Type ${payrollType.name}');
-        });
-        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
-      } else if (response.statusCode == 409) {
-        var data = response.data;
-        flash.showBanner(
+        } else if (response.statusCode == 409) {
+          var data = response.data;
+          flash.showBanner(
             title: data['message'],
             description: data['errors'].join('\n'),
-            messageType: ToastificationType.error);
-      }
-    }, onError: (error, stackTrace) {
-      defaultErrorResponse(error: error);
-    });
+            messageType: ToastificationType.error,
+          );
+        }
+      },
+      onError: (error, stackTrace) {
+        defaultErrorResponse(error: error);
+      },
+    );
   }
 
-  static const labelStyle =
-      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+  static const labelStyle = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+  );
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -100,9 +111,10 @@ class _PayrollTypeFormPageState extends State<PayrollTypeFormPage>
                   TextFormField(
                     focusNode: focusNode,
                     decoration: const InputDecoration(
-                        labelText: 'Nama',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder()),
+                      labelText: 'Nama',
+                      labelStyle: labelStyle,
+                      border: OutlineInputBorder(),
+                    ),
                     validator: (newValue) {
                       if (newValue == null || newValue.isEmpty) {
                         return 'harus diisi';
@@ -117,14 +129,13 @@ class _PayrollTypeFormPageState extends State<PayrollTypeFormPage>
                       payrollType.name = newValue.toString();
                     },
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 10),
                   TextFormField(
                     decoration: const InputDecoration(
-                        labelText: 'Initial',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder()),
+                      labelText: 'Initial',
+                      labelStyle: labelStyle,
+                      border: OutlineInputBorder(),
+                    ),
                     validator: (newValue) {
                       if (newValue == null || newValue.isEmpty) {
                         return 'harus diisi';
@@ -139,14 +150,13 @@ class _PayrollTypeFormPageState extends State<PayrollTypeFormPage>
                       payrollType.initial = newValue.toString();
                     },
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 10),
                   TextFormField(
                     decoration: const InputDecoration(
-                        labelText: 'Order',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder()),
+                      labelText: 'Order',
+                      labelStyle: labelStyle,
+                      border: OutlineInputBorder(),
+                    ),
                     validator: (newValue) {
                       if (newValue == null || newValue.isEmpty) {
                         return 'harus diisi';
@@ -164,32 +174,32 @@ class _PayrollTypeFormPageState extends State<PayrollTypeFormPage>
                           int.tryParse(newValue) ?? payrollType.order;
                     },
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 10),
                   CheckboxListTile(
-                      title: const Text('Show on Payslip Description?'),
-                      value: payrollType.isShowOnPayslipDesc,
-                      onChanged: (value) => setState(() {
-                            payrollType.isShowOnPayslipDesc =
-                                value ?? payrollType.isShowOnPayslipDesc;
-                          })),
-                  const SizedBox(
-                    height: 10,
+                    title: const Text('Show on Payslip Description?'),
+                    value: payrollType.isShowOnPayslipDesc,
+                    onChanged: (value) => setState(() {
+                      payrollType.isShowOnPayslipDesc =
+                          value ?? payrollType.isShowOnPayslipDesc;
+                    }),
                   ),
+                  const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.only(top: 10, bottom: 10),
                     child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            _formKey.currentState!.save();
-                            flash.show(
-                                const Text('Loading'), ToastificationType.info);
-                            _submit();
-                          }
-                        },
-                        child: const Text('submit')),
-                  )
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          _formKey.currentState!.save();
+                          flash.show(
+                            const Text('Loading'),
+                            ToastificationType.info,
+                          );
+                          _submit();
+                        }
+                      },
+                      child: const Text('submit'),
+                    ),
+                  ),
                 ],
               ),
             ),

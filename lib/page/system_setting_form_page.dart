@@ -192,7 +192,7 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
       'data': {
         'id': systemSetting.id,
         'type': 'system_setting',
-        'attributes': systemSetting.toJson(),
+        'attributes': systemSetting.asJson(),
       },
     };
     server

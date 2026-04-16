@@ -138,7 +138,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
     Map body = {
       'data': {
         'type': 'discount',
-        'attributes': discount.toJson(),
+        'attributes': discount.asJson(),
         'relationships': {
           'discount_filters': {
             'data': discount.discountFilters
@@ -146,7 +146,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
                   (discountFilter) => {
                     'id': discountFilter.id,
                     'type': 'discount_filter',
-                    'attributes': discountFilter.toJson(),
+                    'attributes': discountFilter.asJson(),
                   },
                 )
                 .toList(),

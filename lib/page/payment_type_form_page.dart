@@ -43,19 +43,30 @@ class _PaymentTypeFormPageState extends State<PaymentTypeFormPage>
   void fetchPaymentType() {
     showLoadingPopup();
     final server = context.read<Server>();
-    server.get('paymentTypes/${paymentType.id}', queryParam: {
-      'include':
-          'column_authorizes,access_authorizes,paymentType_work_schedules'
-    }).then((response) {
-      if (response.statusCode == 200) {
-        setState(() {
-          paymentType.setFromJson(response.data['data'],
-              included: response.data['included']);
-        });
-      }
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-    }).whenComplete(() => hideLoadingPopup());
+    server
+        .get(
+          'paymentTypes/${paymentType.id}',
+          queryParam: {
+            'include':
+                'column_authorizes,access_authorizes,paymentType_work_schedules',
+          },
+        )
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              setState(() {
+                paymentType.setFromJson(
+                  response.data['data'],
+                  included: response.data['included'],
+                );
+              });
+            }
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+          },
+        )
+        .whenComplete(() => hideLoadingPopup());
   }
 
   void _submit() async {
@@ -64,8 +75,8 @@ class _PaymentTypeFormPageState extends State<PaymentTypeFormPage>
       'data': {
         'type': 'paymentType',
         'id': paymentType.id,
-        'attributes': paymentType.toJson(),
-      }
+        'attributes': paymentType.asJson(),
+      },
     };
     Future request;
     if (paymentType.id == null) {
@@ -73,31 +84,44 @@ class _PaymentTypeFormPageState extends State<PaymentTypeFormPage>
     } else {
       request = server.put('payment_types/${paymentType.id}', body: body);
     }
-    request.then((response) {
-      if ([200, 201].contains(response.statusCode)) {
-        var data = response.data['data'];
-        setState(() {
-          paymentType.setFromJson(data,
-              included: response.data['included'] ?? []);
-          var tabManager = context.read<TabManager>();
-          tabManager.changeTabHeader(
-              widget, 'Edit paymentType ${paymentType.name}');
-        });
-        flash.show(const Text('Berhasil disimpan'), ToastificationType.success);
-      } else if (response.statusCode == 409) {
-        var data = response.data;
-        flash.showBanner(
+    request.then(
+      (response) {
+        if ([200, 201].contains(response.statusCode)) {
+          var data = response.data['data'];
+          setState(() {
+            paymentType.setFromJson(
+              data,
+              included: response.data['included'] ?? [],
+            );
+            var tabManager = context.read<TabManager>();
+            tabManager.changeTabHeader(
+              widget,
+              'Edit paymentType ${paymentType.name}',
+            );
+          });
+          flash.show(
+            const Text('Berhasil disimpan'),
+            ToastificationType.success,
+          );
+        } else if (response.statusCode == 409) {
+          var data = response.data;
+          flash.showBanner(
             title: data['message'],
             description: data['errors'].join('\n'),
-            messageType: ToastificationType.error);
-      }
-    }, onError: (error, stackTrace) {
-      defaultErrorResponse(error: error);
-    });
+            messageType: ToastificationType.error,
+          );
+        }
+      },
+      onError: (error, stackTrace) {
+        defaultErrorResponse(error: error);
+      },
+    );
   }
 
-  static const labelStyle =
-      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+  static const labelStyle = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+  );
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -118,9 +142,10 @@ class _PaymentTypeFormPageState extends State<PaymentTypeFormPage>
                 children: [
                   TextFormField(
                     decoration: const InputDecoration(
-                        labelText: 'Nama',
-                        labelStyle: labelStyle,
-                        border: OutlineInputBorder()),
+                      labelText: 'Nama',
+                      labelStyle: labelStyle,
+                      border: OutlineInputBorder(),
+                    ),
                     validator: (newValue) {
                       if (newValue == null || newValue.isEmpty) {
                         return 'harus diisi';
@@ -135,22 +160,23 @@ class _PaymentTypeFormPageState extends State<PaymentTypeFormPage>
                     },
                     controller: codeInputWidget,
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.only(top: 10, bottom: 10),
                     child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            _formKey.currentState!.save();
-                            flash.show(
-                                const Text('Loading'), ToastificationType.info);
-                            _submit();
-                          }
-                        },
-                        child: const Text('submit')),
-                  )
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          _formKey.currentState!.save();
+                          flash.show(
+                            const Text('Loading'),
+                            ToastificationType.info,
+                          );
+                          _submit();
+                        }
+                      },
+                      child: const Text('submit'),
+                    ),
+                  ),
                 ],
               ),
             ),

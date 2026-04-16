@@ -64,7 +64,7 @@ class _BookEmployeeAttendanceFormPageState
     Map body = {
       'data': {
         'type': 'book_employee_attendance',
-        'attributes': record.toJson(),
+        'attributes': record.asJson(),
       },
     };
     Future<dynamic> request;

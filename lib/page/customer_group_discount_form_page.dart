@@ -59,7 +59,7 @@ class _CustomerGroupDiscountFormPageState
     Map body = {
       'data': {
         'type': 'customer_group_discount',
-        'attributes': customerGroupDiscount.toJson(),
+        'attributes': customerGroupDiscount.asJson(),
       },
     };
 

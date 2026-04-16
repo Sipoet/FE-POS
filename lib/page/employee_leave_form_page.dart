@@ -126,7 +126,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
       'data': {
         'type': 'employee_leave',
         'id': empLeave.id,
-        'attributes': empLeave.toJson(),
+        'attributes': empLeave.asJson(),
       },
     };
     Future request;

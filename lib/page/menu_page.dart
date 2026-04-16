@@ -33,6 +33,7 @@ export 'customer_group_discount_page.dart';
 export 'user_page.dart';
 export 'role_page.dart';
 export 'product_page.dart';
+export 'tag_key_page.dart';
 
 // human resource
 export 'payroll_page.dart';

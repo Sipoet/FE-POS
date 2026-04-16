@@ -12,78 +12,96 @@ mixin HistoryPopup<T extends StatefulWidget> on State<T>
   void _showLoadingPopup() {
     final colorScheme = Theme.of(context).colorScheme;
     showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (BuildContext context) {
-          return Center(
-            child: SizedBox(
-              width: 50,
-              height: 50,
-              child: CircularProgressIndicator(
-                color: colorScheme.primary,
-                backgroundColor: colorScheme.primaryContainer,
-              ),
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return Center(
+          child: SizedBox(
+            width: 50,
+            height: 50,
+            child: CircularProgressIndicator(
+              color: colorScheme.primary,
+              backgroundColor: colorScheme.primaryContainer,
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
   void _hideLoadingPopup() {
     Navigator.pop(context);
   }
 
-  void fetchHistoryByRecord(
-    String itemType,
-    int? itemId,
-  ) {
+  void fetchHistoryByRecord(String itemType, int? itemId) {
     _showLoadingPopup();
 
     final server = context.read<Server>();
-    server.get('activity_logs/by_item', queryParam: {
-      'item_type': itemType,
-      'item_id': itemId.toString(),
-    }).then((response) {
-      if (response.statusCode == 200) {
-        final json = response.data;
-        setState(() {
-          _source.setData(json['data']
-              .map<ActivityLog>((lineJson) => ActivityLogClass()
-                  .fromJson(lineJson, included: json['included'] ?? []) as T)
-              .toList());
-        });
-        _hideLoadingPopup();
-        showHistoryPopup();
-      }
-    }, onError: (error) {
-      _hideLoadingPopup();
-      defaultErrorResponse(error: error);
-    });
+    server
+        .get(
+          'activity_logs/by_item',
+          queryParam: {'item_type': itemType, 'item_id': itemId.toString()},
+        )
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              final json = response.data;
+              setState(() {
+                final data = json['data']
+                    .map<ActivityLog>(
+                      (lineJson) => ActivityLogClass().fromJson(
+                        lineJson,
+                        included: json['included'] ?? [],
+                      ),
+                    )
+                    .toList();
+                _source.setData(data);
+              });
+              _hideLoadingPopup();
+              showHistoryPopup();
+            }
+          },
+          onError: (error) {
+            _hideLoadingPopup();
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
-  void fetchHistoryByUser(
-    int userId,
-  ) {
+  void fetchHistoryByUser(int userId) {
     _showLoadingPopup();
 
     final server = context.read<Server>();
-    server.get('activity_logs/by_user', queryParam: {
-      'user_id': userId.toString(),
-    }).then((response) {
-      if (response.statusCode == 200) {
-        final json = response.data;
-        setState(() {
-          _source.setData(json['data']
-              .map<ActivityLog>((lineJson) => ActivityLogClass()
-                  .fromJson(lineJson, included: json['included'] ?? []) as T)
-              .toList());
-        });
-        _hideLoadingPopup();
-        showHistoryPopup();
-      }
-    }, onError: (error) {
-      _hideLoadingPopup();
-      defaultErrorResponse(error: error);
-    });
+    server
+        .get(
+          'activity_logs/by_user',
+          queryParam: {'user_id': userId.toString()},
+        )
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              final json = response.data;
+              setState(() {
+                _source.setData(
+                  json['data']
+                      .map<ActivityLog>(
+                        (lineJson) => ActivityLogClass().fromJson(
+                          lineJson,
+                          included: json['included'] ?? [],
+                        ),
+                      )
+                      .toList(),
+                );
+              });
+              _hideLoadingPopup();
+              showHistoryPopup();
+            }
+          },
+          onError: (error) {
+            _hideLoadingPopup();
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
   int _sortColumnIndex = 0;
@@ -92,9 +110,10 @@ mixin HistoryPopup<T extends StatefulWidget> on State<T>
     final colorScheme = Theme.of(context).colorScheme;
     const labelStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
     showDialog(
-        context: context,
-        builder: (context) {
-          return StatefulBuilder(builder: (context, setStateDialog) {
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
             return SingleChildScrollView(
               scrollDirection: Axis.vertical,
               child: Center(
@@ -152,8 +171,10 @@ mixin HistoryPopup<T extends StatefulWidget> on State<T>
                 ),
               ),
             );
-          });
-        });
+          },
+        );
+      },
+    );
   }
 }
 
@@ -201,21 +222,21 @@ class HistorySource extends DataTableSource {
   @override
   DataRow? getRow(int index) {
     ActivityLog model = sortedData[index];
-    return DataRow.byIndex(index: index, cells: [
-      DataCell(
-        Text(dateTimeLocalFormat(model.createdAt ?? DateTime(0))),
-      ),
-      DataCell(
-        Text(model.actor),
-      ),
-      DataCell(Text("${model.event} ${model.itemType}")),
-      DataCell(
-        Tooltip(
+    return DataRow.byIndex(
+      index: index,
+      cells: [
+        DataCell(Text(dateTimeLocalFormat(model.createdAt ?? DateTime(0)))),
+        DataCell(Text(model.actor)),
+        DataCell(Text("${model.event} ${model.itemType}")),
+        DataCell(
+          Tooltip(
             message: model.description,
             triggerMode: TooltipTriggerMode.longPress,
-            child: SelectableText(model.description)),
-      ),
-    ]);
+            child: SelectableText(model.description),
+          ),
+        ),
+      ],
+    );
   }
 
   @override

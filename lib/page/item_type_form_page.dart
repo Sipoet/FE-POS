@@ -39,12 +39,17 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
 
   void fetchItemType() {
     showLoadingPopup();
-    _server.get('item_types/${itemType.id}').then((response) {
-      if (mounted && response.statusCode == 200) {
-        itemType.setFromJson(response.data['data'],
-            included: response.data['included'] ?? []);
-      }
-    }).whenComplete(() => hideLoadingPopup());
+    _server
+        .get('item_types/${itemType.id}')
+        .then((response) {
+          if (mounted && response.statusCode == 200) {
+            itemType.setFromJson(
+              response.data['data'],
+              included: response.data['included'] ?? [],
+            );
+          }
+        })
+        .whenComplete(() => hideLoadingPopup());
   }
 
   void save() {
@@ -56,8 +61,8 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
       'data': {
         'id': itemType.id,
         'type': 'item',
-        'attributes': itemType.toJson(),
-      }
+        'attributes': itemType.asJson(),
+      },
     };
     Future response;
     if (itemType.isNewRecord) {
@@ -65,40 +70,51 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
     } else {
       response = _server.put('item_types/${itemType.id}', body: params);
     }
-    response.then((response) {
-      if (mounted && [200, 201].contains(response.statusCode)) {
-        setState(() {
-          itemType.setFromJson(response.data['data'],
-              included: response.data['included'] ?? []);
-        });
-        _tabManager.changeTabHeader(widget, 'Edit Jenis ${itemType.name}');
-        toastification.show(
-          title: Text(
-            'Sukses simpan Jenis',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          type: ToastificationType.success,
-          autoCloseDuration: Duration(seconds: 3),
-        );
-      } else {
-        final String errorMessage = response.statusCode == 409
-            ? response.data['errors'].toString()
-            : response.data.toString();
-        toastification.show(
-          title: Text(
-            'Gagal simpan Jenis',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          description: Text(errorMessage),
-          type: ToastificationType.error,
-        );
-      }
-    }, onError: (error) => defaultErrorResponse(error: error)).whenComplete(
-        () => hideLoadingPopup());
+    response
+        .then((response) {
+          if (mounted && [200, 201].contains(response.statusCode)) {
+            setState(() {
+              itemType.setFromJson(
+                response.data['data'],
+                included: response.data['included'] ?? [],
+              );
+            });
+            _tabManager.changeTabHeader(widget, 'Edit Jenis ${itemType.name}');
+            toastification.show(
+              title: Text(
+                'Sukses simpan Jenis',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              type: ToastificationType.success,
+              autoCloseDuration: Duration(seconds: 3),
+            );
+          } else {
+            final String errorMessage = response.statusCode == 409
+                ? response.data['errors'].toString()
+                : response.data.toString();
+            toastification.show(
+              title: Text(
+                'Gagal simpan Jenis',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              description: Text(errorMessage),
+              type: ToastificationType.error,
+            );
+          }
+        }, onError: (error) => defaultErrorResponse(error: error))
+        .whenComplete(() => hideLoadingPopup());
   }
 
-  static const _filterLabelStyle =
-      TextStyle(fontSize: 14, fontWeight: FontWeight.bold);
+  static const _filterLabelStyle = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.bold,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -123,15 +139,14 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
                 return null;
               },
               decoration: InputDecoration(
-                  label: Text(
-                    _setting.columnName('itemType', 'name'),
-                    style: _filterLabelStyle,
-                  ),
-                  border: OutlineInputBorder()),
+                label: Text(
+                  _setting.columnName('itemType', 'name'),
+                  style: _filterLabelStyle,
+                ),
+                border: OutlineInputBorder(),
+              ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
             TextFormField(
               initialValue: itemType.description,
               onChanged: (value) {
@@ -142,15 +157,14 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
               minLines: 3,
               maxLines: 5,
               decoration: InputDecoration(
-                  label: Text(
-                    _setting.columnName('itemType', 'description'),
-                    style: _filterLabelStyle,
-                  ),
-                  border: OutlineInputBorder()),
+                label: Text(
+                  _setting.columnName('itemType', 'description'),
+                  style: _filterLabelStyle,
+                ),
+                border: OutlineInputBorder(),
+              ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
             AsyncDropdown<ItemType>(
               label: const Text('Parent :', style: _filterLabelStyle),
               key: const ValueKey('itemTypeSelect'),
@@ -161,10 +175,8 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
               path: '/item_types',
               onChanged: (value) => itemType.parent = value,
             ),
-            const SizedBox(
-              height: 15,
-            ),
-            ElevatedButton(onPressed: save, child: Text('Simpan'))
+            const SizedBox(height: 15),
+            ElevatedButton(onPressed: save, child: Text('Simpan')),
           ],
         ),
       ),

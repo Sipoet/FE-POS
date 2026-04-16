@@ -194,7 +194,7 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
       'data': {
         'type': 'employee_attendance',
         'id': employeeAttendance.id,
-        'attributes': employeeAttendance.toJson(),
+        'attributes': employeeAttendance.asJson(),
       },
     };
     Future request;

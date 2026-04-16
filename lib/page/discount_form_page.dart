@@ -277,7 +277,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     Map body = {
       'data': {
         'type': 'discount',
-        'attributes': discount.toJson(),
+        'attributes': discount.asJson(),
         'relationships': {
           'discount_filters': {
             'data': discount.discountFilters
@@ -285,7 +285,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   (discountItem) => {
                     'id': discountItem.id,
                     'type': 'discount_filter',
-                    'attributes': discountItem.toJson(),
+                    'attributes': discountItem.asJson(),
                   },
                 )
                 .toList(),
@@ -396,7 +396,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
     Map body = {
       'data': {
         'type': 'discount',
-        'attributes': discount.toJson(),
+        'attributes': discount.asJson(),
         'relationships': {
           'discount_filters': {
             'data': discount.discountFilters
@@ -404,7 +404,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   (discountItem) => {
                     'id': discountItem.id,
                     'type': 'discount_filter',
-                    'attributes': discountItem.toJson(),
+                    'attributes': discountItem.asJson(),
                   },
                 )
                 .toList(),

@@ -90,7 +90,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
     Map body = {
       'data': {
         'type': 'payroll',
-        'attributes': payroll.toJson(),
+        'attributes': payroll.asJson(),
         'relationships': {
           'payroll_lines': {
             'data': payroll.lines
@@ -98,7 +98,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                   (payrollLine) => {
                     'id': payrollLine.id,
                     'type': 'payroll_line',
-                    'attributes': payrollLine.toJson(),
+                    'attributes': payrollLine.asJson(),
                   },
                 )
                 .toList(),

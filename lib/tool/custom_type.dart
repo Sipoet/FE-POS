@@ -57,7 +57,7 @@ extension DateTimeExt on DateTime {
     ).beginningOfDay().subtract(Duration(milliseconds: 1));
   }
 
-  String toJson() => format();
+  String asJson() => format();
 
   DateTime beginningOfWeek() {
     int dayT = weekday;
@@ -141,7 +141,7 @@ class Date extends DateTime {
     return DateFormat(pattern, locale).format(this);
   }
 
-  String toJson() {
+  String asJson() {
     return toIso8601String();
   }
 
@@ -271,7 +271,7 @@ class Money {
     }
   }
 
-  String toJson() {
+  String asJson() {
     return value.toString();
   }
 
@@ -411,7 +411,7 @@ class Percentage {
     return ((value * 10000).round() / 100).toString();
   }
 
-  String toJson() => format();
+  String asJson() => format();
 
   String format() {
     return "${toString()}%";
@@ -488,7 +488,7 @@ extension TimeDay on TimeOfDay {
     return TimeOfDay.fromDateTime(datetime);
   }
 
-  String toJson() {
+  String asJson() {
     return format24Hour();
   }
 
