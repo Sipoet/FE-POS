@@ -17,7 +17,7 @@ class FileSaver with PlatformChecker {
       fileName: filename,
       type: FileType.custom,
       allowedExtensions: [extFile],
-      bytes: isDesktop() ? null : bytes,
+      bytes: bytes,
     );
   }
 
@@ -47,14 +47,16 @@ class FileSaver with PlatformChecker {
   }
 
   Future<File?> downloadRemote({
-    required String urlPath,
+    String? path,
+    String? url,
     required Server server,
     String? filename,
     required String extFile,
     void Function(int, int)? onReceiveProgress,
   }) async {
     Uint8List? bytes = await server.download(
-      urlPath: urlPath,
+      path: path,
+      url: url,
       type: extFile,
       onSuccess: (response) {
         String headerFilename =
@@ -74,7 +76,7 @@ class FileSaver with PlatformChecker {
       return null;
     }
     String? outputFile = await downloadPath(
-      filename: filename!,
+      filename: filename ?? 'file.$extFile',
       extFile: extFile,
       bytes: bytes,
     );

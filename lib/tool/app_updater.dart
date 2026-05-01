@@ -143,8 +143,9 @@ mixin AppUpdater<T extends StatefulWidget> on State<T>
     final navigator = Navigator.of(context);
     fileSaver
         .downloadRemote(
-          urlPath: path,
+          url: path,
           server: server,
+          filename: path.split('/').last,
           extFile: extFile,
           onReceiveProgress: (actualBytes, int totalBytes) {
             final progress = (actualBytes / totalBytes * 100)

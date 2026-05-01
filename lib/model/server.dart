@@ -171,24 +171,38 @@ class Server extends ChangeNotifier {
   }
 
   Future<Uint8List?> download({
-    required String urlPath,
+    String? url,
+    String? path,
     required String type,
     void Function(int, int)? onReceiveProgress,
     void Function(Response)? onSuccess,
   }) {
+    if (path != null) {
+      url = "https://$host/api/$path";
+    }
+    debugPrint('url $url');
     return dio
         .get<List<int>>(
-          "https://$host/api/$urlPath",
+          url!,
           onReceiveProgress: onReceiveProgress,
-          options: generateHeaders('json', type),
+          options: path != null
+              ? generateHeaders('json', type)
+              : Options(
+                  responseType: ResponseType.bytes,
+                  contentType: 'text/plain',
+                ),
         )
         .then((response) {
           if (response.statusCode == 200 || response.statusCode == 201) {
             onSuccess?.call(response);
           }
-          return response.data == null
-              ? null
-              : Uint8List.fromList(response.data!);
+          final data = response.data;
+          if (data is Uint8List) {
+            return data;
+          } else if (data is List<int>) {
+            Uint8List.fromList(data);
+          }
+          return null;
         });
   }
 
@@ -198,6 +212,7 @@ class Server extends ChangeNotifier {
     'xlsx': ResponseType.bytes,
     'pdf': ResponseType.bytes,
     'file': ResponseType.bytes,
+    'txt': ResponseType.plain,
   };
   Options generateHeaders(String requestType, String responseType) {
     return Options(
@@ -208,7 +223,7 @@ class Server extends ChangeNotifier {
       contentType: requestType == 'file'
           ? 'multipart/form-data'
           : 'application/json',
-      responseType: _responseTypes[responseType],
+      responseType: _responseTypes[responseType] ?? ResponseType.bytes,
     );
   }
 

@@ -119,7 +119,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
   void downloadMassUploadFile() async {
     var fileSaver = const FileSaver();
     fileSaver.downloadRemote(
-      urlPath: 'discounts/template_mass_upload_excel',
+      path: 'discounts/template_mass_upload_excel',
       server: _server,
       extFile: 'xlsx',
     );
