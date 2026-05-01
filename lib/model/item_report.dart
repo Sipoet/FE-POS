@@ -18,6 +18,7 @@ class ItemReport extends Model {
   double stockLeft;
   Money salesTotal;
   int numberOfPurchase;
+  int inventoryDisrepancy;
   Money purchaseTotal;
   Money grossProfit;
   int itemOut;
@@ -48,6 +49,7 @@ class ItemReport extends Model {
     Brand? brand,
     this.storeStock = 0,
     this.warehouseStock = 0,
+    this.inventoryDisrepancy = 0,
     this.percentageSales = const Percentage(0),
     this.sellPrice = const Money(0),
     this.avgBuyPrice = const Money(0),
@@ -93,6 +95,8 @@ class ItemReport extends Model {
     limitProfitDiscount = Percentage.tryParse(
       attributes['limit_profit_discount'],
     );
+    inventoryDisrepancy =
+        int.tryParse(attributes['inventory_disrepancy'] ?? '') ?? 0;
     cogs = Money.parse(attributes['cogs'] ?? '0');
     numberOfReturn = attributes['qty_return'] ?? 0;
     sellPrice = Money.tryParse(attributes['sell_price']) ?? const Money(0);
@@ -165,6 +169,7 @@ class ItemReport extends Model {
     'purchase_total': purchaseTotal,
     'last_purchase_date': lastPurchaseDate,
     'item_out': itemOut,
+    'inventory_disrepancy': inventoryDisrepancy,
     'gross_profit': grossProfit,
     'stock_left': stockLeft,
     'cogs': cogs,

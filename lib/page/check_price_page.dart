@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:fe_pos/model/item_with_discount.dart';
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/default_response.dart';
@@ -124,164 +125,298 @@ class _CheckPricePageState extends State<CheckPricePage>
     for (final stockLocation in model.stockLocations) {
       stockLocation['tempRack'] = stockLocation.rack;
     }
+    final Map<int, bool> expansions = {};
+    bool onEdit = false;
+    bool isProgress = false;
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (context) {
-        bool onEdit = false;
-        bool isProgress = false;
         return StatefulBuilder(
           builder: (context, setStateDialog) => AlertDialog(
             title: Row(
               mainAxisAlignment: .spaceBetween,
               children: [
-                Text('Stok ${model.code}'),
+                SelectableText('Stok ${model.code}'),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),
                   icon: Icon(Icons.close),
                 ),
               ],
             ),
-            content: Column(
-              mainAxisSize: .min,
-              mainAxisAlignment: .start,
-              crossAxisAlignment: .start,
-              spacing: 10,
-              children: [
-                Text('Nama Item: ${model.name}'),
-                Table(
-                  border: TableBorder.symmetric(inside: BorderSide()),
-                  columnWidths: {
-                    0: FlexColumnWidth(0.5),
-                    2: FixedColumnWidth(65),
-                  },
-                  children: [
-                    TableRow(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 5.0, top: 10),
-                          child: Text('Lokasi', style: labelStyle),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 5.0),
-                          child: Row(
-                            mainAxisAlignment: .spaceBetween,
-                            children: [
-                              Text('Rak', style: labelStyle),
-                              Visibility(
-                                visible: onEdit,
-                                replacement: IconButton(
-                                  onPressed: () => setStateDialog(() {
-                                    onEdit = true;
-                                  }),
-                                  icon: Icon(Icons.edit),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: .spaceEvenly,
+            content: LayoutBuilder(
+              builder: (context, constraint) {
+                final size = MediaQuery.of(context).size;
+                if (size.width <= 480 || size.height <= 480) {
+                  return SingleChildScrollView(
+                    child: ExpansionPanelList(
+                      expansionCallback: (index, isExpanded) =>
+                          setStateDialog(() {
+                            expansions[index] = isExpanded;
+                          }),
+                      children: model.stockLocations
+                          .mapIndexed<ExpansionPanel>(
+                            (index, stockLocation) => ExpansionPanel(
+                              isExpanded: expansions[index] == true,
+                              headerBuilder: (context, isExpanded) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: SelectableText(
+                                    '${stockLocation.locationCode}: ${stockLocation.quantity.format()}. Rak: ${stockLocation.rack}',
+                                    style: labelStyle,
+                                  ),
+                                );
+                              },
+                              body: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
                                   children: [
-                                    IconButton(
-                                      onPressed: () => setStateDialog(() {
-                                        onEdit = false;
-                                        isProgress = true;
-                                        saveRack(model, setStateDialog).then(
-                                          (value) => setStateDialog(() {
-                                            isProgress = false;
-                                          }),
-                                        );
-                                      }),
-                                      icon: Icon(Icons.check),
+                                    Row(
+                                      mainAxisAlignment: .spaceBetween,
+                                      children: [
+                                        Text('Lokasi:', style: labelStyle),
+                                        SelectableText(
+                                          stockLocation.locationCode,
+                                        ),
+                                      ],
                                     ),
-
-                                    IconButton(
-                                      onPressed: () => setStateDialog(() {
-                                        onEdit = false;
-                                        isProgress = true;
-                                        Future.delayed(Durations.short2, () {
-                                          setStateDialog(() {
-                                            isProgress = false;
-                                          });
-                                        });
-                                      }),
-                                      icon: Icon(Icons.cancel),
+                                    Row(
+                                      mainAxisAlignment: .spaceBetween,
+                                      children: [
+                                        Text('Jumlah:', style: labelStyle),
+                                        SelectableText(
+                                          stockLocation.quantity.format(),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: .spaceBetween,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () => setStateDialog(() {
+                                            isProgress = true;
+                                            saveRack(
+                                              model,
+                                              setStateDialog,
+                                            ).then(
+                                              (value) => setStateDialog(() {
+                                                isProgress = false;
+                                              }),
+                                            );
+                                          }),
+                                          child: Text('Simpan'),
+                                        ),
+                                        Visibility(
+                                          visible: isProgress,
+                                          child: SizedBox(
+                                            width: 25,
+                                            height: 25,
+                                            child: loadingWidget(),
+                                          ),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () => setStateDialog(() {
+                                            isProgress = true;
+                                            Future.delayed(
+                                              Durations.short2,
+                                              () {
+                                                setStateDialog(() {
+                                                  isProgress = false;
+                                                });
+                                              },
+                                            );
+                                          }),
+                                          child: Text(
+                                            'Batal',
+                                            style: TextStyle(
+                                              color: Colors.red.shade300,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: .spaceBetween,
+                                      children: [
+                                        Text('Rak: ', style: labelStyle),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: TextFormField(
+                                            initialValue:
+                                                stockLocation['tempRack'],
+                                            onChanged: (value) =>
+                                                setStateDialog(() {
+                                                  stockLocation['tempRack'] =
+                                                      value;
+                                                }),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 5.0, top: 10),
-                          child: Text(
-                            'Jumlah',
-                            style: labelStyle,
-                            textAlign: .right,
-                          ),
-                        ),
-                      ],
+                            ),
+                          )
+                          .toList(),
                     ),
-                    if (!isProgress)
-                      ...model.stockLocations.map<TableRow>(
-                        (stock) => TableRow(
+                  );
+                }
+                return Column(
+                  mainAxisSize: .min,
+                  mainAxisAlignment: .start,
+                  crossAxisAlignment: .start,
+                  spacing: 10,
+                  children: [
+                    Text('Nama Item: ${model.name}'),
+                    Table(
+                      border: TableBorder.symmetric(inside: BorderSide()),
+                      columnWidths: {
+                        0: FlexColumnWidth(0.5),
+                        2: FixedColumnWidth(65),
+                      },
+                      children: [
+                        TableRow(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.all(5.0),
-                              child: Text(stock.locationCode),
+                              padding: const EdgeInsets.only(
+                                left: 5.0,
+                                top: 10,
+                              ),
+                              child: Text('Lokasi', style: labelStyle),
                             ),
                             Padding(
-                              padding: const EdgeInsets.all(5.0),
-                              child: TextFormField(
-                                readOnly: !onEdit,
-                                initialValue: stock['tempRack'],
-                                onChanged: (value) => setStateDialog(() {
-                                  stock['tempRack'] = value;
-                                }),
+                              padding: const EdgeInsets.only(left: 5.0),
+                              child: Row(
+                                mainAxisAlignment: .spaceBetween,
+                                children: [
+                                  Text('Rak', style: labelStyle),
+                                  Visibility(
+                                    visible: onEdit,
+                                    replacement: IconButton(
+                                      onPressed: () => setStateDialog(() {
+                                        onEdit = true;
+                                      }),
+                                      icon: Icon(Icons.edit),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: .spaceEvenly,
+                                      children: [
+                                        IconButton(
+                                          onPressed: () => setStateDialog(() {
+                                            onEdit = false;
+                                            isProgress = true;
+                                            saveRack(
+                                              model,
+                                              setStateDialog,
+                                            ).then(
+                                              (value) => setStateDialog(() {
+                                                isProgress = false;
+                                              }),
+                                            );
+                                          }),
+                                          icon: Icon(Icons.check),
+                                        ),
+
+                                        IconButton(
+                                          onPressed: () => setStateDialog(() {
+                                            onEdit = false;
+                                            isProgress = true;
+                                            Future.delayed(
+                                              Durations.short2,
+                                              () {
+                                                setStateDialog(() {
+                                                  isProgress = false;
+                                                });
+                                              },
+                                            );
+                                          }),
+                                          icon: Icon(Icons.cancel),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.all(5.0),
+                              padding: const EdgeInsets.only(
+                                left: 5.0,
+                                top: 10,
+                              ),
                               child: Text(
-                                stock.quantity.format(),
+                                'Jumlah',
+                                style: labelStyle,
                                 textAlign: .right,
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    if (isProgress)
-                      TableRow(
-                        children: [
-                          const SizedBox(),
-                          Padding(
-                            padding: const EdgeInsets.all(15.0),
-                            child: loadingWidget(),
-                          ),
-                          const SizedBox(),
-                        ],
-                      ),
-                    if (!isProgress)
-                      TableRow(
-                        children: [
-                          SizedBox(),
-                          Padding(
-                            padding: const EdgeInsets.all(5.0),
-                            child: Text(
-                              'Total',
-                              style: labelStyle,
-                              textAlign: .right,
+                        if (!isProgress)
+                          ...model.stockLocations.map<TableRow>(
+                            (stock) => TableRow(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: Text(stock.locationCode),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: TextFormField(
+                                    readOnly: !onEdit,
+                                    initialValue: stock['tempRack'],
+                                    onChanged: (value) => setStateDialog(() {
+                                      stock['tempRack'] = value;
+                                    }),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: Text(
+                                    stock.quantity.format(),
+                                    textAlign: .right,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(5.0),
-                            child: Text(
-                              model.stockLeft.format(),
-                              textAlign: .right,
-                            ),
+                        if (isProgress)
+                          TableRow(
+                            children: [
+                              const SizedBox(),
+                              Padding(
+                                padding: const EdgeInsets.all(15.0),
+                                child: loadingWidget(),
+                              ),
+                              const SizedBox(),
+                            ],
                           ),
-                        ],
-                      ),
+                        if (!isProgress)
+                          TableRow(
+                            children: [
+                              SizedBox(),
+                              Padding(
+                                padding: const EdgeInsets.all(5.0),
+                                child: Text(
+                                  'Total',
+                                  style: labelStyle,
+                                  textAlign: .right,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(5.0),
+                                child: Text(
+                                  model.stockLeft.format(),
+                                  textAlign: .right,
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                    ),
                   ],
-                ),
-              ],
+                );
+              },
             ),
           ),
         );
