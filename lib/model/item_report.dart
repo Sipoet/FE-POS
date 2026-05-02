@@ -95,8 +95,7 @@ class ItemReport extends Model {
     limitProfitDiscount = Percentage.tryParse(
       attributes['limit_profit_discount'],
     );
-    inventoryDisrepancy =
-        int.tryParse(attributes['inventory_disrepancy'] ?? '') ?? 0;
+
     cogs = Money.parse(attributes['cogs'] ?? '0');
     numberOfReturn = attributes['qty_return'] ?? 0;
     sellPrice = Money.tryParse(attributes['sell_price']) ?? const Money(0);
@@ -104,6 +103,7 @@ class ItemReport extends Model {
     numberOfSales = attributes['number_of_sales'] ?? 0;
     salesTotal = Money.tryParse(attributes['sales_total']) ?? const Money(0);
     numberOfPurchase = attributes['number_of_purchase'] ?? 0;
+    inventoryDisrepancy = attributes['inventory_disrepancy'] ?? 0;
     itemOut = attributes['item_out'] ?? 0;
     purchaseTotal =
         Money.tryParse(attributes['purchase_total']) ?? const Money(0);
