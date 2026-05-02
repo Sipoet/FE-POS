@@ -3,22 +3,33 @@ import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 class FileSaver with PlatformChecker {
   const FileSaver();
 
-  Future<String?> downloadPath({
+  Future<String?> pickPath({
     required String filename,
     required String extFile,
     Uint8List? bytes,
-  }) {
+  }) async {
+    final dir = await getApplicationCacheDirectory();
     return FilePicker.saveFile(
       dialogTitle: 'Please select an output file:',
       fileName: filename,
+      initialDirectory: dir.path,
       type: FileType.custom,
       allowedExtensions: [extFile],
       bytes: bytes,
     );
+  }
+
+  String? mimeTypeOf(String ext) {
+    if (ext == 'apk') {
+      return 'application/vnd.android.package-archive';
+    }
+    return null;
   }
 
   void download(
@@ -28,7 +39,7 @@ class FileSaver with PlatformChecker {
     void Function(String path)? onSuccess,
     void Function(String path)? onFailed,
   }) async {
-    String? outputFile = await downloadPath(
+    String? outputFile = await pickPath(
       filename: filename,
       extFile: extFile,
       bytes: Uint8List.fromList(bytes),
@@ -52,6 +63,7 @@ class FileSaver with PlatformChecker {
     required Server server,
     String? filename,
     required String extFile,
+    bool chooseFile = true,
     void Function(int, int)? onReceiveProgress,
   }) async {
     Uint8List? bytes = await server.download(
@@ -75,14 +87,20 @@ class FileSaver with PlatformChecker {
     if (bytes == null) {
       return null;
     }
-    String? outputFile = await downloadPath(
-      filename: filename ?? 'file.$extFile',
-      extFile: extFile,
-      bytes: bytes,
-    );
-    if (outputFile != null) {
+    if (chooseFile) {
+      String? outputFile = await pickPath(
+        filename: filename ?? 'file.$extFile',
+        extFile: extFile,
+        bytes: bytes,
+      );
+      if (outputFile == null) {
+        return null;
+      }
       return File(outputFile);
     }
-    return null;
+    final dir = await getApplicationCacheDirectory();
+    File file = File(p.join(dir.path, filename));
+    file.writeAsBytesSync(bytes, flush: true);
+    return file;
   }
 }
