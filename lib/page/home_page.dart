@@ -215,29 +215,6 @@ class _HomePageState extends State<HomePage>
 
   final textController = BoardDateTimeTextController();
 
-  void openApk() async {
-    final result = await FilePicker.pickFiles(
-      dialogTitle: 'Please select an output file:',
-      type: FileType.custom,
-      allowedExtensions: ['apk'],
-    );
-
-    final bytes = await result?.xFiles.firstOrNull?.readAsBytes();
-    final path1 = result!.xFiles.firstOrNull!.path;
-    debugPrint('path1: $path1');
-    // await installApp(path, TargetPlatform.android);
-    final filesaver = FileSaver();
-    final path = await filesaver.pickPath(
-      filename: 'test.apk',
-      extFile: 'apk',
-      bytes: bytes,
-    );
-    debugPrint('path2: $path');
-    if (path != null) {
-      await installApp(path, TargetPlatform.android);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -253,7 +230,6 @@ class _HomePageState extends State<HomePage>
               runSpacing: 10,
               alignment: WrapAlignment.spaceBetween,
               children: [
-                ElevatedButton(onPressed: openApk, child: Text('open apk')),
                 DropdownMenu(
                   menuHeight: 250,
                   inputDecorationTheme: const InputDecorationTheme(

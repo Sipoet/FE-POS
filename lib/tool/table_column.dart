@@ -157,7 +157,7 @@ abstract class TableColumnType<T> {
   static TableColumnType get time => TimeTableColumnType();
   static TableColumnType model(ModelClass modelClass) =>
       ModelTableColumnType(modelClass: modelClass);
-  static TableColumnType enums(List<String> enumList) =>
+  static TableColumnType enums(List<DropdownMenuEntry<String>> enumList) =>
       EnumTableColumnType(availableValues: enumList);
 }
 
