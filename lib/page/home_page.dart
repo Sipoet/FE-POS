@@ -3,7 +3,6 @@ import 'package:fe_pos/model/sales_transaction_report.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/tool/default_response.dart';
-import 'package:fe_pos/tool/file_saver.dart';
 
 import 'package:fe_pos/widget/last_item_sales_transaction_widget.dart';
 import 'package:fe_pos/widget/last_sales_transaction_widget.dart';
@@ -11,7 +10,7 @@ import 'package:fe_pos/widget/period_sales_goal.dart';
 import 'package:fe_pos/widget/sales_traffic_report_widget.dart';
 import 'package:fe_pos/widget/sales_transaction_report_widget.dart';
 import 'package:fe_pos/widget/item_sales_transaction_report_widget.dart';
-import 'package:file_picker/file_picker.dart';
+
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/tool/setting.dart';
