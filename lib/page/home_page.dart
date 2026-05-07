@@ -3,7 +3,6 @@ import 'package:fe_pos/model/sales_transaction_report.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/app_updater.dart';
 import 'package:fe_pos/tool/default_response.dart';
-import 'package:fe_pos/tool/file_saver.dart';
 
 import 'package:fe_pos/widget/last_item_sales_transaction_widget.dart';
 import 'package:fe_pos/widget/last_sales_transaction_widget.dart';
@@ -11,7 +10,7 @@ import 'package:fe_pos/widget/period_sales_goal.dart';
 import 'package:fe_pos/widget/sales_traffic_report_widget.dart';
 import 'package:fe_pos/widget/sales_transaction_report_widget.dart';
 import 'package:fe_pos/widget/item_sales_transaction_report_widget.dart';
-import 'package:file_picker/file_picker.dart';
+
 import 'package:flutter/material.dart';
 import 'package:fe_pos/widget/date_range_form_field.dart';
 import 'package:fe_pos/tool/setting.dart';
@@ -215,29 +214,6 @@ class _HomePageState extends State<HomePage>
 
   final textController = BoardDateTimeTextController();
 
-  void openApk() async {
-    final result = await FilePicker.pickFiles(
-      dialogTitle: 'Please select an output file:',
-      type: FileType.custom,
-      allowedExtensions: ['apk'],
-    );
-
-    final bytes = await result?.xFiles.firstOrNull?.readAsBytes();
-    final path1 = result!.xFiles.firstOrNull!.path;
-    debugPrint('path1: $path1');
-    // await installApp(path, TargetPlatform.android);
-    final filesaver = FileSaver();
-    final path = await filesaver.pickPath(
-      filename: 'test.apk',
-      extFile: 'apk',
-      bytes: bytes,
-    );
-    debugPrint('path2: $path');
-    if (path != null) {
-      await installApp(path, TargetPlatform.android);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -253,7 +229,6 @@ class _HomePageState extends State<HomePage>
               runSpacing: 10,
               alignment: WrapAlignment.spaceBetween,
               children: [
-                ElevatedButton(onPressed: openApk, child: Text('open apk')),
                 DropdownMenu(
                   menuHeight: 250,
                   inputDecorationTheme: const InputDecorationTheme(
