@@ -12,7 +12,7 @@ enum CashTransactionType implements EnumTranslation {
       case cashIn:
         return 'cash_in';
       case out:
-        return 'out';
+        return 'cash_out';
       case transfer:
         return 'transfer';
     }

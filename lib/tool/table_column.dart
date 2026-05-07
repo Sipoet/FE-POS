@@ -56,9 +56,14 @@ mixin ColumnTypeFinder {
         return EnumTableColumnType(
           availableValues:
               options['input_options']?['enum_list']
-                  ?.map<String>((e) => e.toString())
+                  ?.map<DropdownMenuEntry<String>>(
+                    (data) => DropdownMenuEntry(
+                      value: data.toString(),
+                      label: data.toString().toTitleCase(),
+                    ),
+                  )
                   .toList() ??
-              <String>[],
+              <DropdownMenuEntry<String>>[],
         );
       default:
         return TextTableColumnType();
@@ -1149,7 +1154,7 @@ class _BoolFilterFormState extends State<BoolFilterForm> {
 }
 
 class EnumTableColumnType extends TableColumnType<String> with TextFormatter {
-  List<String> availableValues;
+  List<DropdownMenuEntry<String>> availableValues;
   EnumTableColumnType({required this.availableValues});
   @override
   Widget renderFilter({
@@ -1176,6 +1181,7 @@ class EnumTableColumnType extends TableColumnType<String> with TextFormatter {
       width: 300,
       key: key,
       controller: dropdownController,
+      initialSelection: dropdownController.text,
       inputDecorationTheme: const InputDecorationTheme(
         contentPadding: EdgeInsets.all(12),
         border: OutlineInputBorder(),
@@ -1188,9 +1194,7 @@ class EnumTableColumnType extends TableColumnType<String> with TextFormatter {
             ),
       dropdownMenuEntries: [
         DropdownMenuEntry<String?>(value: null, label: ''),
-        ...availableValues.map<DropdownMenuEntry<String>>(
-          (data) => DropdownMenuEntry(value: data, label: data.toTitleCase()),
-        ),
+        ...availableValues,
       ],
     );
   }

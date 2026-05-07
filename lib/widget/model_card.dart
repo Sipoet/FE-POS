@@ -52,6 +52,8 @@ class ModelCard<T extends Model> extends StatelessWidget with TextFormatter {
                     spacing: 5,
                     runSpacing: 10,
                     crossAxisAlignment: .start,
+                    alignment: .start,
+                    runAlignment: .start,
                     children: [
                       Text(
                         "${column.humanizeName}:",

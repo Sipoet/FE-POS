@@ -8,7 +8,7 @@ typedef FilterProcess = void Function(List<FilterData>);
 
 class TableFilterForm extends StatefulWidget {
   final List<TableColumn> columns;
-  final Map<String, List<dynamic>> enums;
+  final Map<String, List<EnumTranslation>> enums;
   final TableFilterFormController? controller;
   final FilterProcess onSubmit;
   final FilterProcess? onDownload;
@@ -302,8 +302,19 @@ class _TableFilterFormState extends State<TableFilterForm> {
       formController = FilterFormController(null);
       controller.setFilter(column.name, formController);
     }
-
-    return column.type.renderFilter(
+    final enums = widget.enums[column.name];
+    final columnType = column.type;
+    if (enums != null && columnType is EnumTableColumnType) {
+      columnType.availableValues = enums
+          .map<DropdownMenuEntry<String>>(
+            (data) => DropdownMenuEntry(
+              value: data.toString(),
+              label: data.humanize(),
+            ),
+          )
+          .toList();
+    }
+    return columnType.renderFilter(
       key: ValueKey('filter-${column.name}-field'),
       name: column.name,
       label: Text(column.humanizeName, style: _labelStyle),
