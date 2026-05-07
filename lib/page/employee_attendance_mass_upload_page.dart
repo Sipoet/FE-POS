@@ -128,7 +128,7 @@ class _EmployeeAttendanceMassUploadPageState
   }
 
   void pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    FilePickerResult? result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['xlsx'],
     );
@@ -146,7 +146,7 @@ class _EmployeeAttendanceMassUploadPageState
       );
     } else {
       final file = result.xFiles.first;
-      request = _server.upload(path, file: file, filename: file.name);
+      request = _server.upload(path, filepath: file.path, filename: file.name);
     }
 
     showLoadingPopup();

@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:dio/io.dart';
 import 'package:dio/dio.dart';
 import 'package:fe_pos/page/loading_page.dart';
@@ -7,21 +8,22 @@ export 'package:dio/dio.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 class Server extends ChangeNotifier {
   String host;
   String jwt;
   String userName;
-  Dio dio = Dio(BaseOptions(
-    connectTimeout: const Duration(seconds: 5),
-    validateStatus: (int? status) {
-      if (status != null && status <= 308 && status >= 200) {
-        return true;
-      }
-      return [409].contains(status);
-    },
-  ));
+  Dio dio = Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 5),
+      validateStatus: (int? status) {
+        if (status != null && status <= 308 && status >= 200) {
+          return true;
+        }
+        return [409].contains(status);
+      },
+    ),
+  );
 
   Server({this.host = 'localhost', this.jwt = '', this.userName = ''}) {
     if (kIsWeb) {
@@ -33,8 +35,9 @@ class Server extends ChangeNotifier {
     if (kIsWeb) return;
     dio.httpClientAdapter = IOHttpClientAdapter(
       createHttpClient: () {
-        final HttpClient client =
-            HttpClient(context: SecurityContext(withTrustedRoots: false));
+        final HttpClient client = HttpClient(
+          context: SecurityContext(withTrustedRoots: false),
+        );
         // ignore bad certificate
         client.badCertificateCallback = (cert, host, port) => true;
         return client;
@@ -42,22 +45,28 @@ class Server extends ChangeNotifier {
     );
   }
 
-  dynamic defaultErrorResponse(
-      {required BuildContext context, required var error, var valueWhenError}) {
+  dynamic defaultErrorResponse({
+    required BuildContext context,
+    required var error,
+    var valueWhenError,
+  }) {
     if (error.runtimeType.toString() == '_TypeError') throw error;
     var response = error.response;
     switch (error.type) {
       case DioExceptionType.badResponse:
         if (response?.statusCode == 401) {
           Navigator.pop(context);
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => const LoadingPage()));
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoadingPage()),
+          );
         } else if (response?.statusCode == 500) {
           Flash flash = Flash();
           flash.showBanner(
-              title: 'Gagal',
-              description: 'Terjadi kesalahan server. hubungi IT support',
-              messageType: ToastificationType.error);
+            title: 'Gagal',
+            description: 'Terjadi kesalahan server. hubungi IT support',
+            messageType: ToastificationType.error,
+          );
           log(response.data.toString(), time: DateTime.now());
         }
         break;
@@ -66,10 +75,11 @@ class Server extends ChangeNotifier {
       case DioExceptionType.sendTimeout:
         Flash flash = Flash();
         flash.showBanner(
-            title: 'koneksi terputus',
-            description:
-                'Pastikan IP/domain server sudah benar dan server online',
-            messageType: ToastificationType.error);
+          title: 'koneksi terputus',
+          description:
+              'Pastikan IP/domain server sudah benar dan server online',
+          messageType: ToastificationType.error,
+        );
         break;
     }
     log(error.toString(), time: DateTime.now());
@@ -80,66 +90,120 @@ class Server extends ChangeNotifier {
     }
   }
 
-  Future upload(String path,
-      {List<int>? bytes, String? filename, XFile? file}) async {
+  Future upload(
+    String path, {
+    List<int>? bytes,
+    String? filename,
+    String? filepath,
+  }) async {
     FormData formData;
     formData = FormData.fromMap({
       "file": bytes != null
           ? MultipartFile.fromBytes(bytes, filename: filename)
-          : await MultipartFile.fromFile(file!.path, filename: filename),
+          : await MultipartFile.fromFile(filepath!, filename: filename),
     });
     Uri url = generateUrl(path, {});
-    return dio.postUri(url,
-        data: formData, options: generateHeaders('file', 'json'));
+    return dio.postUri(
+      url,
+      data: formData,
+      options: generateHeaders('file', 'json'),
+    );
   }
 
-  Future post(String path,
-      {Map body = const {},
-      String type = 'json',
-      CancelToken? cancelToken}) async {
+  Future post(
+    String path, {
+    Map body = const {},
+    String type = 'json',
+    CancelToken? cancelToken,
+  }) async {
     Uri url = generateUrl(path, {});
-    return dio.postUri(url,
-        data: body,
-        cancelToken: cancelToken,
-        options: generateHeaders(type, type));
+    return dio.postUri(
+      url,
+      data: body,
+      cancelToken: cancelToken,
+      options: generateHeaders(type, type),
+    );
   }
 
-  Future get(String path,
-      {Map<String, dynamic> queryParam = const {},
-      String type = 'json',
-      String? responseType,
-      CancelToken? cancelToken}) async {
+  Future get(
+    String path, {
+    Map<String, dynamic> queryParam = const {},
+    String type = 'json',
+    String? responseType,
+    CancelToken? cancelToken,
+  }) async {
     Uri url = generateUrl(path, queryParam);
-    return dio.getUri(url,
-        cancelToken: cancelToken,
-        options: generateHeaders(type, responseType ?? type));
+    return dio.getUri(
+      url,
+      cancelToken: cancelToken,
+      options: generateHeaders(type, responseType ?? type),
+    );
   }
 
-  Future put(String path,
-      {Map body = const {},
-      String type = 'json',
-      CancelToken? cancelToken}) async {
+  Future put(
+    String path, {
+    Map body = const {},
+    String type = 'json',
+    CancelToken? cancelToken,
+  }) async {
     Uri url = generateUrl(path, {});
-    return dio.putUri(url,
-        data: body,
-        cancelToken: cancelToken,
-        options: generateHeaders(type, type));
+    return dio.putUri(
+      url,
+      data: body,
+      cancelToken: cancelToken,
+      options: generateHeaders(type, type),
+    );
   }
 
-  Future delete(String path,
-      {Map body = const {},
-      String type = 'json',
-      CancelToken? cancelToken}) async {
+  Future delete(
+    String path, {
+    Map body = const {},
+    String type = 'json',
+    CancelToken? cancelToken,
+  }) async {
     Uri url = generateUrl(path, {});
-    return dio.deleteUri(url,
-        data: body,
-        cancelToken: cancelToken,
-        options: generateHeaders(type, type));
+    return dio.deleteUri(
+      url,
+      data: body,
+      cancelToken: cancelToken,
+      options: generateHeaders(type, type),
+    );
   }
 
-  Future download(String urlPath, String type, var destinationPath) async {
-    return dio.download("https://$host/api/$urlPath", destinationPath,
-        options: generateHeaders('json', type));
+  Future<Uint8List?> download({
+    String? url,
+    String? path,
+    required String type,
+    void Function(int, int)? onReceiveProgress,
+    void Function(Response)? onSuccess,
+  }) {
+    if (path != null) {
+      url = "https://$host/api/$path";
+    }
+    debugPrint('url $url');
+    return dio
+        .get<List<int>>(
+          url!,
+          onReceiveProgress: onReceiveProgress,
+          options: path != null
+              ? generateHeaders('json', type)
+              : Options(
+                  responseType: ResponseType.bytes,
+                  contentType: 'text/plain',
+                ),
+        )
+        .then((response) {
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            onSuccess?.call(response);
+          }
+          final data = response.data;
+          if (data is Uint8List) {
+            return data;
+          } else if (data is List<int>) {
+            Uint8List.fromList(data);
+          }
+          return null;
+        });
   }
 
   final Map<String, ResponseType> _responseTypes = {
@@ -148,16 +212,19 @@ class Server extends ChangeNotifier {
     'xlsx': ResponseType.bytes,
     'pdf': ResponseType.bytes,
     'file': ResponseType.bytes,
+    'txt': ResponseType.plain,
   };
   Options generateHeaders(String requestType, String responseType) {
     return Options(
-        headers: {
-          if (jwt.isNotEmpty) 'Authorization': jwt,
-          Headers.acceptHeader: acceptHeader(responseType),
-        },
-        contentType:
-            requestType == 'file' ? 'multipart/form-data' : 'application/json',
-        responseType: _responseTypes[responseType]);
+      headers: {
+        if (jwt.isNotEmpty) 'Authorization': jwt,
+        Headers.acceptHeader: acceptHeader(responseType),
+      },
+      contentType: requestType == 'file'
+          ? 'multipart/form-data'
+          : 'application/json',
+      responseType: _responseTypes[responseType] ?? ResponseType.bytes,
+    );
   }
 
   String acceptHeader(String responseType) {
@@ -175,9 +242,10 @@ class Server extends ChangeNotifier {
 
   Uri generateUrl(String path, Map<String, dynamic> queryParams) {
     return Uri(
-        scheme: 'https',
-        host: host,
-        path: "api/$path",
-        queryParameters: queryParams);
+      scheme: 'https',
+      host: host,
+      path: "api/$path",
+      queryParameters: queryParams,
+    );
   }
 }

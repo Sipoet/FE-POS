@@ -42,6 +42,22 @@ class _PurchasePaymentHistoryPageState extends State<PurchasePaymentHistoryPage>
       'purchase',
       'purchase_order',
     ];
+    _server.get(PurchasePaymentHistoryClass().path).then((response) {
+      if (response.statusCode == 200) {
+        final records = response.data['data']
+            .map<PurchasePaymentHistory>(
+              (json) => PurchasePaymentHistoryClass().fromJson(
+                json,
+                included: response.data['included'] ?? [],
+              ),
+            )
+            .toList();
+        DataTableResponse<PurchasePaymentHistory>(
+          models: records,
+          totalPage: response.data['meta']?['total_pages'],
+        );
+      }
+    }, onError: (error) => defaultErrorResponse(error: error));
     return PurchasePaymentHistoryClass()
         .finds(_server, request)
         .then(
