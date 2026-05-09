@@ -25,7 +25,8 @@ typedef OnRowDoubleTapCallback =
 
 class CustomAsyncDataTable<T extends Model> extends StatefulWidget {
   final int fixedLeftColumns;
-  final List<MenuItemButton>? additionalHeaderActions;
+  final List<MenuItemButton> Function(MenuController menuController)?
+  additionalHeaderActions;
   final Widget? header;
   final bool showCheckboxColumn;
   final bool showSummary;
@@ -460,7 +461,7 @@ class _CustomAsyncDataTableState<T extends Model>
                     _menuController.close();
                   },
                 ),
-                ...?widget.additionalHeaderActions,
+                ...?widget.additionalHeaderActions?.call(_menuController),
               ],
               child: IconButton(
                 onPressed: () => _menuController.isOpen

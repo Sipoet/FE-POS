@@ -243,17 +243,17 @@ class Discount extends Model {
     }
   }
 
-  List<Brand> get brands => discountFilters
+  List<IposBrand> get brands => discountFilters
       .where(
         (element) => element.isExclude == false && element.filterKey == 'brand',
       )
-      .map<Brand>((e) => Brand(id: e.value, name: e.value))
+      .map<IposBrand>((e) => IposBrand(id: e.value, name: e.value))
       .toList();
-  List<Brand> get blacklistBrands => discountFilters
+  List<IposBrand> get blacklistBrands => discountFilters
       .where(
         (element) => element.isExclude == true && element.filterKey == 'brand',
       )
-      .map<Brand>((e) => Brand(id: e.value, name: e.value))
+      .map<IposBrand>((e) => IposBrand(id: e.value, name: e.value))
       .toList();
 
   List<Item> get items => discountFilters
@@ -299,24 +299,28 @@ class Discount extends Model {
       .map<ItemType>((e) => ItemType(id: e.value, name: e.value))
       .toList();
 
-  set brands(List<Brand> newBrands) {
+  set brands(List<IposBrand> newBrands) {
     discountFilters.removeWhere(
       (element) => !element.isExclude && element.filterKey == 'brand',
     );
-    for (final newBrand in newBrands) {
+    for (final newIposBrand in newBrands) {
       discountFilters.add(
-        DiscountFilter(filterKey: 'brand', value: newBrand.id),
+        DiscountFilter(filterKey: 'brand', value: newIposBrand.id),
       );
     }
   }
 
-  set blacklistBrands(List<Brand> newBrands) {
+  set blacklistBrands(List<IposBrand> newBrands) {
     discountFilters.removeWhere(
       (element) => element.isExclude && element.filterKey == 'brand',
     );
-    for (final newBrand in newBrands) {
+    for (final newIposBrand in newBrands) {
       discountFilters.add(
-        DiscountFilter(filterKey: 'brand', isExclude: true, value: newBrand.id),
+        DiscountFilter(
+          filterKey: 'brand',
+          isExclude: true,
+          value: newIposBrand.id,
+        ),
       );
     }
   }

@@ -106,12 +106,12 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
               SizedBox(
                 width: 250,
                 height: 45,
-                child: AsyncDropdown<Brand>(
+                child: AsyncDropdown<IposBrand>(
                   path: '/brands',
                   textOnSelected: (brand) => brand.name,
                   textOnSearch: (brand) =>
                       '${brand.name} - ${brand.description}',
-                  modelClass: BrandClass(),
+                  modelClass: IposBrandClass(),
                   label: const Text('Merek'),
                   onChanged: (brand) => setState(() {
                     brandName = brand?.name;

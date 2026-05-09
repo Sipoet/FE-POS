@@ -151,7 +151,8 @@ abstract class Model with ChangeNotifier {
   String get valueWithDescription =>
       [modelValue, valueDescription].where((e) => e != null).join(' - ');
 
-  bool get isNewRecord => id == null;
+  bool get isNewRecord =>
+      (id is int && id == null) || (id is String && id.isEmpty);
 }
 
 abstract class ModelClass<T extends Model> {

@@ -1,20 +1,18 @@
 import 'package:fe_pos/model/model.dart';
 
-class Brand extends Model with SaveNDestroyModel {
-  String name;
+class IposBrand extends Model {
   String description;
-  Brand({
-    this.name = '',
-    this.description = '',
-    super.id,
-    super.createdAt,
-    super.updatedAt,
-  });
+  String name;
+
+  IposBrand({this.description = '', this.name = '', super.id});
+
   @override
   Map<String, dynamic> toMap() => {'description': description, 'name': name};
 
   @override
   String get modelValue => name;
+  @override
+  String get path => 'ipos/brands';
 
   @override
   String get id => name;
@@ -24,11 +22,11 @@ class Brand extends Model with SaveNDestroyModel {
     var attributes = json['attributes'];
     super.setFromJson(json, included: included);
     description = attributes['description'] ?? '';
-    name = attributes['name'] ?? '';
+    name = attributes['name'];
   }
 }
 
-class BrandClass extends ModelClass<Brand> {
+class IposBrandClass extends ModelClass<IposBrand> {
   @override
-  Brand initModel() => Brand();
+  IposBrand initModel() => IposBrand();
 }

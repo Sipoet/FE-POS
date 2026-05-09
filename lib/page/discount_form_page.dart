@@ -679,12 +679,12 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     const SizedBox(height: 10),
                                     SizedBox(
                                       width: 400,
-                                      child: AsyncDropdownMultiple<Brand>(
+                                      child: AsyncDropdownMultiple<IposBrand>(
                                         key: const ValueKey('brandSelect'),
                                         selecteds: discount.brands,
                                         attributeKey: 'merek',
                                         textOnSearch: (brand) => brand.name,
-                                        modelClass: BrandClass(),
+                                        modelClass: IposBrandClass(),
                                         label: const Text(
                                           'Merek:',
                                           style: labelStyle,
@@ -783,7 +783,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     const SizedBox(height: 10),
                                     SizedBox(
                                       width: 400,
-                                      child: AsyncDropdownMultiple<Brand>(
+                                      child: AsyncDropdownMultiple<IposBrand>(
                                         key: const ValueKey(
                                           'blacklistBrandSelect',
                                         ),
@@ -791,7 +791,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
 
                                         attributeKey: 'merek',
                                         textOnSearch: (brand) => brand.name,
-                                        modelClass: BrandClass(),
+                                        modelClass: IposBrandClass(),
                                         label: const Text(
                                           'Blacklist Merek:',
                                           style: labelStyle,

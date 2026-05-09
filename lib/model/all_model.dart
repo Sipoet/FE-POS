@@ -7,6 +7,7 @@ export 'package:fe_pos/model/customer_group.dart';
 export 'package:fe_pos/model/hash_model.dart';
 export 'package:fe_pos/model/supplier.dart';
 export 'package:fe_pos/model/item.dart';
+export 'package:fe_pos/model/ipos/brand.dart';
 export 'package:fe_pos/model/brand.dart';
 export 'package:fe_pos/model/item_type.dart';
 export 'package:fe_pos/model/payroll.dart';

@@ -899,9 +899,9 @@ class MoneyTableColumnType extends TableColumnType<Money> {
 
 class ModelTableColumnType<T extends Model> extends TableColumnType<T>
     with PlatformChecker {
-  ModelClass<T> modelClass;
+  ModelClass<T>? modelClass;
   final route = ModelRoute();
-  ModelTableColumnType({required this.modelClass});
+  ModelTableColumnType({this.modelClass});
   @override
   Widget renderFilter({
     Widget? label,
@@ -909,13 +909,17 @@ class ModelTableColumnType<T extends Model> extends TableColumnType<T>
     Key? key,
     required FilterFormController controller,
   }) {
-    return ModelFilterForm(
-      name: name,
-      controller: controller,
-      key: key,
-      modelClass: modelClass,
-      label: label,
-    );
+    if (modelClass == null) {
+      return Text('not support multi model type');
+    } else {
+      return ModelFilterForm(
+        name: name,
+        controller: controller,
+        key: key,
+        modelClass: modelClass!,
+        label: label,
+      );
+    }
   }
 
   @override
@@ -965,7 +969,13 @@ class ModelTableColumnType<T extends Model> extends TableColumnType<T>
   }
 
   @override
-  T convert(dynamic value) => value is T ? value : modelClass.fromJson(value);
+  T convert(dynamic value) {
+    if (value is T) {
+      return value;
+    }
+    return modelClass?.fromJson(value) ??
+        route.modelClassOf(value['type'].toString()).fromJson(value) as T;
+  }
 
   @override
   TrinaColumnType get trinaColumnType => TrinaColumnType.text();

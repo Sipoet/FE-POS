@@ -55,7 +55,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   final yearNow = DateTime.now().year;
   List<ItemType> _itemTypes = [];
   List<Supplier> _suppliers = [];
-  List<Brand> _brands = [];
+  List<IposBrand> _brands = [];
   List<Item> _items = [];
   bool _separatePurchaseYear = false;
   String _groupType = 'period';
@@ -527,12 +527,12 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
               ),
               SizedBox(
                 width: 300,
-                child: AsyncDropdownMultiple<Brand>(
+                child: AsyncDropdownMultiple<IposBrand>(
                   label: const Text('Merek :', style: _filterLabelStyle),
                   key: const ValueKey('brandSelect'),
                   textOnSearch: (brand) => brand.name,
                   textOnSelected: (brand) => brand.name,
-                  modelClass: BrandClass(),
+                  modelClass: IposBrandClass(),
                   attributeKey: 'nama',
 
                   onChanged: (value) => _brands = value,

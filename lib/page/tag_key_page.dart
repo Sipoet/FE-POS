@@ -25,7 +25,6 @@ class _TagKeyPageState extends State<TagKeyPage> with DefaultResponse {
   late Flash flash;
   late final List<TableColumn> columns;
   List<FilterData> _filter = [];
-  final _menuController = MenuController();
 
   @override
   void initState() {
@@ -110,11 +109,11 @@ class _TagKeyPageState extends State<TagKeyPage> with DefaultResponse {
           SizedBox(
             height: bodyScreenHeight,
             child: CustomAsyncDataTable<TagKey>(
-              additionalHeaderActions: [
+              additionalHeaderActions: (menuController) => [
                 MenuItemButton(
                   child: const Text('Tambah Tag Key'),
                   onPressed: () {
-                    _menuController.close();
+                    menuController.close();
                     openForm(TagKey());
                   },
                 ),

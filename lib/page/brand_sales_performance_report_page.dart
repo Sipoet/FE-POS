@@ -23,7 +23,7 @@ class _BrandSalesPerformanceReportPageState
     fontWeight: FontWeight.bold,
   );
   List<ItemType> _itemTypes = [];
-  Brand? _brand;
+  IposBrand? _brand;
   List<Supplier> _suppliers = [];
   late final Server server;
   bool _separatePurchaseYear = false;
@@ -68,7 +68,7 @@ class _BrandSalesPerformanceReportPageState
   Map brandChartFilter = {
     'rangePeriod': 5,
     'valueType': 'sales_total',
-    'brands': <Brand>[],
+    'brands': <IposBrand>[],
   };
   Map supplierChartFilter = {'rangePeriod': 5, 'valueType': 'sales_total'};
   Map itemTypeChartFilter = {'rangePeriod': 5, 'valueType': 'sales_total'};
@@ -102,7 +102,7 @@ class _BrandSalesPerformanceReportPageState
                 children: [
                   SizedBox(
                     width: 350,
-                    child: AsyncDropdown<Brand>(
+                    child: AsyncDropdown<IposBrand>(
                       label: const Text('Pilih Merek'),
                       allowClear: false,
                       textOnSearch: (brand) => brand.name,
@@ -113,7 +113,7 @@ class _BrandSalesPerformanceReportPageState
                         }
                         return null;
                       },
-                      modelClass: BrandClass(),
+                      modelClass: IposBrandClass(),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -283,7 +283,7 @@ class _BrandSalesPerformanceReportPageState
       filterForm: [
         SizedBox(
           width: 350,
-          child: AsyncDropdownMultiple<Brand>(
+          child: AsyncDropdownMultiple<IposBrand>(
             label: const Text('Perbandingan Merek'),
             textOnSearch: (brand) => brand.name,
             onChanged: (value) {
@@ -300,7 +300,7 @@ class _BrandSalesPerformanceReportPageState
               return null;
             },
             selecteds: brandChartFilter['brands'],
-            modelClass: BrandClass(),
+            modelClass: IposBrandClass(),
           ),
         ),
         DropdownMenu(
@@ -770,7 +770,7 @@ class _BrandSalesPerformanceReportPageState
   }
 
   Future fetchCompareData() async {
-    var brands = (brandChartFilter['brands'] as List<Brand>)
+    var brands = (brandChartFilter['brands'] as List<IposBrand>)
         .map<String>((e) => e.name)
         .toList();
     if (_brand != null && !brands.contains(_brand!.name)) {

@@ -222,11 +222,11 @@ class _SalesGroupReportPageState extends State<SalesGroupReportPage>
                 ),
                 SizedBox(
                   width: 350,
-                  child: AsyncDropdownMultiple<Brand>(
+                  child: AsyncDropdownMultiple<IposBrand>(
                     label: const Text('Merek :', style: _filterLabelStyle),
                     key: const ValueKey('brandSelect'),
-                    textOnSearch: (Brand brand) => brand.name,
-                    modelClass: BrandClass(),
+                    textOnSearch: (IposBrand brand) => brand.name,
+                    modelClass: IposBrandClass(),
                     attributeKey: 'merek',
                     onSaved: (value) => _brands = value == null
                         ? []

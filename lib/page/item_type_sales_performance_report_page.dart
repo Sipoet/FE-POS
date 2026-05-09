@@ -22,7 +22,7 @@ class _ItemTypeSalesPerformanceReportPageState
     fontSize: 14,
     fontWeight: FontWeight.bold,
   );
-  List<Brand> _brands = [];
+  List<IposBrand> _brands = [];
   ItemType? _itemType;
   List<Supplier> _suppliers = [];
   late final Server server;
@@ -130,14 +130,14 @@ class _ItemTypeSalesPerformanceReportPageState
                     children: [
                       SizedBox(
                         width: 300,
-                        child: AsyncDropdownMultiple<Brand>(
+                        child: AsyncDropdownMultiple<IposBrand>(
                           label: const Text(
                             'Merek :',
                             style: _filterLabelStyle,
                           ),
                           key: const ValueKey('brandSelect'),
-                          textOnSearch: (Brand brand) => brand.name,
-                          modelClass: BrandClass(),
+                          textOnSearch: (IposBrand brand) => brand.name,
+                          modelClass: IposBrandClass(),
                           attributeKey: 'merek',
                           onChanged: (value) => _brands = value,
                         ),

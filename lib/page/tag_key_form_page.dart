@@ -20,7 +20,7 @@ class TagKeyFormPage extends StatefulWidget {
 
 class _TagKeyFormPageState extends State<TagKeyFormPage>
     with DefaultResponse, LoadingPopup, HistoryPopup {
-  TagKey get tagKey => widget.tagKey;
+  late TagKey tagKey;
   final _formState = GlobalKey<FormState>();
   final Map<int, FocusNode> _focusNodes = {};
   String _searchValue = '';
@@ -30,6 +30,7 @@ class _TagKeyFormPageState extends State<TagKeyFormPage>
   bool _showForm = true;
   @override
   void initState() {
+    tagKey = widget.tagKey;
     _server = context.read<Server>();
     _tabManager = context.read<TabManager>();
     super.initState();
@@ -99,6 +100,19 @@ class _TagKeyFormPageState extends State<TagKeyFormPage>
         _tabManager.changeTabHeader(widget, 'Tambah Tag Key');
       },
     );
+  }
+
+  void _newRecord() {
+    _tabManager.changeTabHeader(widget, 'Tambah Tag Key');
+    setState(() {
+      _showForm = false;
+    });
+    Future.delayed(Durations.short1, () {
+      tagKey = TagKeyClass().initModel();
+      setState(() {
+        _showForm = true;
+      });
+    });
   }
 
   void _addTag() {
@@ -283,7 +297,12 @@ class _TagKeyFormPageState extends State<TagKeyFormPage>
                       onPressed: _resetRecord,
                       child: Text('Reset'),
                     ),
-                    if (!widget.tagKey.isNewRecord)
+                    if (!tagKey.isNewRecord)
+                      ElevatedButton(
+                        onPressed: _newRecord,
+                        child: Text('Buat Baru'),
+                      ),
+                    if (!tagKey.isNewRecord)
                       ElevatedButton(
                         onPressed: _duplicateRecord,
                         child: Text('Menduplikasi'),

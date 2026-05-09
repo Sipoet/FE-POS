@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:fe_pos/model/item.dart';
+import 'package:fe_pos/model/brand.dart';
 import 'package:fe_pos/page/brand_form_page.dart';
 import 'package:fe_pos/page/item_type_form_page.dart';
 import 'package:fe_pos/page/supplier_form_page.dart';

@@ -26,7 +26,7 @@ class ItemReport extends Model {
   DateTime? lastPurchaseDate;
   Item item;
   Supplier supplier;
-  Brand brand;
+  IposBrand brand;
   ItemType itemType;
   Money cogs;
   Money lastBuyPrice;
@@ -46,7 +46,7 @@ class ItemReport extends Model {
     ItemType? itemType,
     Supplier? supplier,
     Item? item,
-    Brand? brand,
+    IposBrand? brand,
     this.storeStock = 0,
     this.warehouseStock = 0,
     this.inventoryDisrepancy = 0,
@@ -70,7 +70,7 @@ class ItemReport extends Model {
   }) : item = item ?? Item(id: itemCode),
        supplier = supplier ?? Supplier(id: supplierCode),
        itemType = itemType ?? ItemType(id: itemTypeName),
-       brand = brand ?? Brand(id: brandName);
+       brand = brand ?? IposBrand(id: brandName);
 
   @override
   String get modelName => 'item_report';
@@ -128,11 +128,11 @@ class ItemReport extends Model {
           description: itemTypeDesc,
         );
     brand =
-        BrandClass().findRelationData(
+        IposBrandClass().findRelationData(
           relation: json['relationships']?['brand'],
           included: included,
         ) ??
-        Brand(id: brandName, name: brandName ?? '');
+        IposBrand(id: brandName, name: brandName ?? '');
     supplier =
         SupplierClass().findRelationData(
           relation: json['relationships']?['supplier'],

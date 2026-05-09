@@ -1,7 +1,9 @@
 import 'package:fe_pos/model/brand.dart';
+import 'package:fe_pos/page/brand_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +19,7 @@ class BrandPage extends StatefulWidget {
 class _BrandPageState extends State<BrandPage> with DefaultResponse {
   late final TableController _source;
   late final Server server;
+  late final TabManager tabManager;
 
   List<Brand> brands = [];
   final cancelToken = CancelToken();
@@ -58,6 +61,29 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
         );
   }
 
+  void openForm(Brand brand) {
+    final tabManager = context.read<TabManager>();
+
+    final desc = brand.isNewRecord ? 'Tambah' : 'Edit';
+    tabManager.addTab('$desc Merek ${brand.name}', BrandFormPage(brand: brand));
+  }
+
+  void deleteRecord(Brand brand) {
+    showConfirmDialog(
+      message: 'Apakah Yakin Hapus Tag Key ${brand.name}',
+      onSubmit: () {
+        brand.destroy(server).then((result) {
+          if (result) {
+            flash.show(Text('Sukses hapus ${brand.name}'), .success);
+            refreshTable();
+          } else {
+            flash.show(Text('Gagal hapus ${brand.name}'), .error);
+          }
+        });
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -72,11 +98,33 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
                 children: [],
               ),
             ),
+
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<Brand>(
                 onLoaded: (stateManager) => _source = stateManager,
-                columns: setting.tableColumn('ipos::Brand'),
+                additionalHeaderActions: (menuController) => [
+                  MenuItemButton(
+                    child: const Text('Tambah Tag Key'),
+                    onPressed: () {
+                      menuController.close();
+                      openForm(Brand());
+                    },
+                  ),
+                ],
+                rowAction: (model) => Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => openForm(model),
+                      icon: Icon(Icons.edit),
+                    ),
+                    IconButton(
+                      onPressed: () => deleteRecord(model),
+                      icon: Icon(Icons.delete),
+                    ),
+                  ],
+                ),
+                columns: setting.tableColumn('brand'),
                 fetchData: fetchBrands,
                 showFilter: true,
                 fixedLeftColumns: 0,

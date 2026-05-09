@@ -95,10 +95,10 @@ class _ItemFormPageState extends State<ItemFormPage>
                     visible: _setting.canShow('ipos::Item', 'brand_name'),
                     child: IgnorePointer(
                       ignoring: !_setting.isAuthorize('ipos/brands', 'read'),
-                      child: AsyncDropdown<Brand>(
+                      child: AsyncDropdown<IposBrand>(
                         allowClear: false,
                         textOnSearch: (e) => e.modelValue,
-                        modelClass: BrandClass(),
+                        modelClass: IposBrandClass(),
                         label: Text(
                           _setting.columnName('ipos::Item', 'brand_name'),
                         ),

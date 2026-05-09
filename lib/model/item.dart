@@ -1,7 +1,7 @@
-import 'package:fe_pos/model/brand.dart';
+import 'package:fe_pos/model/ipos/brand.dart';
 import 'package:fe_pos/model/item_type.dart';
 import 'package:fe_pos/model/supplier.dart';
-export 'package:fe_pos/model/brand.dart';
+export 'package:fe_pos/model/ipos/brand.dart';
 export 'package:fe_pos/model/item_type.dart';
 export 'package:fe_pos/model/supplier.dart';
 import 'package:fe_pos/model/model.dart';
@@ -18,7 +18,7 @@ class Item extends Model {
   String? brandName;
   Supplier? supplier;
   ItemType itemType;
-  Brand? brand;
+  IposBrand? brand;
   Money cogs;
   String uom;
   String? description;
@@ -89,7 +89,7 @@ class Item extends Model {
           included: included,
         ) ??
         ItemType(name: itemTypeName);
-    brand = BrandClass().findRelationData(
+    brand = IposBrandClass().findRelationData(
       relation: json['relationships']?['brand'],
       included: included,
     );

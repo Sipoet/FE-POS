@@ -215,9 +215,9 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
           discount.suppliers = suppliers;
           discount.supplierCode = suppliers.first.code;
         }
-        List<Brand>? brands = _cleanText(row[2]?.value?.toString())
+        List<IposBrand>? brands = _cleanText(row[2]?.value?.toString())
             ?.split(',')
-            .map<Brand>((value) => Brand(id: value, name: value))
+            .map<IposBrand>((value) => IposBrand(id: value, name: value))
             .toList();
         if (brands != null) {
           discount.brands = brands;

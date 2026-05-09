@@ -140,7 +140,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                 ),
                 SizedBox(
                   width: 250,
-                  child: AsyncDropdown<Brand>(
+                  child: AsyncDropdown<IposBrand>(
                     textOnSearch: (model) =>
                         "${model.name} -  ${model.description}",
                     textOnSelected: (model) => model.name,
@@ -150,7 +150,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                     isDense: true,
                     selected: product.brand,
                     onChanged: (model) => product.brand = model,
-                    modelClass: BrandClass(),
+                    modelClass: IposBrandClass(),
                   ),
                 ),
                 SizedBox(
