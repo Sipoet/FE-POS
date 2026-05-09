@@ -11,6 +11,12 @@ class SalesGroupReport extends Model {
   double numberOfSales;
   double startStock;
   double endStock;
+  double numberOfPurchaseReturn;
+  double numberOfSalesReturn;
+  double numberOfItemOut;
+  double numberOfItemIn;
+  double numberOfAssembly;
+  double numberOfOpname;
   Money salesTotal;
   Money purchaseTotal;
   Money grossProfit;
@@ -27,6 +33,12 @@ class SalesGroupReport extends Model {
     this.numberOfSales = 0,
     this.startStock = 0,
     this.endStock = 0,
+    this.numberOfPurchaseReturn = 0,
+    this.numberOfSalesReturn = 0,
+    this.numberOfItemOut = 0,
+    this.numberOfItemIn = 0,
+    this.numberOfAssembly = 0,
+    this.numberOfOpname = 0,
     this.salesTotal = const Money(0),
     this.purchaseTotal = const Money(0),
     this.grossProfit = const Money(0),
@@ -47,13 +59,25 @@ class SalesGroupReport extends Model {
     supplierCode = attributes['supplier_code'];
     supplierName = attributes['supplier_name'];
     brandName = attributes['brand_name'];
-    salesPercentage = Percentage(attributes['sales_percentage']);
+    salesPercentage = Percentage(attributes['sales_percentage'] ?? 0);
     numberOfPurchase = double.parse(
       attributes['number_of_purchase'].toString(),
     );
     numberOfSales = double.parse(attributes['number_of_sales'].toString());
     startStock = double.parse(attributes['start_stock'].toString());
     endStock = double.parse(attributes['end_stock'].toString());
+    numberOfPurchaseReturn = double.parse(
+      attributes['number_of_purchase_return'].toString(),
+    );
+    numberOfSalesReturn = double.parse(
+      attributes['number_of_sales_return'].toString(),
+    );
+    numberOfItemOut = double.parse(attributes['number_of_item_out'].toString());
+    numberOfItemIn = double.parse(attributes['number_of_item_in'].toString());
+    numberOfAssembly = double.parse(
+      attributes['number_of_assembly'].toString(),
+    );
+    numberOfOpname = double.parse(attributes['number_of_opname'].toString());
     grossProfit = Money.tryParse(attributes['gross_profit']) ?? const Money(0);
     salesTotal = Money.tryParse(attributes['sales_total']) ?? const Money(0);
     purchaseTotal =
@@ -77,6 +101,12 @@ class SalesGroupReport extends Model {
     'purchase_total': purchaseTotal,
     'gross_profit': grossProfit,
     'last_purchase_year': lastPurchaseYear,
+    'number_of_purchase_return': numberOfPurchaseReturn,
+    'number_of_item_in': numberOfItemIn,
+    'number_of_sales_return': numberOfSalesReturn,
+    'number_of_item_out': numberOfItemOut,
+    'number_of_assembly': numberOfAssembly,
+    'number_of_opname': numberOfOpname,
   };
 
   @override
