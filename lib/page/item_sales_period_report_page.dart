@@ -192,14 +192,14 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
               ),
               Container(
                 constraints: const BoxConstraints(maxWidth: 350),
-                child: AsyncDropdownMultiple<Supplier>(
+                child: AsyncDropdownMultiple<IposSupplier>(
                   label: const Text('Supplier :', style: _filterLabelStyle),
                   key: const ValueKey('supplierSelect'),
                   attributeKey: 'nama',
                   textOnSearch: (supplier) =>
                       "${supplier.code} - ${supplier.name}",
                   textOnSelected: (supplier) => supplier.code,
-                  modelClass: SupplierClass(),
+                  modelClass: IposSupplierClass(),
                   onChanged: (value) =>
                       _suppliers = value.map<String>((e) => e.code).toList(),
                 ),

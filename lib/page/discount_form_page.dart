@@ -649,7 +649,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     const SizedBox(height: 10),
                                     SizedBox(
                                       width: 400,
-                                      child: AsyncDropdownMultiple<Supplier>(
+                                      child: AsyncDropdownMultiple<IposSupplier>(
                                         key: const ValueKey('supplierSelect'),
                                         selecteds: discount.suppliers,
                                         attributeKey: 'kode',
@@ -657,7 +657,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                             supplier.code,
                                         // textOnSearch: (supplier) =>
                                         //     '${supplier.code} - ${supplier.name}',
-                                        modelClass: SupplierClass(),
+                                        modelClass: IposSupplierClass(),
                                         label: const Text(
                                           'Supplier:',
                                           style: labelStyle,
@@ -760,7 +760,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     const SizedBox(height: 10),
                                     SizedBox(
                                       width: 400,
-                                      child: AsyncDropdownMultiple<Supplier>(
+                                      child: AsyncDropdownMultiple<IposSupplier>(
                                         key: const ValueKey(
                                           'blacklistSupplierSelect',
                                         ),
@@ -770,7 +770,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                             supplier.code,
                                         // textOnSearch: (supplier) =>
                                         //     '${supplier.code} - ${supplier.name}',
-                                        modelClass: SupplierClass(),
+                                        modelClass: IposSupplierClass(),
                                         label: const Text(
                                           'Blacklist Supplier:',
                                           style: labelStyle,

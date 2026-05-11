@@ -25,7 +25,7 @@ class ItemReport extends Model {
   bool isConsignment;
   DateTime? lastPurchaseDate;
   Item item;
-  Supplier supplier;
+  IposSupplier supplier;
   IposBrand brand;
   ItemType itemType;
   Money cogs;
@@ -44,7 +44,7 @@ class ItemReport extends Model {
     this.supplierName = '',
     this.brandName,
     ItemType? itemType,
-    Supplier? supplier,
+    IposSupplier? supplier,
     Item? item,
     IposBrand? brand,
     this.storeStock = 0,
@@ -68,7 +68,7 @@ class ItemReport extends Model {
     this.isConsignment = false,
     this.lastPurchaseDate,
   }) : item = item ?? Item(id: itemCode),
-       supplier = supplier ?? Supplier(id: supplierCode),
+       supplier = supplier ?? IposSupplier(id: supplierCode),
        itemType = itemType ?? ItemType(id: itemTypeName),
        brand = brand ?? IposBrand(id: brandName);
 
@@ -134,11 +134,11 @@ class ItemReport extends Model {
         ) ??
         IposBrand(id: brandName, name: brandName ?? '');
     supplier =
-        SupplierClass().findRelationData(
+        IposSupplierClass().findRelationData(
           relation: json['relationships']?['supplier'],
           included: included,
         ) ??
-        Supplier(id: supplierCode, code: supplierCode, name: supplierName);
+        IposSupplier(id: supplierCode, code: supplierCode, name: supplierName);
   }
 
   @override

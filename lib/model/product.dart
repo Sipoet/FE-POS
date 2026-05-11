@@ -1,19 +1,17 @@
 import 'package:fe_pos/model/model.dart';
-import 'package:fe_pos/model/item_type.dart';
-import 'package:fe_pos/model/ipos/brand.dart';
+import 'package:fe_pos/model/product_category.dart';
 import 'package:fe_pos/model/product_tag.dart';
 import 'package:fe_pos/model/supplier.dart';
-export 'package:fe_pos/model/item_type.dart';
-export 'package:fe_pos/model/ipos/brand.dart';
+export 'package:fe_pos/model/brand.dart';
 export 'package:fe_pos/model/supplier.dart';
 export 'package:fe_pos/model/product_tag.dart';
 
 class Product extends Model with SaveNDestroyModel {
   String description;
   String? supplierProductCode;
-  ItemType? itemType;
+  ProductCategory? productCategory;
   String defaultBarcode;
-  IposBrand? brand;
+  Brand? brand;
   Supplier? supplier;
   Money sellPrice;
   List<ProductTag> tags = [];
@@ -23,7 +21,7 @@ class Product extends Model with SaveNDestroyModel {
     this.description = '',
     this.supplierProductCode,
     this.defaultBarcode = '',
-    this.itemType,
+    this.productCategory,
     List<ProductTag>? tags,
     this.brand,
     this.sellPrice = const Money(0),
@@ -36,10 +34,10 @@ class Product extends Model with SaveNDestroyModel {
   Map<String, dynamic> toMap() => {
     'name': name,
     'description': description,
-    'item_type_id': itemType?.id,
+    'item_type_id': productCategory?.id,
     'brand_id': brand?.id,
     'supplier_id': supplier?.id,
-    'item_type': itemType,
+    'product_category': productCategory,
     'brand': brand,
     'default_barcode': defaultBarcode,
     'supplier': supplier,
@@ -59,11 +57,11 @@ class Product extends Model with SaveNDestroyModel {
     description = attributes['description'] ?? '';
     defaultBarcode = attributes['default_barcode'] ?? '';
     supplierProductCode = attributes['supplier_product_code'];
-    brand = IposBrandClass().findRelationData(
+    brand = BrandClass().findRelationData(
       relation: json['relationships']?['brand'],
       included: included,
     );
-    itemType = ItemTypeClass().findRelationData(
+    productCategory = ProductCategoryClass().findRelationData(
       relation: json['relationships']?['item_type'],
       included: included,
     );

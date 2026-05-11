@@ -238,9 +238,8 @@ class _NewPurchaseFormPageState extends State<NewPurchaseFormPage> {
                           }
                           return null;
                         },
-                        textOnSearch: (model) =>
-                            "${model.code} - ${model.name}",
-                        textOnSelected: (model) => model.code,
+                        textOnSearch: (model) => "${model.name}",
+                        textOnSelected: (model) => model.name,
                         label: Text('Supplier', style: labelStyle),
                         selected: purchaseHeader.supplier,
                       ),

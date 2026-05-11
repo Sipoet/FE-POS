@@ -121,12 +121,12 @@ class ModelRoute {
     return _detailPages[model.runtimeType.toString()]?.call(model);
   }
 
-  ModelClass modelClassOf(String className) {
+  ModelClass? modelClassOf(String className) {
     try {
       return _modelClasses[className]!;
     } catch (e) {
       debugPrint('className: $className not found');
-      rethrow;
+      return null;
     }
   }
 

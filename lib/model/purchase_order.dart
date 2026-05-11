@@ -1,4 +1,4 @@
-import 'package:fe_pos/model/ipos/purchase_header.dart';
+import 'package:fe_pos/model/supplier.dart';
 import 'package:fe_pos/model/purchase_order_item.dart';
 export 'package:fe_pos/model/purchase_order_item.dart';
 import 'package:fe_pos/model/model.dart';
@@ -8,7 +8,6 @@ class PurchaseOrder extends Model {
   String code;
   String? purchaseCode;
   String userName;
-  IposPurchaseHeader? purchase;
   List<PurchaseOrderItem> purchaseItems;
   DateTime datetime;
   DateTime? deliveredDate;
@@ -48,7 +47,6 @@ class PurchaseOrder extends Model {
     this.taxAmount = const Money(0),
     this.paymentMethodType = 'non',
     this.location = '',
-    this.purchase,
     this.destLocation = '',
     this.bankCode,
     this.taxType = '',
@@ -59,38 +57,37 @@ class PurchaseOrder extends Model {
     DateTime? datetime,
     this.deliveredDate,
     List<PurchaseOrderItem>? purchaseItems,
-  })  : purchaseItems = purchaseItems ?? <PurchaseOrderItem>[],
-        datetime = datetime ?? DateTime.now(),
-        supplier = supplier ?? Supplier();
+  }) : purchaseItems = purchaseItems ?? <PurchaseOrderItem>[],
+       datetime = datetime ?? DateTime.now(),
+       supplier = supplier ?? Supplier();
 
   @override
   Map<String, dynamic> toMap() => {
-        'user1': userName,
-        'tanggal': datetime,
-        'keterangan': description,
-        'totalitem': totalItem,
-        'subtotal': subtotal,
-        'supplier': supplier,
-        'totalakhir': grandtotal,
-        'potnomfaktur': discountAmount,
-        'biayalain': otherCost,
-        'jmltunai': cashAmount,
-        'jmldebit': debitCardAmount,
-        'jmlkk': creditCardAmount,
-        'jmlemoney': emoneyAmount,
-        'payment_type': paymentMethodType,
-        'ppn': taxType,
-        'pajak': taxAmount,
-        'bank_code': bankCode,
-        'notransaksi': code,
-        'notrsorder': purchaseCode,
-        'purchase': purchase,
-        'kodekantor': location,
-        'kantortujuan': destLocation,
-        'kodesupel': supplierCode,
-        'tanggalkirim': deliveredDate,
-        'supplier_name': supplierName,
-      };
+    'user1': userName,
+    'tanggal': datetime,
+    'keterangan': description,
+    'totalitem': totalItem,
+    'subtotal': subtotal,
+    'supplier': supplier,
+    'totalakhir': grandtotal,
+    'potnomfaktur': discountAmount,
+    'biayalain': otherCost,
+    'jmltunai': cashAmount,
+    'jmldebit': debitCardAmount,
+    'jmlkk': creditCardAmount,
+    'jmlemoney': emoneyAmount,
+    'payment_type': paymentMethodType,
+    'ppn': taxType,
+    'pajak': taxAmount,
+    'bank_code': bankCode,
+    'notransaksi': code,
+    'notrsorder': purchaseCode,
+    'kodekantor': location,
+    'kantortujuan': destLocation,
+    'kodesupel': supplierCode,
+    'tanggalkirim': deliveredDate,
+    'supplier_name': supplierName,
+  };
 
   String get supplierName => supplier.name;
 
@@ -107,15 +104,12 @@ class PurchaseOrder extends Model {
         included: included,
         relation: json['relationships']['purchase_order_items'],
       );
-      supplier = SupplierClass().findRelationData(
+      supplier =
+          SupplierClass().findRelationData(
             included: included,
             relation: json['relationships']['supplier'],
           ) ??
           supplier;
-      purchase = IposPurchaseHeaderClass().findRelationData(
-        included: included,
-        relation: json['relationships']['purchase'],
-      );
     }
     id = json['id'];
     userName = attributes['user1'];

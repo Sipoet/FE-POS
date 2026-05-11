@@ -53,7 +53,7 @@ abstract class Model with ChangeNotifier {
     return server
         .get(
           "$path/${id.toString()}",
-          queryParam: {'include': include.join(',')},
+          queryParam: {'included': include.join(',')},
         )
         .then(
           (response) {
@@ -151,8 +151,7 @@ abstract class Model with ChangeNotifier {
   String get valueWithDescription =>
       [modelValue, valueDescription].where((e) => e != null).join(' - ');
 
-  bool get isNewRecord =>
-      (id is int && id == null) || (id is String && id.isEmpty);
+  bool get isNewRecord => id == null || (id is String && id.isEmpty);
 }
 
 abstract class ModelClass<T extends Model> {

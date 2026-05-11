@@ -1,9 +1,9 @@
 import 'package:fe_pos/model/ipos/brand.dart';
-import 'package:fe_pos/model/item_type.dart';
-import 'package:fe_pos/model/supplier.dart';
+import 'package:fe_pos/model/ipos/item_type.dart';
+import 'package:fe_pos/model/ipos/supplier.dart';
 export 'package:fe_pos/model/ipos/brand.dart';
-export 'package:fe_pos/model/item_type.dart';
-export 'package:fe_pos/model/supplier.dart';
+export 'package:fe_pos/model/ipos/item_type.dart';
+export 'package:fe_pos/model/ipos/supplier.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/discount_rule.dart';
 export 'package:fe_pos/model/discount_rule.dart';
@@ -16,7 +16,7 @@ class Item extends Model {
   String? supplierCode;
   String itemTypeName;
   String? brandName;
-  Supplier? supplier;
+  IposSupplier? supplier;
   ItemType itemType;
   IposBrand? brand;
   Money cogs;
@@ -79,7 +79,7 @@ class Item extends Model {
     cogs = Money.tryParse(attributes['cogs']) ?? cogs;
     uom = attributes['uom'] ?? '';
     sellPrice = Money.tryParse(attributes['sell_price']) ?? sellPrice;
-    supplier = SupplierClass().findRelationData(
+    supplier = IposSupplierClass().findRelationData(
       relation: json['relationships']?['supplier'],
       included: included,
     );

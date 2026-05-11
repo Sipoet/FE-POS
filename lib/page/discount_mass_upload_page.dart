@@ -207,9 +207,9 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
           startTime: DateTime.parse(row[11]?.value.toString() ?? ''),
           endTime: DateTime.parse(row[12]?.value.toString() ?? ''),
         );
-        List<Supplier>? suppliers = _cleanText(row[1]?.value?.toString())
+        List<IposSupplier>? suppliers = _cleanText(row[1]?.value?.toString())
             ?.split(',')
-            .map<Supplier>((value) => Supplier(id: value, code: value))
+            .map<IposSupplier>((value) => IposSupplier(id: value, code: value))
             .toList();
         if (suppliers != null) {
           discount.suppliers = suppliers;

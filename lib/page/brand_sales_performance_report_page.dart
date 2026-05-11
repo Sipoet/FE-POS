@@ -24,7 +24,7 @@ class _BrandSalesPerformanceReportPageState
   );
   List<ItemType> _itemTypes = [];
   IposBrand? _brand;
-  List<Supplier> _suppliers = [];
+  List<IposSupplier> _suppliers = [];
   late final Server server;
   bool _separatePurchaseYear = false;
   String _groupPeriod = 'monthly';
@@ -145,7 +145,7 @@ class _BrandSalesPerformanceReportPageState
                       ),
                       SizedBox(
                         width: 300,
-                        child: AsyncDropdownMultiple<Supplier>(
+                        child: AsyncDropdownMultiple<IposSupplier>(
                           label: const Text(
                             'Supplier :',
                             style: _filterLabelStyle,
@@ -154,7 +154,7 @@ class _BrandSalesPerformanceReportPageState
                           textOnSearch: (supplier) =>
                               "${supplier.code} - ${supplier.name}",
                           textOnSelected: (supplier) => supplier.code,
-                          modelClass: SupplierClass(),
+                          modelClass: IposSupplierClass(),
                           attributeKey: 'kode',
                           onChanged: (value) => _suppliers = value,
                         ),

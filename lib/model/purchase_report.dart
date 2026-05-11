@@ -1,4 +1,4 @@
-import 'package:fe_pos/model/supplier.dart';
+import 'package:fe_pos/model/ipos/supplier.dart';
 import 'package:fe_pos/model/model.dart';
 
 enum PurchaseReportStatus implements EnumTranslation {
@@ -70,10 +70,10 @@ class PurchaseReport extends Model {
   Money paidAmount;
   DateTime? lastPaidDate;
   Money debtAmount;
-  Supplier supplier;
+  IposSupplier supplier;
   PurchaseReport({
     super.id,
-    Supplier? supplier,
+    IposSupplier? supplier,
     this.code = '',
     this.supplierCode = '',
     DateTime? purchaseDate,
@@ -94,7 +94,7 @@ class PurchaseReport extends Model {
     this.paidAmount = const Money(0),
     this.lastPaidDate,
     this.debtAmount = const Money(0),
-  }) : supplier = supplier ?? Supplier(),
+  }) : supplier = supplier ?? IposSupplier(),
        purchaseDate = purchaseDate ?? DateTime.now(),
        dueDate = dueDate ?? Date.today(),
        orderDate = orderDate ?? DateTime.now(),
@@ -108,7 +108,7 @@ class PurchaseReport extends Model {
     var attributes = json['attributes'];
     if (included.isNotEmpty) {
       supplier =
-          SupplierClass().findRelationData(
+          IposSupplierClass().findRelationData(
             included: included,
             relation: json['relationships']['supplier'],
           ) ??

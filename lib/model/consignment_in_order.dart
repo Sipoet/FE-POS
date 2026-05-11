@@ -29,7 +29,7 @@ class ConsignmentInOrder extends Model {
   String location;
   String destLocation;
   String supplierCode;
-  Supplier supplier;
+  IposSupplier supplier;
   ConsignmentInOrder({
     this.userName = '',
     this.description = '',
@@ -52,7 +52,7 @@ class ConsignmentInOrder extends Model {
     this.bankCode,
     this.consignmentIn,
     this.taxType = '',
-    Supplier? supplier,
+    IposSupplier? supplier,
     super.id,
     super.createdAt,
     super.updatedAt,
@@ -61,7 +61,7 @@ class ConsignmentInOrder extends Model {
     List<PurchaseOrderItem>? purchaseOrderItems,
   }) : purchaseOrderItems = purchaseOrderItems ?? <PurchaseOrderItem>[],
        datetime = datetime ?? DateTime.now(),
-       supplier = supplier ?? Supplier(),
+       supplier = supplier ?? IposSupplier(),
        deliveredDate = deliveredDate ?? DateTime.now();
 
   @override
@@ -133,11 +133,11 @@ class ConsignmentInOrder extends Model {
         relation: json['relationships']['consignment_in'],
       );
       supplier =
-          SupplierClass().findRelationData(
+          IposSupplierClass().findRelationData(
             included: included,
             relation: json['relationships']['supplier'],
           ) ??
-          Supplier(code: supplierCode);
+          IposSupplier(code: supplierCode);
     }
   }
 

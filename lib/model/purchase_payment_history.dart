@@ -1,4 +1,4 @@
-import 'package:fe_pos/model/account.dart';
+import 'package:fe_pos/model/ipos/account.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/ipos/purchase_header.dart';
 import 'package:fe_pos/model/purchase_order.dart';
@@ -57,57 +57,57 @@ class PurchasePaymentHistory extends Model {
   Money discountAmount;
   Money debtTotal;
   Money debtLeft;
-  Account paymentAccount;
+  IposAccount paymentAccount;
   PurchaseOrder? purchaseOrder;
 
-  Supplier supplier;
+  IposSupplier supplier;
   IposPurchaseHeader? purchase;
-  PurchasePaymentHistory(
-      {super.id,
-      this.code = '',
-      Supplier? supplier,
-      String? supplierCode,
-      this.description,
-      Account? paymentAccount,
-      String? paymentAccountCode,
-      this.purchaseCode,
-      this.purchase,
-      this.purchaseOrder,
-      this.purchaseOrderCode,
-      this.grandTotal = const Money(0),
-      this.paymentAmount = const Money(0),
-      this.discountAmount = const Money(0),
-      this.debtLeft = const Money(0),
-      this.debtTotal = const Money(0),
-      this.invoicedAt,
-      DateTime? stockArrivedAt,
-      DateTime? transactionAt})
-      : transactionAt = transactionAt ?? DateTime.now(),
-        stockArrivedAt = stockArrivedAt ?? DateTime.now(),
-        supplier = supplier ?? Supplier(code: supplierCode ?? ''),
-        paymentAccount =
-            paymentAccount ?? Account(code: paymentAccountCode ?? '');
+  PurchasePaymentHistory({
+    super.id,
+    this.code = '',
+    IposSupplier? supplier,
+    String? supplierCode,
+    this.description,
+    IposAccount? paymentAccount,
+    String? paymentAccountCode,
+    this.purchaseCode,
+    this.purchase,
+    this.purchaseOrder,
+    this.purchaseOrderCode,
+    this.grandTotal = const Money(0),
+    this.paymentAmount = const Money(0),
+    this.discountAmount = const Money(0),
+    this.debtLeft = const Money(0),
+    this.debtTotal = const Money(0),
+    this.invoicedAt,
+    DateTime? stockArrivedAt,
+    DateTime? transactionAt,
+  }) : transactionAt = transactionAt ?? DateTime.now(),
+       stockArrivedAt = stockArrivedAt ?? DateTime.now(),
+       supplier = supplier ?? IposSupplier(code: supplierCode ?? ''),
+       paymentAccount =
+           paymentAccount ?? IposAccount(code: paymentAccountCode ?? '');
   @override
   Map<String, dynamic> toMap() => {
-        'transaction_at': transactionAt,
-        'invoiced_at': invoicedAt,
-        'stock_arrived_at': stockArrivedAt,
-        'description': description,
-        'payment_account_code': paymentAccountCode,
-        'payment_account': "${paymentAccount.code} - ${paymentAccount.name}",
-        'discount_amount': discountAmount,
-        'grand_total': grandTotal,
-        'payment_amount': paymentAmount,
-        'purchase_code': purchaseCode,
-        'purchase': purchase,
-        'purchase_order': purchaseOrder,
-        'purchase_order_code': purchaseOrderCode,
-        'code': code,
-        'supplier_code': supplierCode,
-        'supplier': "${supplier.code} - ${supplier.name}",
-        'debt_left': debtLeft,
-        'debt_total': debtTotal,
-      };
+    'transaction_at': transactionAt,
+    'invoiced_at': invoicedAt,
+    'stock_arrived_at': stockArrivedAt,
+    'description': description,
+    'payment_account_code': paymentAccountCode,
+    'payment_account': "${paymentAccount.code} - ${paymentAccount.name}",
+    'discount_amount': discountAmount,
+    'grand_total': grandTotal,
+    'payment_amount': paymentAmount,
+    'purchase_code': purchaseCode,
+    'purchase': purchase,
+    'purchase_order': purchaseOrder,
+    'purchase_order_code': purchaseOrderCode,
+    'code': code,
+    'supplier_code': supplierCode,
+    'supplier': "${supplier.code} - ${supplier.name}",
+    'debt_left': debtLeft,
+    'debt_total': debtTotal,
+  };
 
   String get supplierCode => supplier.code;
   String get paymentAccountCode => paymentAccount.code;
@@ -120,23 +120,26 @@ class PurchasePaymentHistory extends Model {
     var attributes = json['attributes'];
 
     if (included.isNotEmpty) {
-      supplier = SupplierClass().findRelationData(
+      supplier =
+          IposSupplierClass().findRelationData(
             included: included,
             relation: json['relationships']?['supplier'],
           ) ??
-          Supplier(code: attributes['supplier_code'] ?? '');
-      paymentAccount = AccountClass().findRelationData(
+          IposSupplier(code: attributes['supplier_code'] ?? '');
+      paymentAccount =
+          IposAccountClass().findRelationData(
             included: included,
             relation: json['relationships']?['payment_account'],
           ) ??
-          Account(code: attributes['payment_account_code'] ?? '');
+          IposAccount(code: attributes['payment_account_code'] ?? '');
       purchase = IposPurchaseHeaderClass().findRelationData(
         included: included.where((data) => data['type'] == 'purchase').toList(),
         relation: json['relationships']?['purchase'],
       );
       purchaseOrder = PurchaseOrderClass().findRelationData(
-        included:
-            included.where((data) => data['type'] == 'purchase_order').toList(),
+        included: included
+            .where((data) => data['type'] == 'purchase_order')
+            .toList(),
         relation: json['relationships']?['purchase_order'],
       );
     }

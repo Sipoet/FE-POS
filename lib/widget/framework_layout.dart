@@ -1,3 +1,4 @@
+import 'package:fe_pos/page/product_category_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
@@ -60,7 +61,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             isDisabled: !setting.isAuthorize('employees', 'read'),
             key: 'employee',
             pageFunct: () => const EmployeePage(),
-            children: [],
           ),
           Menu(
             icon: Icons.settings,
@@ -333,7 +333,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             isDisabled: !setting.isAuthorize('discounts', 'index'),
             key: 'discount',
             pageFunct: () => const DiscountPage(),
-            children: [],
           ),
           Menu(
             icon: Icons.group,
@@ -502,7 +501,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             isDisabled: !setting.isAuthorize('tag_keys', 'read'),
             key: 'tagKey',
             pageFunct: () => const TagKeyPage(),
-            children: [],
           ),
           Menu(
             icon: Icons.inventory,
@@ -511,7 +509,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             isDisabled: !setting.isAuthorize('ipos/items', 'read'),
             key: 'item',
             pageFunct: () => const ItemPage(),
-            children: [],
           ),
           Menu(
             icon: Icons.local_shipping,
@@ -520,7 +517,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             isDisabled: !setting.isAuthorize('ipos/suppliers', 'read'),
             key: 'supplier',
             pageFunct: () => const SupplierPage(),
-            children: [],
           ),
           Menu(
             icon: Icons.branding_watermark,
@@ -529,7 +525,22 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             isDisabled: !setting.isAuthorize('ipos/brands', 'read'),
             key: 'brand',
             pageFunct: () => const BrandPage(),
-            children: [],
+          ),
+          Menu(
+            icon: Icons.category,
+            isClosed: true,
+            label: 'Kategori Produk',
+            isDisabled: !setting.isAuthorize('product_categories', 'read'),
+            key: 'productCategory',
+            pageFunct: () => const ProductCategoryPage(),
+          ),
+          Menu(
+            icon: Icons.inventory,
+            isClosed: true,
+            label: 'Produk',
+            isDisabled: !setting.isAuthorize('products', 'read'),
+            key: 'product',
+            pageFunct: () => const ProductPage(),
           ),
           Menu(
             icon: Icons.abc,
@@ -538,7 +549,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             isDisabled: !setting.isAuthorize('ipos/item_types', 'read'),
             key: 'itemType',
             pageFunct: () => const ItemTypePage(),
-            children: [],
           ),
           Menu(
             icon: Icons.person,
@@ -547,7 +557,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             isDisabled: !setting.isAuthorize('users', 'index'),
             key: 'user',
             pageFunct: () => const UserPage(),
-            children: [],
           ),
           Menu(
             icon: Icons.group,
@@ -556,7 +565,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             isDisabled: !setting.isAuthorize('roles', 'read'),
             key: 'role',
             pageFunct: () => const RolePage(),
-            children: [],
           ),
         ],
       ),

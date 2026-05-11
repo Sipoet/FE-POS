@@ -1,4 +1,4 @@
-import 'package:fe_pos/model/account.dart';
+import 'package:fe_pos/model/ipos/account.dart';
 import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/location.dart';
 import 'package:fe_pos/tool/flash.dart';
@@ -19,7 +19,7 @@ class PayslipPayPage extends StatefulWidget {
 }
 
 class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
-  Account? account;
+  IposAccount? account;
   DateTime? paidAt;
   String? description;
   Location? location;
@@ -141,30 +141,18 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
                 },
               ),
               const SizedBox(height: 10),
-              AsyncDropdown<Account>(
+              AsyncDropdown<IposAccount>(
                 label: Text('Akun Pembayaran', style: _filterLabelStyle),
-                request:
-                    ({
-                      required cancelToken,
-                      int limit = 20,
-                      int page = 1,
-                      String searchText = '',
-                    }) {
-                      return server.get(
-                        'ipos/accounts',
-                        queryParam: {
-                          'search_text': searchText,
-                          'filter[kasbank][eq]': 'true',
-                          'filter[tipe][eq]': 'D',
-                          'page[page]': page.toString(),
-                          'page[limit]': limit.toString(),
-                        },
-                        cancelToken: cancelToken,
-                      );
-                    },
+                request: (QueryRequest queryRequest) {
+                  queryRequest.filters.addAll([
+                    ComparisonFilterData(key: 'kasbank', value: 'true'),
+                    ComparisonFilterData(key: 'tipe', value: 'D'),
+                  ]);
+                  return IposAccountClass().finds(server, queryRequest);
+                },
                 allowClear: false,
                 textOnSearch: (model) => model.modelValue,
-                modelClass: AccountClass(),
+                modelClass: IposAccountClass(),
                 onChanged: (model) => account = model,
                 validator: (model) {
                   if (model == null) {

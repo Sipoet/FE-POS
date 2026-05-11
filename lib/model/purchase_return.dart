@@ -26,7 +26,7 @@ class PurchaseReturn extends Model {
   String location;
   String destLocation;
   String supplierCode;
-  Supplier supplier;
+  IposSupplier supplier;
   PurchaseReturn({
     this.userName = '',
     this.description = '',
@@ -52,10 +52,10 @@ class PurchaseReturn extends Model {
     super.createdAt,
     super.updatedAt,
     DateTime? datetime,
-    Supplier? supplier,
+    IposSupplier? supplier,
     List<PurchaseReturnItem>? purchaseItems,
   }) : purchaseItems = purchaseItems ?? <PurchaseReturnItem>[],
-       supplier = supplier ?? Supplier(),
+       supplier = supplier ?? IposSupplier(),
        datetime = datetime ?? DateTime.now();
 
   String get supplierName => supplier.name;
@@ -100,7 +100,7 @@ class PurchaseReturn extends Model {
         relation: json['relationships']['purchase_return_items'],
       );
       supplier =
-          SupplierClass().findRelationData(
+          IposSupplierClass().findRelationData(
             included: included,
             relation: json['relationships']['supplier'],
           ) ??

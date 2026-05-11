@@ -50,7 +50,11 @@ mixin ColumnTypeFinder {
       case 'link':
       case 'model':
         return ModelTableColumnType(
-          modelClass: route.modelClassOf(options['class_name']),
+          modelClass: options['class_name'] == null
+              ? null
+              : route.modelClassOf(options['class_name']),
+          isPolymorphic: options['polymorphic'] == true,
+          modelTypeField: options['model_type'],
         );
       case 'enum':
         return EnumTableColumnType(
@@ -900,8 +904,14 @@ class MoneyTableColumnType extends TableColumnType<Money> {
 class ModelTableColumnType<T extends Model> extends TableColumnType<T>
     with PlatformChecker {
   ModelClass<T>? modelClass;
+  String? modelTypeField;
+  bool isPolymorphic;
   final route = ModelRoute();
-  ModelTableColumnType({this.modelClass});
+  ModelTableColumnType({
+    this.modelClass,
+    this.modelTypeField,
+    this.isPolymorphic = false,
+  });
   @override
   Widget renderFilter({
     Widget? label,
@@ -909,7 +919,7 @@ class ModelTableColumnType<T extends Model> extends TableColumnType<T>
     Key? key,
     required FilterFormController controller,
   }) {
-    if (modelClass == null) {
+    if (isPolymorphic) {
       return Text('not support multi model type');
     } else {
       return ModelFilterForm(
@@ -973,8 +983,12 @@ class ModelTableColumnType<T extends Model> extends TableColumnType<T>
     if (value is T) {
       return value;
     }
-    return modelClass?.fromJson(value) ??
-        route.modelClassOf(value['type'].toString()).fromJson(value) as T;
+    if (isPolymorphic) {
+      String className = value['attributes']?[modelTypeField];
+      return route.modelClassOf(className)?.fromJson(value) as T;
+    } else {
+      return modelClass!.fromJson(value);
+    }
   }
 
   @override

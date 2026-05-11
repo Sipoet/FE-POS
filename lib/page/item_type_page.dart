@@ -1,4 +1,4 @@
-import 'package:fe_pos/model/item_type.dart';
+import 'package:fe_pos/model/ipos/item_type.dart';
 import 'package:fe_pos/page/item_type_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
@@ -55,48 +55,64 @@ class _ItemTypePageState extends State<ItemTypePage>
 
   Future<DataTableResponse<ItemType>> fetchItemTypes(QueryRequest request) {
     _source?.setShowLoading(true);
-    return ItemTypeClass().finds(server, request).then(
-        (value) => DataTableResponse<ItemType>(
+    return ItemTypeClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<ItemType>(
             models: value.models,
-            totalPage: value.metadata['total_pages']), onError: (error) {
-      defaultErrorResponse(error: error);
-      return DataTableResponse.empty();
-    }).whenComplete(() => _source?.setShowLoading(false));
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        )
+        .whenComplete(() => _source?.setShowLoading(false));
   }
 
   void _destroyItemType(ItemType itemType) {
     showConfirmDialog(
-        message: 'Apakah anda yakin hapus ${itemType.name}?',
-        onSubmit: () {
-          server.delete('/item_types/${itemType.id}').then((response) {
-            if (response.statusCode == 200) {
-              flash.showBanner(
-                messageType: ToastificationType.success,
-                title: 'Sukses Hapus ${itemType.name}',
-              );
-              refreshTable();
-            } else if (response.statusCode == 409) {
-              flash.showBanner(
-                  messageType: ToastificationType.error,
-                  title: 'Gagal Hapus ${itemType.name}',
-                  description: response.data['errors'].join(','));
-            } else {
-              flash.showBanner(
-                  messageType: ToastificationType.error,
-                  title: 'Gagal Hapus ${itemType.name}',
-                  description: response.data.toString());
-            }
-          }, onError: (error) {
-            defaultErrorResponse(error: error);
-          });
-        });
+      message: 'Apakah anda yakin hapus ${itemType.name}?',
+      onSubmit: () {
+        server
+            .delete('/item_types/${itemType.id}')
+            .then(
+              (response) {
+                if (response.statusCode == 200) {
+                  flash.showBanner(
+                    messageType: ToastificationType.success,
+                    title: 'Sukses Hapus ${itemType.name}',
+                  );
+                  refreshTable();
+                } else if (response.statusCode == 409) {
+                  flash.showBanner(
+                    messageType: ToastificationType.error,
+                    title: 'Gagal Hapus ${itemType.name}',
+                    description: response.data['errors'].join(','),
+                  );
+                } else {
+                  flash.showBanner(
+                    messageType: ToastificationType.error,
+                    title: 'Gagal Hapus ${itemType.name}',
+                    description: response.data.toString(),
+                  );
+                }
+              },
+              onError: (error) {
+                defaultErrorResponse(error: error);
+              },
+            );
+      },
+    );
   }
 
-  List<CustomTreeNode<ItemType>> convertToTree(List<ItemType> models,
-      {dynamic parentId}) {
-    return models
-        .where((itemType) => itemType.parentId == parentId)
-        .map((ItemType itemType) {
+  List<CustomTreeNode<ItemType>> convertToTree(
+    List<ItemType> models, {
+    dynamic parentId,
+  }) {
+    return models.where((itemType) => itemType.parentId == parentId).map((
+      ItemType itemType,
+    ) {
       final key = ObjectKey(itemType);
       return CustomTreeNode<ItemType>(
         key: key,
@@ -104,17 +120,16 @@ class _ItemTypePageState extends State<ItemTypePage>
         content: Row(
           children: [
             Tooltip(message: itemType.description, child: Text(itemType.name)),
-            const SizedBox(
-              width: 15,
-            ),
+            const SizedBox(width: 15),
             IconButton(
-                onPressed: () => _openForm(itemType), icon: Icon(Icons.edit)),
-            const SizedBox(
-              width: 10,
+              onPressed: () => _openForm(itemType),
+              icon: Icon(Icons.edit),
             ),
+            const SizedBox(width: 10),
             IconButton(
-                onPressed: () => _destroyItemType(itemType),
-                icon: Icon(Icons.delete)),
+              onPressed: () => _destroyItemType(itemType),
+              icon: Icon(Icons.delete),
+            ),
           ],
         ),
         children: convertToTree(models, parentId: itemType.id),
@@ -168,19 +183,14 @@ class _ItemTypePageState extends State<ItemTypePage>
     if (isDesktop()) {
       tabManager.setSafeAreaContent(
         '$titleDesc Jenis ${itemType.name}',
-        ItemTypeFormPage(
-          itemType: itemType,
-          key: ObjectKey(itemType),
-        ),
+        ItemTypeFormPage(itemType: itemType, key: ObjectKey(itemType)),
         whenClose: () => refreshTable(),
       );
     } else {
       tabManager.addTab(
-          '$titleDesc Jenis ${itemType.name}',
-          ItemTypeFormPage(
-            itemType: itemType,
-            key: ObjectKey(itemType),
-          ));
+        '$titleDesc Jenis ${itemType.name}',
+        ItemTypeFormPage(itemType: itemType, key: ObjectKey(itemType)),
+      );
     }
   }
 
@@ -199,32 +209,34 @@ class _ItemTypePageState extends State<ItemTypePage>
                   Align(
                     alignment: Alignment.centerLeft,
                     child: IconButton.filled(
-                        onPressed: () => _openForm(ItemType(
-                              parentId: null,
-                            )),
-                        icon: Icon(Icons.add)),
+                      onPressed: () => _openForm(ItemType(parentId: null)),
+                      icon: Icon(Icons.add),
+                    ),
                   ),
-                  Row(children: [
-                    SizedBox(
-                      width: 150,
-                      child: TextField(
-                        decoration:
-                            const InputDecoration(hintText: 'Search Text'),
-                        onChanged: searchChanged,
-                        onSubmitted: searchChanged,
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 150,
+                        child: TextField(
+                          decoration: const InputDecoration(
+                            hintText: 'Search Text',
+                          ),
+                          onChanged: searchChanged,
+                          onSubmitted: searchChanged,
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _searchText = '';
-                        });
-                        refreshTable();
-                      },
-                      tooltip: 'Reset Table',
-                      icon: const Icon(Icons.refresh),
-                    ),
-                  ]),
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _searchText = '';
+                          });
+                          refreshTable();
+                        },
+                        tooltip: 'Reset Table',
+                        icon: const Icon(Icons.refresh),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),

@@ -1,0 +1,70 @@
+import 'package:fe_pos/model/model.dart';
+
+class IposSupplier extends Model {
+  String code;
+  String name;
+  String? bank;
+  String? account;
+  String? email;
+  String? accountRegisterName;
+  String? address;
+  String? city;
+  String? description;
+  String? contact;
+  IposSupplier({
+    this.code = '',
+    this.name = '',
+    this.contact,
+    this.email,
+    super.id,
+    this.bank,
+    this.account,
+    this.accountRegisterName,
+    this.address,
+    this.city,
+    this.description,
+  });
+
+  @override
+  String get path => 'ipos/suppliers';
+
+  @override
+  String get id => code;
+
+  @override
+  Map<String, dynamic> toMap() => {
+    'code': code,
+    'name': name,
+    'bank': bank,
+    'account': account,
+    'account_register_name': accountRegisterName,
+    'address': address,
+    'contact': contact,
+    'city': city,
+    'description': description,
+  };
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
+    var attributes = json['attributes'];
+    code = attributes['code'];
+    name = attributes['name'];
+    bank = attributes['bank'];
+    account = attributes['account'];
+    accountRegisterName = attributes['account_register_name'];
+    address = attributes['address'];
+    contact = attributes['contact'];
+    email = attributes['email'];
+    city = attributes['city'];
+    description = attributes['description'];
+  }
+
+  @override
+  String get valueDescription => name;
+}
+
+class IposSupplierClass extends ModelClass<IposSupplier> {
+  @override
+  IposSupplier initModel() => IposSupplier();
+}

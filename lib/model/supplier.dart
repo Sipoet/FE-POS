@@ -1,35 +1,39 @@
+import 'package:fe_pos/model/account.dart';
+export 'package:fe_pos/model/account.dart';
+import 'package:fe_pos/model/contact_number.dart';
+export 'package:fe_pos/model/contact_number.dart';
 import 'package:fe_pos/model/model.dart';
+import 'package:fe_pos/model/tag.dart';
 
-class Supplier extends Model {
-  String code;
+class Supplier extends Model with SaveNDestroyModel {
+  String? code;
   String name;
   String? bank;
-  String? account;
+  Account? account;
   String? email;
-  String? accountRegisterName;
+  String? bankRegisterName;
+  String? bankAccountNumber;
   String? address;
   String? city;
   String? description;
-  String? contact;
+  List<Tagging> taggings = [];
+  List<ContactNumber> contactNumbers = [];
   Supplier({
-    this.code = '',
     this.name = '',
-    this.contact,
     this.email,
     super.id,
+    this.code,
     this.bank,
     this.account,
-    this.accountRegisterName,
+    this.bankAccountNumber,
+    List<ContactNumber>? contactNumbers,
+    List<Tagging>? taggings,
+    this.bankRegisterName,
     this.address,
     this.city,
     this.description,
-  });
-
-  @override
-  String get path => 'ipos/suppliers';
-
-  @override
-  String get id => code;
+  }) : contactNumbers = contactNumbers ?? [],
+       taggings = taggings ?? [];
 
   @override
   Map<String, dynamic> toMap() => {
@@ -37,27 +41,60 @@ class Supplier extends Model {
     'name': name,
     'bank': bank,
     'account': account,
-    'account_register_name': accountRegisterName,
+    'email': email,
+    'account_id': account?.id,
+    'bank_register_name': bankRegisterName,
+    'bank_account_number': bankAccountNumber,
+    'bank_account': bankRegisterName,
     'address': address,
-    'contact': contact,
     'city': city,
     'description': description,
   };
+
+  void setTags(List<Tag> newTags) {
+    int index = 0;
+    while (newTags.length > index || taggings.length > index) {
+      final tagging = taggings.elementAtOrNull(index);
+      final tag = newTags.elementAtOrNull(index);
+      if (tagging == null) {
+        taggings.add(Tagging(tag: tag));
+      } else if (tag == null) {
+        tagging.flagDestroy();
+      } else {
+        tagging.tag = tag;
+      }
+      index++;
+    }
+  }
+
+  List<Tag> get tags =>
+      taggings.where((e) => e.tag != null).map<Tag>((e) => e.tag!).toList();
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];
+    name = attributes['name'] ?? '';
     code = attributes['code'];
-    name = attributes['name'];
     bank = attributes['bank'];
-    account = attributes['account'];
-    accountRegisterName = attributes['account_register_name'];
+    account = AccountClass().findRelationData(
+      included: included,
+      relation: json['relationships']?['account'],
+    );
+    bankAccountNumber = attributes['bank_account_number'];
+    bankRegisterName = attributes['bank_register_name'];
     address = attributes['address'];
-    contact = attributes['contact'];
     email = attributes['email'];
     city = attributes['city'];
     description = attributes['description'];
+    contactNumbers = ContactNumberClass().findRelationsData(
+      included: included,
+      relation: json['relationships']?['contact_numbers'],
+    );
+    taggings = TaggingClass().findRelationsData(
+      included: included,
+      relation: json['relationships']?['taggings'],
+    );
   }
 
   @override

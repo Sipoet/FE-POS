@@ -269,19 +269,19 @@ class Discount extends Model {
       .map<Item>((e) => Item(id: e.value, code: e.value))
       .toList();
 
-  List<Supplier> get suppliers => discountFilters
+  List<IposSupplier> get suppliers => discountFilters
       .where(
         (element) =>
             element.isExclude == false && element.filterKey == 'supplier',
       )
-      .map<Supplier>((e) => Supplier(id: e.value, code: e.value))
+      .map<IposSupplier>((e) => IposSupplier(id: e.value, code: e.value))
       .toList();
-  List<Supplier> get blacklistSuppliers => discountFilters
+  List<IposSupplier> get blacklistSuppliers => discountFilters
       .where(
         (element) =>
             element.isExclude == true && element.filterKey == 'supplier',
       )
-      .map<Supplier>((e) => Supplier(id: e.value, code: e.value))
+      .map<IposSupplier>((e) => IposSupplier(id: e.value, code: e.value))
       .toList();
 
   List<ItemType> get itemTypes => discountFilters
@@ -355,7 +355,7 @@ class Discount extends Model {
     }
   }
 
-  set suppliers(List<Supplier> newSuppliers) {
+  set suppliers(List<IposSupplier> newSuppliers) {
     discountFilters.removeWhere(
       (element) => !element.isExclude && element.filterKey == 'supplier',
     );
@@ -370,7 +370,7 @@ class Discount extends Model {
     }
   }
 
-  set blacklistSuppliers(List<Supplier> newSuppliers) {
+  set blacklistSuppliers(List<IposSupplier> newSuppliers) {
     discountFilters.removeWhere(
       (element) => element.isExclude && element.filterKey == 'supplier',
     );

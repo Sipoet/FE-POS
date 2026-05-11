@@ -14,8 +14,10 @@ class SalesPaymentPage extends StatefulWidget {
 }
 
 class _SalesPaymentPageState extends State<SalesPaymentPage> {
-  static const labelStyle =
-      TextStyle(fontWeight: FontWeight.bold, fontSize: 20);
+  static const labelStyle = TextStyle(
+    fontWeight: FontWeight.bold,
+    fontSize: 20,
+  );
   SalesCashier get salesCashier => widget.salesCashier;
   late final Setting setting;
   late final Server _server;
@@ -30,240 +32,238 @@ class _SalesPaymentPageState extends State<SalesPaymentPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(
-        minWidth: 600,
-      ),
-      child: Column(mainAxisSize: MainAxisSize.max, children: [
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            const Text(
-              'Total: ',
-              style: labelStyle,
-            ),
-            SizedBox(
-              width: 300,
-              child: TextFormField(
-                initialValue: salesCashier.grandTotal.format(),
-                readOnly: true,
-                decoration: const InputDecoration(
-                    contentPadding: EdgeInsets.all(10),
-                    border: OutlineInputBorder()),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(
-          height: 10,
-        ),
-        Table(
-          columnWidths: const {
-            2: FixedColumnWidth(200),
-            3: FixedColumnWidth(40)
-          },
-          border: TableBorder.all(),
-          children: [
-                TableRow(children: [
-                  const TableCell(
-                      child: Text(
-                    'Metode Pembayaran',
-                    style: labelStyle,
-                  )),
-                  const TableCell(
-                      child: Text(
-                    'EDC / Platform',
-                    style: labelStyle,
-                  )),
-                  const TableCell(
-                      child: Text(
-                    'Jumlah',
-                    style: labelStyle,
-                  )),
-                  TableCell(
-                      child: Visibility(
-                    visible: setting.canShow(
-                        'salesPayment', 'multiple_payment_method'),
-                    child: IconButton.filled(
-                      iconSize: 25,
-                      icon: const Icon(Icons.add),
-                      onPressed: () => setState(() {
-                        salesPayments.add(SalesPayment());
-                      }),
-                    ),
-                  )),
-                ]),
-              ] +
-              salesPayments
-                  .map<TableRow>((salesPayment) => TableRow(children: [
-                        TableCell(
-                            child: Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: AsyncDropdown<PaymentType>(
-                              allowClear: false,
-                              textOnSearch: (paymentType) => paymentType.name,
-                              selected: salesPayment.paymentType,
-                              modelClass: PaymentTypeClass(),
-                              onChanged: (paymentType) {
-                                setState(() {
-                                  salesPayment.paymentType =
-                                      paymentType ?? PaymentType();
-                                });
-                              },
-                              validator: (value) {
-                                if (value == null) {
-                                  return 'harus diisi';
-                                }
-                                return null;
-                              },
-                              path: 'payment_types'),
-                        )),
-                        TableCell(
-                            child: Visibility(
-                          visible: !salesPayment.isCash,
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: AsyncDropdown<PaymentProvider>(
-                              allowClear: false,
-                              textOnSearch: (paymentProvider) =>
-                                  paymentProvider.name,
-                              selected: salesPayment.paymentProvider,
-                              modelClass: PaymentProviderClass(),
-                              request: (
-                                  {int page = 1,
-                                  int limit = 20,
-                                  String searchText = '',
-                                  required CancelToken cancelToken}) {
-                                return _server.get('payment_providers',
-                                    queryParam: {
-                                      'page[page]': page.toString(),
-                                      'page[limit]': limit.toString(),
-                                      'search_text': searchText,
-                                      'filter[status][eq]':
-                                          PaymentProviderStatus.active
-                                              .toString(),
-                                    },
-                                    cancelToken: cancelToken);
-                              },
-                              validator: (value) {
-                                if (value == null && !salesPayment.isCash) {
-                                  return 'harus diisi';
-                                }
-                                return null;
-                              },
-                              onChanged: (paymentProvider) {
-                                setState(() {
-                                  salesPayment.paymentProvider =
-                                      paymentProvider ?? PaymentProvider();
-                                });
-                              },
-                            ),
-                          ),
-                        )),
-                        TableCell(
-                            child: Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: MoneyFormField(
-                            initialValue: salesPayment.amount,
-                            onChanged: (value) => setState(() {
-                              salesPayment.amount =
-                                  value ?? salesPayment.amount;
-                            }),
-                          ),
-                        )),
-                        TableCell(
-                            child: Visibility(
-                          visible: salesPayments.indexOf(salesPayment) > 0,
-                          child: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  salesPayments.remove(salesPayment);
-                                });
-                              },
-                              icon: const Icon(Icons.close)),
-                        )),
-                      ]))
-                  .toList(),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 10, bottom: 10),
-          child: Row(
+      constraints: const BoxConstraints(minWidth: 600),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.max,
             children: [
-              const Text(
-                'Total Bayar: ',
-                style: labelStyle,
-              ),
+              const Text('Total: ', style: labelStyle),
               SizedBox(
                 width: 300,
                 child: TextFormField(
-                  initialValue: salesCashier.payAmount.format(),
+                  initialValue: salesCashier.grandTotal.format(),
                   readOnly: true,
                   decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.all(10),
-                      border: OutlineInputBorder()),
+                    contentPadding: EdgeInsets.all(10),
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
             ],
           ),
-        ),
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            const Text(
-              'Kembali: ',
-              style: labelStyle,
+          const SizedBox(height: 10),
+          Table(
+            columnWidths: const {
+              2: FixedColumnWidth(200),
+              3: FixedColumnWidth(40),
+            },
+            border: TableBorder.all(),
+            children:
+                [
+                  TableRow(
+                    children: [
+                      const TableCell(
+                        child: Text('Metode Pembayaran', style: labelStyle),
+                      ),
+                      const TableCell(
+                        child: Text('EDC / Platform', style: labelStyle),
+                      ),
+                      const TableCell(child: Text('Jumlah', style: labelStyle)),
+                      TableCell(
+                        child: Visibility(
+                          visible: setting.canShow(
+                            'salesPayment',
+                            'multiple_payment_method',
+                          ),
+                          child: IconButton.filled(
+                            iconSize: 25,
+                            icon: const Icon(Icons.add),
+                            onPressed: () => setState(() {
+                              salesPayments.add(SalesPayment());
+                            }),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ] +
+                salesPayments
+                    .map<TableRow>(
+                      (salesPayment) => TableRow(
+                        children: [
+                          TableCell(
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: AsyncDropdown<PaymentType>(
+                                allowClear: false,
+                                textOnSearch: (paymentType) => paymentType.name,
+                                selected: salesPayment.paymentType,
+                                modelClass: PaymentTypeClass(),
+                                onChanged: (paymentType) {
+                                  setState(() {
+                                    salesPayment.paymentType =
+                                        paymentType ?? PaymentType();
+                                  });
+                                },
+                                validator: (value) {
+                                  if (value == null) {
+                                    return 'harus diisi';
+                                  }
+                                  return null;
+                                },
+                                path: 'payment_types',
+                              ),
+                            ),
+                          ),
+                          TableCell(
+                            child: Visibility(
+                              visible: !salesPayment.isCash,
+                              child: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: AsyncDropdown<PaymentProvider>(
+                                  allowClear: false,
+                                  textOnSearch: (paymentProvider) =>
+                                      paymentProvider.name,
+                                  selected: salesPayment.paymentProvider,
+                                  modelClass: PaymentProviderClass(),
+                                  request: (QueryRequest queryRequest) {
+                                    queryRequest.filters.add(
+                                      ComparisonFilterData(
+                                        key: 'status',
+                                        value: PaymentProviderStatus.active
+                                            .toString(),
+                                      ),
+                                    );
+                                    return PaymentProviderClass().finds(
+                                      _server,
+                                      queryRequest,
+                                    );
+                                  },
+                                  validator: (value) {
+                                    if (value == null && !salesPayment.isCash) {
+                                      return 'harus diisi';
+                                    }
+                                    return null;
+                                  },
+                                  onChanged: (paymentProvider) {
+                                    setState(() {
+                                      salesPayment.paymentProvider =
+                                          paymentProvider ?? PaymentProvider();
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          TableCell(
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: MoneyFormField(
+                                initialValue: salesPayment.amount,
+                                onChanged: (value) => setState(() {
+                                  salesPayment.amount =
+                                      value ?? salesPayment.amount;
+                                }),
+                              ),
+                            ),
+                          ),
+                          TableCell(
+                            child: Visibility(
+                              visible: salesPayments.indexOf(salesPayment) > 0,
+                              child: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    salesPayments.remove(salesPayment);
+                                  });
+                                },
+                                icon: const Icon(Icons.close),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                    .toList(),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 10, bottom: 10),
+            child: Row(
+              children: [
+                const Text('Total Bayar: ', style: labelStyle),
+                SizedBox(
+                  width: 300,
+                  child: TextFormField(
+                    initialValue: salesCashier.payAmount.format(),
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.all(10),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            SizedBox(
-              width: 300,
-              child: TextFormField(
-                initialValue: salesCashier.grandTotal.format(),
-                readOnly: true,
-                decoration: const InputDecoration(
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              const Text('Kembali: ', style: labelStyle),
+              SizedBox(
+                width: 300,
+                child: TextFormField(
+                  initialValue: salesCashier.grandTotal.format(),
+                  readOnly: true,
+                  decoration: const InputDecoration(
                     contentPadding: EdgeInsets.all(10),
-                    border: OutlineInputBorder()),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(
-          height: 10,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            ElevatedButton.icon(
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              ElevatedButton.icon(
                 icon: const Icon(Icons.print),
                 onPressed: () => _saveAndPrint,
-                label: const Text('Simpan + Cetak')),
-            Visibility(
-              visible: !salesCashier.isNewRecord,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 10),
-                child: ElevatedButton.icon(
+                label: const Text('Simpan + Cetak'),
+              ),
+              Visibility(
+                visible: !salesCashier.isNewRecord,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 10),
+                  child: ElevatedButton.icon(
                     icon: const Icon(Icons.print),
                     onPressed: () => _print,
-                    label: const Text('Cetak')),
+                    label: const Text('Cetak'),
+                  ),
+                ),
               ),
-            ),
-            Visibility(
-              visible: !salesCashier.isNewRecord,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 10),
-                child: ElevatedButton.icon(
+              Visibility(
+                visible: !salesCashier.isNewRecord,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 10),
+                  child: ElevatedButton.icon(
                     icon: const Icon(Icons.save),
                     onPressed: () => _save,
-                    label: const Text('Simpan')),
+                    label: const Text('Simpan'),
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(
-              width: 10,
-            ),
-            ElevatedButton(
+              const SizedBox(width: 10),
+              ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Batal')),
-          ],
-        )
-      ]),
+                child: const Text('Batal'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

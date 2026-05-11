@@ -34,17 +34,19 @@ class _TagKeyFormPageState extends State<TagKeyFormPage>
     _server = context.read<Server>();
     _tabManager = context.read<TabManager>();
     super.initState();
-    Future.delayed(Duration.zero, () {
-      showLoadingPopup();
-      tagKey
-          .refresh(_server, include: ['tags'])
-          .then(
-            (result) => setState(() {
-              tagKey.tags;
-            }),
-          )
-          .whenComplete(hideLoadingPopup);
-    });
+    if (!tagKey.isNewRecord) {
+      Future.delayed(Duration.zero, () {
+        showLoadingPopup();
+        tagKey
+            .refresh(_server, include: ['tags'])
+            .then(
+              (result) => setState(() {
+                tagKey.tags;
+              }),
+            )
+            .whenComplete(hideLoadingPopup);
+      });
+    }
   }
 
   void _saveRecord() {

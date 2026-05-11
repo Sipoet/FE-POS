@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/product_category.dart';
 import 'package:fe_pos/model/stock_keeping_unit.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
@@ -125,22 +126,22 @@ class _ProductFormPageState extends State<ProductFormPage>
                 ),
                 SizedBox(
                   width: 250,
-                  child: AsyncDropdown<ItemType>(
+                  child: AsyncDropdown<ProductCategory>(
                     textOnSearch: (model) =>
                         "${model.name} -  ${model.description}",
                     textOnSelected: (model) => model.name,
-                    selected: product.itemType,
+                    selected: product.productCategory,
                     allowClear: false,
                     label: Text('Jenis/Departemen', style: labelStyle),
                     path: 'item_types',
                     isDense: true,
-                    onChanged: (model) => product.itemType = model,
-                    modelClass: ItemTypeClass(),
+                    onChanged: (model) => product.productCategory = model,
+                    modelClass: ProductCategoryClass(),
                   ),
                 ),
                 SizedBox(
                   width: 250,
-                  child: AsyncDropdown<IposBrand>(
+                  child: AsyncDropdown<Brand>(
                     textOnSearch: (model) =>
                         "${model.name} -  ${model.description}",
                     textOnSelected: (model) => model.name,
@@ -150,13 +151,13 @@ class _ProductFormPageState extends State<ProductFormPage>
                     isDense: true,
                     selected: product.brand,
                     onChanged: (model) => product.brand = model,
-                    modelClass: IposBrandClass(),
+                    modelClass: BrandClass(),
                   ),
                 ),
                 SizedBox(
                   width: 250,
                   child: AsyncDropdown<Supplier>(
-                    textOnSearch: (model) => "${model.code} -  ${model.name}",
+                    textOnSearch: (model) => " ${model.name}",
                     textOnSelected: (model) => model.name,
                     label: Text('Supplier', style: labelStyle),
                     allowClear: false,

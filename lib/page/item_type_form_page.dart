@@ -1,4 +1,4 @@
-import 'package:fe_pos/model/item_type.dart';
+import 'package:fe_pos/model/ipos/item_type.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';

@@ -23,7 +23,7 @@ class _SupplierSalesPerformanceReportPageState
     fontWeight: FontWeight.bold,
   );
   List<IposBrand> _brands = [];
-  Supplier? _supplier;
+  IposSupplier? _supplier;
   List<ItemType> _itemTypes = [];
   late final Server server;
   bool _separatePurchaseYear = false;
@@ -69,7 +69,7 @@ class _SupplierSalesPerformanceReportPageState
   Map supplierChartFilter = {
     'rangePeriod': 5,
     'valueType': 'sales_total',
-    'suppliers': <Supplier>[],
+    'suppliers': <IposSupplier>[],
   };
   Map itemTypeChartFilter = {'rangePeriod': 5, 'valueType': 'sales_total'};
   Map brandChartFilter = {'rangePeriod': 5, 'valueType': 'sales_total'};
@@ -103,7 +103,7 @@ class _SupplierSalesPerformanceReportPageState
                 children: [
                   SizedBox(
                     width: 350,
-                    child: AsyncDropdown<Supplier>(
+                    child: AsyncDropdown<IposSupplier>(
                       label: const Text('Pilih Supplier'),
                       allowClear: false,
                       textOnSearch: (supplier) =>
@@ -115,7 +115,7 @@ class _SupplierSalesPerformanceReportPageState
                         }
                         return null;
                       },
-                      modelClass: SupplierClass(),
+                      modelClass: IposSupplierClass(),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -283,7 +283,7 @@ class _SupplierSalesPerformanceReportPageState
       filterForm: [
         SizedBox(
           width: 350,
-          child: AsyncDropdownMultiple<Supplier>(
+          child: AsyncDropdownMultiple<IposSupplier>(
             label: const Text('Perbandingan Supplier'),
             textOnSearch: (supplier) => "${supplier.code} - ${supplier.name}",
 
@@ -301,7 +301,7 @@ class _SupplierSalesPerformanceReportPageState
               return null;
             },
             selecteds: supplierChartFilter['suppliers'],
-            modelClass: SupplierClass(),
+            modelClass: IposSupplierClass(),
           ),
         ),
         DropdownMenu(
@@ -790,7 +790,7 @@ class _SupplierSalesPerformanceReportPageState
   }
 
   Future fetchCompareData() async {
-    var supplierCodes = (supplierChartFilter['suppliers'] as List<Supplier>)
+    var supplierCodes = (supplierChartFilter['suppliers'] as List<IposSupplier>)
         .map<String>((e) => e.code)
         .toList();
     if (_supplier != null && !supplierCodes.contains(_supplier!.code)) {

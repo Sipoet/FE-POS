@@ -121,12 +121,12 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
               SizedBox(
                 width: 250,
                 height: 45,
-                child: AsyncDropdown<Supplier>(
+                child: AsyncDropdown<IposSupplier>(
                   path: '/suppliers',
                   textOnSelected: (supplier) => supplier.name,
                   textOnSearch: (supplier) =>
                       '${supplier.code} - ${supplier.name}',
-                  modelClass: SupplierClass(),
+                  modelClass: IposSupplierClass(),
                   label: const Text('Suppliers'),
                   onChanged: (supplier) => setState(() {
                     supplierCode = supplier?.code;

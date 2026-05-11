@@ -254,7 +254,7 @@ class _SalesGroupReportPageState extends State<SalesGroupReportPage>
                 ),
                 SizedBox(
                   width: 350,
-                  child: AsyncDropdownMultiple<Supplier>(
+                  child: AsyncDropdownMultiple<IposSupplier>(
                     label: const Text('Supplier :', style: _filterLabelStyle),
                     key: const ValueKey('supplierSelect'),
                     attributeKey: 'nama',
@@ -262,7 +262,7 @@ class _SalesGroupReportPageState extends State<SalesGroupReportPage>
                     textOnSearch: (supplier) =>
                         "${supplier.code} - ${supplier.name}",
                     textOnSelected: (supplier) => supplier.code,
-                    modelClass: SupplierClass(),
+                    modelClass: IposSupplierClass(),
                     onSaved: (value) => _suppliers = value == null
                         ? []
                         : value.map<String>((e) => e.code).toList(),

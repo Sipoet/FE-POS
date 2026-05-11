@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sortable_wrap/flutter_sortable_wrap.dart';
 import 'package:provider/provider.dart';
 export 'package:fe_pos/model/server.dart';
+export 'package:fe_pos/tool/query_data.dart';
 
 class MultipleDropdownController<T> extends ValueNotifier<List<T>> {
   MultipleDropdownController(super.value);
@@ -40,6 +41,8 @@ class MultipleDropdownController<T> extends ValueNotifier<List<T>> {
 
 typedef DropdownText<T> = String Function(T model);
 typedef DropdownValidator<T> = String? Function(List<T>? models);
+typedef RequestRemote<T> =
+    Future<QueryResponse<T>> Function(QueryRequest queryRequest);
 
 class AsyncDropdownMultiple<T extends Model> extends StatefulWidget {
   const AsyncDropdownMultiple({
@@ -83,7 +86,7 @@ class AsyncDropdownMultiple<T extends Model> extends StatefulWidget {
   final DropdownText<T>? textOnSelected;
   final Widget? label;
   final bool Function(T, T)? compareValue;
-  final RequestRemote? request;
+  final RequestRemote<T>? request;
 
   @override
   State<AsyncDropdownMultiple<T>> createState() =>
@@ -121,24 +124,29 @@ class _AsyncDropdownMultipleState<T extends Model>
     super.dispose();
   }
 
-  RequestRemote get request =>
+  RequestRemote<T> get request =>
       widget.request ??
-      ({
-        int page = 1,
-        int limit = 20,
-        String searchText = '',
-        required CancelToken cancelToken,
-      }) {
-        _cancelToken = cancelToken;
-        return server.get(
-          widget.path!,
-          queryParam: {
-            'search_text': searchText,
-            'page[page]': page.toString(),
-            'page[limit]': limit.toString(),
-          },
-          cancelToken: _cancelToken,
-        );
+      (QueryRequest queryRequest) {
+        _cancelToken = queryRequest.cancelToken!;
+        return server
+            .get(
+              widget.path!,
+              queryParam: queryRequest.toQueryParam(),
+              cancelToken: _cancelToken,
+            )
+            .then((response) {
+              if (response.statusCode == 200) {
+                final models = convertToOptions(
+                  response.data['data'],
+                  response.data['included'],
+                );
+                return QueryResponse<T>(
+                  models: models,
+                  metadata: response.data['meta'],
+                );
+              }
+              return QueryResponse<T>(models: []);
+            });
       };
 
   bool compareResult(T a, T b) {
@@ -305,23 +313,14 @@ class _AsyncDropdownMultipleState<T extends Model>
           )
           .then((response) => response.models);
     }
-    return request(
-          page: page,
-          limit: widget.recordLimit,
-          searchText: filter,
-          cancelToken: _cancelToken,
-        )
-        .then((response) {
-          if (response.statusCode == 200) {
-            Map responseBody = response.data;
-            return convertToOptions(
-              responseBody['data'],
-              responseBody['included'] ?? [],
-            );
-          } else {
-            throw 'cant connect to server';
-          }
-        })
+    final QueryRequest queryRequest = QueryRequest(
+      page: page,
+      limit: widget.recordLimit,
+      searchText: filter,
+      cancelToken: _cancelToken,
+    );
+    return request(queryRequest)
+        .then((response) => response.models)
         .onError(
           (error, stackTrace) =>
               defaultErrorResponse(error: error, valueWhenError: []),
@@ -336,14 +335,6 @@ class _AsyncDropdownMultipleState<T extends Model>
         .toList();
   }
 }
-
-typedef RequestRemote =
-    Future Function({
-      int page,
-      int limit,
-      String searchText,
-      required CancelToken cancelToken,
-    });
 
 class AsyncDropdown<T extends Model> extends StatefulWidget {
   const AsyncDropdown({
@@ -366,7 +357,6 @@ class AsyncDropdown<T extends Model> extends StatefulWidget {
     this.textOnSelected,
     this.compareValue,
     required this.modelClass,
-    // required this.converter,
     this.selected,
   });
 
@@ -386,10 +376,9 @@ class AsyncDropdown<T extends Model> extends StatefulWidget {
   final DropdownText<T> textOnSearch;
   final DropdownText<T>? textOnSelected;
   final ModelClass<T> modelClass;
-  // final T Function(Map<String, dynamic>, {List included}) converter;
   final Widget? label;
   final bool Function(T, T)? compareValue;
-  final RequestRemote? request;
+  final RequestRemote<T>? request;
 
   @override
   State<AsyncDropdown<T>> createState() => _AsyncDropdownState<T>();
@@ -419,25 +408,29 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
     super.dispose();
   }
 
-  RequestRemote get request =>
+  RequestRemote<T> get request =>
       widget.request ??
-      ({
-        int page = 1,
-        String searchText = '',
-        int limit = 20,
-        required CancelToken cancelToken,
-      }) {
-        _cancelToken = cancelToken;
-
-        return server.get(
-          widget.path!,
-          queryParam: {
-            'search_text': searchText,
-            'page[page]': page.toString(),
-            'page[limit]': widget.recordLimit.toString(),
-          },
-          cancelToken: cancelToken,
-        );
+      (QueryRequest queryRequest) {
+        _cancelToken = queryRequest.cancelToken!;
+        return server
+            .get(
+              widget.path!,
+              queryParam: queryRequest.toQueryParam(),
+              cancelToken: _cancelToken,
+            )
+            .then((response) {
+              if (response.statusCode == 200) {
+                final models = convertToOptions(
+                  response.data['data'],
+                  response.data['included'],
+                );
+                return QueryResponse<T>(
+                  models: models,
+                  metadata: response.data['meta'],
+                );
+              }
+              return QueryResponse<T>(models: []);
+            });
       };
 
   bool compareResult(T a, T b) {
@@ -524,23 +517,14 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
           )
           .then((response) => response.models);
     }
-    return request(
+    final QueryRequest queryRequest = QueryRequest(
       page: page,
       limit: widget.recordLimit,
       searchText: filter,
       cancelToken: _cancelToken,
-    ).then(
-      (response) {
-        if (response.statusCode == 200) {
-          Map responseBody = response.data;
-          return convertToOptions(
-            responseBody['data'],
-            responseBody['included'] ?? [],
-          );
-        } else {
-          throw 'cant connect to server';
-        }
-      },
+    );
+    return request(queryRequest).then(
+      (response) => response.models,
       onError: (error, stackTrace) {
         defaultErrorResponse(error: error, valueWhenError: []);
         return [];
