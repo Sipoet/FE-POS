@@ -126,7 +126,7 @@ class _ProductCategoryPageState extends State<ProductCategoryPage>
                 fixedLeftColumns: 0,
                 fetchData: fetchProductCategorys,
                 showFilter: true,
-                columns: setting.tableColumn('supplier'),
+                columns: setting.tableColumn('productCategory'),
               ),
             ),
           ],

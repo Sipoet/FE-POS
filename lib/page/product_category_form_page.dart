@@ -26,7 +26,6 @@ class _ProductCategoryFormPageState extends State<ProductCategoryFormPage>
   late ProductCategory productCategory;
   final _formState = GlobalKey<FormState>();
   final Map<int, FocusNode> _focusNodes = {};
-  String _searchValue = '';
   late final Server _server;
   late final TabManager _tabManager;
   final flash = Flash();
@@ -39,6 +38,9 @@ class _ProductCategoryFormPageState extends State<ProductCategoryFormPage>
     super.initState();
     if (!productCategory.isNewRecord) {
       Future.delayed(Duration.zero, () {
+        setState(() {
+          _showForm = false;
+        });
         showLoadingPopup();
         productCategory
             .refresh(_server, include: ['tag_keys', 'tag_key_groups'])
@@ -47,7 +49,12 @@ class _ProductCategoryFormPageState extends State<ProductCategoryFormPage>
                 productCategory.tagKeys;
               }),
             )
-            .whenComplete(hideLoadingPopup);
+            .whenComplete(() {
+              hideLoadingPopup();
+              setState(() {
+                _showForm = true;
+              });
+            });
       });
     }
   }
