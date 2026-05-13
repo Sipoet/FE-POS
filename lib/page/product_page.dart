@@ -59,10 +59,38 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
     _source.refreshTable();
   }
 
+  void deleteRecord(Product product) {
+    showConfirmDialog(
+      message: 'Apakah Yakin Hapus Produk ${product.supplierProductCode}',
+      onSubmit: () {
+        product.destroy(server).then((result) {
+          if (result) {
+            flash.show(
+              Text('Sukses hapus ${product.supplierProductCode}'),
+              .success,
+            );
+            refreshTable();
+          } else {
+            flash.show(
+              Text('Gagal hapus ${product.supplierProductCode}'),
+              .error,
+            );
+          }
+        });
+      },
+    );
+  }
+
   Future<DataTableResponse<Product>> fetchData(QueryRequest request) {
     _source.setShowLoading(true);
     request.searchText = _searchText;
     request.cancelToken = cancelToken;
+    request.include = [
+      'product_category',
+      'supplier',
+      'brand',
+      'stock_account',
+    ];
     request.filters.addAll(_filter);
 
     return ProductClass()
@@ -158,6 +186,10 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
                   IconButton(
                     onPressed: () => openForm(model),
                     icon: Icon(Icons.edit),
+                  ),
+                  IconButton(
+                    onPressed: () => deleteRecord(model),
+                    icon: Icon(Icons.delete),
                   ),
                 ],
               ),

@@ -4,7 +4,7 @@ import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/tag_key.dart';
 import 'package:fe_pos/tool/model_route.dart';
 
-class Tag extends Model {
+class Tag extends Model with SaveNDestroyModel {
   String value;
   TagKey? tagKey;
   Tag({this.value = '', super.id, this.tagKey});
@@ -17,6 +17,8 @@ class Tag extends Model {
     'tagKey': tagKey,
   };
   String? get name => tagKey?.name;
+
+  int? get tagKeyId => tagKey?.id as int?;
 
   Future<TagKey?> getTagKey(server) async {
     if (tagKey?.id == null) {
@@ -36,7 +38,7 @@ class Tag extends Model {
           relation: json['relationships']?['tag_key'],
           included: included,
         ) ??
-        TagKey(id: attributes['tag_key_id'], name: attributes['name']);
+        TagKey(id: attributes['tag_key_id'], name: attributes['name'] ?? '');
   }
 
   @override

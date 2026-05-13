@@ -34,6 +34,7 @@ class _SupplierFormPageState extends State<SupplierFormPage>
     supplier = widget.supplier;
     _setting = context.read<Setting>();
     _server = context.read<Server>();
+    _tabManager = context.read<TabManager>();
     if (!supplier.isNewRecord) {
       Future.delayed(Duration.zero, fetchSupplier);
     }
@@ -90,7 +91,11 @@ class _SupplierFormPageState extends State<SupplierFormPage>
             flash.show(Text('Sukses Simpan'), .success);
             _tabManager.changeTabHeader(widget, 'Edit Supplier ${supplier.id}');
           } else {
-            debugPrint(supplier.errors.join(','));
+            flash.showBanner(
+              messageType: .error,
+              title: 'Gagal Simpan Supplier',
+              description: supplier.errors.join(','),
+            );
           }
         });
   }
@@ -120,8 +125,8 @@ class _SupplierFormPageState extends State<SupplierFormPage>
         for (final contactNumber in supplier.contactNumbers) {
           contactNumber.id = null;
         }
-        for (final contactNumber in supplier.contactNumbers) {
-          contactNumber.id = null;
+        for (final tagging in supplier.taggings) {
+          tagging.id = null;
         }
 
         _tabManager.changeTabHeader(widget, 'Tambah Supplier');
@@ -154,7 +159,7 @@ class _SupplierFormPageState extends State<SupplierFormPage>
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: .all(10),
+        padding: const .all(10),
         child: Form(
           key: _formState,
           autovalidateMode: .onUnfocus,

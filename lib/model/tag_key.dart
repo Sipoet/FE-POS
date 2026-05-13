@@ -66,7 +66,7 @@ class TagKeyGroup extends Model {
     sourceId = attributes['source_id'];
     sourceType = attributes['source_type'];
     tagKey = TagKeyClass().findRelationData(
-      relation: json['relationships']?['tag'],
+      relation: json['relationships']?['tag_key'],
       included: included,
     );
   }

@@ -1,6 +1,4 @@
-import 'package:collection/collection.dart';
-import 'package:fe_pos/model/all_model.dart';
-import 'package:fe_pos/model/server.dart';
+import 'package:fe_pos/model/tag_key.dart';
 import 'package:fe_pos/model/product_category.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
@@ -25,7 +23,6 @@ class _ProductCategoryFormPageState extends State<ProductCategoryFormPage>
     with DefaultResponse, LoadingPopup, HistoryPopup {
   late ProductCategory productCategory;
   final _formState = GlobalKey<FormState>();
-  final Map<int, FocusNode> _focusNodes = {};
   late final Server _server;
   late final TabManager _tabManager;
   final flash = Flash();
@@ -37,26 +34,28 @@ class _ProductCategoryFormPageState extends State<ProductCategoryFormPage>
     _tabManager = context.read<TabManager>();
     super.initState();
     if (!productCategory.isNewRecord) {
-      Future.delayed(Duration.zero, () {
-        setState(() {
-          _showForm = false;
-        });
-        showLoadingPopup();
-        productCategory
-            .refresh(_server, include: ['tag_keys', 'tag_key_groups'])
-            .then(
-              (result) => setState(() {
-                productCategory.tagKeys;
-              }),
-            )
-            .whenComplete(() {
-              hideLoadingPopup();
-              setState(() {
-                _showForm = true;
-              });
-            });
-      });
+      Future.delayed(Duration.zero, fetchProductCategory);
     }
+  }
+
+  void fetchProductCategory() {
+    setState(() {
+      _showForm = false;
+    });
+    showLoadingPopup();
+    productCategory
+        .refresh(_server, include: ['tag_keys', 'tag_key_groups'])
+        .then(
+          (result) => setState(() {
+            productCategory.tagKeys;
+          }),
+        )
+        .whenComplete(() {
+          hideLoadingPopup();
+          setState(() {
+            _showForm = true;
+          });
+        });
   }
 
   void _saveRecord() {
@@ -81,10 +80,14 @@ class _ProductCategoryFormPageState extends State<ProductCategoryFormPage>
             flash.show(Text('Sukses Simpan'), .success);
             _tabManager.changeTabHeader(
               widget,
-              'Edit Kategori Produk ${productCategory.id}',
+              'Edit Kategori Produk ${productCategory.name}',
             );
           } else {
-            debugPrint(productCategory.errors.join(','));
+            flash.showBanner(
+              messageType: .error,
+              title: 'Gagal Simpan Kategori Produk',
+              description: productCategory.errors.join(','),
+            );
           }
         });
   }
@@ -130,19 +133,6 @@ class _ProductCategoryFormPageState extends State<ProductCategoryFormPage>
       setState(() {
         _showForm = true;
       });
-    });
-  }
-
-  void _addTagKey() {
-    final tagKeyGroup = TagKeyGroup();
-    _focusNodes[productCategory.tagKeyGroups.length] = FocusNode();
-    setState(() {
-      productCategory.tagKeyGroups.add(tagKeyGroup);
-      Future.delayed(
-        Duration.zero,
-        () => _focusNodes[productCategory.tagKeyGroups.length - 1]
-            ?.requestFocus(),
-      );
     });
   }
 
@@ -192,6 +182,21 @@ class _ProductCategoryFormPageState extends State<ProductCategoryFormPage>
                             return null;
                           },
                         ),
+                        TextFormField(
+                          initialValue: productCategory.description,
+                          onChanged: (value) =>
+                              productCategory.description = value,
+                          decoration: InputDecoration(
+                            label: Text(
+                              'Deskripsi',
+                              style: DefaultResponse.labelStyle,
+                            ),
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: .multiline,
+                          minLines: 3,
+                          maxLines: 5,
+                        ),
                         AsyncDropdown<ProductCategory>(
                           textOnSearch: (e) => e.name,
                           label: Text('Parent'),
@@ -201,7 +206,8 @@ class _ProductCategoryFormPageState extends State<ProductCategoryFormPage>
                         ),
                         AsyncDropdownMultiple<TagKey>(
                           textOnSearch: (e) => e.name,
-                          label: Text('Kunci Deskripsi'),
+                          label: Text('kolom Deskripsi'),
+                          selectedDisplayLimit: 20,
                           selecteds: productCategory.tagKeys,
                           modelClass: TagKeyClass(),
                           onChanged: (models) =>

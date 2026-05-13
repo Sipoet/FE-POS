@@ -84,7 +84,9 @@ class _NewPurchaseFormPageState extends State<NewPurchaseFormPage> {
                   modelClass: ProductClass(),
                   allowClear: false,
                   selected: purchaseItem.product,
-                  textOnSearch: (model) => model.name,
+                  textOnSelected: (model) => model.supplierProductCode ?? 'TK',
+                  textOnSearch: (model) =>
+                      '${model.supplierProductCode} - ${model.description}',
                   onChanged: (model) => purchaseItem.product = model,
                   isDense: true,
                 ),

@@ -146,20 +146,18 @@ class _DesktopLayoutState extends State<DesktopLayout>
   }
 
   Widget tabViewWidget(TabManager tabManager) => Padding(
-        padding: const EdgeInsets.only(top: 10.0),
-        child: TabbedViewTheme(
-          data:
-              TabbedViewThemeData.classic(colorSet: Colors.grey, fontSize: 16),
-          child: TabbedView(
-            onTabSelection: (tabIndex) =>
-                tabManager.selectedIndex = tabIndex ?? -1,
-            onTabClose: (tabIndex, tabData) {
-              tabManager.goTo(tabIndex - 1);
-            },
-            controller: tabManager.controller,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.only(top: 10.0),
+    child: TabbedViewTheme(
+      data: TabbedViewThemeData.classic(colorSet: Colors.grey, fontSize: 16),
+      child: TabbedView(
+        onTabSelection: (tabIndex) => tabManager.selectedIndex = tabIndex ?? -1,
+        onTabClose: (tabIndex, tabData) {
+          tabManager.goTo(tabIndex - 1);
+        },
+        controller: tabManager.controller,
+      ),
+    ),
+  );
 }
 
 class TopMenuBar extends StatefulWidget {
@@ -182,10 +180,11 @@ class _TopMenuBarState extends State<TopMenuBar> with PlatformChecker {
   @override
   Widget build(BuildContext context) {
     return PlutoMenuBar(
-        height: 35,
-        showBackButton: false,
-        mode: isMobile() ? PlutoMenuBarMode.tap : PlutoMenuBarMode.hover,
-        menus: decorateMenus(widget.menuTree));
+      height: 35,
+      showBackButton: false,
+      mode: isMobile() ? PlutoMenuBarMode.tap : PlutoMenuBarMode.hover,
+      menus: decorateMenus(widget.menuTree),
+    );
   }
 
   List<PlutoMenuItem> decorateMenus(List<Menu> fromMenus) {

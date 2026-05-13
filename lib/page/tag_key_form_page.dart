@@ -69,6 +69,11 @@ class _TagKeyFormPageState extends State<TagKeyFormPage>
             flash.show(Text('Sukses Simpan'), .success);
             _tabManager.changeTabHeader(widget, 'Edit Tag Key ${tagKey.id}');
           } else {
+            flash.showBanner(
+              messageType: .error,
+              title: 'Gagal Simpan Tag Key',
+              description: tagKey.errors.join(','),
+            );
             debugPrint(tagKey.errors.join(','));
           }
         });

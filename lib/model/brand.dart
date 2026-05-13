@@ -17,9 +17,6 @@ class Brand extends Model with SaveNDestroyModel {
   String get modelValue => name;
 
   @override
-  String get id => name;
-
-  @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
     super.setFromJson(json, included: included);

@@ -1,76 +1,111 @@
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/product_category.dart';
-import 'package:fe_pos/model/product_tag.dart';
+import 'package:fe_pos/model/tag.dart';
 import 'package:fe_pos/model/supplier.dart';
+import 'package:fe_pos/model/brand.dart';
 export 'package:fe_pos/model/brand.dart';
 export 'package:fe_pos/model/supplier.dart';
-export 'package:fe_pos/model/product_tag.dart';
+export 'package:fe_pos/model/tag.dart';
+export 'package:fe_pos/model/product_category.dart';
 
 class Product extends Model with SaveNDestroyModel {
   String description;
   String? supplierProductCode;
+  String? brandName;
+  String baseUom;
   ProductCategory? productCategory;
-  String defaultBarcode;
+  bool barcodeUsingBatch;
+  String barcode;
   Brand? brand;
   Supplier? supplier;
   Money sellPrice;
-  List<ProductTag> tags = [];
+  Account? stockAccount;
+  List<Tagging> taggings = [];
 
   Product({
     super.id,
     this.description = '',
     this.supplierProductCode,
-    this.defaultBarcode = '',
+    this.barcode = '',
     this.productCategory,
-    List<ProductTag>? tags,
+    this.brandName,
+    this.baseUom = '',
+    this.stockAccount,
+    this.barcodeUsingBatch = false,
+    List<Tagging>? taggings,
     this.brand,
     this.sellPrice = const Money(0),
     this.supplier,
     super.createdAt,
     super.updatedAt,
-  }) : tags = tags ?? [];
+  }) : taggings = taggings ?? [];
 
   @override
   Map<String, dynamic> toMap() => {
-    'name': name,
     'description': description,
-    'item_type_id': productCategory?.id,
-    'brand_id': brand?.id,
-    'supplier_id': supplier?.id,
+    'product_category_id': productCategory?.id,
     'product_category': productCategory,
+    'brand_id': brand?.id,
+    'barcode_using_batch': barcodeUsingBatch,
+    'brand_name': brand?.id ?? brandName,
     'brand': brand,
-    'default_barcode': defaultBarcode,
+    'supplier_id': supplier?.id,
     'supplier': supplier,
+    'barcode': barcode,
+    'base_uom': baseUom,
     'supplier_product_code': supplierProductCode,
     'sell_price': sellPrice,
+    'stock_account': stockAccount,
+    'stock_account_id': stockAccount?.id,
   };
 
-  @override
-  String get modelName => 'product';
+  List<Tag> get tags =>
+      taggings.where((e) => e.tag != null).map<Tag>((e) => e.tag!).toList();
 
-  String get name => description;
+  void setTags(List<Tag> newTags) {
+    int index = 0;
+    while (newTags.length > index || taggings.length > index) {
+      final tagging = taggings.elementAtOrNull(index);
+      final tag = newTags.elementAtOrNull(index);
+      if (tagging == null) {
+        taggings.add(Tagging(tag: tag));
+      } else if (tag == null) {
+        tagging.flagDestroy();
+      } else {
+        tagging.tag = tag;
+      }
+      index++;
+    }
+  }
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'] ?? {};
     super.setFromJson(json, included: included);
     description = attributes['description'] ?? '';
-    defaultBarcode = attributes['default_barcode'] ?? '';
+    barcode = attributes['barcode'] ?? '';
+    baseUom = attributes['base_uom'] ?? '';
     supplierProductCode = attributes['supplier_product_code'];
+    barcodeUsingBatch = attributes['barcode_using_batch'];
     brand = BrandClass().findRelationData(
       relation: json['relationships']?['brand'],
       included: included,
     );
+    brandName = brand?.name ?? attributes['brand_name'];
     productCategory = ProductCategoryClass().findRelationData(
-      relation: json['relationships']?['item_type'],
+      relation: json['relationships']?['product_category'],
+      included: included,
+    );
+    stockAccount = AccountClass().findRelationData(
+      relation: json['relationships']?['stock_account'],
       included: included,
     );
     supplier = SupplierClass().findRelationData(
       relation: json['relationships']?['supplier'],
       included: included,
     );
-    tags = ProductTagClass().findRelationsData(
-      relation: json['relationships']?['product_tags'],
+    taggings = TaggingClass().findRelationsData(
+      relation: json['relationships']?['taggings'],
       included: included,
     );
   }

@@ -34,70 +34,70 @@ class PurchaseItem extends Model {
   double? numberOfSales;
   String? purchaseType;
   DateTime? transactionDate;
-  PurchaseItem(
-      {Product? product,
-      super.id,
-      this.purchaseCode,
-      String? productId,
-      this.row = 0,
-      this.quantity = 0,
-      this.price = const Money(0),
-      this.uom = '',
-      this.stockLeft = 0.0,
-      this.storeStock = 0.0,
-      this.warehouseStock = 0.0,
-      this.numberOfSales = 0.0,
-      super.createdAt,
-      super.updatedAt,
-      this.itemTypeName,
-      this.brandName,
-      this.supplierCode,
-      this.subtotal = const Money(0),
-      this.discountAmount1 = 0,
-      this.discountPercentage2 = const Percentage(0),
-      this.discountPercentage3 = const Percentage(0),
-      this.discountPercentage4 = const Percentage(0),
-      this.taxAmount = const Money(0),
-      this.total = const Money(0),
-      this.orderQuantity = 0,
-      this.productionCode,
-      this.expiredDate,
-      this.cogs = const Money(0)})
-      : _product = product ?? Product(id: productId);
+  PurchaseItem({
+    Product? product,
+    super.id,
+    this.purchaseCode,
+    String? productId,
+    this.row = 0,
+    this.quantity = 0,
+    this.price = const Money(0),
+    this.uom = '',
+    this.stockLeft = 0.0,
+    this.storeStock = 0.0,
+    this.warehouseStock = 0.0,
+    this.numberOfSales = 0.0,
+    super.createdAt,
+    super.updatedAt,
+    this.itemTypeName,
+    this.brandName,
+    this.supplierCode,
+    this.subtotal = const Money(0),
+    this.discountAmount1 = 0,
+    this.discountPercentage2 = const Percentage(0),
+    this.discountPercentage3 = const Percentage(0),
+    this.discountPercentage4 = const Percentage(0),
+    this.taxAmount = const Money(0),
+    this.total = const Money(0),
+    this.orderQuantity = 0,
+    this.productionCode,
+    this.expiredDate,
+    this.cogs = const Money(0),
+  }) : _product = product ?? Product(id: productId);
 
   @override
   Map<String, dynamic> toMap() => {
-        'product': _product,
-        'product_id': _product.id,
-        'product_name': _product.name,
-        'jumlah': quantity,
-        'nobaris': row,
-        'harga': price,
-        'satuan': uom,
-        'subtotal': subtotal,
-        'potongan': discountAmount1,
-        'potongan2': discountPercentage2,
-        'potongan3': discountPercentage3,
-        'potongan4': discountPercentage4,
-        'pajak': taxAmount,
-        'total': total,
-        'stock_left': stockLeft,
-        'warehouse_stock': warehouseStock,
-        'store_stock': storeStock,
-        'number_of_sales': numberOfSales,
-        'sell_price': sellPrice,
-        'jmlpesan': orderQuantity,
-        'tglexp': expiredDate,
-        'kodeprod': productionCode,
-        'hppdasar': cogs,
-        'notransaksi': purchaseCode,
-        'item.jenis': itemTypeName,
-        'item.supplier1': supplierCode,
-        'item.merek': brandName,
-        'item_type_name': itemTypeName,
-        'supplier_code': supplierCode,
-        'brand_name': brandName,
-      };
+    'product': _product,
+    'product_id': _product.id,
+    'product_name': _product.description,
+    'jumlah': quantity,
+    'nobaris': row,
+    'harga': price,
+    'satuan': uom,
+    'subtotal': subtotal,
+    'potongan': discountAmount1,
+    'potongan2': discountPercentage2,
+    'potongan3': discountPercentage3,
+    'potongan4': discountPercentage4,
+    'pajak': taxAmount,
+    'total': total,
+    'stock_left': stockLeft,
+    'warehouse_stock': warehouseStock,
+    'store_stock': storeStock,
+    'number_of_sales': numberOfSales,
+    'sell_price': sellPrice,
+    'jmlpesan': orderQuantity,
+    'tglexp': expiredDate,
+    'kodeprod': productionCode,
+    'hppdasar': cogs,
+    'notransaksi': purchaseCode,
+    'item.jenis': itemTypeName,
+    'item.supplier1': supplierCode,
+    'item.merek': brandName,
+    'item_type_name': itemTypeName,
+    'supplier_code': supplierCode,
+    'brand_name': brandName,
+  };
 
   Product get product => _product;
   String get productId => _product.id;
@@ -116,7 +116,8 @@ class PurchaseItem extends Model {
 
     super.setFromJson(json, included: included);
     if (included.isNotEmpty) {
-      product = ProductClass().findRelationData(
+      product =
+          ProductClass().findRelationData(
             included: included,
             relation: json['relationships']?['item'],
           ) ??
@@ -170,7 +171,7 @@ class PurchaseItem extends Model {
   }
 
   @override
-  String get modelValue => "$purchaseCode-${product.name}";
+  String get modelValue => "$purchaseCode-${product.description}";
 
   @override
   String? get valueDescription => purchaseTypeName;

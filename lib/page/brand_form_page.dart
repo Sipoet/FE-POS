@@ -56,7 +56,11 @@ class _BrandFormPageState extends State<BrandFormPage>
         flash.show(Text('Sukses Simpan'), .success);
         _tabManager.changeTabHeader(widget, 'Edit Merek ${brand.id}');
       } else {
-        debugPrint(brand.errors.join(','));
+        flash.showBanner(
+          messageType: .error,
+          title: 'Gagal Simpan Merek',
+          description: brand.errors.join(','),
+        );
       }
     });
   }
