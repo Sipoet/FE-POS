@@ -56,7 +56,7 @@ class _CustomerGroupDiscountFormPageState
     if (request != null) {
       return;
     }
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'customer_group_discount',
         'attributes': customerGroupDiscount.asJson(),

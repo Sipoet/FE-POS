@@ -95,7 +95,7 @@ class _ItemReportPageState extends State<ItemReportPage>
     return server.get(
       'item_reports',
       queryParam: param,
-      type: _reportType ?? 'json',
+      responseType: param['report_type'] == 'json' ? .json : .bytes,
     );
   }
 

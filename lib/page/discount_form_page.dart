@@ -274,7 +274,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       return;
     }
     _source?.setShowLoading(true);
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'discount',
         'attributes': discount.asJson(),
@@ -393,7 +393,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   }
 
   void _submit() async {
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'discount',
         'attributes': discount.asJson(),
@@ -459,7 +459,11 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   void downloadDiscountItems() {
     showLoadingPopup();
     server
-        .get('discounts/${discount.id}/download_items', type: 'xlsx')
+        .get(
+          'discounts/${discount.id}/download_items',
+          responseType: .bytes,
+          acceptHeader: .xlsx,
+        )
         .then((response) async {
           if (response.statusCode != 200) {
             flash.showBanner(

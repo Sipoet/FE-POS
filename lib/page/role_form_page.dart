@@ -280,7 +280,7 @@ class _RoleFormPageState extends State<RoleFormPage>
     role.columnAuthorizes = _decodeColumnAuthorize();
     role.accessAuthorizes = _decodeAccessAuhorize();
     final server = context.read<Server>();
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'role',
         'id': role.id,

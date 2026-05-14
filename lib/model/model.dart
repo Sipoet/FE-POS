@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/custom_type.dart';
@@ -123,6 +124,8 @@ abstract class Model with ChangeNotifier {
         json[key] = object.toString();
       } else if (object is String) {
         json[key] = object.trim();
+      } else if (object is File) {
+        json[key] = MultipartFile.fromFileSync(object.path);
       } else if (object is TimeOfDay) {
         json[key] = object.asJson();
       }
@@ -295,6 +298,7 @@ mixin SaveNDestroyModel on Model {
         body: {
           'data': {'type': modelName, 'attributes': attributes},
         },
+        contentType: .multipartForm,
       );
     } else {
       request = server.put(
@@ -302,6 +306,7 @@ mixin SaveNDestroyModel on Model {
         body: {
           'data': {'id': id, 'type': modelName, 'attributes': attributes},
         },
+        contentType: .multipartForm,
       );
     }
     return request.then(

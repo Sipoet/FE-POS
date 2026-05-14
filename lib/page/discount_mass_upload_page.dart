@@ -121,7 +121,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
     fileSaver.downloadRemote(
       path: 'discounts/template_mass_upload_excel',
       server: _server,
-      extFile: 'xlsx',
+      acceptHeader: .xlsx,
     );
   }
 
@@ -134,7 +134,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
   }
 
   Future createOrUpdateDiscount(Discount discount, int index) async {
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'discount',
         'attributes': discount.asJson(),
@@ -154,7 +154,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
       },
     };
     debugPrint(body.toString());
-    dynamic request;
+    Response request;
     if (discount.id == null) {
       request = await _server.post('discounts', body: body);
     } else {

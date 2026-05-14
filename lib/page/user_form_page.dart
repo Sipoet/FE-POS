@@ -81,7 +81,7 @@ class _UserFormPageState extends State<UserFormPage>
   }
 
   void _submit() async {
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {'type': 'user', 'id': user.id, 'attributes': user.asJson()},
     };
     Future request;

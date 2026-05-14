@@ -57,7 +57,7 @@ class _BookPayslipLineFormPageState extends State<BookPayslipLineFormPage>
     } else {
       return;
     }
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'book_payslip_line',
         'attributes': bookPayslipLine.asJson(),

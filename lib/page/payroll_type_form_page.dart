@@ -39,7 +39,7 @@ class _PayrollTypeFormPageState extends State<PayrollTypeFormPage>
 
   void _submit() async {
     final server = context.read<Server>();
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'payrollType',
         'id': payrollType.id,

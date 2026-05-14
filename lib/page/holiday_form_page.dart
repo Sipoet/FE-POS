@@ -50,7 +50,7 @@ class _HolidayFormPageState extends State<HolidayFormPage>
     if (request != null) {
       return;
     }
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {'type': 'holiday', 'attributes': holiday.asJson()},
     };
 

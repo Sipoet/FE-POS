@@ -62,14 +62,14 @@ class FileSaver with PlatformChecker {
     String? url,
     required Server server,
     String? filename,
-    required String extFile,
+    required ContentType acceptHeader,
     bool chooseFile = true,
     void Function(int, int)? onReceiveProgress,
   }) async {
     Uint8List? bytes = await server.download(
       path: path,
       url: url,
-      type: extFile,
+      acceptHeader: acceptHeader,
       onSuccess: (response) {
         String headerFilename =
             response.headers.value('content-disposition') ?? '';
@@ -78,7 +78,7 @@ class FileSaver with PlatformChecker {
         }
         headerFilename = headerFilename.substring(
           headerFilename.indexOf('filename="') + 10,
-          headerFilename.indexOf('$extFile";') + 4,
+          headerFilename.indexOf('${acceptHeader.extName}";') + 4,
         );
         filename ??= headerFilename;
       },
@@ -89,8 +89,8 @@ class FileSaver with PlatformChecker {
     }
     if (chooseFile) {
       String? outputFile = await pickPath(
-        filename: filename ?? 'file.$extFile',
-        extFile: extFile,
+        filename: filename ?? 'file.${acceptHeader.extName}',
+        extFile: acceptHeader.extName ?? '.txt',
         bytes: bytes,
       );
       if (outputFile == null) {

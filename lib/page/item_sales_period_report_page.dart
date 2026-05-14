@@ -81,7 +81,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
         if (page != null) 'page': page.toString(),
         if (per != null) 'per': per.toString(),
       },
-      type: _reportType ?? 'json',
+      responseType: _reportType == 'json' ? .json : .bytes,
     );
   }
 

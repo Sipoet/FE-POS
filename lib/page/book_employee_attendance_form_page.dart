@@ -61,7 +61,7 @@ class _BookEmployeeAttendanceFormPageState
   Future<BookEmployeeAttendance?> createOrUpdateRecord(
     BookEmployeeAttendance record,
   ) {
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'book_employee_attendance',
         'attributes': record.asJson(),

@@ -75,7 +75,7 @@ class _PaymentProviderFormPageState extends State<PaymentProviderFormPage>
 
   void _submit() async {
     final server = context.read<Server>();
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'payment_provider',
         'attributes': paymentProvider.asJson(),

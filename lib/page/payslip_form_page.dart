@@ -77,7 +77,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
 
   void _submit() async {
     final server = context.read<Server>();
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'payslip',
         'attributes': payslip.asJson(),

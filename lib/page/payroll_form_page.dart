@@ -87,7 +87,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
     for (final (int index, PayrollLine payrollLine) in payroll.lines.indexed) {
       payrollLine.row = index + 1;
     }
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'payroll',
         'attributes': payroll.asJson(),

@@ -90,7 +90,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     if (request != null) {
       return;
     }
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'employee',
         'attributes': employee.asJson(),
@@ -205,7 +205,8 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
   void loadImage(String imageCode) async {
     final response = await _server.get(
       'assets/$imageCode',
-      responseType: 'file',
+      responseType: .bytes,
+      acceptHeader: .image,
     );
     if (response.statusCode == 200) {
       setState(() {

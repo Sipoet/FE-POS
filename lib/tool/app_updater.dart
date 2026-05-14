@@ -159,13 +159,12 @@ mixin AppUpdater<T extends StatefulWidget> on State<T>
   ) {
     const fileSaver = FileSaver();
     final path = _downloadPath[platform];
-    final extFile = path.split('.').last;
     DartPluginRegistrant.ensureInitialized();
     return fileSaver.downloadRemote(
       url: path,
       server: server,
       filename: path.split('/').last,
-      extFile: extFile,
+      acceptHeader: platform == .android ? .androidApp : .windowsApp,
       chooseFile: false,
       onReceiveProgress: (actualBytes, int totalBytes) {
         final progress = (actualBytes / totalBytes * 100).floor().toString();

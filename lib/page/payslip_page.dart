@@ -195,34 +195,37 @@ class _PayslipPageState extends State<PayslipPage>
   }
 
   void download(Payslip payslip) async {
-    server.get('payslips/${payslip.id.toString()}/download', type: 'file').then(
-      (response) async {
-        String filename = response.headers.value('content-disposition') ?? '';
-        if (filename.isEmpty) {
-          return;
-        }
-        filename = filename.substring(
-          filename.indexOf('filename="') + 10,
-          filename.indexOf('pdf";') + 3,
-        );
+    server
+        .get(
+          'payslips/${payslip.id.toString()}/download',
+          responseType: .bytes,
+          acceptHeader: .pdf,
+        )
+        .then((response) async {
+          String filename = response.headers.value('content-disposition') ?? '';
+          if (filename.isEmpty) {
+            return;
+          }
+          filename = filename.substring(
+            filename.indexOf('filename="') + 10,
+            filename.indexOf('pdf";') + 3,
+          );
 
-        var downloader = const FileSaver();
-        downloader.download(
-          filename,
-          response.data,
-          'pdf',
-          onSuccess: (String path) {
-            flash.showBanner(
-              messageType: ToastificationType.success,
-              title: 'Sukses download',
-              duration: Durations.short1,
-              description: 'sukses disimpan di $path',
-            );
-          },
-        );
-      },
-      onError: (error) => defaultErrorResponse(error: error),
-    );
+          var downloader = const FileSaver();
+          downloader.download(
+            filename,
+            response.data,
+            'pdf',
+            onSuccess: (String path) {
+              flash.showBanner(
+                messageType: ToastificationType.success,
+                title: 'Sukses download',
+                duration: Durations.short1,
+                description: 'sukses disimpan di $path',
+              );
+            },
+          );
+        }, onError: (error) => defaultErrorResponse(error: error));
   }
 
   void sendEmail(Payslip payslip) {

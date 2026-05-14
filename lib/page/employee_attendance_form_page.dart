@@ -190,7 +190,7 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
   }
 
   void _submit() {
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'employee_attendance',
         'id': employeeAttendance.id,

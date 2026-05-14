@@ -202,7 +202,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
       param['filter[supplier_code][eq]'] = supplierCode;
     }
     _server
-        .get('item_reports', queryParam: param, type: 'json')
+        .get('item_reports', queryParam: param)
         .then(
           (response) {
             if (response.statusCode == 200) {

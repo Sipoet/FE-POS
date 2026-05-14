@@ -53,7 +53,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
     showLoadingPopup();
     tableStateManager?.removeAllRows();
     final tabManager = context.read<TabManager>();
-    fetchData('json')
+    fetchData(.json)
         .then((response) {
           if (response.statusCode == 200) {
             final json = response.data;
@@ -97,7 +97,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
     super.dispose();
   }
 
-  Future fetchData(String responseType) {
+  Future fetchData(ResponseType responseType) {
     final server = context.read<Server>();
     return server.get(
       'payslips/report',
@@ -110,12 +110,13 @@ class _PayslipReportPageState extends State<PayslipReportPage>
       },
       cancelToken: cancelToken,
       responseType: responseType,
+      acceptHeader: responseType == .json ? .json : .xlsx,
     );
   }
 
   void download() {
     flash.hide();
-    fetchData('xlsx').then((response) {
+    fetchData(.bytes).then((response) {
       if (response.statusCode == 200) {
         const fileSaver = FileSaver();
         String filename = (response.headers.value('content-disposition') ?? '');

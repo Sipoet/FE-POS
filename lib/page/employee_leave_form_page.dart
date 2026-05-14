@@ -122,7 +122,7 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
   }
 
   Future<EmployeeLeave?> _save(empLeave) {
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'employee_leave',
         'id': empLeave.id,

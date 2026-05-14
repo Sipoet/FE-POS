@@ -63,7 +63,7 @@ mixin SessionState<T extends StatefulWidget> on State<T>
           (response) {
             try {
               if (response.statusCode == 200) {
-                server.jwt = response.headers.value('Authorization');
+                server.jwt = response.headers.value('Authorization') ?? '';
                 server.userName = username;
 
                 saveSession(server);

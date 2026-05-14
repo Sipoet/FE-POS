@@ -146,7 +146,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
     };
     return server.get(
       'payrolls/report',
-      responseType: reportType,
+      responseType: reportType == 'json' ? .json : .bytes,
       queryParam: params,
     );
   }
