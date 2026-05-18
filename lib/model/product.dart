@@ -1,8 +1,12 @@
+import 'package:collection/collection.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/product_category.dart';
+
 import 'package:fe_pos/model/tag.dart';
 import 'package:fe_pos/model/supplier.dart';
 import 'package:fe_pos/model/brand.dart';
+import 'package:fe_pos/tool/image_model.dart';
+
 export 'package:fe_pos/model/brand.dart';
 export 'package:fe_pos/model/supplier.dart';
 export 'package:fe_pos/model/tag.dart';
@@ -21,6 +25,8 @@ class Product extends Model with SaveNDestroyModel {
   Money sellPrice;
   Account? stockAccount;
   List<Tagging> taggings = [];
+  List<ImageModel> images = [];
+  ImageModel? defaultImage;
 
   Product({
     super.id,
@@ -31,6 +37,7 @@ class Product extends Model with SaveNDestroyModel {
     this.brandName,
     this.baseUom = '',
     this.stockAccount,
+    this.defaultImage,
     this.barcodeUsingBatch = false,
     List<Tagging>? taggings,
     this.brand,
@@ -49,6 +56,8 @@ class Product extends Model with SaveNDestroyModel {
     'barcode_using_batch': barcodeUsingBatch,
     'brand_name': brand?.id ?? brandName,
     'brand': brand,
+    'images': images,
+    'image': defaultImage,
     'supplier_id': supplier?.id,
     'supplier': supplier,
     'barcode': barcode,
@@ -58,6 +67,9 @@ class Product extends Model with SaveNDestroyModel {
     'stock_account': stockAccount,
     'stock_account_id': stockAccount?.id,
   };
+
+  List<ImageModel> get markedDestroyedImages =>
+      images.where((image) => image.isDestroyed).toList();
 
   List<Tag> get tags =>
       taggings.where((e) => e.tag != null).map<Tag>((e) => e.tag!).toList();
@@ -108,6 +120,16 @@ class Product extends Model with SaveNDestroyModel {
       relation: json['relationships']?['taggings'],
       included: included,
     );
+    images = ImageModelClass().findRelationsData(
+      relation: json['relationships']?['images'],
+      included: included,
+    );
+    defaultImage = attributes['image'] == null
+        ? null
+        : ImageModelClass().fromJson(
+            attributes['image']?['data'],
+            included: included,
+          );
   }
 
   @override

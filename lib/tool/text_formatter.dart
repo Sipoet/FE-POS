@@ -214,14 +214,18 @@ class CustomNumberInputFormatter extends TextInputFormatter {
   }
 
   String _formatDate(String text) {
-    if (text.length < 8)
+    if (text.length < 8) {
       return _formatWithGroups(text, [2, 2, text.length - 4]);
+    }
+
     return _formatWithGroups(text, _groupingSizes[FormatType.date]!);
   }
 
   String _formatTime(String text) {
-    if (text.length < 6)
+    if (text.length < 6) {
       return _formatWithGroups(text, [2, 2, text.length - 4]);
+    }
+
     return _formatWithGroups(text, _groupingSizes[FormatType.time]!);
   }
 

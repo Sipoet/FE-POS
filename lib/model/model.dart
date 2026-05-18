@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/custom_type.dart';
+import 'package:fe_pos/tool/image_model.dart';
 import 'package:fe_pos/tool/query_data.dart';
 import 'package:flutter/material.dart';
 export 'package:fe_pos/tool/custom_type.dart';
@@ -110,27 +111,40 @@ abstract class Model with ChangeNotifier {
   String toJson() => jsonEncoder.convert(asJson());
 
   Map<String, dynamic> asJson() {
-    var json = asMap();
-    json.forEach((key, object) {
-      if (object is Money) {
-        json[key] = object.value;
-      } else if (object is Percentage) {
-        json[key] = object.value * 100;
-      } else if (object is Date) {
-        json[key] = object.toIso8601String();
-      } else if (object is DateTime) {
-        json[key] = object.toUtc().toIso8601String();
-      } else if (object is Enum) {
-        json[key] = object.toString();
-      } else if (object is String) {
-        json[key] = object.trim();
-      } else if (object is File) {
-        json[key] = MultipartFile.fromFileSync(object.path);
-      } else if (object is TimeOfDay) {
-        json[key] = object.asJson();
-      }
-    });
+    Map<String, dynamic> json = asMap();
+    for (String key in json.keys.toList()) {
+      var object = json[key];
+      json[key] = convert(object);
+    }
     return json;
+  }
+
+  dynamic convert(Object? object, {List<String> parentKey = const []}) {
+    if (object is Money) {
+      return object.value;
+    } else if (object is Percentage) {
+      return object.value * 100;
+    } else if (object is Date) {
+      return object.toIso8601String();
+    } else if (object is DateTime) {
+      return object.toUtc().toIso8601String();
+    } else if (object is Enum) {
+      return object.toString();
+    } else if (object is String) {
+      return object.trim();
+    } else if (object is Model) {
+      return object.id;
+    } else if (object is File) {
+      return MultipartFile.fromFileSync(object.path);
+    } else if (object is ImageModel) {
+      return object.asMapData();
+    } else if (object is TimeOfDay) {
+      return object.asJson();
+    } else if (object is Iterable) {
+      return object.map((e) => convert(e)).toList();
+    } else {
+      return object;
+    }
   }
 
   Map<String, dynamic> toMap();
@@ -283,31 +297,123 @@ abstract class ModelClass<T extends Model> {
 }
 
 mixin SaveNDestroyModel on Model {
+  void asFormData({
+    required FormData formData,
+    required Map<String, dynamic> data,
+    List<String> parentKey = const [],
+  }) {
+    for (String key in data.keys.toList()) {
+      var object = data[key];
+      String formKey = formDataKey(parentKey + [key]);
+      if (object == null) {
+        formData.fields.add(MapEntry(formKey, ''));
+      } else if (object is Money) {
+        formData.fields.add(MapEntry(formKey, object.value.toString()));
+      } else if (object is Percentage) {
+        double value = object.value * 100;
+        formData.fields.add(MapEntry(formKey, value.toString()));
+      } else if (object is Date) {
+        formData.fields.add(MapEntry(formKey, object.toIso8601String()));
+      } else if (object is DateTime) {
+        formData.fields.add(
+          MapEntry(formKey, object.toUtc().toIso8601String()),
+        );
+      } else if (object is Enum) {
+        object.toString();
+        formData.fields.add(MapEntry(formKey, object.toString()));
+      } else if (object is String) {
+        formData.fields.add(MapEntry(formKey, object.trim()));
+      } else if (object is Model) {
+        formData.fields.add(MapEntry(formKey, object.id.toString()));
+      } else if (object is File) {
+        formData.files.add(
+          MapEntry(formKey, MultipartFile.fromFileSync(object.path)),
+        );
+      } else if (object is ImageModel) {
+        final value = object.asMapData();
+        if (value is MultipartFile) {
+          formData.files.add(MapEntry(formKey, value));
+        } else if (object is Map) {
+          formData.fields.add(MapEntry(formKey, value.toString()));
+        } else {
+          formData.fields.add(MapEntry(formKey, ''));
+        }
+      } else if (object is TimeOfDay) {
+        formData.fields.add(MapEntry(formKey, object.asJson()));
+      } else if (object is List || object is Set) {
+        for (var row in object) {
+          if (row is MultipartFile) {
+            formData.files.add(MapEntry("$formKey[]", row));
+          } else if (row is Map<String, dynamic>) {
+            asFormData(
+              data: row,
+              formData: formData,
+              parentKey: parentKey + [key, ''],
+            );
+          } else {
+            asFormData(
+              data: {'': row},
+              formData: formData,
+              parentKey: parentKey + [key],
+            );
+          }
+        }
+      } else {
+        formData.fields.add(MapEntry(formKey, object.toString()));
+      }
+    }
+  }
+
+  String formDataKey(List<String> keys) {
+    String newKeys = keys.first;
+    if (keys.length == 1) {
+      return newKeys;
+    }
+    for (var key in keys.sublist(1, keys.length)) {
+      newKeys += '[$key]';
+    }
+    return newKeys;
+  }
+
   Future<bool> save(
     Server server, {
     Map<String, dynamic>? includeAttributes,
+    HttpContentType contentType = .json,
   }) async {
     Future request;
+    dynamic body;
     Map<String, dynamic> attributes = asJson();
     if (includeAttributes != null) {
       attributes.addAll(includeAttributes);
     }
+
     if (isNewRecord) {
-      request = server.post(
-        path,
-        body: {
+      if (contentType == .json) {
+        body = {
           'data': {'type': modelName, 'attributes': attributes},
-        },
-        contentType: .multipartForm,
-      );
+        };
+      } else {
+        body = FormData();
+        asFormData(formData: body, data: attributes, parentKey: ['data']);
+        body.fields.add(MapEntry('data[type]', modelName));
+      }
+      request = server.post(path, body: body, contentType: contentType);
     } else {
-      request = server.put(
-        "$path/$id",
-        body: {
+      if (contentType == .json) {
+        body = {
           'data': {'id': id, 'type': modelName, 'attributes': attributes},
-        },
-        contentType: .multipartForm,
-      );
+        };
+      } else {
+        body = FormData();
+        asFormData(
+          formData: body,
+          data: attributes,
+          parentKey: ['data', 'attributes'],
+        );
+        body.fields.add(MapEntry('data[type]', modelName));
+        body.fields.add(MapEntry('data[id]', id.toString()));
+      }
+      request = server.put("$path/$id", body: body, contentType: contentType);
     }
     return request.then(
       (response) {

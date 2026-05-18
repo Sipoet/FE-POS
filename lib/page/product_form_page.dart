@@ -6,6 +6,8 @@ import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:fe_pos/widget/image_carousel.dart';
+import 'package:fe_pos/widget/image_form_field.dart';
 import 'package:fe_pos/widget/table_form.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
@@ -64,6 +66,7 @@ class _ProductFormPageState extends State<ProductFormPage>
             'supplier',
             'brand',
             'stock_account',
+            'images',
           ],
         )
         .then((result) {
@@ -94,6 +97,7 @@ class _ProductFormPageState extends State<ProductFormPage>
     product
         .save(
           _server,
+          contentType: .multipartForm,
           includeAttributes: {
             'taggings_attributes': product.taggings
                 .map((e) => e.asJson())
@@ -103,7 +107,7 @@ class _ProductFormPageState extends State<ProductFormPage>
         .then((result) {
           if (result) {
             setState(() {
-              product;
+              product.images;
             });
             flash.show(Text('Sukses Simpan'), .success);
             _tabManager.changeTabHeader(widget, 'Edit Supplier ${product.id}');
@@ -203,6 +207,33 @@ class _ProductFormPageState extends State<ProductFormPage>
                           runSpacing: 10,
                           spacing: 10,
                           children: [
+                            ImageCarousel(
+                              images: product.images,
+                              allowClear: true,
+                              onRemoved: (image) => setState(() {
+                                if (image.isAttached) {
+                                  image.flagDestroy();
+                                  product.images;
+                                } else {
+                                  product.images.remove(image);
+                                }
+                              }),
+                            ),
+                            Visibility(
+                              visible: !product.isNewRecord,
+                              child: SizedBox(
+                                width: 200,
+                                height: 200,
+                                child: ImageFormField(
+                                  maxFiles: 5,
+                                  onChanged: (images) {
+                                    setState(() {
+                                      product.images.addAll(images);
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
                             SizedBox(
                               width: 250,
                               child: TextFormField(
@@ -790,145 +821,6 @@ class _ProductFormPageState extends State<ProductFormPage>
         });
       }
     });
-  }
-
-  TableRow renderRowTag(ProductTag productTag) {
-    return TableRow(
-      key: ObjectKey(productTag),
-      children: [
-        TableCell(
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: AsyncDropdown<TagKey>(
-              validator: (model) {
-                if (model == null) {
-                  return 'harus diisi';
-                }
-                return null;
-              },
-              onChanged: (tagKey) {
-                productTag.tagKey = tagKey;
-                if (productTag.tag?.tagKeyId != tagKey?.id) {
-                  setState(() {
-                    productTag.isNewTag = true;
-                    productTag.tag = null;
-                  });
-                  Future.delayed(Durations.short1, () {
-                    setState(() {
-                      productTag.isNewTag = false;
-                    });
-                  });
-                }
-              },
-              textOnSearch: (model) => model.name,
-              isDense: true,
-              allowClear: false,
-              selected: productTag.tagKey,
-              modelClass: TagKeyClass(),
-            ),
-          ),
-        ),
-        TableCell(
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Visibility(
-              visible: productTag.isNewTag,
-              replacement: Row(
-                spacing: 20,
-                children: [
-                  Expanded(
-                    child: AsyncDropdown<Tag>(
-                      selected: productTag.tag,
-                      allowClear: false,
-                      validator: (model) {
-                        if (model == null) {
-                          return 'harus diisi';
-                        }
-                        return null;
-                      },
-                      textOnSearch: (model) => model.value,
-                      modelClass: TagClass(),
-                      request: (queryRequest) {
-                        queryRequest.filters.add(
-                          ComparisonFilterData(
-                            key: 'tag_key_id',
-                            value: productTag.tagKeyId,
-                          ),
-                        );
-                        return TagClass().finds(_server, queryRequest);
-                      },
-                      isDense: true,
-                      onChanged: (tag) => productTag.tag = tag,
-                    ),
-                  ),
-                  Visibility(
-                    visible: productTag.tagKey != null,
-                    child: ElevatedButton(
-                      onPressed: () => setState(() {
-                        productTag.isNewTag = !productTag.isNewTag;
-                      }),
-                      child: Text('Tag baru'),
-                    ),
-                  ),
-                ],
-              ),
-              child: Row(
-                spacing: 20,
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      inputFormatters: [
-                        FilteringTextInputFormatter.singleLineFormatter,
-                        FilteringTextInputFormatter.allow(
-                          RegExp(r'[A-Za-z0-9\s]'),
-                        ),
-                      ],
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'harus diisi';
-                        }
-                        return null;
-                      },
-                      forceErrorText: productTag.tag?.errors.isEmpty == true
-                          ? null
-                          : productTag.tag?.errors.join(','),
-                      onChanged: (value) {
-                        productTag.newTagValue = value;
-                      },
-                      decoration: InputDecoration(
-                        isDense: true,
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => _createTag(productTag),
-                    icon: Icon(Icons.check),
-                  ),
-                  IconButton(
-                    onPressed: () => setState(() {
-                      productTag.isNewTag = false;
-                    }),
-                    icon: Icon(Icons.cancel),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        TableCell(
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: IconButton(
-              onPressed: () => setState(() {
-                productTags.remove(productTag);
-              }),
-              icon: Icon(Icons.delete),
-            ),
-          ),
-        ),
-      ],
-    );
   }
 }
 

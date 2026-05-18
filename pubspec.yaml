@@ -67,6 +67,8 @@ dependencies:
   url_launcher: ^6.3.2
   phosphor_flutter: ^2.1.0
   path: ^1.9.1
+  super_drag_and_drop: ^0.9.1
+  uuid: ^4.5.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

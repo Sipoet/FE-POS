@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fe_pos/model/discount.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/file_saver.dart';

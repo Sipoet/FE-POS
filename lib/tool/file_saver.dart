@@ -62,7 +62,7 @@ class FileSaver with PlatformChecker {
     String? url,
     required Server server,
     String? filename,
-    required ContentType acceptHeader,
+    required HttpContentType acceptHeader,
     bool chooseFile = true,
     void Function(int, int)? onReceiveProgress,
   }) async {

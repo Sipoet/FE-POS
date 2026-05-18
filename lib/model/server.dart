@@ -5,6 +5,8 @@ import 'package:dio/io.dart';
 import 'package:dio/dio.dart';
 import 'package:fe_pos/page/loading_page.dart';
 export 'package:dio/dio.dart';
+export 'package:dio/io.dart';
+export 'dart:io';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -112,16 +114,16 @@ class Server extends ChangeNotifier {
 
   Future<Response> post(
     String path, {
-    Map<String, dynamic> body = const {},
-    ContentType contentType = .json,
+    Object? body,
+    HttpContentType contentType = .json,
     ResponseType responseType = .json,
-    ContentType? acceptHeader,
+    HttpContentType? acceptHeader,
     CancelToken? cancelToken,
   }) async {
     Uri url = generateUrl(path, {});
     return dio.postUri(
       url,
-      data: contentType == .multipartForm ? FormData.fromMap(body) : body,
+      data: body,
       cancelToken: cancelToken,
       options: generateHeaders(
         contentType,
@@ -134,9 +136,9 @@ class Server extends ChangeNotifier {
   Future<Response> get(
     String path, {
     Map<String, dynamic> queryParam = const {},
-    ContentType contentType = .json,
+    HttpContentType contentType = .json,
     ResponseType responseType = .json,
-    ContentType? acceptHeader,
+    HttpContentType? acceptHeader,
     CancelToken? cancelToken,
   }) async {
     Uri url = generateUrl(path, queryParam);
@@ -153,16 +155,16 @@ class Server extends ChangeNotifier {
 
   Future<Response> put(
     String path, {
-    Map<String, dynamic> body = const {},
-    ContentType contentType = .json,
+    Object? body,
+    HttpContentType contentType = .json,
     ResponseType responseType = .json,
-    ContentType? acceptHeader,
+    HttpContentType? acceptHeader,
     CancelToken? cancelToken,
   }) async {
     Uri url = generateUrl(path, {});
     return dio.putUri(
       url,
-      data: contentType == .multipartForm ? FormData.fromMap(body) : body,
+      data: body,
       cancelToken: cancelToken,
       options: generateHeaders(
         contentType,
@@ -175,7 +177,7 @@ class Server extends ChangeNotifier {
   Future delete(
     String path, {
     Map body = const {},
-    ContentType contentType = .json,
+    HttpContentType contentType = .json,
     CancelToken? cancelToken,
   }) async {
     Uri url = generateUrl(path, {});
@@ -191,7 +193,7 @@ class Server extends ChangeNotifier {
     String? url,
     String? path,
     ResponseType responseType = .bytes,
-    required ContentType acceptHeader,
+    required HttpContentType acceptHeader,
     void Function(int, int)? onReceiveProgress,
     void Function(Response)? onSuccess,
   }) {
@@ -225,9 +227,9 @@ class Server extends ChangeNotifier {
   }
 
   Options generateHeaders(
-    ContentType contentType,
+    HttpContentType contentType,
     ResponseType responseType, {
-    ContentType? acceptHeader,
+    HttpContentType? acceptHeader,
   }) {
     return Options(
       headers: {
@@ -262,7 +264,7 @@ class Server extends ChangeNotifier {
   }
 }
 
-enum ContentType {
+enum HttpContentType {
   json,
   multipartForm,
   xlsx,
@@ -271,6 +273,9 @@ enum ContentType {
   windowsApp,
   androidApp,
   image,
+  jpg,
+  png,
+  bmp,
   binary;
 
   @override
@@ -288,12 +293,49 @@ enum ContentType {
         return 'text/plain';
       case image:
         return 'image/*';
+      case jpg:
+        return 'image/jpeg';
+      case png:
+        return 'image/png';
+      case bmp:
+        return 'image/bmp';
       case androidApp:
         return 'application/vnd.android.package-archive';
       case windowsApp:
         return 'application/vnd.microsoft.portable-executable';
       case binary:
         return 'application/octet-stream';
+    }
+  }
+
+  static HttpContentType fromString(String? value) {
+    switch (value) {
+      case 'application/json':
+        return json;
+      case 'multipart/form-data':
+        return multipartForm;
+      case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+        return xlsx;
+      case 'application/pdf':
+        return pdf;
+      case 'text/plain':
+        return plain;
+      case 'image/*':
+        return image;
+      case 'image/jpeg':
+        return jpg;
+      case 'image/png':
+        return png;
+      case 'image/bmp':
+        return bmp;
+      case 'application/vnd.android.package-archive':
+        return androidApp;
+      case 'application/vnd.microsoft.portable-executable':
+        return windowsApp;
+      case 'application/octet-stream':
+        return binary;
+      default:
+        throw 'not on the list';
     }
   }
 
@@ -307,8 +349,12 @@ enum ContentType {
         return 'pdf';
       case plain:
         return 'txt';
-      case image:
+      case jpg:
+        return 'jpg';
+      case png:
         return 'png';
+      case bmp:
+        return 'bmp';
       case androidApp:
         return 'apk';
       case windowsApp:
