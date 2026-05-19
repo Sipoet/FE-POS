@@ -104,6 +104,8 @@ class Product extends Model with SaveNDestroyModel {
       relation: json['relationships']?['brand'],
       included: included,
     );
+    sellPrice =
+        Money.tryParse(attributes['sell_price'] ?? '0') ?? const Money(0);
     brandName = brand?.name ?? attributes['brand_name'];
     productCategory = ProductCategoryClass().findRelationData(
       relation: json['relationships']?['product_category'],

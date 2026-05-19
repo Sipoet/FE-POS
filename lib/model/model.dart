@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/custom_type.dart';

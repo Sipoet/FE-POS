@@ -1,19 +1,16 @@
 import 'package:fe_pos/model/supplier.dart';
-export 'package:fe_pos/model/supplier.dart';
-import 'package:fe_pos/model/purchase_item.dart';
-export 'package:fe_pos/model/purchase_item.dart';
+import 'package:fe_pos/model/ipos/purchase_order_item.dart';
+export 'package:fe_pos/model/ipos/purchase_order_item.dart';
 import 'package:fe_pos/model/model.dart';
-import 'package:fe_pos/model/ipos/purchase_order.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-class PurchaseHeader extends Model with SaveNDestroyModel {
+class IposPurchaseOrder extends Model {
   String code;
-  String? orderCode;
+  String? purchaseCode;
   String userName;
-  IposPurchaseOrder? purchaseOrder;
-  List<PurchaseItem> purchaseItems;
+  List<IposPurchaseOrderItem> purchaseItems;
   DateTime datetime;
-  DateTime? noteDate;
+  DateTime? deliveredDate;
   String description;
   double totalItem;
   Money subtotal;
@@ -32,14 +29,13 @@ class PurchaseHeader extends Model with SaveNDestroyModel {
   String destLocation;
   String supplierCode;
   Supplier supplier;
-  PurchaseHeader({
+  IposPurchaseOrder({
     this.userName = '',
     this.description = '',
     this.totalItem = 0,
     this.code = '',
     this.supplierCode = '',
-    this.orderCode,
-    this.noteDate,
+    this.purchaseCode,
     this.subtotal = const Money(0),
     this.grandtotal = const Money(0),
     this.discountAmount = const Money(0),
@@ -54,25 +50,25 @@ class PurchaseHeader extends Model with SaveNDestroyModel {
     this.destLocation = '',
     this.bankCode,
     this.taxType = '',
+    Supplier? supplier,
     super.id,
     super.createdAt,
     super.updatedAt,
-    Supplier? supplier,
     DateTime? datetime,
-    List<PurchaseItem>? purchaseItems,
-  }) : purchaseItems = purchaseItems ?? <PurchaseItem>[],
-       supplier = supplier ?? Supplier(),
-       datetime = datetime ?? DateTime.now();
+    this.deliveredDate,
+    List<IposPurchaseOrderItem>? purchaseItems,
+  }) : purchaseItems = purchaseItems ?? <IposPurchaseOrderItem>[],
+       datetime = datetime ?? DateTime.now(),
+       supplier = supplier ?? Supplier();
 
   @override
   Map<String, dynamic> toMap() => {
     'user1': userName,
     'tanggal': datetime,
-    'supplier': supplier,
-    'note_date': noteDate,
     'keterangan': description,
     'totalitem': totalItem,
     'subtotal': subtotal,
+    'supplier': supplier,
     'totalakhir': grandtotal,
     'potnomfaktur': discountAmount,
     'biayalain': otherCost,
@@ -81,22 +77,22 @@ class PurchaseHeader extends Model with SaveNDestroyModel {
     'jmlkk': creditCardAmount,
     'jmlemoney': emoneyAmount,
     'payment_type': paymentMethodType,
-    'purchase_order': purchaseOrder,
     'ppn': taxType,
     'pajak': taxAmount,
     'bank_code': bankCode,
     'notransaksi': code,
-    'notrsorder': orderCode,
+    'notrsorder': purchaseCode,
     'kodekantor': location,
     'kantortujuan': destLocation,
     'kodesupel': supplierCode,
+    'tanggalkirim': deliveredDate,
     'supplier_name': supplierName,
   };
 
   String get supplierName => supplier.name;
 
   @override
-  String get path => 'ipos/purchases';
+  String get path => 'ipos/purchase_orders';
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -104,9 +100,9 @@ class PurchaseHeader extends Model with SaveNDestroyModel {
     var attributes = json['attributes'];
 
     if (included.isNotEmpty) {
-      purchaseItems = PurchaseItemClass().findRelationsData(
+      purchaseItems = IposPurchaseOrderItemClass().findRelationsData(
         included: included,
-        relation: json['relationships']['purchase_items'],
+        relation: json['relationships']['purchase_order_items'],
       );
       supplier =
           SupplierClass().findRelationData(
@@ -114,15 +110,11 @@ class PurchaseHeader extends Model with SaveNDestroyModel {
             relation: json['relationships']['supplier'],
           ) ??
           supplier;
-      purchaseOrder = IposPurchaseOrderClass().findRelationData(
-        included: included,
-        relation: json['relationships']['purchase_order'],
-      );
     }
     id = json['id'];
     userName = attributes['user1'];
-    datetime = DateTime.parse(attributes['tanggal'] ?? '');
-    noteDate = DateTime.tryParse(attributes['note_date'] ?? '');
+    datetime = DateTime.parse(attributes['tanggal']);
+    deliveredDate = DateTime.tryParse(attributes['tanggalkirim'] ?? '');
     description = attributes['keterangan'];
     totalItem = double.parse(attributes['totalitem']);
     subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
@@ -138,7 +130,7 @@ class PurchaseHeader extends Model with SaveNDestroyModel {
     taxType = attributes['ppn'];
     taxAmount = Money.tryParse(attributes['pajak']) ?? const Money(0);
     code = attributes['notransaksi'];
-    orderCode = attributes['notrsorder'];
+    purchaseCode = attributes['notrsorder'];
     location = attributes['kodekantor'];
     destLocation = attributes['kantortujuan'];
     bankCode = attributes['bank_code'];
@@ -149,7 +141,7 @@ class PurchaseHeader extends Model with SaveNDestroyModel {
   String get modelValue => code;
 }
 
-class PurchaseHeaderClass extends ModelClass<PurchaseHeader> {
+class IposPurchaseOrderClass extends ModelClass<IposPurchaseOrder> {
   @override
-  PurchaseHeader initModel() => PurchaseHeader();
+  IposPurchaseOrder initModel() => IposPurchaseOrder();
 }

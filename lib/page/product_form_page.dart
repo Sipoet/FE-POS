@@ -8,6 +8,7 @@ import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/image_carousel.dart';
 import 'package:fe_pos/widget/image_form_field.dart';
+import 'package:fe_pos/widget/money_form_field.dart';
 import 'package:fe_pos/widget/table_form.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
@@ -377,6 +378,16 @@ class _ProductFormPageState extends State<ProductFormPage>
                                 onChanged: (value) => setState(() {
                                   product.barcodeUsingBatch = value!;
                                 }),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 250,
+                              child: MoneyFormField(
+                                label: Text(
+                                  'Harga Jual',
+                                  style: DefaultResponse.labelStyle,
+                                ),
+                                initialValue: product.sellPrice,
                               ),
                             ),
                             SizedBox(

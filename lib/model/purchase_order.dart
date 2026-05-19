@@ -1,98 +1,65 @@
-import 'package:fe_pos/model/supplier.dart';
-import 'package:fe_pos/model/purchase_order_item.dart';
-export 'package:fe_pos/model/purchase_order_item.dart';
+import 'package:fe_pos/model/discount_detail.dart';
+import 'package:fe_pos/model/location.dart';
 import 'package:fe_pos/model/model.dart';
-export 'package:fe_pos/tool/custom_type.dart';
+import 'package:fe_pos/model/purchase_order_detail.dart';
+import 'package:fe_pos/model/supplier.dart';
+export 'package:fe_pos/model/supplier.dart';
+export 'package:fe_pos/model/purchase_order_detail.dart';
+export 'package:fe_pos/model/discount_detail.dart';
+export 'package:fe_pos/model/location.dart';
 
-class PurchaseOrder extends Model {
+class PurchaseOrder extends Model with SaveNDestroyModel {
   String code;
-  String? purchaseCode;
-  String userName;
-  List<PurchaseOrderItem> purchaseItems;
-  DateTime datetime;
-  DateTime? deliveredDate;
-  String description;
-  double totalItem;
+  Supplier? supplier;
+  Location? location;
+  Date? transactionDate;
+  List<DiscountDetail>? discountDetail;
+  Money discountAmount;
+  String? description;
   Money subtotal;
   Money grandtotal;
-  Money discountAmount;
-  Money otherCost;
-  Money? cashAmount;
-  Money? debitCardAmount;
-  Money? creditCardAmount;
-  Money? emoneyAmount;
-  String paymentMethodType;
-  String taxType;
-  Money? taxAmount;
-  String? bankCode;
-  String location;
-  String destLocation;
-  String supplierCode;
-  Supplier supplier;
+  String productTotal;
+  Money discountTotal;
+  Money costTotal;
+  List<PurchaseOrderDetail> purchaseOrderDetails = [];
   PurchaseOrder({
-    this.userName = '',
-    this.description = '',
-    this.totalItem = 0,
     this.code = '',
-    this.supplierCode = '',
-    this.purchaseCode,
+    this.supplier,
+    this.location,
+    this.transactionDate,
+    this.discountDetail,
+    this.description,
+    this.discountAmount = const Money(0),
     this.subtotal = const Money(0),
     this.grandtotal = const Money(0),
-    this.discountAmount = const Money(0),
-    this.otherCost = const Money(0),
-    this.cashAmount = const Money(0),
-    this.debitCardAmount = const Money(0),
-    this.creditCardAmount = const Money(0),
-    this.emoneyAmount = const Money(0),
-    this.taxAmount = const Money(0),
-    this.paymentMethodType = 'non',
-    this.location = '',
-    this.destLocation = '',
-    this.bankCode,
-    this.taxType = '',
-    Supplier? supplier,
-    super.id,
-    super.createdAt,
-    super.updatedAt,
-    DateTime? datetime,
-    this.deliveredDate,
-    List<PurchaseOrderItem>? purchaseItems,
-  }) : purchaseItems = purchaseItems ?? <PurchaseOrderItem>[],
-       datetime = datetime ?? DateTime.now(),
-       supplier = supplier ?? Supplier();
+    this.discountTotal = const Money(0),
+    this.costTotal = const Money(0),
+    this.productTotal = '',
+    List<PurchaseOrderDetail>? purchaseOrderDetails,
+  }) : purchaseOrderDetails = purchaseOrderDetails ?? [];
 
   @override
   Map<String, dynamic> toMap() => {
-    'user1': userName,
-    'tanggal': datetime,
-    'keterangan': description,
-    'totalitem': totalItem,
+    'code': code,
+    'transaction_date': transactionDate,
+    'description': description,
+    'product_total': productTotal,
     'subtotal': subtotal,
     'supplier': supplier,
-    'totalakhir': grandtotal,
-    'potnomfaktur': discountAmount,
-    'biayalain': otherCost,
-    'jmltunai': cashAmount,
-    'jmldebit': debitCardAmount,
-    'jmlkk': creditCardAmount,
-    'jmlemoney': emoneyAmount,
-    'payment_type': paymentMethodType,
-    'ppn': taxType,
-    'pajak': taxAmount,
-    'bank_code': bankCode,
-    'notransaksi': code,
-    'notrsorder': purchaseCode,
-    'kodekantor': location,
-    'kantortujuan': destLocation,
-    'kodesupel': supplierCode,
-    'tanggalkirim': deliveredDate,
+    'supplier_id': supplier?.id,
+    'location': location,
+    'location_id': location?.id,
+    'location_name': location?.name,
+    'grandtotal': grandtotal,
+    'discount_detail': discountDetail,
+    'cost_total': costTotal,
+    'sub_total': subtotal,
+    'discount_total': discountTotal,
+    'discount_amount': discountAmount,
     'supplier_name': supplierName,
   };
 
-  String get supplierName => supplier.name;
-
-  @override
-  String get path => 'ipos/purchase_orders';
+  String? get supplierName => supplier?.name;
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -100,41 +67,34 @@ class PurchaseOrder extends Model {
     var attributes = json['attributes'];
 
     if (included.isNotEmpty) {
-      purchaseItems = PurchaseOrderItemClass().findRelationsData(
+      purchaseOrderDetails = PurchaseOrderDetailClass().findRelationsData(
         included: included,
         relation: json['relationships']['purchase_order_items'],
       );
-      supplier =
-          SupplierClass().findRelationData(
-            included: included,
-            relation: json['relationships']['supplier'],
-          ) ??
-          supplier;
+      supplier = SupplierClass().findRelationData(
+        included: included,
+        relation: json['relationships']['supplier'],
+      );
+      location = LocationClass().findRelationData(
+        included: included,
+        relation: json['relationships']['location'],
+      );
     }
-    id = json['id'];
-    userName = attributes['user1'];
-    datetime = DateTime.parse(attributes['tanggal']);
-    deliveredDate = DateTime.tryParse(attributes['tanggalkirim'] ?? '');
-    description = attributes['keterangan'];
-    totalItem = double.parse(attributes['totalitem']);
+    code = attributes['code'];
+    transactionDate = Date.parse(attributes['transaction_date']);
+    description = attributes['description'];
+    productTotal = attributes['product_total'];
     subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
-    grandtotal = Money.tryParse(attributes['totalakhir']) ?? const Money(0);
+    grandtotal = Money.tryParse(attributes['grandtotal']) ?? const Money(0);
     discountAmount =
-        Money.tryParse(attributes['potnomfaktur']) ?? const Money(0);
-    otherCost = Money.tryParse(attributes['biayalain']) ?? const Money(0);
-    cashAmount = Money.tryParse(attributes['jmltunai']) ?? const Money(0);
-    debitCardAmount = Money.tryParse(attributes['jmldebit']) ?? const Money(0);
-    creditCardAmount = Money.tryParse(attributes['jmlkk']) ?? const Money(0);
-    emoneyAmount = Money.tryParse(attributes['jmlemoney']) ?? const Money(0);
-    paymentMethodType = attributes['payment_type'] ?? '';
-    taxType = attributes['ppn'];
-    taxAmount = Money.tryParse(attributes['pajak']) ?? const Money(0);
-    code = attributes['notransaksi'];
-    purchaseCode = attributes['notrsorder'];
-    location = attributes['kodekantor'];
-    destLocation = attributes['kantortujuan'];
-    bankCode = attributes['bank_code'];
-    supplierCode = attributes['kodesupel'];
+        Money.tryParse(attributes['discount_amount']) ?? const Money(0);
+    costTotal = Money.tryParse(attributes['cost_total']) ?? const Money(0);
+    discountTotal =
+        Money.tryParse(attributes['discount_total']) ?? const Money(0);
+    final klass = DiscountDetailClass();
+    discountDetail = (attributes['discount_detail'] as List)
+        .map<DiscountDetail>((e) => klass.fromJson(e))
+        .toList();
   }
 
   @override

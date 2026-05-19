@@ -1,7 +1,7 @@
 import 'package:fe_pos/model/ipos/account.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/ipos/purchase_header.dart';
-import 'package:fe_pos/model/purchase_order.dart';
+import 'package:fe_pos/model/ipos/purchase_order.dart';
 
 enum PurchaseType implements EnumTranslation {
   payment,
@@ -58,7 +58,7 @@ class PurchasePaymentHistory extends Model {
   Money debtTotal;
   Money debtLeft;
   IposAccount paymentAccount;
-  PurchaseOrder? purchaseOrder;
+  IposPurchaseOrder? purchaseOrder;
 
   IposSupplier supplier;
   IposPurchaseHeader? purchase;
@@ -136,7 +136,7 @@ class PurchasePaymentHistory extends Model {
         included: included.where((data) => data['type'] == 'purchase').toList(),
         relation: json['relationships']?['purchase'],
       );
-      purchaseOrder = PurchaseOrderClass().findRelationData(
+      purchaseOrder = IposPurchaseOrderClass().findRelationData(
         included: included
             .where((data) => data['type'] == 'purchase_order')
             .toList(),
