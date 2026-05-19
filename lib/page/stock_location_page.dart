@@ -5,6 +5,7 @@ import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
 import 'package:fe_pos/widget/table_filter_form.dart';
 
@@ -164,6 +165,82 @@ class _StockLocationPageState extends State<StockLocationPage>
         .whenComplete(() => hideLoadingPopup());
   }
 
+  void _openForm(StockLocation model) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final navigator = Navigator.of(context);
+        return AlertDialog(
+          title: Row(
+            mainAxisAlignment: .spaceBetween,
+            children: [
+              Text(
+                'Edit Rak ${model.itemCode} di ${model.locationCode}',
+                style: TextFormatter.titleStyle,
+              ),
+              IconButton(
+                onPressed: () => navigator.pop(),
+                icon: Icon(Icons.close),
+              ),
+            ],
+          ),
+          content: TextFormField(
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              label: Text('Rak', style: TextFormatter.labelStyle),
+            ),
+            initialValue: model.rack,
+            onChanged: (value) => model.rack = value,
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => _saveRack(
+                model,
+              ).then((isSuccess) => isSuccess ? navigator.pop() : null),
+              child: Text('Simpan'),
+            ),
+            ElevatedButton(
+              onPressed: () => navigator.pop(),
+              child: Text('Batal'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<bool> _saveRack(StockLocation stockLocation) {
+    return server
+        .put(
+          'ipos/item_stocks/${stockLocation.itemCode}',
+          body: {
+            'data': {
+              'id': stockLocation.itemCode,
+              'type': 'item_stock',
+              'attributes': stockLocation.toJson(),
+            },
+          },
+        )
+        .then(
+          (response) {
+            if (response.statusCode != 200) {
+              defaultErrorResponse(error: response);
+              return false;
+            }
+            stockLocation.setFromJson(
+              response.data['data'],
+              included: response.data['included'] ?? [],
+            );
+            flash.show(Text('Sukses Simpan no rak'), .success);
+            return true;
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return false;
+          },
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     return VerticalBodyScroll(
@@ -199,6 +276,14 @@ class _StockLocationPageState extends State<StockLocationPage>
             height: bodyScreenHeight,
             child: CustomAsyncDataTable<StockLocation>(
               onLoaded: (stateManager) => _source = stateManager,
+              rowAction: (model) => Row(
+                children: [
+                  IconButton(
+                    onPressed: () => _openForm(model),
+                    icon: Icon(Icons.edit),
+                  ),
+                ],
+              ),
               fixedLeftColumns: 1,
               fetchData: fetchStockLocations,
               columns: columns,

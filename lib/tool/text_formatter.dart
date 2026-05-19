@@ -11,6 +11,11 @@ mixin TextFormatter {
     fontSize: 14,
     fontWeight: FontWeight.bold,
   );
+
+  static const titleStyle = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+  );
   String dateFormat(DateTime date) {
     return DateFormat('dd/MM/y', 'id_ID').format(date);
   }
