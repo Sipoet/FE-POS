@@ -33,7 +33,7 @@ mixin AppUpdater<T extends StatefulWidget> on State<T>
           if ([200, 302].contains(response.statusCode)) {
             var doc = loadYaml(response.data);
             latestVersion = doc['version'];
-            if (isOlderVersion()) {
+            if (isOlderVersion() && mounted) {
               _showConfirmDialog(server, platform);
             } else if (isManual) {
               toastification.show(
@@ -70,9 +70,9 @@ mixin AppUpdater<T extends StatefulWidget> on State<T>
     return false;
   }
 
-  void _showConfirmDialog(Server server, TargetPlatform platform) {
+  Future _showConfirmDialog(Server server, TargetPlatform platform) {
     // show the dialog
-    showDialog(
+    return showDialog(
       context: context,
       builder: (BuildContext context) {
         final navigator = Navigator.of(context);

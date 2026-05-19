@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 
 class ImageCarousel extends StatefulWidget {
   final void Function(ImageModel image)? onRemoved;
-  final List<ImageModel> images;
+  final ImageCarouselController controller;
   final double width;
   final double height;
   final bool allowClear;
   const ImageCarousel({
     super.key,
-    required this.images,
+    required this.controller,
     this.onRemoved,
     this.allowClear = false,
     this.width = 200,
@@ -22,22 +22,21 @@ class ImageCarousel extends StatefulWidget {
 }
 
 class _ImageCarouselState extends State<ImageCarousel> {
-  int activeIndex = 0;
-  int leftIndex = 0;
-  int rightIndex = 0;
-  final int bulletCount = 3;
-  List<ImageModel> get images =>
-      widget.images.whereNot((e) => e.isDestroyed).toList();
+  ImageCarouselController get controller => widget.controller;
 
   @override
   void initState() {
-    rightIndex = [bulletCount, images.length].min;
+    controller.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (images.isEmpty) {
+    if (controller.images.isEmpty) {
       return SizedBox();
     }
     return Stack(
@@ -49,7 +48,10 @@ class _ImageCarouselState extends State<ImageCarousel> {
             border: .all(),
             color: Colors.grey.shade300,
             borderRadius: .all(.circular(10)),
-            image: DecorationImage(image: images[activeIndex], fit: .contain),
+            image: DecorationImage(
+              image: controller.activeImage,
+              fit: .contain,
+            ),
           ),
         ),
         Visibility(
@@ -59,19 +61,19 @@ class _ImageCarouselState extends State<ImageCarousel> {
             top: 0,
             child: IconButton(
               onPressed: () {
-                final image = images[activeIndex];
-                widget.onRemoved?.call(image);
-                debugPrint('images: ${images.length}');
-                final imageCount = images.length;
-                if (rightIndex > imageCount) {
-                  rightIndex = imageCount;
-                  leftIndex = [rightIndex - bulletCount, 0].max;
-                }
-                if (activeIndex > imageCount - 1) {
-                  activeIndex = imageCount - 1;
-                }
+                setState(() {
+                  final image = controller.activeImage;
+                  widget.onRemoved?.call(image);
+                  controller.removeImage(image);
+                });
               },
-              icon: Icon(Icons.delete),
+              icon: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: .circular(15),
+                ),
+                child: Icon(Icons.delete),
+              ),
             ),
           ),
         ),
@@ -84,32 +86,24 @@ class _ImageCarouselState extends State<ImageCarousel> {
             children: [
               IconButton(
                 onPressed: () => setState(() {
-                  if (activeIndex == 0) {
-                    return;
-                  }
-                  activeIndex--;
-                  if (leftIndex - 1 < activeIndex) {
-                    return;
-                  }
-                  leftIndex = [leftIndex - 1, 0].max;
-                  rightIndex = [leftIndex + bulletCount, images.length - 1].min;
+                  controller.prevSlide();
                 }),
                 icon: Icon(Icons.chevron_left_sharp),
               ),
-              ...images
-                  .sublist(leftIndex, rightIndex)
+              ...controller.images
+                  .sublist(controller.leftIndex, controller.rightIndex + 1)
                   .map<Widget>(
                     (image) => SizedBox(
                       height: 15,
                       width: 15,
                       child: OutlinedButton(
                         onPressed: () {
-                          int index = images.indexOf(image);
-                          if (activeIndex == index) {
+                          int index = controller.images.indexOf(image);
+                          if (controller.activeImage == image) {
                             return;
                           }
                           setState(() {
-                            activeIndex = index;
+                            controller.activeIndex = index;
                           });
                         },
 
@@ -117,7 +111,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                           shape: const CircleBorder(),
                           padding: EdgeInsets.all(0),
                           side: const BorderSide(width: 1, color: Colors.black),
-                          backgroundColor: activeIndex == images.indexOf(image)
+                          backgroundColor: controller.activeImage == image
                               ? Colors.black
                               : Colors.white,
                         ),
@@ -127,15 +121,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                   ),
               IconButton(
                 onPressed: () => setState(() {
-                  if (activeIndex == images.length - 1) {
-                    return;
-                  }
-                  activeIndex++;
-                  if (activeIndex < rightIndex) {
-                    return;
-                  }
-                  rightIndex = [rightIndex + 1, images.length].min;
-                  leftIndex = [rightIndex - bulletCount, 0].max;
+                  controller.nextSlide();
                 }),
                 icon: Icon(Icons.chevron_right_sharp),
               ),
@@ -144,5 +130,85 @@ class _ImageCarouselState extends State<ImageCarousel> {
         ),
       ],
     );
+  }
+}
+
+class ImageCarouselController extends ChangeNotifier {
+  final List<ImageModel> images;
+  int activeIndex = 0;
+  int leftIndex = 0;
+  int rightIndex = 0;
+  int maxBullet = 5;
+  ImageCarouselController({required this.images, this.maxBullet = 3})
+    : rightIndex = [maxBullet, images.length - 1].min;
+
+  ImageModel get activeImage => images[activeIndex];
+
+  void prevSlide() {
+    if (activeIndex == 0) {
+      return;
+    }
+    activeIndex--;
+    recalculateSlideLocation();
+    notifyListeners();
+  }
+
+  void nextSlide() {
+    if (activeIndex == images.length - 1) {
+      return;
+    }
+    activeIndex++;
+    recalculateSlideLocation();
+    notifyListeners();
+  }
+
+  void addImage(ImageModel imageModel) {
+    images.add(imageModel);
+    recalculateSlideLocation();
+    notifyListeners();
+  }
+
+  void addImages(List<ImageModel> imageModels) {
+    images.addAll(imageModels);
+    recalculateSlideLocation();
+    notifyListeners();
+  }
+
+  void setImages(List<ImageModel> imageModels) {
+    images.clear();
+    images.addAll(imageModels);
+    recalculateSlideLocation();
+    notifyListeners();
+  }
+
+  void clearImages() {
+    images.clear();
+    recalculateSlideLocation();
+    notifyListeners();
+  }
+
+  void removeImage(ImageModel imageModel) {
+    images.remove(imageModel);
+    recalculateSlideLocation();
+    notifyListeners();
+  }
+
+  void recalculateSlideLocation() {
+    final imageCount = images.length;
+    if (activeIndex > imageCount - 1) {
+      activeIndex = [0, imageCount - 1].max;
+    }
+    int halfCount = (maxBullet.toDouble() / 2.0).floor();
+
+    rightIndex = activeIndex + halfCount;
+    leftIndex = activeIndex - halfCount;
+
+    if (rightIndex > imageCount - 1) {
+      rightIndex = imageCount - 1;
+      leftIndex = [0, rightIndex - maxBullet + 1].max;
+    } else if (leftIndex < 0) {
+      leftIndex = 0;
+      rightIndex = [imageCount - 1, maxBullet - 1].min;
+    }
   }
 }

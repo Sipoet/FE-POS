@@ -30,6 +30,7 @@ class _ProductFormPageState extends State<ProductFormPage>
   late final Setting _setting;
   late final Server _server;
   late final TabManager _tabManager;
+  late final ImageCarouselController controller;
   final _formState = GlobalKey<FormState>();
   final flash = Flash();
   bool _showForm = true;
@@ -42,6 +43,7 @@ class _ProductFormPageState extends State<ProductFormPage>
     _server = context.read<Server>();
     _tabManager = context.read<TabManager>();
     product = widget.product;
+    controller = ImageCarouselController(images: product.images);
     super.initState();
     if (!product.isNewRecord) {
       Future.delayed(Duration.zero, fetchProduct);
@@ -71,6 +73,7 @@ class _ProductFormPageState extends State<ProductFormPage>
         )
         .then((result) {
           setState(() {
+            controller.setImages(product.images);
             productTags = product.tags
                 .map<ProductTag>(
                   (tag) => ProductTag(tagKey: tag.tagKey, tag: tag),
@@ -147,6 +150,8 @@ class _ProductFormPageState extends State<ProductFormPage>
         for (final tagging in product.taggings) {
           tagging.id = null;
         }
+        product.images.clear();
+        controller.clearImages();
 
         _tabManager.changeTabHeader(widget, 'Tambah Produk');
       },
@@ -162,6 +167,7 @@ class _ProductFormPageState extends State<ProductFormPage>
     Future.delayed(Durations.short1, () {
       setState(() {
         product = ProductClass().initModel();
+        controller.clearImages();
         _showForm = true;
       });
     });
@@ -208,7 +214,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                           spacing: 10,
                           children: [
                             ImageCarousel(
-                              images: product.images,
+                              controller: controller,
                               allowClear: true,
                               onRemoved: (image) => setState(() {
                                 if (image.isAttached) {
@@ -219,19 +225,17 @@ class _ProductFormPageState extends State<ProductFormPage>
                                 }
                               }),
                             ),
-                            Visibility(
-                              visible: !product.isNewRecord,
-                              child: SizedBox(
-                                width: 200,
-                                height: 200,
-                                child: ImageFormField(
-                                  maxFiles: 5,
-                                  onChanged: (images) {
-                                    setState(() {
-                                      product.images.addAll(images);
-                                    });
-                                  },
-                                ),
+                            SizedBox(
+                              width: 200,
+                              height: 200,
+                              child: ImageFormField(
+                                maxFiles: 5,
+                                onChanged: (images) {
+                                  setState(() {
+                                    controller.addImages(images);
+                                    product.images.addAll(images);
+                                  });
+                                },
                               ),
                             ),
                             SizedBox(
