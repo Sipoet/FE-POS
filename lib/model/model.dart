@@ -393,7 +393,11 @@ mixin SaveNDestroyModel on Model {
         };
       } else {
         body = FormData();
-        asFormData(formData: body, data: attributes, parentKey: ['data']);
+        asFormData(
+          formData: body,
+          data: attributes,
+          parentKey: ['data', 'attributes'],
+        );
         body.fields.add(MapEntry('data[type]', modelName));
       }
       request = server.post(path, body: body, contentType: contentType);

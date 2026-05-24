@@ -69,6 +69,8 @@ mixin ColumnTypeFinder {
                   .toList() ??
               <DropdownMenuEntry<String>>[],
         );
+      case 'image':
+        return ImageTableColumnType();
       default:
         return TextTableColumnType();
     }
@@ -218,6 +220,41 @@ class TextTableColumnType extends TableColumnType<String> {
 
   @override
   String convert(dynamic value) => value.toString();
+
+  @override
+  TrinaColumnType get trinaColumnType => TrinaColumnType.text();
+}
+
+class ImageTableColumnType extends TableColumnType<ImageModel> {
+  @override
+  Widget renderFilter({
+    Widget? label,
+    required String name,
+    Key? key,
+    required FilterFormController controller,
+  }) {
+    return SizedBox();
+  }
+
+  @override
+  Widget renderCell({
+    ImageModel? value,
+    required TableColumn column,
+    TabManager? tabManager,
+  }) {
+    return value == null ? const SizedBox() : Image(image: value);
+  }
+
+  @override
+  ImageModel? convert(Object? value) {
+    if (value is ImageModel) {
+      return value;
+    } else if (value is Map<String, dynamic>) {
+      return ImageModelClass().fromJson(value);
+    } else {
+      return null;
+    }
+  }
 
   @override
   TrinaColumnType get trinaColumnType => TrinaColumnType.text();
@@ -939,8 +976,8 @@ class ModelTableColumnType<T extends Model> extends TableColumnType<T>
     TabManager? tabManager,
   }) {
     if (value is T) {
-      return InkWell(
-        onTap: () => _openModelDetailPage(
+      return TextButton(
+        onPressed: () => _openModelDetailPage(
           tableColumn: column,
           value: value,
           tabManager: tabManager,

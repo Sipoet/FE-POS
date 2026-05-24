@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pluralize/pluralize.dart';
@@ -5,6 +6,10 @@ import 'package:pluralize/pluralize.dart';
 final plurale = Pluralize()
   ..addSingularRule(RegExp(r'leaves', caseSensitive: false), 'leave')
   ..addSingularRule(RegExp(r'ipos', caseSensitive: false), 'ipos');
+
+extension MoneyList on Iterable<Money> {
+  Money get sum => Money(map<double>((e) => e.value).sum);
+}
 
 extension StringExt on String {
   String toSnakeCase() => unclassify().toLowerCase().replaceAll(' ', '_');
@@ -208,13 +213,6 @@ class Money {
   final String symbol;
   final double rate;
   const Money(this.value, {this.symbol = 'Rp', this.rate = 1});
-  Money operator +(var other) {
-    if (other is Money) {
-      return Money(value + other.value, symbol: symbol);
-    } else {
-      return Money(value + other, symbol: symbol);
-    }
-  }
 
   static Money parse(value) {
     if (value is double) {
@@ -261,16 +259,6 @@ class Money {
     return value.compareTo(other.value);
   }
 
-  Money operator *(Object other) {
-    if (other is Money) {
-      return Money(value * other.value, symbol: symbol);
-    } else if (other is num) {
-      return Money(value * other, symbol: symbol);
-    } else {
-      throw 'not supported power ${other.toString()}';
-    }
-  }
-
   String asJson() {
     return value.toString();
   }
@@ -293,11 +281,37 @@ class Money {
   @override
   int get hashCode => Object.hash(value, symbol, rate);
 
+  Money operator +(var other) {
+    if (other is Money) {
+      return Money(value + other.value, symbol: symbol);
+    } else if (other is num) {
+      return Money(value + other, symbol: symbol);
+    } else if (other is Percentage) {
+      return Money(value + (other.value * value), symbol: symbol);
+    } else {
+      return Money(double.nan, symbol: symbol);
+    }
+  }
+
+  Money operator *(Object other) {
+    if (other is Money) {
+      return Money(value * other.value, symbol: symbol);
+    } else if (other is num) {
+      return Money(value * other, symbol: symbol);
+    } else if (other is Percentage) {
+      return Money(value * other.value, symbol: symbol);
+    } else {
+      return Money(double.nan, symbol: symbol);
+    }
+  }
+
   Money operator /(var other) {
     if (other is Money) {
       return Money(value / other.value, symbol: symbol);
     } else if (other is num) {
       return Money(value / other, symbol: symbol);
+    } else if (other is Percentage) {
+      return Money(value / other.value, symbol: symbol);
     } else {
       return Money(double.nan, symbol: symbol);
     }
@@ -310,6 +324,8 @@ class Money {
       return Money(value - other.value, symbol: symbol);
     } else if (other is num) {
       return Money(value - other, symbol: symbol);
+    } else if (other is Percentage) {
+      return Money(value - (other.value * value), symbol: symbol);
     } else {
       return Money(double.nan, symbol: symbol);
     }

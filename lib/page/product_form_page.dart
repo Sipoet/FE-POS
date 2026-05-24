@@ -44,7 +44,7 @@ class _ProductFormPageState extends State<ProductFormPage>
     _server = context.read<Server>();
     _tabManager = context.read<TabManager>();
     product = widget.product;
-    controller = ImageCarouselController(images: product.images);
+    controller = ImageCarouselController(images: product.images.toList());
     super.initState();
     if (!product.isNewRecord) {
       Future.delayed(Duration.zero, fetchProduct);
@@ -74,7 +74,7 @@ class _ProductFormPageState extends State<ProductFormPage>
         )
         .then((result) {
           setState(() {
-            controller.setImages(product.images);
+            controller.setImages(product.images.toList());
             productTags = product.tags
                 .map<ProductTag>(
                   (tag) => ProductTag(tagKey: tag.tagKey, tag: tag),
@@ -114,7 +114,7 @@ class _ProductFormPageState extends State<ProductFormPage>
               product.images;
             });
             flash.show(Text('Sukses Simpan'), .success);
-            _tabManager.changeTabHeader(widget, 'Edit Supplier ${product.id}');
+            _tabManager.changeTabHeader(widget, 'Edit Produk ${product.id}');
           } else {
             flash.showBanner(
               messageType: .error,
@@ -220,7 +220,6 @@ class _ProductFormPageState extends State<ProductFormPage>
                               onRemoved: (image) => setState(() {
                                 if (image.isAttached) {
                                   image.flagDestroy();
-                                  product.images;
                                 } else {
                                   product.images.remove(image);
                                 }
@@ -387,6 +386,8 @@ class _ProductFormPageState extends State<ProductFormPage>
                                   'Harga Jual',
                                   style: DefaultResponse.labelStyle,
                                 ),
+                                onChanged: (value) =>
+                                    product.sellPrice = value ?? const Money(0),
                                 initialValue: product.sellPrice,
                               ),
                             ),
@@ -567,7 +568,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                                                 request: (queryRequest) {
                                                   queryRequest.filters.add(
                                                     ComparisonFilterData(
-                                                      key: 'tag_key_id',
+                                                      key: 'tag_key',
                                                       value:
                                                           productTag.tagKeyId,
                                                     ),

@@ -2,7 +2,6 @@ import 'dart:typed_data';
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:file_picker/file_picker.dart';
-import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 

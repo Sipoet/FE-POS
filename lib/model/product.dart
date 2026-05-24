@@ -75,6 +75,8 @@ class Product extends Model with SaveNDestroyModel {
   List<Tag> get tags =>
       taggings.where((e) => e.tag != null).map<Tag>((e) => e.tag!).toList();
 
+  String get tagDescription => tags.map<String>((e) => e.value).join(' ');
+
   void setTags(List<Tag> newTags) {
     int index = 0;
     while (newTags.length > index || taggings.length > index) {

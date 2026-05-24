@@ -1,19 +1,23 @@
+import 'package:fe_pos/model/cost_detail.dart';
 import 'package:fe_pos/model/discount_detail.dart';
 import 'package:fe_pos/model/location.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/purchase_order_detail.dart';
 import 'package:fe_pos/model/supplier.dart';
+import 'package:fe_pos/tool/purchase_calculator.dart';
 export 'package:fe_pos/model/supplier.dart';
 export 'package:fe_pos/model/purchase_order_detail.dart';
 export 'package:fe_pos/model/discount_detail.dart';
 export 'package:fe_pos/model/location.dart';
+export 'package:fe_pos/model/cost_detail.dart';
 
 class PurchaseOrder extends Model with SaveNDestroyModel {
   String code;
   Supplier? supplier;
   Location? location;
   Date? transactionDate;
-  List<DiscountDetail>? discountDetail;
+  List<DiscountDetail>? discountDetails;
+  List<CostDetail> costDetails = [];
   Money discountAmount;
   String? description;
   Money subtotal;
@@ -21,22 +25,31 @@ class PurchaseOrder extends Model with SaveNDestroyModel {
   String productTotal;
   Money discountTotal;
   Money costTotal;
+  TaxType taxType;
+  Money taxAmount;
+  Percentage? taxValue;
+
   List<PurchaseOrderDetail> purchaseOrderDetails = [];
   PurchaseOrder({
     this.code = '',
     this.supplier,
     this.location,
+    this.taxType = .non,
+    this.taxValue,
     this.transactionDate,
-    this.discountDetail,
+    this.discountDetails,
     this.description,
     this.discountAmount = const Money(0),
+    this.taxAmount = const Money(0),
     this.subtotal = const Money(0),
     this.grandtotal = const Money(0),
     this.discountTotal = const Money(0),
     this.costTotal = const Money(0),
     this.productTotal = '',
     List<PurchaseOrderDetail>? purchaseOrderDetails,
-  }) : purchaseOrderDetails = purchaseOrderDetails ?? [];
+    List<CostDetail>? costDetails,
+  }) : purchaseOrderDetails = purchaseOrderDetails ?? [],
+       costDetails = costDetails ?? [];
 
   @override
   Map<String, dynamic> toMap() => {
@@ -51,12 +64,15 @@ class PurchaseOrder extends Model with SaveNDestroyModel {
     'location_id': location?.id,
     'location_name': location?.name,
     'grandtotal': grandtotal,
-    'discount_detail': discountDetail,
+    'discount_detail': discountDetails,
     'cost_total': costTotal,
     'sub_total': subtotal,
     'discount_total': discountTotal,
     'discount_amount': discountAmount,
     'supplier_name': supplierName,
+    'tax_amount': taxAmount,
+    'tax_type': taxType,
+    'tax_value': taxValue,
   };
 
   String? get supplierName => supplier?.name;
@@ -79,6 +95,10 @@ class PurchaseOrder extends Model with SaveNDestroyModel {
         included: included,
         relation: json['relationships']['location'],
       );
+      costDetails = CostDetailClass().findRelationsData(
+        included: included,
+        relation: json['relationships']['cost_details'],
+      );
     }
     code = attributes['code'];
     transactionDate = Date.parse(attributes['transaction_date']);
@@ -92,9 +112,12 @@ class PurchaseOrder extends Model with SaveNDestroyModel {
     discountTotal =
         Money.tryParse(attributes['discount_total']) ?? const Money(0);
     final klass = DiscountDetailClass();
-    discountDetail = (attributes['discount_detail'] as List)
+    discountDetails = (attributes['discount_detail'] as List)
         .map<DiscountDetail>((e) => klass.fromJson(e))
         .toList();
+    taxType = TaxType.fromString(attributes['tax_type']);
+    taxValue = Percentage.tryParse(attributes['tax_value']);
+    taxAmount = Money.tryParse(attributes['tax_amount']) ?? const Money(0);
   }
 
   @override

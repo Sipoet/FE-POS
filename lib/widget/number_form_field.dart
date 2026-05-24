@@ -1,6 +1,5 @@
 import 'package:fe_pos/tool/custom_type.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
-import 'package:fe_pos/tool/thousand_separator_formatter.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:flutter/material.dart';
 
@@ -192,7 +191,9 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
               return widget.validator!(number);
             }
           : null,
-      inputFormatters: [ThousandSeparatorFormatter()],
+      inputFormatters: [
+        CustomNumberInputFormatter(formatType: .number, separator: ','),
+      ],
       decoration: decoration,
       initialValue: initialValue,
     );

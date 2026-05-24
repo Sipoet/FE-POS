@@ -1,6 +1,5 @@
 import 'package:fe_pos/tool/custom_type.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
-import 'package:fe_pos/tool/thousand_separator_formatter.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:flutter/material.dart';
 
@@ -46,11 +45,13 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
   void initState() {
     if (widget.controller != null) {
       _controller = TextEditingController(
-          text: numberFormat(_valueFromInput(widget.controller!.text)?.value));
+        text: numberFormat(_valueFromInput(widget.controller!.text)?.value),
+      );
     }
     widget.controller?.addListener(() {
-      _controller!.text =
-          numberFormat(_valueFromInput(widget.controller!.text)?.value);
+      _controller!.text = numberFormat(
+        _valueFromInput(widget.controller!.text)?.value,
+      );
     });
     super.initState();
   }
@@ -97,15 +98,18 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
               return widget.validator!(money);
             }
           : null,
-      inputFormatters: [ThousandSeparatorFormatter()],
+      inputFormatters: [
+        CustomNumberInputFormatter(formatType: .amount, separator: ','),
+      ],
       decoration: InputDecoration(
-          label: widget.label,
-          contentPadding: const EdgeInsets.all(5),
-          prefix: const Text(
-            'Rp ',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          border: const OutlineInputBorder()),
+        label: widget.label,
+        contentPadding: const EdgeInsets.all(5),
+        prefix: const Text(
+          'Rp ',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        border: const OutlineInputBorder(),
+      ),
       initialValue: value,
     );
   }

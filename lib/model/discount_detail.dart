@@ -1,19 +1,55 @@
 import 'package:fe_pos/model/model.dart';
 
-class DiscountDetail extends Model {
-  double discount;
-  String type;
-  DiscountDetail({this.type = '', this.discount = 0});
+enum DiscountDetailType implements EnumTranslation {
+  percentage,
+  nominal;
+
   @override
-  Map<String, dynamic> toMap() => {'type': discount, 'discount': discount};
+  String humanize() {
+    switch (this) {
+      case percentage:
+        return 'Persen';
+      case nominal:
+        return 'Nominal';
+    }
+  }
+
+  @override
+  String toString() {
+    switch (this) {
+      case percentage:
+        return 'percentage';
+      case nominal:
+        return 'nominal';
+    }
+  }
+
+  static DiscountDetailType fromString(String value) {
+    switch (value) {
+      case 'percentage':
+        return percentage;
+      case 'nominal':
+        return nominal;
+      default:
+        throw '$value invalid discount detail type';
+    }
+  }
+}
+
+class DiscountDetail extends Model {
+  double value;
+  DiscountDetailType type;
+  DiscountDetail({this.type = .percentage, this.value = 0});
+  @override
+  Map<String, dynamic> toMap() => {'type': type, 'discount': value};
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];
-    discount = double.tryParse(attributes['discount'] ?? '0') ?? 0;
+    value = double.tryParse(attributes['value'] ?? '0') ?? 0;
 
-    type = attributes['type'];
+    type = DiscountDetailType.fromString(attributes['type']);
   }
 }
 

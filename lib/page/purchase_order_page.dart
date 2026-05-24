@@ -72,7 +72,7 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
         );
   }
 
-  void viewRecord(PurchaseOrder purchaseOrder) {
+  void openForm(PurchaseOrder purchaseOrder) {
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
@@ -108,12 +108,21 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
             SizedBox(
               height: bodyScreenHeight - 60,
               child: CustomAsyncDataTable<PurchaseOrder>(
+                additionalHeaderActions: (menuController) => [
+                  MenuItemButton(
+                    child: Text('Tambah Pesanan Pembelian'),
+                    onPressed: () {
+                      menuController.close();
+                      openForm(PurchaseOrderClass().initModel());
+                    },
+                  ),
+                ],
                 rowAction: (purchaseOrder) => Row(
                   spacing: 10,
                   children: [
                     IconButton.filled(
                       onPressed: () {
-                        viewRecord(purchaseOrder);
+                        openForm(purchaseOrder);
                       },
                       icon: const Icon(Icons.search_rounded),
                     ),

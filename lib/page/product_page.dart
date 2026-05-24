@@ -21,13 +21,10 @@ class ProductPage extends StatefulWidget {
 class _ProductPageState extends State<ProductPage> with DefaultResponse {
   late final TableController _source;
   late final Server server;
-  String _searchText = '';
   List<Product> products = [];
-  final cancelToken = CancelToken();
   late Flash flash;
   late final List<TableColumn> columns;
   List<FilterData> _filter = [];
-  final _menuController = MenuController();
 
   @override
   void initState() {
@@ -41,7 +38,6 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
 
   @override
   void dispose() {
-    cancelToken.cancel();
     super.dispose();
   }
 
@@ -83,8 +79,6 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
 
   Future<DataTableResponse<Product>> fetchData(QueryRequest request) {
     _source.setShowLoading(true);
-    request.searchText = _searchText;
-    request.cancelToken = cancelToken;
     request.include = [
       'product_category',
       'supplier',
@@ -110,20 +104,6 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
         .whenComplete(() => _source.setShowLoading(false));
   }
 
-  void searchChanged(value) {
-    String container = _searchText;
-    setState(() {
-      if (value.length >= 3) {
-        _searchText = value;
-      } else {
-        _searchText = '';
-      }
-    });
-    if (container != _searchText) {
-      refreshTable();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return VerticalBodyScroll(
@@ -136,51 +116,18 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
               _source.refreshTable();
             },
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 10, bottom: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _searchText = '';
-                    });
-                    refreshTable();
-                  },
-                  tooltip: 'Reset Table',
-                  icon: const Icon(Icons.refresh),
-                ),
-                SizedBox(
-                  width: 150,
-                  child: TextField(
-                    decoration: const InputDecoration(hintText: 'Search Text'),
-                    onChanged: searchChanged,
-                    onSubmitted: searchChanged,
-                  ),
-                ),
-                SizedBox(
-                  width: 50,
-                  child: SubmenuButton(
-                    controller: _menuController,
-                    menuChildren: [
-                      MenuItemButton(
-                        child: const Text('Tambah Produk'),
-                        onPressed: () {
-                          _menuController.close();
-                          openForm(Product());
-                        },
-                      ),
-                    ],
-                    child: const Icon(Icons.table_rows_rounded),
-                  ),
-                ),
-              ],
-            ),
-          ),
           SizedBox(
             height: bodyScreenHeight,
             child: CustomAsyncDataTable<Product>(
+              additionalHeaderActions: (menuController) => [
+                MenuItemButton(
+                  onPressed: () {
+                    menuController.close();
+                    openForm(ProductClass().initModel());
+                  },
+                  child: Text('Tambah Produk'),
+                ),
+              ],
               rowAction: (model) => Row(
                 children: [
                   IconButton(

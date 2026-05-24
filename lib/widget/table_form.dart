@@ -60,7 +60,10 @@ class _DesktopTableFormState<T> extends State<DesktopTableForm<T>> {
           )
           .toList()
           .asMap(),
-      border: TableBorder.symmetric(inside: BorderSide()),
+      border: TableBorder.symmetric(
+        inside: BorderSide(color: Colors.grey.shade400),
+        outside: BorderSide(),
+      ),
       children: [
         TableRow(
           children: widget.columns

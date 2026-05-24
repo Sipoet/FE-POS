@@ -11,16 +11,18 @@ class PurchaseOrderDetail extends Model {
   List<DiscountDetail>? discountDetail;
   Money total;
   String uom;
+  List<Tagging> taggings = [];
   PurchaseOrderDetail({
     this.discountDetail,
     this.quantity = 0,
     this.product,
+    List<Tagging>? taggings,
     this.subtotal = const Money(0),
     this.discountAmount = const Money(0),
     this.total = const Money(0),
     this.uom = 'pcs',
     this.price = const Money(0),
-  });
+  }) : taggings = taggings ?? [];
   @override
   Map<String, dynamic> toMap() => {
     'product_code': productCode,
@@ -35,7 +37,7 @@ class PurchaseOrderDetail extends Model {
   };
 
   String? get productCode => product?.supplierProductCode;
-
+  String get tagDescription => tags.map<String>((e) => e.value).join(' ');
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
@@ -45,6 +47,10 @@ class PurchaseOrderDetail extends Model {
       product = ProductClass().findRelationData(
         included: included,
         relation: json['relationships']['product'],
+      );
+      taggings = TaggingClass().findRelationsData(
+        included: included,
+        relation: json['relationships']?['taggings'],
       );
     }
     quantity = double.tryParse(attributes['quantity'] ?? '0') ?? 0;
@@ -59,6 +65,25 @@ class PurchaseOrderDetail extends Model {
     price = Money.tryParse(attributes['price']) ?? const Money(0);
     uom = attributes['uom'];
   }
+
+  void setTags(List<Tag> newTags) {
+    int index = 0;
+    while (newTags.length > index || taggings.length > index) {
+      final tagging = taggings.elementAtOrNull(index);
+      final tag = newTags.elementAtOrNull(index);
+      if (tagging == null) {
+        taggings.add(Tagging(tag: tag));
+      } else if (tag == null) {
+        tagging.flagDestroy();
+      } else {
+        tagging.tag = tag;
+      }
+      index++;
+    }
+  }
+
+  List<Tag> get tags =>
+      taggings.where((e) => e.tag != null).map<Tag>((e) => e.tag!).toList();
 }
 
 class PurchaseOrderDetailClass extends ModelClass<PurchaseOrderDetail> {
