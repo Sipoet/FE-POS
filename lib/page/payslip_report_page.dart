@@ -77,6 +77,7 @@ class _PayslipReportPageState extends State<PayslipReportPage>
               tableStateManager?.setTableColumns(
                 tableColumns,
                 tabManager: tabManager,
+                context: context,
               );
               for (final row in json['data']) {
                 final model = PayslipReportClass().fromJson(

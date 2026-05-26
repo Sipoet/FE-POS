@@ -8,15 +8,15 @@ mixin TextFormatter {
     return data.format24Hour();
   }
 
-  static const labelStyle = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.bold,
+  static const labelStyle = TextStyle(fontSize: 14, fontWeight: .bold);
+
+  static const tableLabelStyle = TextStyle(
+    fontSize: 16,
+    fontWeight: .bold,
+    fontStyle: .italic,
   );
 
-  static const titleStyle = TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.bold,
-  );
+  static const titleStyle = TextStyle(fontSize: 22, fontWeight: .bold);
 
   String dateFormat(DateTime date) {
     return DateFormat('dd/MM/y', 'id_ID').format(date);

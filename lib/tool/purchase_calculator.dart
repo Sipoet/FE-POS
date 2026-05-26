@@ -23,7 +23,7 @@ class PurchaseCalculator {
     result.costTotal = costDetails.map<Money>((e) => e.amount).sum;
     result.grandtotal =
         result.subtotal - result.discountAmount + result.costTotal;
-    if (taxType == .exclude && taxValue != null) {
+    if (taxType == .excluded && taxValue != null) {
       result.taxAmount = (result.subtotal - result.discountAmount) * taxValue;
       result.grandtotal += result.taxAmount;
     }
@@ -65,18 +65,18 @@ class PurchaseDetailCalculatorResult {
 
 enum TaxType implements EnumTranslation {
   non,
-  include,
-  exclude;
+  included,
+  excluded;
 
   @override
   String toString() {
     switch (this) {
       case non:
         return 'non';
-      case include:
-        return 'include';
-      case exclude:
-        return 'exclude';
+      case included:
+        return 'included';
+      case excluded:
+        return 'excluded';
     }
   }
 
@@ -85,10 +85,10 @@ enum TaxType implements EnumTranslation {
     switch (this) {
       case non:
         return 'non';
-      case include:
-        return 'include';
-      case exclude:
-        return 'exclude';
+      case included:
+        return 'included';
+      case excluded:
+        return 'excluded';
     }
   }
 
@@ -96,10 +96,10 @@ enum TaxType implements EnumTranslation {
     switch (value) {
       case 'non':
         return non;
-      case 'include':
-        return include;
-      case 'exclude':
-        return exclude;
+      case 'included':
+        return included;
+      case 'excluded':
+        return excluded;
       default:
         throw '$value invalid tax type';
     }

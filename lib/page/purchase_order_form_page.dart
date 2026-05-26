@@ -5,12 +5,12 @@ import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
-import 'package:fe_pos/tool/model_route.dart';
 import 'package:fe_pos/tool/purchase_calculator.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
+import 'package:fe_pos/widget/cost_detail_form_dialog.dart';
 import 'package:fe_pos/widget/date_form_field.dart';
 import 'package:fe_pos/widget/enum_dropdown.dart';
 import 'package:fe_pos/widget/money_form_field.dart';
@@ -295,7 +295,6 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
             onChanged: () {
               setState(() {
                 recalculatePurchaseOrder();
-                _showSummary = false;
               });
               refreshSummary();
             },
@@ -471,205 +470,240 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                   ],
                 ),
                 const SizedBox(height: 10),
-                SingleChildScrollView(
-                  scrollDirection: .horizontal,
-                  child: Container(
-                    constraints: BoxConstraints(maxWidth: 1700),
-                    child: TableForm<PurchaseOrderDetail>(
-                      columns: [
-                        TableFormColumn<PurchaseOrderDetail>(
-                          name: 'product',
-                          title: 'Produk',
-                          headerBuilder: (context) =>
-                              Text('Produk', style: TextFormatter.labelStyle),
-                          rowBuilder: (context, purchaseOrderDetail) =>
-                              AsyncDropdown<Product>(
-                                textOnSearch: (model) =>
-                                    "${model.barcode}-${model.description}",
-                                modelClass: ProductClass(),
-                                selected: purchaseOrderDetail.product,
-                                onChanged: (model) =>
-                                    purchaseOrderDetail.product = model,
-                              ),
-                        ),
-                        TableFormColumn<PurchaseOrderDetail>(
-                          name: 'tags',
-                          title: 'Tag',
-                          headerBuilder: (context) =>
-                              Text('Tag', style: TextFormatter.labelStyle),
-                          rowBuilder: (context, purchaseOrderDetail) =>
-                              AsyncDropdownMultiple<Tag>(
-                                textOnSearch: (tag) => tag.modelValue,
-                                textOnSelected: (tag) => tag.modelValue,
-                                modelClass: TagClass(),
-                                selecteds: purchaseOrderDetail.tags,
-                                onChanged: (tags) =>
-                                    purchaseOrderDetail.setTags(tags),
-                              ),
-                        ),
-                        TableFormColumn<PurchaseOrderDetail>(
-                          name: 'quantity',
-                          title: 'Jumlah',
-                          headerBuilder: (context) => Text(
-                            'Jumlah',
-                            textAlign: .right,
-                            style: TextFormatter.labelStyle,
-                          ),
-                          rowBuilder: (context, purchaseOrderDetail) =>
-                              NumberFormField<double>(
-                                initialValue: purchaseOrderDetail.quantity,
-                                onChanged: (value) =>
-                                    purchaseOrderDetail.quantity = value ?? 0,
-                              ),
-                        ),
-                        TableFormColumn<PurchaseOrderDetail>(
-                          name: 'uom',
-                          title: 'Satuan',
-                          headerBuilder: (context) => Text(
-                            'Satuan',
-                            textAlign: .right,
-                            style: TextFormatter.labelStyle,
-                          ),
-                          rowBuilder: (context, purchaseOrderDetail) =>
-                              DropdownMenu<String>(
-                                width: 200,
-                                enableFilter: true,
 
-                                initialSelection: purchaseOrderDetail.uom,
-                                onSelected: (value) => setState(() {
-                                  purchaseOrderDetail.uom = value ?? '';
-                                }),
-                                dropdownMenuEntries: [
-                                  DropdownMenuEntry(value: 'pcs', label: 'PCS'),
-                                ],
-                              ),
+                TableForm<PurchaseOrderDetail>(
+                  columns: [
+                    if (setting.canShow('purchaseOrderDetail', 'product'))
+                      TableFormColumn<PurchaseOrderDetail>(
+                        name: 'product',
+                        title: 'Produk',
+                        headerBuilder: (context) => Text(
+                          'Produk',
+                          style: TextFormatter.tableLabelStyle,
                         ),
-                        TableFormColumn<PurchaseOrderDetail>(
-                          name: 'price',
-                          title: 'Harga',
-                          headerBuilder: (context) => Text(
-                            'Harga',
-                            textAlign: .right,
-                            style: TextFormatter.labelStyle,
-                          ),
-                          rowBuilder: (context, purchaseOrderDetail) =>
-                              MoneyFormField(
-                                initialValue: purchaseOrderDetail.price,
-                                onChanged: (value) =>
-                                    purchaseOrderDetail.price =
-                                        value ?? const Money(0),
-                              ),
+                        rowBuilder: (context, purchaseOrderDetail) =>
+                            AsyncDropdown<Product>(
+                              textOnSearch: (model) =>
+                                  "${model.barcode}-${model.description}",
+                              modelClass: ProductClass(),
+                              isDense: true,
+                              selected: purchaseOrderDetail.product,
+                              onChanged: (model) =>
+                                  purchaseOrderDetail.product = model,
+                            ),
+                      ),
+                    if (setting.canShow('purchaseOrderDetail', 'tags'))
+                      TableFormColumn<PurchaseOrderDetail>(
+                        name: 'tags',
+                        title: 'Tag',
+                        headerBuilder: (context) =>
+                            Text('Tag', style: TextFormatter.tableLabelStyle),
+                        rowBuilder: (context, purchaseOrderDetail) =>
+                            AsyncDropdownMultiple<Tag>(
+                              textOnSearch: (tag) => tag.modelValue,
+                              textOnSelected: (tag) => tag.modelValue,
+                              modelClass: TagClass(),
+                              isDense: true,
+                              selecteds: purchaseOrderDetail.tags,
+                              onChanged: (tags) =>
+                                  purchaseOrderDetail.setTags(tags),
+                            ),
+                      ),
+                    if (setting.canShow('purchaseOrderDetail', 'quantity'))
+                      TableFormColumn<PurchaseOrderDetail>(
+                        name: 'quantity',
+                        title: 'Jumlah',
+                        isNumeric: true,
+                        headerBuilder: (context) => Text(
+                          'Jumlah',
+                          textAlign: .right,
+                          style: TextFormatter.tableLabelStyle,
                         ),
-                        TableFormColumn<PurchaseOrderDetail>(
-                          name: 'subtotal',
-                          title: 'Subtotal',
-                          headerBuilder: (context) => Text(
-                            'Subtotal',
-                            textAlign: .right,
-                            style: TextFormatter.labelStyle,
-                          ),
-                          rowBuilder: (context, purchaseOrderDetail) =>
-                              Container(
-                                height: 50,
-                                alignment: .centerRight,
-                                child: SelectableText(
-                                  purchaseOrderDetail.subtotal.format(),
-                                  textAlign: .right,
-                                ),
-                              ),
+                        rowBuilder: (context, purchaseOrderDetail) =>
+                            NumberFormField<double>(
+                              initialValue: purchaseOrderDetail.quantity,
+                              isDense: true,
+                              onChanged: (value) =>
+                                  purchaseOrderDetail.quantity = value ?? 0,
+                            ),
+                      ),
+                    if (setting.canShow('purchaseOrderDetail', 'uom'))
+                      TableFormColumn<PurchaseOrderDetail>(
+                        name: 'uom',
+                        title: 'Satuan',
+                        headerBuilder: (context) => Text(
+                          'Satuan',
+                          textAlign: .right,
+                          style: TextFormatter.tableLabelStyle,
                         ),
-                        TableFormColumn<PurchaseOrderDetail>(
-                          name: 'discount_amount',
-                          title: 'Diskon',
-                          desktopWidth: FixedColumnWidth(250),
-                          headerBuilder: (context) => Text(
-                            'Diskon',
-                            textAlign: .right,
-                            style: TextFormatter.labelStyle,
-                          ),
-                          rowBuilder: (context, purchaseOrderDetail) => SizedBox(
-                            height: 50,
-                            child: Row(
-                              spacing: 15,
-                              mainAxisAlignment: .spaceBetween,
-                              crossAxisAlignment: .center,
-                              children: [
-                                ElevatedButton(
-                                  onPressed: () =>
-                                      _openDiscountDetail(
-                                        purchaseOrderDetail.discountDetail,
-                                        description: [
-                                          Text(
-                                            'Produk: ${purchaseOrderDetail.product?.description} ${purchaseOrderDetail.product?.tagDescription}',
-                                            style: const TextStyle(
-                                              fontSize: 18,
-                                            ),
-                                          ),
-                                          Text(
-                                            'Tag: ${purchaseOrderDetail.tagDescription}',
-                                            style: const TextStyle(
-                                              fontSize: 18,
-                                            ),
-                                          ),
-                                        ],
-                                      ).then((discountDetails) {
-                                        if (discountDetails == null ||
-                                            !mounted) {
-                                          return;
-                                        }
-                                        setState(() {
-                                          purchaseOrderDetail.discountDetail =
-                                              discountDetails;
-                                          recalculatePurchaseOrder();
-                                        });
-                                        refreshSummary();
-                                      }),
-                                  child: Text('Detail'),
-                                ),
-                                Text(
-                                  purchaseOrderDetail.discountAmount.format(),
-                                  textAlign: .right,
-                                ),
+                        rowBuilder: (context, purchaseOrderDetail) =>
+                            DropdownMenu<String>(
+                              width: 200,
+                              enableFilter: true,
+                              initialSelection: purchaseOrderDetail.uom,
+                              onSelected: (value) => setState(() {
+                                purchaseOrderDetail.uom = value ?? '';
+                              }),
+                              dropdownMenuEntries: [
+                                DropdownMenuEntry(value: 'pcs', label: 'PCS'),
                               ],
                             ),
-                          ),
+                      ),
+                    if (setting.canShow('purchaseOrderDetail', 'price'))
+                      TableFormColumn<PurchaseOrderDetail>(
+                        name: 'price',
+                        title: 'Harga',
+                        isNumeric: true,
+                        headerBuilder: (context) => Text(
+                          'Harga',
+                          textAlign: .right,
+                          style: TextFormatter.tableLabelStyle,
                         ),
-                        TableFormColumn<PurchaseOrderDetail>(
-                          name: 'total',
-                          title: 'Total',
-                          headerBuilder: (context) => Text(
-                            'Total',
+                        rowBuilder: (context, purchaseOrderDetail) =>
+                            MoneyFormField(
+                              initialValue: purchaseOrderDetail.price,
+                              isDense: true,
+                              onChanged: (value) => purchaseOrderDetail.price =
+                                  value ?? const Money(0),
+                            ),
+                      ),
+                    if (setting.canShow('purchaseOrderDetail', 'sell_price'))
+                      TableFormColumn<PurchaseOrderDetail>(
+                        name: 'sell_price',
+                        title: 'Harga Jual',
+                        isNumeric: true,
+                        headerBuilder: (context) => Text(
+                          'Harga Jual',
+                          textAlign: .right,
+                          style: TextFormatter.tableLabelStyle,
+                        ),
+                        rowBuilder: (context, purchaseOrderDetail) => Text(
+                          purchaseOrderDetail.product?.sellPrice.format() ?? '',
+                        ),
+                      ),
+                    if (setting.canShow('purchaseOrderDetail', 'margin'))
+                      TableFormColumn<PurchaseOrderDetail>(
+                        name: 'margin',
+                        title: 'Harga',
+                        isNumeric: true,
+                        headerBuilder: (context) => Text(
+                          'Harga',
+                          textAlign: .right,
+                          style: TextFormatter.tableLabelStyle,
+                        ),
+                        rowBuilder: (context, purchaseOrderDetail) =>
+                            Text(purchaseOrderDetail.margin?.format() ?? ''),
+                      ),
+                    if (setting.canShow('purchaseOrderDetail', 'subtotal'))
+                      TableFormColumn<PurchaseOrderDetail>(
+                        name: 'subtotal',
+                        title: 'Subtotal',
+                        isNumeric: true,
+                        headerBuilder: (context) => Text(
+                          'Subtotal',
+                          textAlign: .right,
+                          style: TextFormatter.tableLabelStyle,
+                        ),
+                        rowBuilder: (context, purchaseOrderDetail) => Container(
+                          height: 50,
+                          alignment: .centerRight,
+                          child: SelectableText(
+                            purchaseOrderDetail.subtotal.format(),
                             textAlign: .right,
-                            style: TextFormatter.labelStyle,
                           ),
-                          rowBuilder: (context, purchaseOrderDetail) =>
-                              Container(
-                                height: 50,
-                                alignment: .centerEnd,
-                                child: Text(
-                                  purchaseOrderDetail.total.format(),
-                                  textAlign: .right,
-                                ),
-                              ),
                         ),
-                        TableFormColumn<PurchaseOrderDetail>(
-                          name: 'action',
-                          desktopWidth: FixedColumnWidth(60),
-                          rowBuilder: (context, purchaseOrderDetail) =>
-                              IconButton(
-                                onPressed: () => setState(() {
-                                  purchaseOrder.purchaseOrderDetails.remove(
-                                    purchaseOrderDetail,
-                                  );
-                                }),
-                                icon: Icon(Icons.delete),
-                              ),
+                      ),
+                    if (setting.canShow(
+                      'purchaseOrderDetail',
+                      'discount_amount',
+                    ))
+                      TableFormColumn<PurchaseOrderDetail>(
+                        name: 'discount_amount',
+                        title: 'Diskon',
+                        desktopWidth: FixedColumnWidth(250),
+                        headerBuilder: (context) => Text(
+                          'Diskon',
+                          textAlign: .right,
+                          style: TextFormatter.tableLabelStyle,
                         ),
-                      ],
-                      rows: purchaseOrder.purchaseOrderDetails,
+                        isNumeric: true,
+                        rowBuilder: (context, purchaseOrderDetail) => SizedBox(
+                          height: 50,
+                          child: Row(
+                            spacing: 15,
+                            mainAxisAlignment: .spaceBetween,
+                            crossAxisAlignment: .center,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () =>
+                                    _openDiscountDetail(
+                                      purchaseOrderDetail.discountDetail,
+                                      description: [
+                                        Text(
+                                          'Produk: ${purchaseOrderDetail.product?.description} ${purchaseOrderDetail.product?.tagDescription}',
+                                          style: const TextStyle(fontSize: 18),
+                                        ),
+                                        Text(
+                                          'Tag: ${purchaseOrderDetail.tagDescription}',
+                                          style: const TextStyle(fontSize: 18),
+                                        ),
+                                      ],
+                                    ).then((discountDetails) {
+                                      if (discountDetails == null || !mounted) {
+                                        return;
+                                      }
+                                      setState(() {
+                                        purchaseOrderDetail.discountDetail =
+                                            discountDetails;
+                                        recalculatePurchaseOrder();
+                                      });
+                                      refreshSummary();
+                                    }),
+                                child: Text('Detail'),
+                              ),
+                              Text(
+                                purchaseOrderDetail.discountAmount.format(),
+                                textAlign: .right,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (setting.canShow('purchaseOrderDetail', 'total'))
+                      TableFormColumn<PurchaseOrderDetail>(
+                        name: 'total',
+                        title: 'Total',
+                        headerBuilder: (context) => Text(
+                          'Total',
+                          textAlign: .right,
+                          style: TextFormatter.tableLabelStyle,
+                        ),
+                        isNumeric: true,
+                        rowBuilder: (context, purchaseOrderDetail) => Container(
+                          height: 50,
+                          alignment: .centerEnd,
+                          child: Text(
+                            purchaseOrderDetail.total.format(),
+                            textAlign: .right,
+                          ),
+                        ),
+                      ),
+                    TableFormColumn<PurchaseOrderDetail>(
+                      name: 'action',
+                      desktopWidth: FixedColumnWidth(60),
+                      rowBuilder: (context, purchaseOrderDetail) => IconButton(
+                        onPressed: () => setState(() {
+                          purchaseOrder.purchaseOrderDetails.remove(
+                            purchaseOrderDetail,
+                          );
+                        }),
+                        icon: Icon(Icons.delete),
+                      ),
                     ),
-                  ),
+                  ],
+                  rows: purchaseOrder.purchaseOrderDetails,
                 ),
+
                 const SizedBox(height: 10),
                 LayoutBuilder(
                   builder: (context, constraint) {
@@ -677,82 +711,21 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                     if (size.width < 650) {
                       return Wrap(
                         alignment: .start,
-                        children: [
-                          Visibility(
-                            visible: setting.canShow(
-                              'purchaseOrder',
-                              'description',
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 7,
-                                vertical: 5,
-                              ),
-                              child: SizedBox(
-                                width: width,
-                                child: TextFormField(
-                                  decoration: InputDecoration(
-                                    labelText: setting.columnName(
-                                      'purchaseOrder',
-                                      'description',
-                                    ),
-                                    labelStyle: TextFormatter.labelStyle,
-                                    border: const OutlineInputBorder(),
-                                  ),
-                                  readOnly: true,
-                                  keyboardType: .multiline,
-                                  minLines: 3,
-                                  maxLines: 5,
-                                  initialValue: purchaseOrder.description,
-                                ),
-                              ),
-                            ),
-                          ),
-                          ...orderSummaries,
-                        ],
+                        children: [...leftSummaries, ...rightSummaries],
                       );
                     } else {
                       return Row(
+                        crossAxisAlignment: .start,
                         mainAxisAlignment: .spaceBetween,
                         children: [
                           Column(
                             crossAxisAlignment: .start,
-                            children: [
-                              Visibility(
-                                visible: setting.canShow(
-                                  'purchaseOrder',
-                                  'description',
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 7,
-                                    vertical: 5,
-                                  ),
-                                  child: SizedBox(
-                                    width: width,
-                                    child: TextFormField(
-                                      decoration: InputDecoration(
-                                        labelText: setting.columnName(
-                                          'purchaseOrder',
-                                          'description',
-                                        ),
-                                        labelStyle: TextFormatter.labelStyle,
-                                        border: const OutlineInputBorder(),
-                                      ),
-                                      readOnly: true,
-                                      keyboardType: .multiline,
-                                      minLines: 3,
-                                      maxLines: 5,
-                                      initialValue: purchaseOrder.description,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                            mainAxisAlignment: .start,
+                            children: leftSummaries,
                           ),
                           Column(
                             crossAxisAlignment: .end,
-                            children: orderSummaries,
+                            children: rightSummaries,
                           ),
                         ],
                       );
@@ -767,10 +740,52 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
     );
   }
 
-  List<Widget> get orderSummaries => [
+  List<Widget> get leftSummaries => [
+    Visibility(
+      visible: setting.canShow('purchaseOrder', 'description'),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+        child: SizedBox(
+          width: width,
+          child: TextFormField(
+            decoration: InputDecoration(
+              labelText: setting.columnName('purchaseOrder', 'description'),
+              labelStyle: TextFormatter.labelStyle,
+              border: const OutlineInputBorder(),
+            ),
+            readOnly: true,
+            keyboardType: .multiline,
+            minLines: 3,
+            maxLines: 5,
+            initialValue: purchaseOrder.description,
+          ),
+        ),
+      ),
+    ),
     Visibility(
       visible:
-          setting.canShow('purchaseOrder', 'product_total') || _showSummary,
+          setting.canShow('purchaseOrder', 'discount_total') && _showSummary,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+        child: SizedBox(
+          width: width,
+          child: TextFormField(
+            decoration: InputDecoration(
+              labelText: setting.columnName('purchaseOrder', 'discountTotal'),
+              labelStyle: TextFormatter.labelStyle,
+              border: const OutlineInputBorder(),
+            ),
+            readOnly: true,
+            initialValue: purchaseOrder.discountTotal.format(),
+          ),
+        ),
+      ),
+    ),
+  ];
+  List<Widget> get rightSummaries => [
+    Visibility(
+      visible:
+          setting.canShow('purchaseOrder', 'product_total') && _showSummary,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
         child: SizedBox(
@@ -788,7 +803,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
       ),
     ),
     Visibility(
-      visible: setting.canShow('purchaseOrder', 'subtotal') || _showSummary,
+      visible: setting.canShow('purchaseOrder', 'subtotal') && _showSummary,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
         child: SizedBox(
@@ -807,7 +822,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
     ),
     Visibility(
       visible:
-          setting.canShow('purchaseOrder', 'discount_amount') || _showSummary,
+          setting.canShow('purchaseOrder', 'discount_amount') && _showSummary,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
         child: Row(
@@ -851,6 +866,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                 initialSelection: purchaseOrder.taxType,
                 onChanged: (taxType) => setState(() {
                   purchaseOrder.taxType = taxType ?? purchaseOrder.taxType;
+                  recalculatePurchaseOrder();
                 }),
                 values: TaxType.values,
               ),
@@ -866,7 +882,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                   mainAxisAlignment: .spaceBetween,
                   children: [
                     SizedBox(
-                      width: 90,
+                      width: 100,
                       child: PercentageFormField(
                         label: Text(
                           setting.columnName('purchaseOrder', 'tax_value'),
@@ -887,7 +903,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
       ),
     ),
     Visibility(
-      visible: setting.canShow('purchaseOrder', 'cost_total') || _showSummary,
+      visible: setting.canShow('purchaseOrder', 'cost_total') && _showSummary,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
         child: Row(
@@ -906,7 +922,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                   border: const OutlineInputBorder(),
                 ),
                 readOnly: true,
-                initialValue: moneyFormat(purchaseOrder.costTotal),
+                initialValue: purchaseOrder.costTotal.format(),
               ),
             ),
           ],
@@ -914,7 +930,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
       ),
     ),
     Visibility(
-      visible: setting.canShow('purchaseOrder', 'grandtotal') || _showSummary,
+      visible: setting.canShow('purchaseOrder', 'grandtotal') && _showSummary,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
         child: SizedBox(
@@ -935,158 +951,23 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
 
   void _openCostDetailForm() {
     final costDetails = purchaseOrder.costDetails.toList();
-    final route = ModelRoute();
     showDialog(
       context: context,
       builder: (context) {
         final navigator = Navigator.of(context);
-        final scrollController = ScrollController();
 
-        return StatefulBuilder(
-          builder: (context, setStateDialog) => AlertDialog(
-            title: Row(
-              mainAxisAlignment: .spaceBetween,
-              children: [
-                Flexible(child: Text('Detail Biaya lain')),
-                IconButton(
-                  onPressed: () => navigator.pop(),
-                  icon: Icon(Icons.close),
-                ),
-              ],
-            ),
-            content: SizedBox(
-              height: 1000,
-              width: 1000,
-              child: Scrollbar(
-                thumbVisibility: true,
-                trackVisibility: true,
-                thickness: 8,
-                controller: scrollController,
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  child: TableForm<CostDetail>(
-                    cellPadding: .all(10),
-                    columns: [
-                      TableFormColumn<CostDetail>(
-                        name: 'Source',
-                        headerBuilder: (context) => Text(
-                          'Sumber',
-                          textAlign: .right,
-                          style: TextFormatter.titleStyle,
-                        ),
-                        rowBuilder: (context, object) => TextButton(
-                          onPressed: () {
-                            if (object.source == null) {
-                              return;
-                            }
-                            final detailPage = route.detailPageOf(
-                              object.source!,
-                            );
-                            if (detailPage == null) {
-                              return;
-                            }
-                            tabManager.addTab(
-                              'Edit ${object.sourceId}',
-                              detailPage,
-                            );
-                          },
-                          child: Text(
-                            object.sourceId == null
-                                ? ''
-                                : '${object.sourceType} ${object.sourceId}',
-                          ),
-                        ),
-                      ),
-                      TableFormColumn<CostDetail>(
-                        name: 'description',
-                        headerBuilder: (context) => Text(
-                          'Deskripsi',
-                          textAlign: .right,
-                          style: TextFormatter.titleStyle,
-                        ),
-                        rowBuilder: (context, object) => TextFormField(
-                          initialValue: object.description,
-                          keyboardType: .multiline,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                          ),
-                          minLines: 1,
-                          maxLines: 5,
-                          onChanged: (value) => object.description = value,
-                        ),
-                      ),
-                      TableFormColumn<CostDetail>(
-                        name: 'amount',
-                        headerBuilder: (context) => Text(
-                          'Jumlah(Rp)',
-                          textAlign: .right,
-                          style: TextFormatter.titleStyle,
-                        ),
-                        rowBuilder: (context, object) => MoneyFormField(
-                          initialValue: object.amount,
-                          validator: (value) {
-                            if (value == null) {
-                              return 'harus diisi';
-                            }
-                            return null;
-                          },
-                          onChanged: (value) =>
-                              object.amount = value ?? const Money(0),
-                        ),
-                      ),
-                      TableFormColumn<CostDetail>(
-                        name: 'action',
-                        desktopWidth: FixedColumnWidth(130),
-                        headerBuilder: (context) => Row(
-                          mainAxisAlignment: .spaceBetween,
-                          children: [
-                            IconButton(
-                              onPressed: () => setStateDialog(() {
-                                costDetails.add(CostDetail());
-                              }),
-                              icon: Icon(Icons.add),
-                            ),
-                          ],
-                        ),
-                        rowBuilder: (context, object) => Visibility(
-                          visible: object.source == null,
-                          child: IconButton(
-                            onPressed: () => setStateDialog(() {
-                              if (object.isNewRecord) {
-                                costDetails.remove(object);
-                              } else {
-                                object.flagDestroy();
-                              }
-                            }),
-                            icon: Icon(Icons.delete),
-                          ),
-                        ),
-                      ),
-                    ],
-                    rows: costDetails.whereNot((e) => e.isDestroyed).toList(),
-                  ),
-                ),
-              ),
-            ),
-            actionsPadding: .all(10),
-            actions: [
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState?.validate() != true) {
-                    return;
-                  }
-                  purchaseOrder.costDetails = costDetails;
-                  navigator.pop();
-                },
-
-                child: Text('Edit'),
-              ),
-              ElevatedButton(
-                onPressed: () => navigator.pop(),
-                child: Text('Batal'),
-              ),
-            ],
-          ),
+        return CostDetailFormDialog(
+          navigator: navigator,
+          tabManager: tabManager,
+          costDetails: costDetails,
+          onSuccess: (newCostDetails) {
+            setState(() {
+              purchaseOrder.costDetails = newCostDetails;
+              recalculatePurchaseOrder();
+            });
+            refreshSummary();
+            navigator.pop();
+          },
         );
       },
     );
@@ -1130,7 +1011,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                       children: [
                         ...?description,
                         TableForm<DiscountDetail>(
-                          cellPadding: .all(10),
+                          columnSpacing: 10,
                           columns: [
                             TableFormColumn<DiscountDetail>(
                               name: 'Tipe',

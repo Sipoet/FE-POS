@@ -59,7 +59,7 @@ class ModelCard<T extends Model> extends StatelessWidget with TextFormatter {
                         "${column.humanizeName}:",
                         style: TextFormatter.labelStyle,
                       ),
-                      cell(column, modelHash[column.name]),
+                      cell(column, modelHash[column.name], context),
                     ],
                   ),
                 ),
@@ -71,7 +71,7 @@ class ModelCard<T extends Model> extends StatelessWidget with TextFormatter {
     );
   }
 
-  Widget cell(TableColumn column, Object? value) {
+  Widget cell(TableColumn column, Object? value, BuildContext context) {
     if (value == null) {
       return SizedBox();
     }
@@ -82,6 +82,7 @@ class ModelCard<T extends Model> extends StatelessWidget with TextFormatter {
       value: value,
       column: column,
       tabManager: tabManager,
+      context: context,
     );
   }
 

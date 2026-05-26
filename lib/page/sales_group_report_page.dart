@@ -142,6 +142,7 @@ class _SalesGroupReportPageState extends State<SalesGroupReportPage>
         whitelistColumns,
         fixedLeftColumns: _groupKeys.length,
         tabManager: tabManager,
+        context: context,
       );
       _source.setModels(rawData);
     });

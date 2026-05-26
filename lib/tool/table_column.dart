@@ -146,6 +146,7 @@ abstract class TableColumnType<T> {
     required T value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   });
   T? convert(dynamic value);
 
@@ -214,6 +215,7 @@ class TextTableColumnType extends TableColumnType<String> {
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     return SelectableText(value?.toString() ?? '');
   }
@@ -241,8 +243,38 @@ class ImageTableColumnType extends TableColumnType<ImageModel> {
     ImageModel? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
-    return value == null ? const SizedBox() : Image(image: value);
+    return value == null
+        ? const SizedBox()
+        : InkWell(
+            onTap: () => _openImageViewer(context, value),
+            child: SizedBox(width: 60, child: Image(image: value)),
+          );
+  }
+
+  void _openImageViewer(BuildContext context, ImageModel value) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final navigator = Navigator.of(context);
+        return Dialog(
+          child: Stack(
+            children: [
+              Image(image: value),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton.outlined(
+                  onPressed: () => navigator.pop(),
+                  icon: Icon(Icons.close),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -266,6 +298,7 @@ class ContactTableColumnType extends TextTableColumnType with PlatformChecker {
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     if (value is String && value.trim().isNotEmpty) {
       return Wrap(
@@ -374,6 +407,7 @@ class ActionTableColumnType<T extends Model> extends TableColumnType<T> {
     required T value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     return action(value);
   }
@@ -441,6 +475,7 @@ class DateTableColumnType<T extends DateTime> extends TableColumnType<T> {
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     if (value == null) {
       return SizedBox();
@@ -549,6 +584,7 @@ class TimeTableColumnType extends TableColumnType<TimeOfDay> {
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     if (value is TimeOfDay) {
       return SelectableText(value.format24Hour());
@@ -603,6 +639,7 @@ class NumberTableColumnType<T> extends TableColumnType<T> with TextFormatter {
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     if (value is T) {
       return SelectableText(numberFormat(value), textAlign: .right);
@@ -916,6 +953,7 @@ class MoneyTableColumnType extends TableColumnType<Money> {
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     if (value is Money) {
       return SelectableText(value.format(), textAlign: .right);
@@ -974,6 +1012,7 @@ class ModelTableColumnType<T extends Model> extends TableColumnType<T>
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     if (value is T) {
       return TextButton(
@@ -1126,6 +1165,7 @@ class PercentageTableColumnType extends TableColumnType<Percentage>
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     if (value is Percentage) {
       return Text(value.format(), textAlign: .right);
@@ -1163,6 +1203,7 @@ class BooleanTableColumnType extends TableColumnType<bool> {
     required bool value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     return Text(value.toString());
   }
@@ -1280,6 +1321,7 @@ class EnumTableColumnType extends TableColumnType<String> with TextFormatter {
     required Object value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     String text = convert(value);
     return Text(text);

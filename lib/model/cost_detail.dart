@@ -7,6 +7,8 @@ class CostDetail extends Model {
   Money amount;
   int? sourceId;
   String? sourceType;
+  int? sourceCostId;
+  String? sourceCostType;
   String? description;
 
   CostDetail({
@@ -22,6 +24,8 @@ class CostDetail extends Model {
     'amount': amount,
     'source_id': sourceId,
     'source_type': sourceType,
+    'source_cost_id': sourceCostId,
+    'source_cost_type': sourceCostType,
     'description': description,
   };
 
@@ -29,6 +33,16 @@ class CostDetail extends Model {
     try {
       final model = route.modelClassOf(sourceType!)!.initModel();
       model.id = sourceId;
+      return model;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Model? get sourceCost {
+    try {
+      final model = route.modelClassOf(sourceCostType!)!.initModel();
+      model.id = sourceCostId;
       return model;
     } catch (e) {
       return null;

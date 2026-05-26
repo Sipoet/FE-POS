@@ -38,6 +38,9 @@ class PurchaseOrderDetail extends Model {
 
   String? get productCode => product?.supplierProductCode;
   String get tagDescription => tags.map<String>((e) => e.value).join(' ');
+  Percentage? get margin => product == null
+      ? null
+      : Percentage(1 - (product!.sellPrice.value / price.value));
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);

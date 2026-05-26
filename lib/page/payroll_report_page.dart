@@ -68,6 +68,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
                   tableColumns,
                   tabManager: tabManager,
                   showFilter: true,
+                  context: context,
                 );
                 for (final row in json['data']) {
                   final model = PayrollReportClass().fromJson(

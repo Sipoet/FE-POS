@@ -172,7 +172,11 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
       // final groupModels = convertResponseToHashModels(data);
 
       if (_source != null) {
-        _source?.setTableColumns(_columns, tabManager: tabManager);
+        _source?.setTableColumns(
+          _columns,
+          tabManager: tabManager,
+          context: context,
+        );
         // _source?.setModels(groupModels);
         _source?.sortAscending(_source!.columns.first);
       }

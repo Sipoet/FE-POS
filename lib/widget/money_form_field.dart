@@ -16,12 +16,14 @@ class MoneyFormField extends StatefulWidget {
   final bool readOnly;
   final bool? enabled;
   final FocusNode? focusNode;
+  final bool? isDense;
   const MoneyFormField({
     super.key,
     this.initialValue,
     this.onChanged,
     this.label,
     this.validator,
+    this.isDense,
     this.focusNode,
     this.onFieldSubmitted,
     this.onSaved,
@@ -103,6 +105,7 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
       ],
       decoration: InputDecoration(
         label: widget.label,
+        isDense: widget.isDense,
         contentPadding: const EdgeInsets.all(5),
         prefix: const Text(
           'Rp ',

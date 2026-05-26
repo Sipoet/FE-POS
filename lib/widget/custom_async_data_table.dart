@@ -90,6 +90,7 @@ class _CustomAsyncDataTableState<T extends Model>
           TableColumn tableColumn = entry.value;
           return decorateColumn(
             tableColumn,
+            context: context,
             tabManager: tabManager,
             showCheckboxColumn: index == 0 ? widget.showCheckboxColumn : false,
             listEnumValues: widget.enums[tableColumn.name],
