@@ -27,7 +27,7 @@ class PurchaseOrderDetail extends Model {
   Map<String, dynamic> toMap() => {
     'product_code': productCode,
     'quantity': quantity,
-    'discount_detail': discountDetails,
+    'discount_detail': discountDetails?.map((e) => e.asJson()).toList(),
     'product': product,
     'product_id': product?.id,
     'discount_amount': discountAmount,

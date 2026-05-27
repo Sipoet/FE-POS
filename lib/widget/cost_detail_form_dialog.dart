@@ -7,10 +7,6 @@ import 'package:fe_pos/widget/money_form_field.dart';
 import 'package:fe_pos/widget/table_form.dart';
 import 'package:flutter/material.dart';
 
-// mixin CostDetailFormDialog<T extends StatefulWidget> on State<T>{
-
-//   Future<>
-// }
 class CostDetailFormDialog extends StatefulWidget {
   final void Function(List<CostDetail>) onSuccess;
   final TabManager tabManager;
@@ -67,34 +63,34 @@ class _CostDetailFormDialogState extends State<CostDetailFormDialog>
                 columnSpacing: 10,
                 columns: [
                   TableFormColumn<CostDetail>(
-                    name: 'Source',
+                    name: 'source_cost',
                     headerBuilder: (context) => Text(
-                      'Sumber',
+                      'Sumber Biaya',
                       textAlign: .right,
                       style: TextFormatter.titleStyle,
                     ),
-                    rowBuilder: (context, object) => TextButton(
-                      onPressed: () {
-                        if (object.sourceCost == null) {
-                          return;
-                        }
-                        final detailPage = router.detailPageOf(
-                          object.sourceCost!,
-                        );
-                        if (detailPage == null) {
-                          return;
-                        }
-                        tabManager.addTab(
-                          'Edit ${object.sourceCostId}',
-                          detailPage,
-                        );
-                      },
-                      child: Text(
-                        object.sourceId == null
-                            ? ''
-                            : '${object.sourceType} ${object.sourceId}',
-                      ),
-                    ),
+                    rowBuilder: (context, object) => object.sourceCostId == null
+                        ? SizedBox()
+                        : TextButton(
+                            onPressed: () {
+                              if (object.sourceCost == null) {
+                                return;
+                              }
+                              final detailPage = router.detailPageOf(
+                                object.sourceCost!,
+                              );
+                              if (detailPage == null) {
+                                return;
+                              }
+                              tabManager.addTab(
+                                'Edit ${object.sourceCostId}',
+                                detailPage,
+                              );
+                            },
+                            child: Text(
+                              '${object.sourceCostType} ${object.sourceCostId}',
+                            ),
+                          ),
                   ),
                   TableFormColumn<CostDetail>(
                     name: 'description',
@@ -165,7 +161,8 @@ class _CostDetailFormDialogState extends State<CostDetailFormDialog>
             ),
           ),
         ),
-        actionsPadding: .all(10),
+        actionsPadding: .all(15),
+        actionsAlignment: .start,
         actions: [
           ElevatedButton(
             onPressed: () {
@@ -177,6 +174,7 @@ class _CostDetailFormDialogState extends State<CostDetailFormDialog>
 
             child: Text('Edit'),
           ),
+          const SizedBox(width: 20),
           ElevatedButton(
             onPressed: () => navigator.pop(),
             child: Text('Batal'),

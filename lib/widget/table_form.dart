@@ -81,7 +81,7 @@ class _DesktopTableFormState<T> extends State<DesktopTableForm<T>> {
               sortColumnIndex: sortColumnIndex,
               columnSpacing: 10,
               dataRowMinHeight: 40,
-              dataRowMaxHeight: 60,
+              dataRowMaxHeight: 120,
               border: TableBorder.symmetric(
                 inside: BorderSide(color: Colors.grey.shade400),
               ),
@@ -98,6 +98,7 @@ class _DesktopTableFormState<T> extends State<DesktopTableForm<T>> {
               rows: widget.rows
                   .map<DataRow>(
                     (row) => DataRow(
+                      key: ObjectKey(row),
                       cells: widget.columns
                           .map<DataCell>(
                             (column) =>

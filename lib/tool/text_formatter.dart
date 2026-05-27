@@ -49,7 +49,7 @@ mixin TextFormatter {
     if (number is! num) {
       return '';
     }
-    return NumberFormat(",##0.##", "en_US").format(number);
+    return NumberFormat(",##0.##", "id_ID").format(number);
   }
 
   String compactNumberFormat(number) {

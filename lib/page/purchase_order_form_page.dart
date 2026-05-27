@@ -12,6 +12,7 @@ import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/cost_detail_form_dialog.dart';
 import 'package:fe_pos/widget/date_form_field.dart';
+import 'package:fe_pos/widget/discount_detail_form_dialog.dart';
 import 'package:fe_pos/widget/enum_dropdown.dart';
 import 'package:fe_pos/widget/money_form_field.dart';
 import 'package:fe_pos/widget/number_form_field.dart';
@@ -45,7 +46,6 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
   late PurchaseOrder purchaseOrder;
   late final Server _server;
   late final Setting setting;
-  late final SyncTableController _source;
   late final TabManager tabManager;
   bool _showForm = true;
   double margin = 1;
@@ -72,12 +72,19 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
 
   void fetchPurchaseOrder() {
     showLoadingPopup();
+    setState(() {
+      _showForm = false;
+    });
     purchaseOrder
         .refresh(
           _server,
           include: [
-            'purchase_order_details',
             'supplier',
+            'location',
+            'cost_details',
+            'purchase_order_details',
+            'purchase_order_details.taggings',
+            'purchase_order_details.tags',
             'purchase_order_details.product',
           ],
         )
@@ -85,8 +92,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
           (isSuccess) {
             if (isSuccess) {
               setState(() {
-                _source.setModels(purchaseOrder.purchaseOrderDetails);
-                _source.refreshTable();
+                purchaseOrder.purchaseOrderDetails;
               });
             }
           },
@@ -94,7 +100,12 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
             defaultErrorResponse(error: error);
           },
         )
-        .whenComplete(() => hideLoadingPopup());
+        .whenComplete(() {
+          hideLoadingPopup();
+          setState(() {
+            _showForm = true;
+          });
+        });
   }
 
   void openUpdatePriceForm() {
@@ -259,7 +270,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
     };
     try {
       final response = await _server.post(
-        'ipos/purchase_orders/code/update_price',
+        '/purchase_orders/${purchaseOrder.id}/update_price',
         body: dataParams,
       );
       hideLoadingPopup();
@@ -520,6 +531,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               TableFormColumn<PurchaseOrderDetail>(
                                 name: 'product',
                                 title: 'Produk',
+                                desktopWidth: FlexColumnWidth(1.5),
                                 headerBuilder: (context) => Text(
                                   'Produk',
                                   style: TextFormatter.tableLabelStyle,
@@ -539,6 +551,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               TableFormColumn<PurchaseOrderDetail>(
                                 name: 'tags',
                                 title: 'Tag',
+                                desktopWidth: FlexColumnWidth(1.5),
                                 headerBuilder: (context) => Text(
                                   'Tag',
                                   style: TextFormatter.tableLabelStyle,
@@ -561,6 +574,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               TableFormColumn<PurchaseOrderDetail>(
                                 name: 'quantity',
                                 title: 'Jumlah',
+                                desktopWidth: FixedColumnWidth(90),
                                 isNumeric: true,
                                 headerBuilder: (context) => Text(
                                   'Jumlah',
@@ -581,6 +595,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               TableFormColumn<PurchaseOrderDetail>(
                                 name: 'uom',
                                 title: 'Satuan',
+                                desktopWidth: FixedColumnWidth(130),
                                 headerBuilder: (context) => Text(
                                   'Satuan',
                                   textAlign: .right,
@@ -861,24 +876,22 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
     // _formState.currentState?.save();
 
     purchaseOrder
-        .save(
-          _server,
-          // contentType: .multipartForm,
-          // includeAttributes: {
-          //   'purchase_order_details_attributes': purchaseOrder
-          //       .purchaseOrderDetails
-          //       .map((e) => e.asJson())
-          //       .toList(),
-          // },
-        )
+        .save(_server)
         .then((result) {
           if (result) {
-            setState(() {});
+            setState(() {
+              _showForm = false;
+            });
             flash.show(Text('Sukses Simpan Pesanan Pembelian'), .success);
             tabManager.changeTabHeader(
               widget,
               'Edit Produk ${purchaseOrder.code}',
             );
+            Future.delayed(Durations.short1, () {
+              setState(() {
+                _showForm = true;
+              });
+            });
           } else {
             flash.showBanner(
               messageType: .error,
@@ -886,6 +899,11 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
               description: purchaseOrder.errors.join(','),
             );
           }
+        })
+        .whenComplete(() {
+          setState(() {
+            _showForm = true;
+          });
         });
   }
 
@@ -952,10 +970,10 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
               labelStyle: TextFormatter.labelStyle,
               border: const OutlineInputBorder(),
             ),
-            readOnly: true,
             keyboardType: .multiline,
             minLines: 3,
             maxLines: 5,
+            onChanged: (value) => purchaseOrder.description = value,
             initialValue: purchaseOrder.description,
           ),
         ),
@@ -1187,149 +1205,15 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
     List<DiscountDetail>? sourceDiscountDetails, {
     List<Widget>? description,
   }) {
-    final scrollController = ScrollController();
     return showDialog<List<DiscountDetail>?>(
       context: context,
       builder: (context) {
-        final discountDetails = (sourceDiscountDetails ?? []).toList();
         final navigator = Navigator.of(context);
-        return StatefulBuilder(
-          builder: (context, setStateDialog) => Center(
-            child: AlertDialog(
-              title: Row(
-                mainAxisAlignment: .spaceBetween,
-                children: [
-                  Flexible(child: Text('Detail Diskon')),
-                  IconButton(
-                    onPressed: () => navigator.pop(),
-                    icon: Icon(Icons.close),
-                  ),
-                ],
-              ),
-              content: SizedBox(
-                height: 1000,
-                width: 1000,
-                child: Scrollbar(
-                  thumbVisibility: true,
-                  trackVisibility: true,
-                  thickness: 8,
-                  controller: scrollController,
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    child: Column(
-                      crossAxisAlignment: .start,
-                      children: [
-                        ...?description,
-                        TableForm<DiscountDetail>(
-                          columnSpacing: 10,
-                          columns: [
-                            TableFormColumn<DiscountDetail>(
-                              name: 'Tipe',
-                              headerBuilder: (context) => Text(
-                                'Tipe',
-                                textAlign: .right,
-                                style: TextFormatter.titleStyle,
-                              ),
-                              rowBuilder: (context, object) =>
-                                  DropdownMenu<DiscountDetailType>(
-                                    width: 150,
-                                    onSelected: (value) => setStateDialog(() {
-                                      object.type = value ?? object.type;
-                                    }),
-                                    initialSelection: object.type,
-                                    dropdownMenuEntries: DiscountDetailType
-                                        .values
-                                        .map<
-                                          DropdownMenuEntry<DiscountDetailType>
-                                        >(
-                                          (value) =>
-                                              DropdownMenuEntry<
-                                                DiscountDetailType
-                                              >(
-                                                value: value,
-                                                label: value.humanize(),
-                                              ),
-                                        )
-                                        .toList(),
-                                  ),
-                            ),
-                            TableFormColumn<DiscountDetail>(
-                              name: 'Value',
-                              headerBuilder: (context) => Text(
-                                'Value',
-                                textAlign: .right,
-                                style: TextFormatter.titleStyle,
-                              ),
-                              rowBuilder: (context, object) {
-                                if (object.type == .percentage) {
-                                  return PercentageFormField(
-                                    initialValue: Percentage(object.value),
-                                    onChanged: (value) =>
-                                        object.value = value?.value ?? 0,
-                                  );
-                                } else if (object.type == .nominal) {
-                                  return MoneyFormField(
-                                    initialValue: Money(object.value),
-                                    onChanged: (value) =>
-                                        object.value = value?.value ?? 0,
-                                  );
-                                } else {
-                                  return NumberFormField<double>(
-                                    initialValue: object.value,
-                                    onChanged: (value) =>
-                                        object.value = value ?? 0,
-                                  );
-                                }
-                              },
-                            ),
-                            TableFormColumn<DiscountDetail>(
-                              name: 'action',
-                              desktopWidth: FixedColumnWidth(130),
-                              headerBuilder: (context) => Row(
-                                mainAxisAlignment: .spaceBetween,
-                                children: [
-                                  IconButton(
-                                    onPressed: () => setStateDialog(() {
-                                      discountDetails.add(DiscountDetail());
-                                    }),
-                                    icon: Icon(Icons.add),
-                                  ),
-                                  IconButton(
-                                    onPressed: () => setStateDialog(() {
-                                      discountDetails.clear();
-                                    }),
-                                    icon: Icon(Icons.delete),
-                                  ),
-                                ],
-                              ),
-                              rowBuilder: (context, object) => IconButton(
-                                onPressed: () => setStateDialog(() {
-                                  discountDetails.remove(object);
-                                }),
-                                icon: Icon(Icons.delete),
-                              ),
-                            ),
-                          ],
-                          rows: discountDetails,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              actionsPadding: .all(10),
-              actions: [
-                ElevatedButton(
-                  onPressed: () => navigator.pop(discountDetails),
-                  child: Text('Edit'),
-                ),
-                ElevatedButton(
-                  onPressed: () => navigator.pop(),
-                  child: Text('Batal'),
-                ),
-              ],
-            ),
-          ),
+        return DiscountDetailFormDialog(
+          tabManager: tabManager,
+          navigator: navigator,
+          discountDetails: sourceDiscountDetails,
+          descriptions: description ?? [],
         );
       },
     );

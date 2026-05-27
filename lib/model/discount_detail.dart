@@ -18,9 +18,9 @@ enum DiscountDetailType implements EnumTranslation {
   String toString() {
     switch (this) {
       case percentage:
-        return 'percentage';
+        return 'Purchase::PercentageDiscountCalculator';
       case nominal:
-        return 'nominal';
+        return 'Purchase::NominalDiscountCalculator';
     }
   }
 
@@ -29,6 +29,10 @@ enum DiscountDetailType implements EnumTranslation {
       case 'percentage':
         return percentage;
       case 'nominal':
+        return nominal;
+      case 'Purchase::PercentageDiscountCalculator':
+        return percentage;
+      case 'Purchase::NominalDiscountCalculator':
         return nominal;
       default:
         throw '$value invalid discount detail type';
@@ -45,11 +49,11 @@ class DiscountDetail extends Model {
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
-    super.setFromJson(json, included: included);
-    var attributes = json['attributes'];
-    value = double.tryParse(attributes['value'] ?? '0') ?? 0;
+    // super.setFromJson(json, included: included);
 
-    type = DiscountDetailType.fromString(attributes['type']);
+    value = double.tryParse(json['discount'].toString()) ?? 0;
+
+    type = DiscountDetailType.fromString(json['type']);
   }
 }
 

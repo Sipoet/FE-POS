@@ -366,7 +366,7 @@ class Money {
 
 extension DoubleFormat on double {
   String format({String pattern = ',##0.##'}) =>
-      NumberFormat(pattern, "en_US").format(this);
+      NumberFormat(pattern, "id_ID").format(this);
 }
 
 class Percentage {

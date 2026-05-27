@@ -39,6 +39,9 @@ class PurchaseOrder extends Model with SaveNDestroyModel {
     this.transactionDate,
     this.discountDetails,
     this.description,
+    super.id,
+    super.createdAt,
+    super.updatedAt,
     this.discountAmount = const Money(0),
     this.taxAmount = const Money(0),
     this.subtotal = const Money(0),
@@ -64,7 +67,7 @@ class PurchaseOrder extends Model with SaveNDestroyModel {
     'location_id': location?.id,
     'location_name': location?.name,
     'grandtotal': grandtotal,
-    'discount_detail': discountDetails,
+    'discount_detail': discountDetails?.map((e) => e.asJson()).toList(),
     'cost_total': costTotal,
     'sub_total': subtotal,
     'discount_total': discountTotal,
@@ -73,6 +76,7 @@ class PurchaseOrder extends Model with SaveNDestroyModel {
     'tax_amount': taxAmount,
     'tax_type': taxType,
     'tax_value': taxValue,
+    'cost_details_attributes': costDetails.map((e) => e.asJson()).toList(),
     'purchase_order_details_attributes': purchaseOrderDetails
         .map((e) => e.asJson())
         .toList(),

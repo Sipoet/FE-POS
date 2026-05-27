@@ -54,7 +54,7 @@ class CostDetail extends Model {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];
     amount = Money.parse(attributes['amount']);
-    sourceId = int.tryParse(attributes['source_id'] ?? '');
+    sourceId = int.tryParse(attributes['source_id'].toString());
     sourceType = attributes['source_type'];
     description = attributes['description'];
   }

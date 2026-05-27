@@ -84,6 +84,9 @@ class Tagging extends Model {
       relation: json['relationships']?['tag'],
       included: included,
     );
+    if (tag == null && attributes['tag_id'] != null) {
+      tag = Tag(id: attributes['tag_id']);
+    }
   }
 }
 
