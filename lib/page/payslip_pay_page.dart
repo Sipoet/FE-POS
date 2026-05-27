@@ -1,6 +1,6 @@
 import 'package:fe_pos/model/ipos/account.dart';
 import 'package:fe_pos/model/employee.dart';
-import 'package:fe_pos/model/location.dart';
+import 'package:fe_pos/model/ipos/location.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
@@ -22,7 +22,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
   IposAccount? account;
   DateTime? paidAt;
   String? description;
-  Location? location;
+  IposLocation? location;
   final _formKey = GlobalKey<FormState>();
   List<Employee> employees = [];
   List<Payroll> payrolls = [];
@@ -129,7 +129,7 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
                 onChanged: (model) => roles = model,
               ),
               const SizedBox(height: 10),
-              DateFormField(
+              DateFormField<DateTime>(
                 label: Text("Tanggal Bayar", style: _filterLabelStyle),
                 allowClear: false,
                 onChanged: (value) => paidAt = value,
@@ -162,11 +162,11 @@ class _PayslipPayPageState extends State<PayslipPayPage> with LoadingPopup {
                 },
               ),
               const SizedBox(height: 10),
-              AsyncDropdown<Location>(
+              AsyncDropdown<IposLocation>(
                 label: Text('Lokasi', style: _filterLabelStyle),
                 allowClear: false,
                 textOnSearch: (model) => model.modelValue,
-                modelClass: LocationClass(),
+                modelClass: IposLocationClass(),
                 onChanged: (model) => location = model,
                 validator: (model) {
                   if (model == null) {

@@ -8,12 +8,12 @@ class PurchaseOrderDetail extends Model {
   Money price;
   Money subtotal;
   Money discountAmount;
-  List<DiscountDetail>? discountDetail;
+  List<DiscountDetail>? discountDetails;
   Money total;
   String uom;
   List<Tagging> taggings = [];
   PurchaseOrderDetail({
-    this.discountDetail,
+    this.discountDetails,
     this.quantity = 0,
     this.product,
     List<Tagging>? taggings,
@@ -27,11 +27,13 @@ class PurchaseOrderDetail extends Model {
   Map<String, dynamic> toMap() => {
     'product_code': productCode,
     'quantity': quantity,
-    'discount_detail': discountDetail,
+    'discount_detail': discountDetails,
     'product': product,
     'product_id': product?.id,
     'discount_amount': discountAmount,
+    'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
     'subtotal': subtotal,
+    'price': price,
     'total': total,
     'uom': uom,
   };
@@ -40,7 +42,7 @@ class PurchaseOrderDetail extends Model {
   String get tagDescription => tags.map<String>((e) => e.value).join(' ');
   Percentage? get margin => product == null
       ? null
-      : Percentage(1 - (product!.sellPrice.value / price.value));
+      : Percentage((product!.sellPrice.value / price.value) - 1);
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
@@ -58,7 +60,7 @@ class PurchaseOrderDetail extends Model {
     }
     quantity = double.tryParse(attributes['quantity'] ?? '0') ?? 0;
     final klass = DiscountDetailClass();
-    discountDetail = (attributes['discount_detail'] as List)
+    discountDetails = (attributes['discount_detail'] as List)
         .map<DiscountDetail>((e) => klass.fromJson(e))
         .toList();
     discountAmount =

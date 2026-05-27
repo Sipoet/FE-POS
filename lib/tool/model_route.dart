@@ -181,6 +181,6 @@ class ModelRoute {
     'Ipos::ConsignmentIn': ConsignmentInClass(),
     'Ipos::ConsignmentInOrder': ConsignmentInOrderClass(),
     'Ipos::StockLocation': StockLocationClass(),
-    'Ipos::Location': LocationClass(),
+    'Ipos::Location': IposLocationClass(),
   });
 }

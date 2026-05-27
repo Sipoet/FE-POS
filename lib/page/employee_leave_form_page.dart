@@ -36,8 +36,8 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
   late final Server server;
   late final TabManager _tabManager;
   final _descriptionController = TextEditingController();
-  final _dateBeforeController = DateEditingController(null);
-  final _dateAfterController = DateEditingController(null);
+  final _dateBeforeController = DateEditingController<Date>(null);
+  final _dateAfterController = DateEditingController<Date>(null);
   bool _isMultipleUpdateForm = false;
   @override
   void initState() {

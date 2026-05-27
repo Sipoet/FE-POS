@@ -73,6 +73,9 @@ class PurchaseOrder extends Model with SaveNDestroyModel {
     'tax_amount': taxAmount,
     'tax_type': taxType,
     'tax_value': taxValue,
+    'purchase_order_details_attributes': purchaseOrderDetails
+        .map((e) => e.asJson())
+        .toList(),
   };
 
   String? get supplierName => supplier?.name;
@@ -85,7 +88,7 @@ class PurchaseOrder extends Model with SaveNDestroyModel {
     if (included.isNotEmpty) {
       purchaseOrderDetails = PurchaseOrderDetailClass().findRelationsData(
         included: included,
-        relation: json['relationships']['purchase_order_items'],
+        relation: json['relationships']['purchase_order_details'],
       );
       supplier = SupplierClass().findRelationData(
         included: included,
@@ -103,7 +106,7 @@ class PurchaseOrder extends Model with SaveNDestroyModel {
     code = attributes['code'];
     transactionDate = Date.parse(attributes['transaction_date']);
     description = attributes['description'];
-    productTotal = attributes['product_total'];
+    // productTotal = attributes['product_total'];
     subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
     grandtotal = Money.tryParse(attributes['grandtotal']) ?? const Money(0);
     discountAmount =

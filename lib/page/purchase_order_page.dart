@@ -2,6 +2,7 @@ import 'package:fe_pos/model/purchase_order.dart';
 import 'package:fe_pos/page/purchase_order_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/purchase_calculator.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
@@ -37,7 +38,7 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
     server = context.read<Server>();
     flash = Flash();
     setting = context.read<Setting>();
-    columns = setting.tableColumn('ipos::PurchaseOrder');
+    columns = setting.tableColumn('purchaseOrder');
     Future.delayed(Duration.zero, refreshTable);
     super.initState();
   }
@@ -57,7 +58,7 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
   ) {
     request.filters = _filters;
 
-    request.includeAddAll(['supplier', 'purchase']);
+    request.includeAddAll(['supplier', 'location']);
     return PurchaseOrderClass()
         .finds(server, request)
         .then(
@@ -108,6 +109,7 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
             SizedBox(
               height: bodyScreenHeight - 60,
               child: CustomAsyncDataTable<PurchaseOrder>(
+                enums: {'tax_type': TaxType.values},
                 additionalHeaderActions: (menuController) => [
                   MenuItemButton(
                     child: Text('Tambah Pesanan Pembelian'),

@@ -7,9 +7,11 @@ class EnumDropdown<T extends EnumTranslation> extends StatefulWidget {
   final T? initialSelection;
   final void Function(T? values)? onChanged;
   final bool allowClear;
+  final bool? isDense;
   const EnumDropdown({
     super.key,
     this.label,
+    this.isDense,
     this.initialSelection,
     this.allowClear = false,
     required this.values,
@@ -28,6 +30,10 @@ class _EnumDropdownState<T extends EnumTranslation>
       label: widget.label,
       onSelected: widget.onChanged,
       initialSelection: widget.initialSelection,
+      inputDecorationTheme: InputDecorationTheme(
+        isDense: widget.isDense,
+        border: OutlineInputBorder(),
+      ),
       dropdownMenuEntries: widget.values
           .map<DropdownMenuEntry<T>>(
             (value) =>
