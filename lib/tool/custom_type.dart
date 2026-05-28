@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pluralize/pluralize.dart';
+import 'package:big_decimal/big_decimal.dart';
 
 final plurale = Pluralize()
   ..addSingularRule(RegExp(r'leaves', caseSensitive: false), 'leave')
@@ -282,54 +283,80 @@ class Money {
   int get hashCode => Object.hash(value, symbol, rate);
 
   Money operator +(var other) {
+    BigDecimal result = BigDecimal.parse(value.toString());
     if (other is Money) {
-      return Money(value + other.value, symbol: symbol);
+      result += BigDecimal.parse(other.value.toString());
     } else if (other is num) {
-      return Money(value + other, symbol: symbol);
+      result += BigDecimal.parse(other.toString());
     } else if (other is Percentage) {
-      return Money(value + (other.value * value), symbol: symbol);
+      result +=
+          (BigDecimal.parse(value.toString()) *
+          BigDecimal.parse(other.value.toString()));
     } else {
       return Money(double.nan, symbol: symbol);
     }
+    return Money(result.toDouble(), symbol: symbol);
   }
 
   Money operator *(Object other) {
+    BigDecimal result = BigDecimal.parse(value.toString());
     if (other is Money) {
-      return Money(value * other.value, symbol: symbol);
+      result *= BigDecimal.parse(other.value.toString());
     } else if (other is num) {
-      return Money(value * other, symbol: symbol);
+      result *= BigDecimal.parse(other.toString());
     } else if (other is Percentage) {
-      return Money(value * other.value, symbol: symbol);
+      result *= BigDecimal.parse(other.value.toString());
     } else {
       return Money(double.nan, symbol: symbol);
     }
+    return Money(result.toDouble(), symbol: symbol);
   }
 
   Money operator /(var other) {
+    BigDecimal result = BigDecimal.parse(value.toString());
     if (other is Money) {
-      return Money(value / other.value, symbol: symbol);
+      result = result.divide(
+        BigDecimal.parse(other.value.toString()),
+        roundingMode: .HALF_EVEN,
+        scale: 5,
+      );
     } else if (other is num) {
-      return Money(value / other, symbol: symbol);
+      result = result.divide(
+        BigDecimal.parse(other.toString()),
+        roundingMode: .HALF_EVEN,
+        scale: 5,
+      );
     } else if (other is Percentage) {
-      return Money(value / other.value, symbol: symbol);
+      result = result.divide(
+        BigDecimal.parse(other.value.toString()),
+        roundingMode: .HALF_EVEN,
+        scale: 5,
+      );
     } else {
       return Money(double.nan, symbol: symbol);
     }
+    return Money(result.toDouble(), symbol: symbol);
   }
 
   Money operator -(var other) {
+    BigDecimal result = BigDecimal.parse(value.toString());
     if (other == null) {
       return this;
     } else if (other is Money) {
-      return Money(value - other.value, symbol: symbol);
+      result -= BigDecimal.parse(other.value.toString());
     } else if (other is num) {
-      return Money(value - other, symbol: symbol);
+      result -= BigDecimal.parse(other.toString());
     } else if (other is Percentage) {
-      return Money(value - (other.value * value), symbol: symbol);
+      result -=
+          (BigDecimal.parse(value.toString()) *
+          BigDecimal.parse(other.value.toString()));
     } else {
       return Money(double.nan, symbol: symbol);
     }
+    return Money(result.toDouble(), symbol: symbol);
   }
+
+  BigDecimal toDecimal() => BigDecimal.parse(value.toString());
 
   bool operator >(var other) {
     if (other is Money) {
@@ -372,13 +399,6 @@ extension DoubleFormat on double {
 class Percentage {
   final double value;
   const Percentage(this.value);
-  Percentage operator +(var other) {
-    if (other is Percentage) {
-      return Percentage(value + other.value);
-    } else {
-      return Percentage(value + other);
-    }
-  }
 
   static Percentage parse(dynamic val) {
     if (val is String) {
@@ -439,27 +459,64 @@ class Percentage {
     return value.compareTo(other.value);
   }
 
+  Percentage operator +(var other) {
+    if (other is Percentage) {
+      final decimal =
+          (BigDecimal.parse(value.toString()) +
+          BigDecimal.parse(other.value.toString()));
+      return Percentage(decimal.toDouble());
+    } else {
+      final decimal =
+          (BigDecimal.parse(value.toString()) +
+          BigDecimal.parse(other.toString()));
+      return Percentage(decimal.toDouble());
+    }
+  }
+
   Percentage operator *(var other) {
     if (other is Percentage) {
-      return Percentage(value * other.value);
+      final decimal =
+          (BigDecimal.parse(value.toString()) *
+          BigDecimal.parse(other.value.toString()));
+      return Percentage(decimal.toDouble());
     } else {
-      return Percentage(value * other);
+      final decimal =
+          (BigDecimal.parse(value.toString()) *
+          BigDecimal.parse(other.toString()));
+      return Percentage(decimal.toDouble());
     }
   }
 
   Percentage operator /(var other) {
+    BigDecimal decimal = BigDecimal.parse(value.toString());
     if (other is Percentage) {
-      return Percentage(value / other.value);
+      decimal = decimal.divide(
+        BigDecimal.parse(other.value.toString()),
+        roundingMode: .HALF_EVEN,
+        scale: 5,
+      );
+      return Percentage(decimal.toDouble());
     } else {
+      decimal = decimal.divide(
+        BigDecimal.parse(other.toString()),
+        roundingMode: .HALF_EVEN,
+        scale: 5,
+      );
       return Percentage(value / other);
     }
   }
 
   Percentage operator -(var other) {
     if (other is Percentage) {
-      return Percentage(value - other.value);
+      final decimal =
+          (BigDecimal.parse(value.toString()) -
+          BigDecimal.parse(other.value.toString()));
+      return Percentage(decimal.toDouble());
     } else {
-      return Percentage(value - other);
+      final decimal =
+          (BigDecimal.parse(value.toString()) -
+          BigDecimal.parse(other.toString()));
+      return Percentage(decimal.toDouble());
     }
   }
 

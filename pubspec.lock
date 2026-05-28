@@ -41,6 +41,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.13"
+  big_decimal:
+    dependency: "direct main"
+    description:
+      name: big_decimal
+      sha256: "6413818091e80c907bb73bae383418db5c148fd7fd283e56197bfeeeb212d5bd"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.7.0"
   board_datetime_picker:
     dependency: "direct main"
     description:

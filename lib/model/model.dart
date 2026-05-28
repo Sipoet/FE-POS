@@ -122,7 +122,7 @@ abstract class Model with ChangeNotifier {
     if (object is Money) {
       return object.value;
     } else if (object is Percentage) {
-      return object.value * 100;
+      return object.value;
     } else if (object is Date) {
       return object.toIso8601String();
     } else if (object is DateTime) {

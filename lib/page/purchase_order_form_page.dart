@@ -305,10 +305,11 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
           key: _formState,
           autovalidateMode: .onUnfocus,
           onChanged: () {
-            setState(() {
-              recalculatePurchaseOrder();
-            });
-            refreshSummary();
+            Future.delayed(Durations.short1, () {
+              setState(() {
+                recalculatePurchaseOrder();
+              });
+            }).whenComplete(refreshSummary);
           },
           child: Visibility(
             visible: _showForm,
@@ -782,20 +783,20 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                       ),
                                     ),
                               ),
-                            TableFormColumn<PurchaseOrderDetail>(
-                              name: 'action',
-                              desktopWidth: FixedColumnWidth(60),
-                              rowBuilder: (context, purchaseOrderDetail) =>
-                                  IconButton(
-                                    onPressed: () => setState(() {
-                                      purchaseOrder.purchaseOrderDetails.remove(
-                                        purchaseOrderDetail,
-                                      );
-                                    }),
-                                    icon: Icon(Icons.delete),
-                                  ),
-                            ),
                           ],
+                          actionColumn: TableFormColumn<PurchaseOrderDetail>(
+                            name: 'action',
+                            desktopWidth: FixedColumnWidth(60),
+                            rowBuilder: (context, purchaseOrderDetail) =>
+                                IconButton(
+                                  onPressed: () => setState(() {
+                                    purchaseOrder.purchaseOrderDetails.remove(
+                                      purchaseOrderDetail,
+                                    );
+                                  }),
+                                  icon: Icon(Icons.delete),
+                                ),
+                          ),
                           rows: purchaseOrder.purchaseOrderDetails,
                         ),
 
@@ -1042,42 +1043,44 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
           setting.canShow('purchaseOrder', 'discount_amount') && _showSummary,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
-        child: Row(
-          mainAxisSize: .min,
-          spacing: 15,
-          children: [
-            ElevatedButton(
-              onPressed: () =>
-                  _openDiscountDetail(purchaseOrder.discountDetails).then((
-                    discountDetails,
-                  ) {
-                    if (discountDetails == null || !mounted) {
-                      return;
-                    }
-                    setState(() {
-                      purchaseOrder.discountDetails = discountDetails;
-                      recalculatePurchaseOrder();
-                    });
-                    refreshSummary();
-                  }),
-              child: Text('Detail'),
-            ),
-            SizedBox(
-              width: width,
-              child: TextFormField(
-                decoration: InputDecoration(
-                  labelText: setting.columnName(
-                    'purchaseOrder',
-                    'discount_amount',
-                  ),
-                  labelStyle: TextFormatter.labelStyle,
-                  border: const OutlineInputBorder(),
-                ),
-                readOnly: true,
-                initialValue: purchaseOrder.discountAmount.format(),
+        child: Container(
+          constraints: BoxConstraints(maxWidth: width + 100),
+          child: Row(
+            mainAxisSize: .min,
+            spacing: 15,
+            children: [
+              ElevatedButton(
+                onPressed: () =>
+                    _openDiscountDetail(purchaseOrder.discountDetails).then((
+                      discountDetails,
+                    ) {
+                      if (discountDetails == null || !mounted) {
+                        return;
+                      }
+                      setState(() {
+                        purchaseOrder.discountDetails = discountDetails;
+                        recalculatePurchaseOrder();
+                      });
+                      refreshSummary();
+                    }),
+                child: Text('Detail'),
               ),
-            ),
-          ],
+              Flexible(
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    labelText: setting.columnName(
+                      'purchaseOrder',
+                      'discount_amount',
+                    ),
+                    labelStyle: TextFormatter.labelStyle,
+                    border: const OutlineInputBorder(),
+                  ),
+                  readOnly: true,
+                  initialValue: purchaseOrder.discountAmount.format(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     ),
@@ -1134,26 +1137,32 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
       visible: setting.canShow('purchaseOrder', 'cost_total') && _showSummary,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
-        child: Row(
-          spacing: 15,
-          children: [
-            ElevatedButton(
-              onPressed: () => _openCostDetailForm(),
-              child: Text('Detail'),
-            ),
-            SizedBox(
-              width: width,
-              child: TextFormField(
-                decoration: InputDecoration(
-                  labelText: setting.columnName('purchaseOrder', 'cost_total'),
-                  labelStyle: TextFormatter.labelStyle,
-                  border: const OutlineInputBorder(),
-                ),
-                readOnly: true,
-                initialValue: purchaseOrder.costTotal.format(),
+        child: Container(
+          constraints: BoxConstraints(maxWidth: width + 100),
+          child: Row(
+            mainAxisSize: .min,
+            spacing: 15,
+            children: [
+              ElevatedButton(
+                onPressed: () => _openCostDetailForm(),
+                child: Text('Detail'),
               ),
-            ),
-          ],
+              Flexible(
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    labelText: setting.columnName(
+                      'purchaseOrder',
+                      'cost_total',
+                    ),
+                    labelStyle: TextFormatter.labelStyle,
+                    border: const OutlineInputBorder(),
+                  ),
+                  readOnly: true,
+                  initialValue: purchaseOrder.costTotal.format(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     ),

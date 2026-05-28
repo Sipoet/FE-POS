@@ -69,7 +69,7 @@ class _DiscountDetailFormDialogState extends State<DiscountDetailFormDialog>
                     columnSpacing: 10,
                     columns: [
                       TableFormColumn<DiscountDetail>(
-                        name: 'Tipe',
+                        title: 'Tipe',
                         headerBuilder: (context) => Text(
                           'Tipe',
                           textAlign: .right,
@@ -94,7 +94,7 @@ class _DiscountDetailFormDialogState extends State<DiscountDetailFormDialog>
                             ),
                       ),
                       TableFormColumn<DiscountDetail>(
-                        name: 'Value',
+                        title: 'Value',
                         headerBuilder: (context) => Text(
                           'Value',
                           textAlign: .right,
@@ -121,37 +121,36 @@ class _DiscountDetailFormDialogState extends State<DiscountDetailFormDialog>
                           }
                         },
                       ),
-                      TableFormColumn<DiscountDetail>(
-                        name: 'action',
-                        desktopWidth: FixedColumnWidth(130),
-                        headerBuilder: (context) => Row(
-                          mainAxisAlignment: .spaceBetween,
-                          spacing: 20,
-                          children: [
-                            IconButton(
-                              onPressed: () => setState(() {
-                                discountDetails.add(DiscountDetail());
-                              }),
-                              icon: Icon(Icons.add),
-                            ),
-
-                            IconButton(
-                              onPressed: () => setState(() {
-                                discountDetails.clear();
-                              }),
-                              icon: Icon(Icons.delete),
-                            ),
-                          ],
-                        ),
-                        rowBuilder: (context, object) => IconButton(
-                          onPressed: () => setState(() {
-                            discountDetails.remove(object);
-                          }),
-                          icon: Icon(Icons.delete),
-                        ),
-                      ),
                     ],
                     rows: discountDetails,
+                    actionColumn: TableFormColumn<DiscountDetail>(
+                      desktopWidth: FixedColumnWidth(130),
+                      headerBuilder: (context) => Row(
+                        mainAxisAlignment: .end,
+                        spacing: 20,
+                        children: [
+                          IconButton(
+                            onPressed: () => setState(() {
+                              discountDetails.add(DiscountDetail());
+                            }),
+                            icon: Icon(Icons.add),
+                          ),
+
+                          IconButton(
+                            onPressed: () => setState(() {
+                              discountDetails.clear();
+                            }),
+                            icon: Icon(Icons.delete),
+                          ),
+                        ],
+                      ),
+                      rowBuilder: (context, object) => IconButton(
+                        onPressed: () => setState(() {
+                          discountDetails.remove(object);
+                        }),
+                        icon: Icon(Icons.delete),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -160,6 +159,9 @@ class _DiscountDetailFormDialogState extends State<DiscountDetailFormDialog>
         ),
         actionsPadding: .all(15),
         actionsAlignment: .start,
+        actionsOverflowButtonSpacing: 20,
+        actionsOverflowAlignment: .start,
+        actionsOverflowDirection: .down,
         actions: [
           ElevatedButton(
             onPressed: () {

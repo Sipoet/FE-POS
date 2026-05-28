@@ -127,40 +127,43 @@ class _CostDetailFormDialogState extends State<CostDetailFormDialog>
                           object.amount = value ?? const Money(0),
                     ),
                   ),
-                  TableFormColumn<CostDetail>(
-                    name: 'action',
-                    desktopWidth: FixedColumnWidth(130),
-                    headerBuilder: (context) => Row(
-                      mainAxisAlignment: .spaceBetween,
-                      children: [
-                        IconButton(
-                          onPressed: () => setState(() {
-                            costDetails.add(CostDetail());
-                          }),
-                          icon: Icon(Icons.add),
-                        ),
-                      ],
-                    ),
-                    rowBuilder: (context, object) => Visibility(
-                      visible: object.sourceCost == null,
-                      child: IconButton(
-                        onPressed: () => setState(() {
-                          if (object.isNewRecord) {
-                            costDetails.remove(object);
-                          } else {
-                            object.flagDestroy();
-                          }
-                        }),
-                        icon: Icon(Icons.delete),
-                      ),
-                    ),
-                  ),
                 ],
                 rows: costDetails.whereNot((e) => e.isDestroyed).toList(),
+                actionColumn: TableFormColumn<CostDetail>(
+                  name: 'action',
+                  desktopWidth: FixedColumnWidth(130),
+                  headerBuilder: (context) => Row(
+                    mainAxisAlignment: .spaceBetween,
+                    children: [
+                      IconButton(
+                        onPressed: () => setState(() {
+                          costDetails.add(CostDetail());
+                        }),
+                        icon: Icon(Icons.add),
+                      ),
+                    ],
+                  ),
+                  rowBuilder: (context, object) => Visibility(
+                    visible: object.sourceCost == null,
+                    child: IconButton(
+                      onPressed: () => setState(() {
+                        if (object.isNewRecord) {
+                          costDetails.remove(object);
+                        } else {
+                          object.flagDestroy();
+                        }
+                      }),
+                      icon: Icon(Icons.delete),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
         ),
+        actionsOverflowButtonSpacing: 20,
+        actionsOverflowAlignment: .start,
+        actionsOverflowDirection: .down,
         actionsPadding: .all(15),
         actionsAlignment: .start,
         actions: [
