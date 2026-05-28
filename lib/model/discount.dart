@@ -186,11 +186,11 @@ class Discount extends Model {
     blacklistItemCode = attributes['blacklist_item_code'];
     blacklistBrandName = attributes['blacklist_brand_name'];
     discount1 = calculationType == DiscountCalculationType.percentage
-        ? Percentage(attributes['discount1'] ?? 0)
-        : Money(attributes['discount1'] * 100);
-    discount2 = Percentage(attributes['discount2'] ?? 0);
-    discount3 = Percentage(attributes['discount3'] ?? 0);
-    discount4 = Percentage(attributes['discount4'] ?? 0);
+        ? Percentage.parse(attributes['discount1'])
+        : Money.parse(attributes['discount1']);
+    discount2 = Percentage.tryParse(attributes['discount2'] ?? '');
+    discount3 = Percentage.tryParse(attributes['discount3'] ?? '');
+    discount4 = Percentage.tryParse(attributes['discount4'] ?? '');
     week1 = attributes['week1'];
     week2 = attributes['week2'];
     week3 = attributes['week3'];
