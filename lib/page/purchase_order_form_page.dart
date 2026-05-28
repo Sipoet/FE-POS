@@ -704,7 +704,6 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               'discount_amount',
                             ))
                               TableFormColumn<PurchaseOrderDetail>(
-                                name: 'discount_amount',
                                 title: 'Diskon',
                                 desktopWidth: FixedColumnWidth(250),
                                 headerBuilder: (context) => Text(
@@ -765,7 +764,6 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               ),
                             if (setting.canShow('purchaseOrderDetail', 'total'))
                               TableFormColumn<PurchaseOrderDetail>(
-                                name: 'total',
                                 title: 'Total',
                                 headerBuilder: (context) => Text(
                                   'Total',
@@ -785,15 +783,18 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               ),
                           ],
                           actionColumn: TableFormColumn<PurchaseOrderDetail>(
-                            name: 'action',
                             desktopWidth: FixedColumnWidth(60),
                             rowBuilder: (context, purchaseOrderDetail) =>
                                 IconButton(
-                                  onPressed: () => setState(() {
-                                    purchaseOrder.purchaseOrderDetails.remove(
-                                      purchaseOrderDetail,
-                                    );
-                                  }),
+                                  onPressed: () {
+                                    setState(() {
+                                      purchaseOrder.purchaseOrderDetails.remove(
+                                        purchaseOrderDetail,
+                                      );
+                                      recalculatePurchaseOrder();
+                                    });
+                                    refreshSummary();
+                                  },
                                   icon: Icon(Icons.delete),
                                 ),
                           ),

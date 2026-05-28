@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pluralize/pluralize.dart';
@@ -9,7 +8,11 @@ final plurale = Pluralize()
   ..addSingularRule(RegExp(r'ipos', caseSensitive: false), 'ipos');
 
 extension MoneyList on Iterable<Money> {
-  Money get sum => Money(map<double>((e) => e.value).sum);
+  Money get sum => fold(const Money(0), (a, b) => a + b);
+}
+
+extension DecimalList on Iterable<BigDecimal> {
+  BigDecimal get sum => fold(BigDecimal.parse('0'), (a, b) => a + b);
 }
 
 extension StringExt on String {
@@ -391,7 +394,7 @@ class Money {
   }
 }
 
-extension DoubleFormat on double {
+extension DoubleFormat on num {
   String format({String pattern = ',##0.##'}) =>
       NumberFormat(pattern, "id_ID").format(this);
 }
