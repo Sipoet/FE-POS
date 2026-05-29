@@ -25,13 +25,13 @@ mixin TextFormatter {
   String moneyFormat(dynamic value, {int decimalDigits = 1}) {
     if (value is Money) {
       return NumberFormat.currency(
-        locale: "id_ID",
+        locale: "en_US",
         symbol: value.symbol,
         decimalDigits: decimalDigits,
       ).format(value.value);
     }
     return NumberFormat.currency(
-      locale: "id_ID",
+      locale: "en_US",
       symbol: "Rp",
       decimalDigits: decimalDigits,
     ).format(value);
@@ -49,14 +49,14 @@ mixin TextFormatter {
     if (number is! num) {
       return '';
     }
-    return NumberFormat(",##0.##", "id_ID").format(number);
+    return NumberFormat(",##0.##", "en_US").format(number);
   }
 
   String compactNumberFormat(number) {
     return NumberFormat.compact().format(number);
   }
 
-  String percentageFormat(num value, {String locale = 'id_ID', int digit = 1}) {
+  String percentageFormat(num value, {String locale = 'en_US', int digit = 1}) {
     var numberFormatter = NumberFormat.decimalPercentPattern(
       locale: locale,
       decimalDigits: digit,
@@ -108,6 +108,9 @@ class CustomNumberInputFormatter extends TextInputFormatter {
   /// The type of formatting to apply
   final FormatType formatType;
 
+  /// The character used as decimal separator for format amount & number only
+  final String decimalSeparator;
+
   /// Regular expression to validate only digits
   final RegExp _numberRegExp = RegExp(r'[0-9]');
 
@@ -133,6 +136,7 @@ class CustomNumberInputFormatter extends TextInputFormatter {
     this.separator = ' ',
     this.groupBy = 3,
     int? maxLength,
+    this.decimalSeparator = ',',
     this.formatType = FormatType.number,
   }) : maxLength = maxLength ?? _defaultMaxLengths[formatType],
        assert(groupBy > 0, 'groupBy must be greater than 0'),
@@ -149,7 +153,14 @@ class CustomNumberInputFormatter extends TextInputFormatter {
 
     // Remove existing separators
     String cleanText = newValue.text.replaceAll(separator, '');
-
+    String textAfterResult = '';
+    if ([FormatType.amount, FormatType.number].contains(formatType)) {
+      final splitResult = cleanText.split(decimalSeparator);
+      if (splitResult.length >= 2) {
+        textAfterResult = "${decimalSeparator}${splitResult[1]}";
+        cleanText = splitResult.first;
+      }
+    }
     // Keep only digits
     String numbersOnly = cleanText
         .split('')
@@ -172,8 +183,10 @@ class CustomNumberInputFormatter extends TextInputFormatter {
     final formattedText = _applySpecialFormatting(numbersOnly);
 
     return TextEditingValue(
-      text: formattedText,
-      selection: TextSelection.collapsed(offset: formattedText.length),
+      text: "${formattedText}${textAfterResult}",
+      selection: TextSelection.collapsed(
+        offset: formattedText.length + textAfterResult.length,
+      ),
     );
   }
 
@@ -265,5 +278,15 @@ class CustomNumberInputFormatter extends TextInputFormatter {
     }
 
     return buffer.toString();
+  }
+}
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return newValue.copyWith(text: newValue.text.toUpperCase());
   }
 }

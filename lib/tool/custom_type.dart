@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pluralize/pluralize.dart';
@@ -248,7 +249,7 @@ class Money {
 
   String format({int? decimalDigits}) {
     return NumberFormat.currency(
-      locale: "id_ID",
+      locale: "en_US",
       symbol: symbol,
       decimalDigits: decimalDigits,
     ).format(value);
