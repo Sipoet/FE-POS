@@ -1,5 +1,5 @@
-import 'package:fe_pos/model/ipos/purchase_header.dart';
-import 'package:fe_pos/page/purchase_form_page.dart';
+import 'package:fe_pos/model/purchase_invoice.dart';
+import 'package:fe_pos/page/purchase_invoice_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
@@ -10,22 +10,22 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
 
-class PurchaseItemPage extends StatefulWidget {
-  const PurchaseItemPage({super.key});
+class PurchaseInvoicePage extends StatefulWidget {
+  const PurchaseInvoicePage({super.key});
 
   @override
-  State<PurchaseItemPage> createState() => _PurchaseItemPageState();
+  State<PurchaseInvoicePage> createState() => _PurchaseInvoicePageState();
 }
 
-class _PurchaseItemPageState extends State<PurchaseItemPage>
+class _PurchaseInvoicePageState extends State<PurchaseInvoicePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
-  late final TableController _source;
+  late final TableController<PurchaseInvoice> _source;
   late final Server server;
-  String _searchText = '';
-  List<IposPurchaseItem> items = [];
+  List<PurchaseInvoice> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
+  late final TabManager tabManager;
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
 
@@ -37,7 +37,8 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
     server = context.read<Server>();
     flash = Flash();
     setting = context.read<Setting>();
-    columns = setting.tableColumn('ipos::PurchaseItem');
+    tabManager = context.read<TabManager>();
+    columns = setting.tableColumn('purchaseInvoice');
     super.initState();
   }
 
@@ -51,34 +52,31 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
     _source.refreshTable();
   }
 
-  Future<DataTableResponse<IposPurchaseItem>> fetchPurchaseItems(
+  Future<DataTableResponse<PurchaseInvoice>> fetchPurchases(
     QueryRequest request,
   ) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    request.include = ['item', 'purchase'];
-    return IposPurchaseItemClass()
+    request.includeAddAll(['purchase_order', 'supplier', 'location']);
+    return PurchaseInvoiceClass()
         .finds(server, request)
         .then(
-          (value) => DataTableResponse<IposPurchaseItem>(
+          (value) => DataTableResponse<PurchaseInvoice>(
             models: value.models,
             totalPage: value.metadata['total_pages'],
           ),
           onError: (error) {
             defaultErrorResponse(error: error);
-            return DataTableResponse.empty();
+            return DataTableResponse<PurchaseInvoice>.empty();
           },
         );
   }
 
-  void viewRecord(IposPurchaseItem purchaseItem) {
-    var tabManager = context.read<TabManager>();
+  void openForm(PurchaseInvoice purchaseInvoice) {
+    final text = purchaseInvoice.isNewRecord ? 'Tambah' : 'Edit';
     setState(() {
       tabManager.addTab(
-        'Lihat Pembelian ${purchaseItem.purchaseCode}',
-        PurchaseFormPage(
-          purchase: IposPurchaseHeader(code: purchaseItem.purchaseCode ?? ''),
-        ),
+        '$text Invoice Pembelian ${purchaseInvoice.code}',
+        PurchaseInvoiceFormPage(purchaseInvoice: purchaseInvoice),
       );
     });
   }
@@ -108,13 +106,13 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
             ),
             SizedBox(
               height: bodyScreenHeight,
-              child: CustomAsyncDataTable<IposPurchaseItem>(
-                rowAction: (purchaseItem) => Row(
+              child: CustomAsyncDataTable<PurchaseInvoice>(
+                rowAction: (purchase) => Row(
                   spacing: 10,
                   children: [
                     IconButton.filled(
                       onPressed: () {
-                        viewRecord(purchaseItem);
+                        openForm(purchase);
                       },
                       icon: const Icon(Icons.search_rounded),
                     ),
@@ -122,10 +120,10 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
                 ),
                 onLoaded: (stateManager) {
                   _source = stateManager;
-                  _source.sortDescending(_source.columns[1]);
+                  _source.sortDescending(_source.columns[4]);
                 },
                 columns: columns,
-                fetchData: fetchPurchaseItems,
+                fetchData: fetchPurchases,
                 fixedLeftColumns: 1,
               ),
             ),

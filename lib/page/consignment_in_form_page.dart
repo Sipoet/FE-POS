@@ -759,7 +759,7 @@ class _ConsignmentInFormPageState extends State<ConsignmentInFormPage>
                 ),
                 SizedBox(
                   height: 500,
-                  child: SyncDataTable<PurchaseItem>(
+                  child: SyncDataTable<IposPurchaseItem>(
                     columns: _columns,
                     showSummary: true,
                     onLoaded: (stateManager) => _source = stateManager,

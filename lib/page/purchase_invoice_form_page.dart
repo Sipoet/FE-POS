@@ -1,4 +1,4 @@
-import 'package:fe_pos/model/ipos/purchase_header.dart';
+import 'package:fe_pos/model/purchase_invoice.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
@@ -12,15 +12,16 @@ import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 
-class PurchaseFormPage extends StatefulWidget {
-  final IposPurchaseHeader purchase;
-  const PurchaseFormPage({super.key, required this.purchase});
+class PurchaseInvoiceFormPage extends StatefulWidget {
+  final PurchaseInvoice purchaseInvoice;
+  const PurchaseInvoiceFormPage({super.key, required this.purchaseInvoice});
 
   @override
-  State<PurchaseFormPage> createState() => _PurchaseFormPageState();
+  State<PurchaseInvoiceFormPage> createState() =>
+      _PurchaseInvoiceFormPageState();
 }
 
-class _PurchaseFormPageState extends State<PurchaseFormPage>
+class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
     with
         AutomaticKeepAliveClientMixin,
         LoadingPopup,
@@ -30,7 +31,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
   late Flash flash;
 
   final _formKey = GlobalKey<FormState>();
-  IposPurchaseHeader get purchase => widget.purchase;
+  PurchaseInvoice get purchase => widget.purchaseInvoice;
   late final Server _server;
   late final Setting setting;
   late final SyncTableController _source;
@@ -60,7 +61,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
         humanizeName: 'Margin(%)',
         type: PercentageTableColumnType(),
         getValue: (Model model) {
-          model as IposPurchaseItem;
+          model as PurchaseInvoiceDetail;
           final result = (model.sellPrice - model.price) / model.price;
           if (result.isNaM) {
             return Percentage(0);
@@ -95,7 +96,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                   response.data['data'],
                   included: response.data['included'],
                 );
-                _source.setModels(purchase.purchaseItems);
+                _source.setModels(purchase.purchaseInvoiceDetails);
               });
             }
           },
@@ -728,7 +729,7 @@ class _PurchaseFormPageState extends State<PurchaseFormPage>
                 ),
                 SizedBox(
                   height: 500,
-                  child: SyncDataTable<IposPurchaseItem>(
+                  child: SyncDataTable<PurchaseInvoiceDetail>(
                     columns: _columns,
                     showSummary: true,
                     onLoaded: (stateManager) => _source = stateManager,

@@ -383,16 +383,16 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           Menu(
             icon: Icons.shopping_bag,
             label: 'Pesanan Pembelian',
-            isDisabled: !setting.isAuthorize('ipos/purchase_orders', 'read'),
+            isDisabled: !setting.isAuthorize('purchase_orders', 'read'),
             key: 'purchase_order',
             pageFunct: () => const PurchaseOrderPage(),
           ),
           Menu(
             icon: Icons.shopping_bag,
             label: 'Pembelian',
-            isDisabled: !setting.isAuthorize('ipos/purchases', 'read'),
-            key: 'purchase',
-            pageFunct: () => const PurchasePage(),
+            isDisabled: !setting.isAuthorize('purchase_invoices', 'read'),
+            key: 'purchase_invoice',
+            pageFunct: () => const PurchaseInvoicePage(),
           ),
           Menu(
             icon: Icons.shopping_bag,

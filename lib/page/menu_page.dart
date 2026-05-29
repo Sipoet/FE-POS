@@ -55,13 +55,12 @@ export 'sales_cashier_page.dart';
 export 'check_price_page.dart';
 
 // purchase
-export 'purchase_page.dart';
+export 'purchase_invoice_page.dart';
 export 'purchase_order_page.dart';
 export 'purchase_return_page.dart';
-export 'purchase_item_page.dart';
+export 'purchase_invoice_detail_page.dart';
 export 'consignment_in_order_page.dart';
 export 'consignment_in_page.dart';
-export 'new_purchase_page.dart';
 
 // inventory
 export 'transfer_page.dart';

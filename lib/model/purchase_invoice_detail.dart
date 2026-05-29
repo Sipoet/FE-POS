@@ -1,13 +1,9 @@
-import 'package:fe_pos/model/product.dart';
 export 'package:fe_pos/model/product.dart';
-import 'package:fe_pos/model/consignment_in.dart';
-export 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/model/model.dart';
-import 'package:fe_pos/model/ipos/purchase_header.dart';
-import 'package:fe_pos/model/purchase_return.dart';
+import 'package:fe_pos/model/purchase_invoice.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-class PurchaseItem extends Model {
+class PurchaseInvoiceDetail extends Model {
   double quantity;
   Product _product;
   int row;
@@ -24,7 +20,7 @@ class PurchaseItem extends Model {
   Money cogs;
   DateTime? expiredDate;
   String? productionCode;
-  String? purchaseCode;
+  int? purchaseInvoiceId;
   String? brandName;
   String? supplierCode;
   String? itemTypeName;
@@ -34,10 +30,10 @@ class PurchaseItem extends Model {
   double? numberOfSales;
   String? purchaseType;
   DateTime? transactionDate;
-  PurchaseItem({
+  PurchaseInvoiceDetail({
     Product? product,
     super.id,
-    this.purchaseCode,
+    this.purchaseInvoiceId,
     String? productId,
     this.row = 0,
     this.quantity = 0,
@@ -90,7 +86,7 @@ class PurchaseItem extends Model {
     'tglexp': expiredDate,
     'kodeprod': productionCode,
     'hppdasar': cogs,
-    'notransaksi': purchaseCode,
+    'purchase_invoice_id': purchaseInvoiceId,
     'item.jenis': itemTypeName,
     'item.supplier1': supplierCode,
     'item.merek': brandName,
@@ -106,6 +102,9 @@ class PurchaseItem extends Model {
       _product = newProduct ?? ProductClass().initModel();
 
   Money get sellPrice => product.sellPrice;
+
+  PurchaseInvoice? get purchaseInvoice =>
+      purchaseInvoiceId == null ? null : PurchaseInvoice(id: purchaseInvoiceId);
 
   @override
   String get path => 'ipos/purchase_items';
@@ -148,7 +147,7 @@ class PurchaseItem extends Model {
     itemTypeName = attributes['item_type_name'];
     supplierCode = attributes['supplier_code'];
     brandName = attributes['brand_name'];
-    purchaseCode = attributes['notransaksi'];
+    purchaseInvoiceId = attributes['purchase_invoice_id'];
     purchaseType = attributes['purchase_type'];
     transactionDate = DateTime.tryParse(attributes['transaction_date'] ?? '');
   }
@@ -171,13 +170,13 @@ class PurchaseItem extends Model {
   }
 
   @override
-  String get modelValue => "$purchaseCode-${product.description}";
+  String get modelValue => "$purchaseInvoiceId-${product.description}";
 
   @override
   String? get valueDescription => purchaseTypeName;
 }
 
-class PurchaseItemClass extends ModelClass<PurchaseItem> {
+class PurchaseInvoiceDetailClass extends ModelClass<PurchaseInvoiceDetail> {
   @override
-  PurchaseItem initModel() => PurchaseItem();
+  PurchaseInvoiceDetail initModel() => PurchaseInvoiceDetail();
 }

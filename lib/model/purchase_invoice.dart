@@ -1,17 +1,18 @@
 import 'package:fe_pos/model/supplier.dart';
 export 'package:fe_pos/model/supplier.dart';
-import 'package:fe_pos/model/purchase_item.dart';
-export 'package:fe_pos/model/purchase_item.dart';
+import 'package:fe_pos/model/purchase_invoice_detail.dart';
+export 'package:fe_pos/model/purchase_invoice_detail.dart';
 import 'package:fe_pos/model/model.dart';
-import 'package:fe_pos/model/ipos/purchase_order.dart';
+import 'package:fe_pos/model/purchase_order.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-class PurchaseHeader extends Model with SaveNDestroyModel {
+class PurchaseInvoice extends Model with SaveNDestroyModel {
   String code;
   String? orderCode;
   String userName;
-  IposPurchaseOrder? purchaseOrder;
-  List<PurchaseItem> purchaseItems;
+  PurchaseOrder? purchaseOrder;
+  List<PurchaseInvoiceDetail> purchaseInvoiceDetails;
+  Location? location;
   DateTime datetime;
   DateTime? noteDate;
   String description;
@@ -28,11 +29,10 @@ class PurchaseHeader extends Model with SaveNDestroyModel {
   String taxType;
   Money? taxAmount;
   String? bankCode;
-  String location;
   String destLocation;
   String supplierCode;
   Supplier supplier;
-  PurchaseHeader({
+  PurchaseInvoice({
     this.userName = '',
     this.description = '',
     this.totalItem = 0,
@@ -50,7 +50,7 @@ class PurchaseHeader extends Model with SaveNDestroyModel {
     this.emoneyAmount = const Money(0),
     this.taxAmount = const Money(0),
     this.paymentMethodType = 'non',
-    this.location = '',
+    this.location,
     this.destLocation = '',
     this.bankCode,
     this.taxType = '',
@@ -59,8 +59,9 @@ class PurchaseHeader extends Model with SaveNDestroyModel {
     super.updatedAt,
     Supplier? supplier,
     DateTime? datetime,
-    List<PurchaseItem>? purchaseItems,
-  }) : purchaseItems = purchaseItems ?? <PurchaseItem>[],
+    List<PurchaseInvoiceDetail>? purchaseInvoiceDetails,
+  }) : purchaseInvoiceDetails =
+           purchaseInvoiceDetails ?? <PurchaseInvoiceDetail>[],
        supplier = supplier ?? Supplier(),
        datetime = datetime ?? DateTime.now();
 
@@ -104,7 +105,7 @@ class PurchaseHeader extends Model with SaveNDestroyModel {
     var attributes = json['attributes'];
 
     if (included.isNotEmpty) {
-      purchaseItems = PurchaseItemClass().findRelationsData(
+      purchaseInvoiceDetails = PurchaseInvoiceDetailClass().findRelationsData(
         included: included,
         relation: json['relationships']['purchase_items'],
       );
@@ -113,11 +114,19 @@ class PurchaseHeader extends Model with SaveNDestroyModel {
             included: included,
             relation: json['relationships']['supplier'],
           ) ??
-          supplier;
-      purchaseOrder = IposPurchaseOrderClass().findRelationData(
-        included: included,
-        relation: json['relationships']['purchase_order'],
-      );
+          Supplier(id: attributes['supplier_id']);
+      location =
+          LocationClass().findRelationData(
+            included: included,
+            relation: json['relationships']['location'],
+          ) ??
+          Location(id: attributes['location_id']);
+      purchaseOrder =
+          PurchaseOrderClass().findRelationData(
+            included: included,
+            relation: json['relationships']['purchase_order'],
+          ) ??
+          PurchaseOrder(id: attributes['purchase_order_id']);
     }
     id = json['id'];
     userName = attributes['user1'];
@@ -149,7 +158,7 @@ class PurchaseHeader extends Model with SaveNDestroyModel {
   String get modelValue => code;
 }
 
-class PurchaseHeaderClass extends ModelClass<PurchaseHeader> {
+class PurchaseInvoiceClass extends ModelClass<PurchaseInvoice> {
   @override
-  PurchaseHeader initModel() => PurchaseHeader();
+  PurchaseInvoice initModel() => PurchaseInvoice();
 }

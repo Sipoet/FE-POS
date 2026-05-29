@@ -321,8 +321,6 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                       crossAxisAlignment: .start,
                       children: [
                         Wrap(
-                          // runSpacing: 10,
-                          // spacing: 15,
                           alignment: .start,
                           runAlignment: .start,
                           crossAxisAlignment: .start,
@@ -522,7 +520,6 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                           ],
                         ),
                         const SizedBox(height: 10),
-
                         TableForm<PurchaseOrderDetail>(
                           columns: [
                             if (setting.canShow(
@@ -800,7 +797,6 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                           ),
                           rows: purchaseOrder.purchaseOrderDetails,
                         ),
-
                         const SizedBox(height: 10),
                         LayoutBuilder(
                           builder: (context, constraint) {
@@ -815,14 +811,18 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                 crossAxisAlignment: .start,
                                 mainAxisAlignment: .spaceBetween,
                                 children: [
-                                  Column(
-                                    crossAxisAlignment: .start,
-                                    mainAxisAlignment: .start,
-                                    children: leftSummaries,
+                                  Flexible(
+                                    child: Column(
+                                      crossAxisAlignment: .start,
+                                      mainAxisAlignment: .start,
+                                      children: leftSummaries,
+                                    ),
                                   ),
-                                  Column(
-                                    crossAxisAlignment: .end,
-                                    children: rightSummaries,
+                                  Flexible(
+                                    child: Column(
+                                      crossAxisAlignment: .end,
+                                      children: rightSummaries,
+                                    ),
                                   ),
                                 ],
                               );
