@@ -74,10 +74,11 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
   }
 
   void openForm(PurchaseOrder purchaseOrder) {
+    final text = purchaseOrder.isNewRecord ? 'Tambah' : 'Lihat';
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-        'Lihat Pesanan Pembelian ${purchaseOrder.code}',
+        '$text Pesanan Pembelian ${purchaseOrder.code}',
         PurchaseOrderFormPage(purchaseOrder: purchaseOrder),
       );
     });
@@ -132,7 +133,7 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
                 ),
                 onLoaded: (stateManager) {
                   _source = stateManager;
-                  _source.sortDescending(_source.columns[2]);
+                  _source.sortDescending(_source.columns[1]);
                 },
                 columns: columns,
                 fetchData: fetchPurchaseOrders,

@@ -1,103 +1,95 @@
-import 'package:fe_pos/model/supplier.dart';
 export 'package:fe_pos/model/supplier.dart';
+export 'package:fe_pos/model/location.dart';
 import 'package:fe_pos/model/purchase_invoice_detail.dart';
 export 'package:fe_pos/model/purchase_invoice_detail.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/purchase_order.dart';
 export 'package:fe_pos/tool/custom_type.dart';
+import 'package:fe_pos/tool/purchase_calculator.dart';
+export 'package:fe_pos/tool/purchase_calculator.dart';
 
 class PurchaseInvoice extends Model with SaveNDestroyModel {
   String code;
-  String? orderCode;
-  String userName;
-  PurchaseOrder? purchaseOrder;
-  List<PurchaseInvoiceDetail> purchaseInvoiceDetails;
+  Supplier? supplier;
   Location? location;
-  DateTime datetime;
-  DateTime? noteDate;
-  String description;
-  double totalItem;
+  Date? transactionDate;
+  DateTime? barcodedAt;
+  DateTime? openedAt;
+  List<DiscountDetail>? discountDetails;
+  List<CostDetail> costDetails = [];
+  Money discountAmount;
+  String? description;
   Money subtotal;
   Money grandtotal;
-  Money discountAmount;
-  Money otherCost;
-  Money? cashAmount;
-  Money? debitCardAmount;
-  Money? creditCardAmount;
-  Money? emoneyAmount;
-  String paymentMethodType;
-  String taxType;
-  Money? taxAmount;
-  String? bankCode;
-  String destLocation;
-  String supplierCode;
-  Supplier supplier;
+  String productTotal;
+  Money discountTotal;
+  Money costTotal;
+  TaxType taxType;
+  Money taxAmount;
+  Percentage? taxValue;
+  PurchaseOrder? purchaseOrder;
+  List<PurchaseInvoiceDetail> purchaseInvoiceDetails = [];
   PurchaseInvoice({
-    this.userName = '',
-    this.description = '',
-    this.totalItem = 0,
     this.code = '',
-    this.supplierCode = '',
-    this.orderCode,
-    this.noteDate,
-    this.subtotal = const Money(0),
-    this.grandtotal = const Money(0),
-    this.discountAmount = const Money(0),
-    this.otherCost = const Money(0),
-    this.cashAmount = const Money(0),
-    this.debitCardAmount = const Money(0),
-    this.creditCardAmount = const Money(0),
-    this.emoneyAmount = const Money(0),
-    this.taxAmount = const Money(0),
-    this.paymentMethodType = 'non',
+    this.supplier,
     this.location,
-    this.destLocation = '',
-    this.bankCode,
-    this.taxType = '',
+    this.taxType = .non,
+    this.taxValue,
+    this.transactionDate,
+    this.discountDetails,
+    this.description,
     super.id,
+    this.barcodedAt,
+    this.openedAt,
     super.createdAt,
     super.updatedAt,
-    Supplier? supplier,
-    DateTime? datetime,
+    this.purchaseOrder,
+    this.discountAmount = const Money(0),
+    this.taxAmount = const Money(0),
+    this.subtotal = const Money(0),
+    this.grandtotal = const Money(0),
+    this.discountTotal = const Money(0),
+    this.costTotal = const Money(0),
+    this.productTotal = '',
     List<PurchaseInvoiceDetail>? purchaseInvoiceDetails,
+    List<CostDetail>? costDetails,
   }) : purchaseInvoiceDetails =
            purchaseInvoiceDetails ?? <PurchaseInvoiceDetail>[],
-       supplier = supplier ?? Supplier(),
-       datetime = datetime ?? DateTime.now();
+       costDetails = costDetails ?? [];
 
   @override
   Map<String, dynamic> toMap() => {
-    'user1': userName,
-    'tanggal': datetime,
-    'supplier': supplier,
-    'note_date': noteDate,
-    'keterangan': description,
-    'totalitem': totalItem,
+    'code': code,
+    'transaction_date': transactionDate,
+    'description': description,
+    'product_total': productTotal,
     'subtotal': subtotal,
-    'totalakhir': grandtotal,
-    'potnomfaktur': discountAmount,
-    'biayalain': otherCost,
-    'jmltunai': cashAmount,
-    'jmldebit': debitCardAmount,
-    'jmlkk': creditCardAmount,
-    'jmlemoney': emoneyAmount,
-    'payment_type': paymentMethodType,
+    'supplier': supplier,
+    'supplier_id': supplier?.id,
+    'location': location,
+    'location_id': location?.id,
+    'location_name': location?.name,
+    'grandtotal': grandtotal,
+    'barcoded_at': barcodedAt,
+    'opened_at': openedAt,
     'purchase_order': purchaseOrder,
-    'ppn': taxType,
-    'pajak': taxAmount,
-    'bank_code': bankCode,
-    'notransaksi': code,
-    'notrsorder': orderCode,
-    'kodekantor': location,
-    'kantortujuan': destLocation,
-    'kodesupel': supplierCode,
+    'purchase_order_id': purchaseOrder?.id,
+    'discount_detail': discountDetails?.map((e) => e.asJson()).toList(),
+    'cost_total': costTotal,
+    'sub_total': subtotal,
+    'discount_total': discountTotal,
+    'discount_amount': discountAmount,
     'supplier_name': supplierName,
+    'tax_amount': taxAmount,
+    'tax_type': taxType,
+    'tax_value': taxValue,
+    'cost_details_attributes': costDetails.map((e) => e.asJson()).toList(),
+    'purchase_invoice_details_attributes': purchaseInvoiceDetails
+        .map((e) => e.asJson())
+        .toList(),
   };
 
-  String get supplierName => supplier.name;
-
-  @override
-  String get path => 'ipos/purchases';
+  String? get supplierName => supplier?.name;
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -107,7 +99,7 @@ class PurchaseInvoice extends Model with SaveNDestroyModel {
     if (included.isNotEmpty) {
       purchaseInvoiceDetails = PurchaseInvoiceDetailClass().findRelationsData(
         included: included,
-        relation: json['relationships']['purchase_items'],
+        relation: json['relationships']['purchase_invoice_details'],
       );
       supplier =
           SupplierClass().findRelationData(
@@ -127,31 +119,30 @@ class PurchaseInvoice extends Model with SaveNDestroyModel {
             relation: json['relationships']['purchase_order'],
           ) ??
           PurchaseOrder(id: attributes['purchase_order_id']);
+      costDetails = CostDetailClass().findRelationsData(
+        included: included,
+        relation: json['relationships']['cost_details'],
+      );
     }
     id = json['id'];
-    userName = attributes['user1'];
-    datetime = DateTime.parse(attributes['tanggal'] ?? '');
-    noteDate = DateTime.tryParse(attributes['note_date'] ?? '');
-    description = attributes['keterangan'];
-    totalItem = double.parse(attributes['totalitem']);
+    code = attributes['code'];
+    transactionDate = Date.parse(attributes['transaction_date']);
+    description = attributes['description'];
+    // productTotal = attributes['product_total'];
     subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
-    grandtotal = Money.tryParse(attributes['totalakhir']) ?? const Money(0);
+    grandtotal = Money.tryParse(attributes['grandtotal']) ?? const Money(0);
     discountAmount =
-        Money.tryParse(attributes['potnomfaktur']) ?? const Money(0);
-    otherCost = Money.tryParse(attributes['biayalain']) ?? const Money(0);
-    cashAmount = Money.tryParse(attributes['jmltunai']) ?? const Money(0);
-    debitCardAmount = Money.tryParse(attributes['jmldebit']) ?? const Money(0);
-    creditCardAmount = Money.tryParse(attributes['jmlkk']) ?? const Money(0);
-    emoneyAmount = Money.tryParse(attributes['jmlemoney']) ?? const Money(0);
-    paymentMethodType = attributes['payment_type'] ?? '';
-    taxType = attributes['ppn'];
-    taxAmount = Money.tryParse(attributes['pajak']) ?? const Money(0);
-    code = attributes['notransaksi'];
-    orderCode = attributes['notrsorder'];
-    location = attributes['kodekantor'];
-    destLocation = attributes['kantortujuan'];
-    bankCode = attributes['bank_code'];
-    supplierCode = attributes['kodesupel'];
+        Money.tryParse(attributes['discount_amount']) ?? const Money(0);
+    costTotal = Money.tryParse(attributes['cost_total']) ?? const Money(0);
+    discountTotal =
+        Money.tryParse(attributes['discount_total']) ?? const Money(0);
+    final klass = DiscountDetailClass();
+    discountDetails = (attributes['discount_detail'] as List)
+        .map<DiscountDetail>((e) => klass.fromJson(e))
+        .toList();
+    taxType = TaxType.fromString(attributes['tax_type']);
+    taxValue = Percentage.tryParse(attributes['tax_value']);
+    taxAmount = Money.tryParse(attributes['tax_amount']) ?? const Money(0);
   }
 
   @override

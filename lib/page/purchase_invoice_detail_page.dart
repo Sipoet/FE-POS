@@ -21,7 +21,6 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final TableController _source;
   late final Server server;
-  String _searchText = '';
   List<PurchaseInvoiceDetail> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
@@ -55,8 +54,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
     QueryRequest request,
   ) {
     request.filters = _filters;
-    request.searchText = _searchText;
-    request.include = ['item', 'purchase'];
+    request.include = ['product', 'purchase_order'];
     return PurchaseInvoiceDetailClass()
         .finds(server, request)
         .then(
@@ -75,7 +73,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-        'Lihat Pembelian ${purchaseItem.purchaseInvoice?.id}',
+        'Lihat Detail Pembelian ${purchaseItem.purchaseInvoice?.id}',
         PurchaseInvoiceFormPage(
           purchaseInvoice:
               purchaseItem.purchaseInvoice ??

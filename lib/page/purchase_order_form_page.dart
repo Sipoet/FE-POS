@@ -17,7 +17,6 @@ import 'package:fe_pos/widget/enum_dropdown.dart';
 import 'package:fe_pos/widget/money_form_field.dart';
 import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/percentage_form_field.dart';
-import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/table_form.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 
@@ -634,10 +633,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                               value ?? const Money(0),
                                     ),
                               ),
-                            if (setting.canShow(
-                              'purchaseOrderDetail',
-                              'sell_price',
-                            ))
+                            if (setting.canShow('product', 'sell_price'))
                               TableFormColumn<PurchaseOrderDetail>(
                                 name: 'sell_price',
                                 title: 'Harga Jual',

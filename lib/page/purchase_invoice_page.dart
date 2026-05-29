@@ -9,6 +9,7 @@ import 'package:fe_pos/widget/table_filter_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/tool/purchase_calculator.dart';
 
 class PurchaseInvoicePage extends StatefulWidget {
   const PurchaseInvoicePage({super.key});
@@ -72,7 +73,7 @@ class _PurchaseInvoicePageState extends State<PurchaseInvoicePage>
   }
 
   void openForm(PurchaseInvoice purchaseInvoice) {
-    final text = purchaseInvoice.isNewRecord ? 'Tambah' : 'Edit';
+    final text = purchaseInvoice.isNewRecord ? 'Tambah' : 'Lihat';
     setState(() {
       tabManager.addTab(
         '$text Invoice Pembelian ${purchaseInvoice.code}',
@@ -107,6 +108,16 @@ class _PurchaseInvoicePageState extends State<PurchaseInvoicePage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<PurchaseInvoice>(
+                enums: {'tax_type': TaxType.values},
+                additionalHeaderActions: (menuController) => [
+                  MenuItemButton(
+                    child: Text('Tambah Invoice Pembelian'),
+                    onPressed: () {
+                      menuController.close();
+                      openForm(PurchaseInvoiceClass().initModel());
+                    },
+                  ),
+                ],
                 rowAction: (purchase) => Row(
                   spacing: 10,
                   children: [
@@ -120,7 +131,7 @@ class _PurchaseInvoicePageState extends State<PurchaseInvoicePage>
                 ),
                 onLoaded: (stateManager) {
                   _source = stateManager;
-                  _source.sortDescending(_source.columns[4]);
+                  _source.sortDescending(_source.columns[1]);
                 },
                 columns: columns,
                 fetchData: fetchPurchases,

@@ -2,178 +2,108 @@ export 'package:fe_pos/model/product.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/purchase_invoice.dart';
 export 'package:fe_pos/tool/custom_type.dart';
+export 'package:fe_pos/model/discount_detail.dart';
 
 class PurchaseInvoiceDetail extends Model {
+  Product? product;
   double quantity;
-  Product _product;
-  int row;
   Money price;
-  String uom;
   Money subtotal;
-  double discountAmount1;
-  Percentage discountPercentage2;
-  Percentage discountPercentage3;
-  Percentage discountPercentage4;
-  Money taxAmount;
+  Money discountAmount;
+  List<DiscountDetail>? discountDetails;
   Money total;
-  double orderQuantity;
-  Money cogs;
-  DateTime? expiredDate;
-  String? productionCode;
-  int? purchaseInvoiceId;
-  String? brandName;
-  String? supplierCode;
-  String? itemTypeName;
-  double? stockLeft;
-  double? warehouseStock;
-  double? storeStock;
-  double? numberOfSales;
-  String? purchaseType;
-  DateTime? transactionDate;
+  String uom;
+  List<Tagging> taggings = [];
+  String? barcode;
+  PurchaseInvoice? purchaseInvoice;
   PurchaseInvoiceDetail({
-    Product? product,
-    super.id,
-    this.purchaseInvoiceId,
-    String? productId,
-    this.row = 0,
+    this.discountDetails,
     this.quantity = 0,
-    this.price = const Money(0),
-    this.uom = '',
-    this.stockLeft = 0.0,
-    this.storeStock = 0.0,
-    this.warehouseStock = 0.0,
-    this.numberOfSales = 0.0,
-    super.createdAt,
-    super.updatedAt,
-    this.itemTypeName,
-    this.brandName,
-    this.supplierCode,
+    this.product,
+    this.barcode,
+    this.purchaseInvoice,
+    List<Tagging>? taggings,
     this.subtotal = const Money(0),
-    this.discountAmount1 = 0,
-    this.discountPercentage2 = const Percentage(0),
-    this.discountPercentage3 = const Percentage(0),
-    this.discountPercentage4 = const Percentage(0),
-    this.taxAmount = const Money(0),
+    this.discountAmount = const Money(0),
     this.total = const Money(0),
-    this.orderQuantity = 0,
-    this.productionCode,
-    this.expiredDate,
-    this.cogs = const Money(0),
-  }) : _product = product ?? Product(id: productId);
+    this.uom = 'pcs',
+    this.price = const Money(0),
+  }) : taggings = taggings ?? [];
 
   @override
   Map<String, dynamic> toMap() => {
-    'product': _product,
-    'product_id': _product.id,
-    'product_name': _product.description,
-    'jumlah': quantity,
-    'nobaris': row,
-    'harga': price,
-    'satuan': uom,
+    'barcode': barcode,
+    'quantity': quantity,
+    'purchaseInvoice': purchaseInvoice,
+    'discount_detail': discountDetails?.map((e) => e.asJson()).toList(),
+    'product': product,
+    'product_id': product?.id,
+    'product_code': productCode,
+    'discount_amount': discountAmount,
+    'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
     'subtotal': subtotal,
-    'potongan': discountAmount1,
-    'potongan2': discountPercentage2,
-    'potongan3': discountPercentage3,
-    'potongan4': discountPercentage4,
-    'pajak': taxAmount,
+    'price': price,
     'total': total,
-    'stock_left': stockLeft,
-    'warehouse_stock': warehouseStock,
-    'store_stock': storeStock,
-    'number_of_sales': numberOfSales,
-    'sell_price': sellPrice,
-    'jmlpesan': orderQuantity,
-    'tglexp': expiredDate,
-    'kodeprod': productionCode,
-    'hppdasar': cogs,
-    'purchase_invoice_id': purchaseInvoiceId,
-    'item.jenis': itemTypeName,
-    'item.supplier1': supplierCode,
-    'item.merek': brandName,
-    'item_type_name': itemTypeName,
-    'supplier_code': supplierCode,
-    'brand_name': brandName,
+    'uom': uom,
   };
 
-  Product get product => _product;
-  String get productId => _product.id;
-  set productId(String val) => _product.id = val;
-  set product(Product? newProduct) =>
-      _product = newProduct ?? ProductClass().initModel();
+  String? get productCode => product?.supplierProductCode;
+  String get tagDescription => tags.map<String>((e) => e.value).join(' ');
+  Percentage? get margin => product == null
+      ? null
+      : Percentage((product!.sellPrice.value / price.value) - 1);
 
-  Money get sellPrice => product.sellPrice;
-
-  PurchaseInvoice? get purchaseInvoice =>
-      purchaseInvoiceId == null ? null : PurchaseInvoice(id: purchaseInvoiceId);
-
-  @override
-  String get path => 'ipos/purchase_items';
+  Money get sellPrice => product?.sellPrice ?? const Money(0);
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
     var attributes = json['attributes'];
 
-    super.setFromJson(json, included: included);
     if (included.isNotEmpty) {
-      product =
-          ProductClass().findRelationData(
-            included: included,
-            relation: json['relationships']?['item'],
-          ) ??
-          product;
+      product = ProductClass().findRelationData(
+        included: included,
+        relation: json['relationships']['product'],
+      );
+      taggings = TaggingClass().findRelationsData(
+        included: included,
+        relation: json['relationships']?['taggings'],
+      );
     }
-    if (product.id == null) {
-      productId = attributes['product_id'];
-    }
-    row = attributes['nobaris'];
-    quantity = double.parse(attributes['jumlah']);
-    stockLeft = double.tryParse(attributes['stock_left'] ?? '');
-    warehouseStock = double.tryParse(attributes['warehouse_stock'] ?? '');
-    storeStock = double.tryParse(attributes['store_stock'] ?? '');
-    numberOfSales = double.tryParse(attributes['number_of_sales'] ?? '');
-    price = Money.parse(attributes['harga']);
-    uom = attributes['satuan'];
-    subtotal = Money.parse(attributes['subtotal']);
-    discountAmount1 = double.parse(attributes['potongan']);
-    discountPercentage2 = Percentage.parse(attributes['potongan2']);
-    discountPercentage3 = Percentage.parse(attributes['potongan3']);
-    discountPercentage4 = Percentage.parse(attributes['potongan4']);
-    taxAmount = Money.parse(attributes['pajak']);
-    total = Money.parse(attributes['total']);
-    productionCode = attributes['production_code'];
-    expiredDate = DateTime.tryParse(attributes['tglexp'] ?? '');
-    orderQuantity = double.tryParse(attributes['jmlpesan'] ?? '') ?? 0;
-    cogs = Money.parse(attributes['hppdasar']);
-    itemTypeName = attributes['item_type_name'];
-    supplierCode = attributes['supplier_code'];
-    brandName = attributes['brand_name'];
-    purchaseInvoiceId = attributes['purchase_invoice_id'];
-    purchaseType = attributes['purchase_type'];
-    transactionDate = DateTime.tryParse(attributes['transaction_date'] ?? '');
+    purchaseInvoice = attributes['purchase_invoice_id'] == null
+        ? null
+        : PurchaseInvoice(id: attributes['purchase_invoice_id']);
+    quantity = double.tryParse(attributes['quantity'] ?? '0') ?? 0;
+    final klass = DiscountDetailClass();
+    discountDetails = (attributes['discount_detail'] as List)
+        .map<DiscountDetail>((e) => klass.fromJson(e))
+        .toList();
+    discountAmount =
+        Money.tryParse(attributes['discount_amount']) ?? const Money(0);
+    subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
+    total = Money.tryParse(attributes['total']) ?? const Money(0);
+    price = Money.tryParse(attributes['price']) ?? const Money(0);
+    uom = attributes['uom'];
   }
 
-  String get purchaseTypeName {
-    switch (purchaseType) {
-      case 'BL':
-        return 'Beli';
-      case 'RB':
-        return 'Retur';
-      case 'IM':
-        return 'Item Masuk';
-      case 'RKI':
-        return 'Konsinyasi Retur';
-      case 'KI':
-        return 'Konsinyasi';
-      default:
-        return '';
+  void setTags(List<Tag> newTags) {
+    int index = 0;
+    while (newTags.length > index || taggings.length > index) {
+      final tagging = taggings.elementAtOrNull(index);
+      final tag = newTags.elementAtOrNull(index);
+      if (tagging == null) {
+        taggings.add(Tagging(tag: tag));
+      } else if (tag == null) {
+        tagging.flagDestroy();
+      } else {
+        tagging.tag = tag;
+      }
+      index++;
     }
   }
 
-  @override
-  String get modelValue => "$purchaseInvoiceId-${product.description}";
-
-  @override
-  String? get valueDescription => purchaseTypeName;
+  List<Tag> get tags =>
+      taggings.where((e) => e.tag != null).map<Tag>((e) => e.tag!).toList();
 }
 
 class PurchaseInvoiceDetailClass extends ModelClass<PurchaseInvoiceDetail> {
