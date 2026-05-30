@@ -1,17 +1,19 @@
 import 'package:fe_pos/tool/custom_type.dart';
 import 'package:flutter/material.dart';
 
-class EnumDropdown<T extends EnumTranslation> extends StatefulWidget {
+class EnumDropdown<T extends EnumTranslation> extends StatelessWidget {
   final List<T> values;
   final Widget? label;
   final T? initialSelection;
   final void Function(T? values)? onChanged;
   final bool allowClear;
   final bool? isDense;
+  final double? width;
   const EnumDropdown({
     super.key,
     this.label,
     this.isDense,
+    this.width,
     this.initialSelection,
     this.allowClear = false,
     required this.values,
@@ -19,22 +21,17 @@ class EnumDropdown<T extends EnumTranslation> extends StatefulWidget {
   });
 
   @override
-  State<EnumDropdown<T>> createState() => _EnumDropdownState<T>();
-}
-
-class _EnumDropdownState<T extends EnumTranslation>
-    extends State<EnumDropdown<T>> {
-  @override
   Widget build(BuildContext context) {
     return DropdownMenu<T>(
-      label: widget.label,
-      onSelected: widget.onChanged,
-      initialSelection: widget.initialSelection,
+      width: width,
+      label: label,
+      onSelected: onChanged,
+      initialSelection: initialSelection,
       inputDecorationTheme: InputDecorationTheme(
-        isDense: widget.isDense,
+        isDense: isDense,
         border: OutlineInputBorder(),
       ),
-      dropdownMenuEntries: widget.values
+      dropdownMenuEntries: values
           .map<DropdownMenuEntry<T>>(
             (value) =>
                 DropdownMenuEntry<T>(value: value, label: value.humanize()),

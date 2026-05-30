@@ -931,9 +931,13 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
         purchaseOrder.code = '';
         for (final purchaseOrderDetail in purchaseOrder.purchaseOrderDetails) {
           purchaseOrderDetail.id = null;
+          for (var tagging in purchaseOrderDetail.taggings) {
+            tagging.id = null;
+          }
         }
-        // purchaseOrder.images.clear();
-        // controller.clearImages();
+        for (final costDetail in purchaseOrder.costDetails) {
+          costDetail.id = null;
+        }
 
         tabManager.changeTabHeader(widget, 'Tambah Pesanan Pembelian');
       },
@@ -986,7 +990,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
           width: width,
           child: TextFormField(
             decoration: InputDecoration(
-              labelText: setting.columnName('purchaseOrder', 'discountTotal'),
+              labelText: setting.columnName('purchaseOrder', 'discount_total'),
               labelStyle: TextFormatter.labelStyle,
               border: const OutlineInputBorder(),
             ),
@@ -1087,17 +1091,15 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
-            child: SizedBox(
+            child: EnumDropdown<TaxType>(
               width: width,
-              child: EnumDropdown<TaxType>(
-                label: Text(setting.columnName('purchaseOrder', 'tax_type')),
-                initialSelection: purchaseOrder.taxType,
-                onChanged: (taxType) => setState(() {
-                  purchaseOrder.taxType = taxType ?? purchaseOrder.taxType;
-                  recalculatePurchaseOrder();
-                }),
-                values: TaxType.values,
-              ),
+              label: Text(setting.columnName('purchaseOrder', 'tax_type')),
+              initialSelection: purchaseOrder.taxType,
+              onChanged: (taxType) => setState(() {
+                purchaseOrder.taxType = taxType ?? purchaseOrder.taxType;
+                recalculatePurchaseOrder();
+              }),
+              values: TaxType.values,
             ),
           ),
           Visibility(

@@ -30,10 +30,20 @@ class _DiscountDetailFormDialogState extends State<DiscountDetailFormDialog>
     with TextFormatter {
   final scrollController = ScrollController();
   final _formKey = GlobalKey<FormState>();
-  List<DiscountDetail> get discountDetails => widget.discountDetails;
+  List<DiscountDetail> discountDetails = [];
   NavigatorState get navigator => widget.navigator;
   TabManager get tabManager => widget.tabManager;
   final router = ModelRoute();
+
+  @override
+  void initState() {
+    discountDetails = widget.discountDetails
+        .map<DiscountDetail>(
+          (e) => DiscountDetail(type: e.type, value: e.value),
+        )
+        .toList();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

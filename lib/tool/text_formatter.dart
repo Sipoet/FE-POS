@@ -157,7 +157,7 @@ class CustomNumberInputFormatter extends TextInputFormatter {
     if ([FormatType.amount, FormatType.number].contains(formatType)) {
       final splitResult = cleanText.split(decimalSeparator);
       if (splitResult.length >= 2) {
-        textAfterResult = "${decimalSeparator}${splitResult[1]}";
+        textAfterResult = "$decimalSeparator${splitResult[1]}";
         cleanText = splitResult.first;
       }
     }
@@ -183,7 +183,7 @@ class CustomNumberInputFormatter extends TextInputFormatter {
     final formattedText = _applySpecialFormatting(numbersOnly);
 
     return TextEditingValue(
-      text: "${formattedText}${textAfterResult}",
+      text: "$formattedText$textAfterResult",
       selection: TextSelection.collapsed(
         offset: formattedText.length + textAfterResult.length,
       ),

@@ -28,10 +28,25 @@ class _CostDetailFormDialogState extends State<CostDetailFormDialog>
     with TextFormatter {
   final scrollController = ScrollController();
   final _formKey = GlobalKey<FormState>();
-  List<CostDetail> get costDetails => widget.costDetails;
+  List<CostDetail> costDetails = [];
   NavigatorState get navigator => widget.navigator;
   TabManager get tabManager => widget.tabManager;
   final router = ModelRoute();
+
+  @override
+  void initState() {
+    costDetails = widget.costDetails
+        .map<CostDetail>(
+          (e) => CostDetail(
+            description: e.description,
+            amount: e.amount,
+            sourceCostId: e.sourceCostId,
+            sourceCostType: e.sourceCostType,
+          ),
+        )
+        .toList();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

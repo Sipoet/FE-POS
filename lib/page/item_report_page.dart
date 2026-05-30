@@ -31,7 +31,6 @@ class _ItemReportPageState extends State<ItemReportPage>
   late final TabManager _tabManager;
   // List<ItemReport> itemReports = [];
 
-  String _searchText = '';
   String? _reportType;
   @override
   void initState() {

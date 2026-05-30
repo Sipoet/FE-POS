@@ -17,6 +17,8 @@ class CostDetail extends Model {
     this.description,
     this.sourceId,
     this.sourceType,
+    this.sourceCostId,
+    this.sourceCostType,
   });
 
   @override

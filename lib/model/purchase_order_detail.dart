@@ -61,7 +61,9 @@ class PurchaseOrderDetail extends Model {
     quantity = double.tryParse(attributes['quantity'] ?? '0') ?? 0;
     final klass = DiscountDetailClass();
     discountDetails = (attributes['discount_detail'] as List)
-        .map<DiscountDetail>((e) => klass.fromJson(e))
+        .map<DiscountDetail>(
+          (e) => klass.fromJson({'attributes': e}, included: included),
+        )
         .toList();
     discountAmount =
         Money.tryParse(attributes['discount_amount']) ?? const Money(0);

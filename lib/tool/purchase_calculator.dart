@@ -86,9 +86,9 @@ enum TaxType implements EnumTranslation {
       case non:
         return 'non';
       case included:
-        return 'included';
+        return 'Harga Sudah termasuk Pajak';
       case excluded:
-        return 'excluded';
+        return 'Harga belum termasuk Pajak';
     }
   }
 

@@ -1,4 +1,4 @@
-import 'package:fe_pos/tool/text_formatter.dart';
+import 'package:fe_pos/model/model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pluralize/pluralize.dart';
@@ -594,6 +594,25 @@ extension TimeDay on TimeOfDay {
     } catch (e) {
       debugPrint(e.toString());
       return null;
+    }
+  }
+}
+
+extension ModelList on List<Model> {
+  // flag destroy in list if recorded on database. else is removed from list
+  // follow nested attributes pattern
+  void removeAll() {
+    List<Model> removing = [];
+    forEach((model) {
+      if (model.isNewRecord) {
+        removing.add(model);
+      } else {
+        model.flagDestroy();
+      }
+    });
+
+    for (final model in removing) {
+      remove(model);
     }
   }
 }

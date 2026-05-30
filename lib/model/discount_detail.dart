@@ -49,11 +49,11 @@ class DiscountDetail extends Model {
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
-    // super.setFromJson(json, included: included);
+    super.setFromJson(json, included: included);
+    var attributes = json['attributes'];
+    value = double.tryParse(attributes['discount'].toString()) ?? 0;
 
-    value = double.tryParse(json['discount'].toString()) ?? 0;
-
-    type = DiscountDetailType.fromString(json['type']);
+    type = DiscountDetailType.fromString(attributes['type']);
   }
 }
 

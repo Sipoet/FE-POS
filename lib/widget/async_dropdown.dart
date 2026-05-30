@@ -526,8 +526,8 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
     return request(queryRequest).then(
       (response) => response.models,
       onError: (error, stackTrace) {
-        defaultErrorResponse(error: error, valueWhenError: []);
-        return [];
+        debugPrint("${error.toString()}\n${stackTrace.toString()}");
+        return defaultErrorResponse(error: error, valueWhenError: []);
       },
     );
   }

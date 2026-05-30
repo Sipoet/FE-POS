@@ -9,7 +9,6 @@ import 'package:fe_pos/widget/table_filter_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
-import 'package:fe_pos/tool/purchase_calculator.dart';
 
 class PurchaseInvoicePage extends StatefulWidget {
   const PurchaseInvoicePage({super.key});

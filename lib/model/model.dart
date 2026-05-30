@@ -157,7 +157,10 @@ abstract class Model with ChangeNotifier {
   }
 
   void reset() {
-    setFromJson(rawData['data'] ?? {}, included: rawData['included'] ?? []);
+    setFromJson(
+      rawData['data'] ?? {'attributes': {}},
+      included: rawData['included'] ?? [],
+    );
     notifyListeners();
   }
 

@@ -106,4 +106,28 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
       },
     );
   }
+
+  Future<bool> showConfirmDialog2({String message = 'Apakah Anda Yakin?'}) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text("Konfirmasi"),
+        content: Text(message),
+        actions: [
+          ElevatedButton(
+            child: const Text("Kembali"),
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+          ),
+          ElevatedButton(
+            child: const Text("Submit"),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+          ),
+        ],
+      ),
+    ).then((isSuccess) => isSuccess ?? false);
+  }
 }

@@ -125,8 +125,8 @@ class PurchaseInvoice extends Model with SaveNDestroyModel {
       );
     }
     id = json['id'];
-    code = attributes['code'];
-    transactionDate = Date.parse(attributes['transaction_date']);
+    code = attributes['code'] ?? '';
+    transactionDate = Date.tryParse(attributes['transaction_date'] ?? '');
     description = attributes['description'];
     // productTotal = attributes['product_total'];
     subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
@@ -137,10 +137,12 @@ class PurchaseInvoice extends Model with SaveNDestroyModel {
     discountTotal =
         Money.tryParse(attributes['discount_total']) ?? const Money(0);
     final klass = DiscountDetailClass();
-    discountDetails = (attributes['discount_detail'] as List)
-        .map<DiscountDetail>((e) => klass.fromJson(e))
+    discountDetails = ((attributes['discount_detail'] ?? []) as List)
+        .map<DiscountDetail>(
+          (e) => klass.fromJson({'attributes': e}, included: included),
+        )
         .toList();
-    taxType = TaxType.fromString(attributes['tax_type']);
+    taxType = TaxType.fromString(attributes['tax_type'] ?? 'non');
     taxValue = Percentage.tryParse(attributes['tax_value']);
     taxAmount = Money.tryParse(attributes['tax_amount']) ?? const Money(0);
   }
