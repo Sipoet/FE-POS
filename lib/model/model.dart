@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:convert';
 
 import 'package:fe_pos/model/server.dart';
@@ -178,7 +177,11 @@ abstract class ModelClass<T extends Model> {
 
   String get path => initModel().path;
 
-  T? findRelationData({List included = const [], Map? relation}) {
+  T? findRelationData({
+    List included = const [],
+    Map? relation,
+    bool isRootIncluded = true,
+  }) {
     final relationData = relation?['data'];
     if (relationData == null || included.isEmpty) {
       return null;
@@ -192,10 +195,14 @@ abstract class ModelClass<T extends Model> {
     if (data == null) {
       return null;
     }
-    return fromJson(data, included: included);
+    return fromJson(data, included: isRootIncluded ? included : []);
   }
 
-  List<T> findRelationsData({List included = const [], Map? relation}) {
+  List<T> findRelationsData({
+    List included = const [],
+    Map? relation,
+    bool isRootIncluded = true,
+  }) {
     final relationData = relation?['data'];
     if (relationData == null || included.isEmpty) {
       return [];
@@ -207,26 +214,10 @@ abstract class ModelClass<T extends Model> {
         orElse: () => null,
       );
       if (data != null) {
-        values.add(fromJson(data, included: included));
+        values.add(fromJson(data, included: isRootIncluded ? included : []));
       }
     }
     return values;
-  }
-
-  HasManyRelationShip<T> findRelationsData2({
-    List included = const [],
-    Map? relation,
-    required String foreignKey,
-    dynamic foreignId,
-  }) {
-    QueryRequest queryRequest = QueryRequest(
-      filters: [ComparisonFilterData(key: foreignKey, value: foreignId)],
-    );
-    return HasManyRelationShip<T>(
-      getData: (server) =>
-          finds(server, queryRequest).then((result) => result.models),
-      values: findRelationsData(included: included, relation: relation),
-    );
   }
 
   T fromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -466,21 +457,6 @@ mixin SaveNDestroyModel on Model {
           },
         );
   }
-}
-
-class HasManyRelationShip<T extends Model> extends ChangeNotifier
-    with IterableMixin<T> {
-  List<T> values;
-  Future<List<T>> Function(Server server) getData;
-  HasManyRelationShip({this.values = const [], required this.getData});
-  Future<List<T>> reload(Server server) async {
-    values = await getData(server);
-    notifyListeners();
-    return values;
-  }
-
-  @override
-  Iterator<T> get iterator => values.iterator;
 }
 
 class BelongsToRelationShip<T extends Model> {

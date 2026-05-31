@@ -396,9 +396,12 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           ),
           Menu(
             icon: Icons.shopping_bag,
-            label: 'Detail Pembelian Item',
+            label: 'Detail Invoice Pembelian Produk',
             key: 'purchase',
-            isDisabled: !setting.isAuthorize('ipos/purchase_items', 'read'),
+            isDisabled: !setting.isAuthorize(
+              'purchase_invoice_details',
+              'read',
+            ),
             pageFunct: () => const PurchaseItemPage(),
           ),
           Menu(

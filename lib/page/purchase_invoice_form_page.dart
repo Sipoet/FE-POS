@@ -84,6 +84,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
             'supplier',
             'location',
             'cost_details',
+            'purchase_order',
             'purchase_invoice_details',
             'purchase_invoice_details.taggings',
             'purchase_invoice_details.tags',
@@ -431,12 +432,6 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                       ),
                                       style: TextFormatter.labelStyle,
                                     ),
-                                    validator: (value) {
-                                      if (value == null) {
-                                        return 'harus diisi';
-                                      }
-                                      return null;
-                                    },
                                     allowClear: true,
                                     modelClass: PurchaseOrderClass(),
                                     request: (queryRequest) {
@@ -706,8 +701,17 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                       modelClass: ProductClass(),
                                       // isDense: true,
                                       selected: purchaseInvoiceDetail.product,
-                                      onChanged: (model) =>
-                                          purchaseInvoiceDetail.product = model,
+                                      onChanged: (product) {
+                                        setState(() {
+                                          purchaseInvoiceDetail.product =
+                                              product;
+                                          if (product?.barcodeUsingBatch !=
+                                              true) {
+                                            purchaseInvoiceDetail.barcode =
+                                                product?.barcode;
+                                          }
+                                        });
+                                      },
                                     ),
                               ),
                             if (setting.canShow(
@@ -746,25 +750,33 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                   style: TextFormatter.tableLabelStyle,
                                 ),
                                 rowBuilder: (context, purchaseInvoiceDetail) =>
-                                    TextFormField(
-                                      initialValue:
+                                    AuthorizerFormField(
+                                      columnName: 'barcode',
+                                      tableName: 'purchaseInvoiceDetail',
+                                      notifier: modelToggleNotifier,
+                                      valueCallback: () =>
                                           purchaseInvoiceDetail.barcode,
-                                      textCapitalization: .characters,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter
-                                            .singleLineFormatter,
-                                        UpperCaseTextFormatter(),
-                                        FilteringTextInputFormatter(
-                                          RegExp(r'[A-Z0-9]'),
-                                          allow: true,
-                                        ),
-                                      ],
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(),
-                                      ),
-                                      maxLength: 12,
-                                      onChanged: (value) =>
-                                          purchaseInvoiceDetail.barcode = value,
+                                      childBuilder: (controller) =>
+                                          TextFormField(
+                                            controller: controller,
+                                            textCapitalization: .characters,
+                                            inputFormatters: [
+                                              FilteringTextInputFormatter
+                                                  .singleLineFormatter,
+                                              UpperCaseTextFormatter(),
+                                              FilteringTextInputFormatter(
+                                                RegExp(r'[A-Z0-9]'),
+                                                allow: true,
+                                              ),
+                                            ],
+                                            decoration: InputDecoration(
+                                              border: OutlineInputBorder(),
+                                            ),
+                                            maxLength: 12,
+                                            onChanged: (value) =>
+                                                purchaseInvoiceDetail.barcode =
+                                                    value,
+                                          ),
                                     ),
                               ),
                             if (setting.canShow(

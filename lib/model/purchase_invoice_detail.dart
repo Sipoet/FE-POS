@@ -6,6 +6,7 @@ export 'package:fe_pos/model/discount_detail.dart';
 
 class PurchaseInvoiceDetail extends Model {
   Product? product;
+  Supplier? supplier;
   double quantity;
   Money price;
   Money subtotal;
@@ -34,7 +35,13 @@ class PurchaseInvoiceDetail extends Model {
   Map<String, dynamic> toMap() => {
     'barcode': barcode,
     'quantity': quantity,
-    'purchaseInvoice': purchaseInvoice,
+    'purchase_invoice': purchaseInvoice,
+    'transaction_date': purchaseInvoice?.transactionDate,
+    'sell_price': sellPrice,
+    'tags': tagDescription,
+    'supplier': supplier,
+    'product_category': product?.productCategory,
+    'brand': product?.brand,
     'discount_detail': discountDetails?.map((e) => e.asJson()).toList(),
     'product': product,
     'product_id': product?.id,
@@ -42,6 +49,7 @@ class PurchaseInvoiceDetail extends Model {
     'discount_amount': discountAmount,
     'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
     'subtotal': subtotal,
+    'margin': margin,
     'price': price,
     'total': total,
     'uom': uom,
@@ -69,10 +77,19 @@ class PurchaseInvoiceDetail extends Model {
         included: included,
         relation: json['relationships']?['taggings'],
       );
+      purchaseInvoice =
+          PurchaseInvoiceClass().findRelationData(
+            included: included,
+            isRootIncluded: false,
+            relation: json['relationships']?['purchase_invoice'],
+          ) ??
+          PurchaseInvoice(id: attributes['purchase_invoice_id']);
+      supplier = SupplierClass().findRelationData(
+        included: included,
+        relation: json['relationships']?['supplier'],
+      );
     }
-    purchaseInvoice = attributes['purchase_invoice_id'] == null
-        ? null
-        : PurchaseInvoice(id: attributes['purchase_invoice_id']);
+
     quantity = double.tryParse(attributes['quantity'] ?? '0') ?? 0;
     final klass = DiscountDetailClass();
     discountDetails = (attributes['discount_detail'] as List)
@@ -85,6 +102,7 @@ class PurchaseInvoiceDetail extends Model {
     subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
     total = Money.tryParse(attributes['total']) ?? const Money(0);
     price = Money.tryParse(attributes['price']) ?? const Money(0);
+    barcode = attributes['barcode'];
     uom = attributes['uom'];
   }
 

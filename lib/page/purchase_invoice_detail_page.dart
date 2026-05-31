@@ -54,7 +54,15 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
     QueryRequest request,
   ) {
     request.filters = _filters;
-    request.include = ['product', 'purchase_order'];
+    request.include = [
+      'product',
+      'purchase_invoice',
+      'brand',
+      'taggings',
+      'tags',
+      'supplier',
+      'product_category',
+    ];
     return PurchaseInvoiceDetailClass()
         .finds(server, request)
         .then(
