@@ -76,17 +76,19 @@ class PercentageType with TextFormatter implements NumType<Percentage> {
 
 class NumberFormField<T> extends StatefulWidget {
   final T? initialValue;
-  final void Function(T? value)? onChanged;
-  final void Function(T? value)? onSaved;
-  final void Function(T? value)? onFieldSubmitted;
+  final FormCallback<T>? onChanged;
+  final FormCallback<T>? onSaved;
+  final FormCallback<T>? onFieldSubmitted;
   final String? Function(T? value)? validator;
   final NumType<T>? numType;
   final Widget? label;
+  final ChangeNotifier? notifier;
   final TextEditingController? controller;
   final bool readOnly;
   final bool? enabled;
   final bool? isDense;
   final FocusNode? focusNode;
+  final ValueCallBack<T>? valueCallback;
   final String? hintText;
   const NumberFormField({
     super.key,
@@ -95,7 +97,9 @@ class NumberFormField<T> extends StatefulWidget {
     this.onChanged,
     this.onSaved,
     this.numType,
+    this.valueCallback,
     this.label,
+    this.notifier,
     this.hintText,
     this.validator,
     this.focusNode,
@@ -113,6 +117,7 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
     with TextFormatter {
   String? initialValue;
   late final NumType<T> numType;
+  final _controller = TextEditingController();
 
   T? _valueFromInput(String input) {
     input = input.replaceAll(',', '');
@@ -124,6 +129,7 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
 
   @override
   void dispose() {
+    _controller.dispose();
     super.dispose();
   }
 
@@ -138,6 +144,13 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
     initialValue = widget.initialValue == null
         ? null
         : numberFormat(widget.initialValue);
+    _controller.text = initialValue ?? '';
+    widget.notifier?.addListener(() {
+      setState(() {
+        T? value = widget.valueCallback?.call();
+        _controller.text = value == null ? '' : numberFormat(value);
+      });
+    });
     super.initState();
   }
 
@@ -162,7 +175,7 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
         .copyWith(isDense: widget.isDense);
     return TextFormField(
       enableSuggestions: false,
-      controller: widget.controller,
+      controller: _controller,
       readOnly: widget.readOnly,
       focusNode: widget.focusNode,
       enabled: widget.enabled,

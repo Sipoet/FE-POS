@@ -3,15 +3,15 @@ import 'package:fe_pos/tool/text_formatter.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:flutter/material.dart';
 
-typedef FormCallback = void Function(Money? value);
-
 class MoneyFormField extends StatefulWidget {
   final Money? initialValue;
-  final FormCallback? onChanged;
-  final FormCallback? onSaved;
-  final FormCallback? onFieldSubmitted;
+  final FormCallback<Money>? onChanged;
+  final FormCallback<Money>? onSaved;
+  final ChangeNotifier? notifier;
+  final FormCallback<Money>? onFieldSubmitted;
   final String? Function(Money? value)? validator;
   final Widget? label;
+  final ValueCallBack<Money>? valueCallback;
   final TextEditingController? controller;
   final bool readOnly;
   final bool? enabled;
@@ -23,7 +23,9 @@ class MoneyFormField extends StatefulWidget {
     this.onChanged,
     this.label,
     this.validator,
+    this.notifier,
     this.isDense,
+    this.valueCallback,
     this.focusNode,
     this.onFieldSubmitted,
     this.onSaved,
@@ -37,7 +39,7 @@ class MoneyFormField extends StatefulWidget {
 }
 
 class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
-  TextEditingController? _controller;
+  final _controller = TextEditingController();
   Money? _valueFromInput(String input) {
     input = input.replaceAll(',', '');
     return Money.tryParse(input);
@@ -45,22 +47,26 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
 
   @override
   void initState() {
-    if (widget.controller != null) {
-      _controller = TextEditingController(
-        text: numberFormat(_valueFromInput(widget.controller!.text)?.value),
-      );
-    }
+    _controller.text =
+        widget.initialValue?.value.format() ?? widget.controller?.text ?? '';
+
     widget.controller?.addListener(() {
-      _controller!.text = numberFormat(
+      _controller.text = numberFormat(
         _valueFromInput(widget.controller!.text)?.value,
       );
+    });
+    widget.notifier?.addListener(() {
+      setState(() {
+        Money? value = widget.valueCallback?.call();
+        _controller.text = value == null ? '' : numberFormat(value.value);
+      });
     });
     super.initState();
   }
 
   @override
   void dispose() {
-    _controller?.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -71,7 +77,7 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
         : numberFormat(widget.initialValue?.value);
     return TextFormField(
       enableSuggestions: false,
-      controller: widget.controller == null ? null : _controller,
+      controller: _controller,
       readOnly: widget.readOnly,
       focusNode: widget.focusNode,
       enabled: widget.enabled,

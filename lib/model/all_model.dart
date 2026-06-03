@@ -43,3 +43,5 @@ export 'package:fe_pos/model/ipos/location.dart';
 export 'package:fe_pos/model/tag.dart';
 export 'package:fe_pos/model/tag_key.dart';
 export 'package:fe_pos/model/stock_keeping_unit.dart';
+export 'package:fe_pos/model/purchase_shipment.dart';
+export 'package:fe_pos/model/purchase_shipment_detail.dart';

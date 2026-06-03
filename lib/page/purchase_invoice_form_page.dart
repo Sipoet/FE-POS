@@ -55,6 +55,8 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
   double markUpper = 900;
   double markLower = 500;
   double markSeparator = 500;
+  final double width = 300;
+  bool _showSummary = true;
   final menuController = MenuController();
 
   @override
@@ -338,8 +340,6 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
         .toList();
   }
 
-  final double width = 300;
-  bool _showSummary = true;
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -415,7 +415,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                             Visibility(
                               visible: setting.canShow(
                                 'purchaseInvoice',
-                                'supplier',
+                                'purchase_order',
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(

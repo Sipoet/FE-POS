@@ -616,3 +616,6 @@ extension ModelList on List<Model> {
     }
   }
 }
+
+typedef ValueCallBack<T> = T? Function();
+typedef FormCallback<T> = void Function(T? value);

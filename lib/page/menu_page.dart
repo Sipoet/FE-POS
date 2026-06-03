@@ -56,6 +56,7 @@ export 'check_price_page.dart';
 
 // purchase
 export 'purchase_invoice_page.dart';
+export 'purchase_shipment_page.dart';
 export 'purchase_order_page.dart';
 export 'purchase_return_page.dart';
 export 'purchase_invoice_detail_page.dart';
