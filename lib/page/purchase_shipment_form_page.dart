@@ -161,9 +161,10 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
           include: [
             'sender',
             'location',
-            'purchase_shipment_detail',
-            'purchase_shipment_detail.cost_detail',
-            'purchase_shipment_detail.purchase_invoice',
+            'purchase_shipment_details',
+            'purchase_shipment_details.cost_detail',
+            'purchase_shipment_details.purchase_invoice',
+            'purchase_shipment_details.supplier',
           ],
         )
         .then(
@@ -237,19 +238,31 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                 ),
                                 child: SizedBox(
                                   width: width,
-                                  child: TextFormField(
-                                    decoration: InputDecoration(
-                                      labelText: setting.columnName(
-                                        'purchaseShipment',
-                                        'code',
+                                  child: AuthorizerFormField(
+                                    notifier: modelToggleNotifier,
+                                    tableName: 'purchaseShipment',
+                                    columnName: 'code',
+                                    childBuilder: (controller) => TextFormField(
+                                      decoration: InputDecoration(
+                                        labelText: setting.columnName(
+                                          'purchaseShipment',
+                                          'code',
+                                        ),
+                                        labelStyle: TextFormatter.labelStyle,
+                                        border: const OutlineInputBorder(),
+                                        hintText: 'Auto',
                                       ),
-                                      labelStyle: TextFormatter.labelStyle,
-                                      border: const OutlineInputBorder(),
-                                      hintText: 'Auto',
+                                      controller: controller,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'harus diisi';
+                                        }
+                                        return null;
+                                      },
+                                      onChanged: (value) =>
+                                          purchaseShipment.code = value,
                                     ),
-                                    onChanged: (value) =>
-                                        purchaseShipment.code = value,
-                                    initialValue: purchaseShipment.code,
+                                    valueCallback: () => purchaseShipment.code,
                                   ),
                                 ),
                               ),
@@ -281,12 +294,51 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                       return null;
                                     },
                                     modelClass: ForwarderClass(),
-                                    textOnSelected: (supplier) => supplier.name,
-                                    textOnSearch: (supplier) =>
-                                        '${supplier.code} - ${supplier.name}',
+                                    textOnSearch: (supplier) => supplier.name,
                                     onChanged: (forwarder) =>
                                         purchaseShipment.sender = forwarder,
                                     selected: purchaseShipment.sender,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Visibility(
+                              visible: setting.canShow(
+                                'purchaseShipment',
+                                'receiver',
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 5,
+                                ),
+                                child: SizedBox(
+                                  width: width,
+                                  child: AuthorizerFormField(
+                                    notifier: modelToggleNotifier,
+                                    tableName: 'purchaseShipment',
+                                    columnName: 'receiver',
+                                    childBuilder: (controller) => TextFormField(
+                                      decoration: InputDecoration(
+                                        labelText: setting.columnName(
+                                          'purchaseShipment',
+                                          'receiver',
+                                        ),
+                                        labelStyle: TextFormatter.labelStyle,
+                                        border: const OutlineInputBorder(),
+                                      ),
+                                      controller: controller,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'harus diisi';
+                                        }
+                                        return null;
+                                      },
+                                      onChanged: (value) =>
+                                          purchaseShipment.receiver = value,
+                                    ),
+                                    valueCallback: () =>
+                                        purchaseShipment.receiver,
                                   ),
                                 ),
                               ),
@@ -346,6 +398,12 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                       ),
                                       style: TextFormatter.labelStyle,
                                     ),
+                                    validator: (datetime) {
+                                      if (datetime == null) {
+                                        return 'harus diisi';
+                                      }
+                                      return null;
+                                    },
                                     onChanged: (value) =>
                                         purchaseShipment.shippedAt = value,
                                     initialValue: purchaseShipment.shippedAt,
@@ -393,31 +451,15 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(
-                              width: 50,
-                              child: SubmenuButton(
-                                menuChildren: [
-                                  MenuItemButton(
-                                    child: const Text('Tambah Detail'),
-                                    onPressed: () {
-                                      setState(() {
-                                        purchaseShipment.purchaseShipmentDetails
-                                            .add(PurchaseShipmentDetail());
-                                      });
-                                      menuController.close();
-                                    },
-                                  ),
-                                ],
-                                controller: menuController,
-                                onHover: (isHover) {
-                                  if (isHover) {
-                                    // menuController.open();
-                                  } else {
-                                    // menuController.close();
-                                  }
-                                },
-                                child: const Icon(Icons.table_rows_rounded),
-                              ),
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  purchaseShipment.purchaseShipmentDetails.add(
+                                    PurchaseShipmentDetail(),
+                                  );
+                                });
+                              },
+                              icon: Icon(Icons.add),
                             ),
                           ],
                         ),
@@ -431,10 +473,26 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                 style: TextFormatter.tableLabelStyle,
                               ),
                               rowBuilder: (context, purchaseShipmentDetail) =>
-                                  AsyncDropdown(
-                                    textOnSearch: (purchaseInvoice) =>
-                                        '${purchaseInvoice.code} - ${purchaseInvoice.supplierName}',
+                                  AsyncDropdown<PurchaseInvoice>(
+                                    textOnSearch:
+                                        setting.canShow('supplier', 'name')
+                                        ? ((purchaseInvoice) =>
+                                              '${purchaseInvoice.code} - ${purchaseInvoice.supplier?.name}')
+                                        : ((purchaseInvoice) =>
+                                              '${purchaseInvoice.code} - ${purchaseInvoice.supplier?.code}'),
                                     modelClass: PurchaseInvoiceClass(),
+                                    request: (queryRequest) {
+                                      queryRequest.include = ['supplier'];
+                                      return PurchaseInvoiceClass().finds(
+                                        _server,
+                                        queryRequest,
+                                      );
+                                    },
+                                    selected:
+                                        purchaseShipmentDetail.purchaseInvoice,
+                                    onChanged: (model) =>
+                                        purchaseShipmentDetail.purchaseInvoice =
+                                            model,
                                   ),
                             ),
                             if (setting.canShow(
@@ -503,28 +561,24 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                           horizontal: 7,
                                           vertical: 5,
                                         ),
-                                        child: SizedBox(
-                                          width: width,
-                                          child: TextFormField(
-                                            controller: controller,
-                                            decoration: InputDecoration(
-                                              labelText: setting.columnName(
-                                                'purchaseShipmentDetail',
-                                                'description',
-                                              ),
-                                              labelStyle:
-                                                  TextFormatter.labelStyle,
-                                              border:
-                                                  const OutlineInputBorder(),
+                                        child: TextFormField(
+                                          controller: controller,
+                                          decoration: InputDecoration(
+                                            labelText: setting.columnName(
+                                              'purchaseShipmentDetail',
+                                              'description',
                                             ),
-                                            keyboardType: .multiline,
-                                            minLines: 3,
-                                            maxLines: 5,
-                                            onChanged: (value) =>
-                                                purchaseShipmentDetail
-                                                        .description =
-                                                    value,
+                                            labelStyle:
+                                                TextFormatter.labelStyle,
+                                            border: const OutlineInputBorder(),
                                           ),
+                                          keyboardType: .multiline,
+                                          minLines: 3,
+                                          maxLines: 5,
+                                          onChanged: (value) =>
+                                              purchaseShipmentDetail
+                                                      .description =
+                                                  value,
                                         ),
                                       ),
                                     ),

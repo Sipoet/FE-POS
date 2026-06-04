@@ -115,7 +115,6 @@ class NumberFormField<T> extends StatefulWidget {
 
 class _NumberFormFieldState<T> extends State<NumberFormField<T>>
     with TextFormatter {
-  String? initialValue;
   late final NumType<T> numType;
   final _controller = TextEditingController();
 
@@ -141,17 +140,33 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
       numType = getNumTypeBasedType() as NumType<T>;
     }
 
-    initialValue = widget.initialValue == null
-        ? null
-        : numberFormat(widget.initialValue);
-    _controller.text = initialValue ?? '';
-    widget.notifier?.addListener(() {
+    widget.controller?.addListener(controllerListener);
+    _controller.text =
+        widget.controller?.text ??
+        (widget.initialValue == null ? '' : numberFormat(widget.initialValue));
+    widget.notifier?.addListener(notifierListener);
+    super.initState();
+  }
+
+  void controllerListener() {
+    if (mounted) {
+      setState(() {
+        _controller.text = widget.controller!.text;
+      });
+    } else {
+      widget.controller!.removeListener(controllerListener);
+    }
+  }
+
+  void notifierListener() {
+    if (mounted) {
       setState(() {
         T? value = widget.valueCallback?.call();
         _controller.text = value == null ? '' : numberFormat(value);
       });
-    });
-    super.initState();
+    } else {
+      widget.notifier!.removeListener(notifierListener);
+    }
   }
 
   NumType getNumTypeBasedType() {
@@ -208,7 +223,6 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
         CustomNumberInputFormatter(formatType: .number, separator: ','),
       ],
       decoration: decoration,
-      initialValue: initialValue,
     );
   }
 }

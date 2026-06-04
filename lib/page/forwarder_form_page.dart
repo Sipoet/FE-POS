@@ -1,5 +1,4 @@
-import 'package:fe_pos/model/tag.dart';
-import 'package:fe_pos/model/supplier.dart';
+import 'package:fe_pos/model/forwarder.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
@@ -13,17 +12,17 @@ import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/tool/flash.dart';
 
-class SupplierFormPage extends StatefulWidget {
-  final Supplier supplier;
-  const SupplierFormPage({super.key, required this.supplier});
+class ForwarderFormPage extends StatefulWidget {
+  final Forwarder forwarder;
+  const ForwarderFormPage({super.key, required this.forwarder});
 
   @override
-  State<SupplierFormPage> createState() => _SupplierFormPageState();
+  State<ForwarderFormPage> createState() => _ForwarderFormPageState();
 }
 
-class _SupplierFormPageState extends State<SupplierFormPage>
+class _ForwarderFormPageState extends State<ForwarderFormPage>
     with DefaultResponse, LoadingPopup {
-  late Supplier supplier;
+  late Forwarder forwarder;
   late final Setting _setting;
   late final Server _server;
   late final TabManager _tabManager;
@@ -32,30 +31,27 @@ class _SupplierFormPageState extends State<SupplierFormPage>
   bool _showForm = true;
   @override
   void initState() {
-    supplier = widget.supplier;
+    forwarder = widget.forwarder;
     _setting = context.read<Setting>();
     _server = context.read<Server>();
     _tabManager = context.read<TabManager>();
-    if (!supplier.isNewRecord) {
-      Future.delayed(Duration.zero, fetchSupplier);
+    if (!forwarder.isNewRecord) {
+      Future.delayed(Duration.zero, fetchForwarder);
     }
     super.initState();
   }
 
-  void fetchSupplier() {
+  void fetchForwarder() {
     setState(() {
       _showForm = false;
     });
     showLoadingPopup();
-    supplier
-        .refresh(
-          _server,
-          include: ['contact_numbers', 'account', 'taggings', 'tags'],
-        )
+    forwarder
+        .refresh(_server, include: ['contact_numbers', 'account'])
         .then((isSuccess) {
           if (mounted && isSuccess) {
             setState(() {
-              supplier;
+              forwarder;
             });
           }
         })
@@ -72,18 +68,18 @@ class _SupplierFormPageState extends State<SupplierFormPage>
       return;
     }
     _formState.currentState?.save();
-    supplier.save(_server).then((result) {
+    forwarder.save(_server).then((result) {
       if (result) {
         setState(() {
-          supplier;
+          forwarder;
         });
         flash.show(Text('Sukses Simpan'), .success);
-        _tabManager.changeTabHeader(widget, 'Edit Supplier ${supplier.id}');
+        _tabManager.changeTabHeader(widget, 'Edit Forwarder ${forwarder.id}');
       } else {
         flash.showBanner(
           messageType: .error,
-          title: 'Gagal Simpan Supplier',
-          description: supplier.errors.join(','),
+          title: 'Gagal Simpan Forwarder',
+          description: forwarder.errors.join(','),
         );
       }
     });
@@ -91,12 +87,12 @@ class _SupplierFormPageState extends State<SupplierFormPage>
 
   void _resetRecord() {
     showConfirmDialog(
-      message: 'Apakah yakin reset Supplier "${supplier.name}"',
+      message: 'Apakah yakin reset Forwarder "${forwarder.name}"',
       onSubmit: () {
         setState(() {
           _showForm = false;
         });
-        supplier.reset();
+        forwarder.reset();
         Future.delayed(Durations.short1, () {
           setState(() {
             _showForm = true;
@@ -108,30 +104,30 @@ class _SupplierFormPageState extends State<SupplierFormPage>
 
   void _duplicateRecord() {
     showConfirmDialog(
-      message: 'Apakah yakin duplikat Supplier "${supplier.name}"',
+      message: 'Apakah yakin duplikat Forwarder "${forwarder.name}"',
       onSubmit: () {
-        supplier.id = null;
-        for (final contactNumber in supplier.contactNumbers) {
+        forwarder.id = null;
+        for (final contactNumber in forwarder.contactNumbers) {
           contactNumber.id = null;
         }
-        for (final tagging in supplier.taggings) {
+        for (final tagging in forwarder.taggings) {
           tagging.id = null;
         }
 
-        _tabManager.changeTabHeader(widget, 'Tambah Supplier');
+        _tabManager.changeTabHeader(widget, 'Tambah Forwarder');
       },
     );
   }
 
   void _newRecord() {
-    _tabManager.changeTabHeader(widget, 'Tambah Supplier');
+    _tabManager.changeTabHeader(widget, 'Tambah Forwarder');
     setState(() {
       _showForm = false;
     });
 
     Future.delayed(Durations.short1, () {
       setState(() {
-        supplier = SupplierClass().initModel();
+        forwarder = ForwarderClass().initModel();
         _showForm = true;
       });
     });
@@ -139,7 +135,7 @@ class _SupplierFormPageState extends State<SupplierFormPage>
 
   void addContact() {
     setState(() {
-      supplier.contactNumbers.add(ContactNumber());
+      forwarder.contactNumbers.add(ContactNumber());
     });
   }
 
@@ -164,89 +160,68 @@ class _SupplierFormPageState extends State<SupplierFormPage>
                       crossAxisAlignment: .start,
                       children: [
                         TextFormField(
-                          initialValue: supplier.name,
-                          onChanged: (value) => supplier.name = value,
+                          initialValue: forwarder.name,
+                          onChanged: (value) => forwarder.name = value,
                           decoration: InputDecoration(
                             label: Text(
-                              "${_setting.columnName('supplier', 'name')}*",
-                            ),
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        AsyncDropdownMultiple<Tag>(
-                          textOnSearch: (tag) => tag.modelValue,
-                          modelClass: TagClass(),
-                          request: (queryRequest) {
-                            queryRequest.include = ['tag_key'];
-                            return TagClass().finds(_server, queryRequest);
-                          },
-                          label: Text('Tag'),
-                          selecteds: supplier.tags,
-                          onChanged: (tags) => supplier.setTags(tags),
-                        ),
-                        TextFormField(
-                          initialValue: supplier.code,
-                          onChanged: (value) => supplier.code = value,
-                          decoration: InputDecoration(
-                            label: Text(
-                              _setting.columnName('supplier', 'code'),
+                              "${_setting.columnName('forwarder', 'name')}*",
                             ),
                             border: OutlineInputBorder(),
                           ),
                         ),
                         TextFormField(
-                          initialValue: supplier.city,
-                          onChanged: (value) => supplier.city = value,
+                          initialValue: forwarder.city,
+                          onChanged: (value) => forwarder.city = value,
                           decoration: InputDecoration(
                             label: Text(
-                              _setting.columnName('supplier', 'city'),
+                              _setting.columnName('forwarder', 'city'),
                             ),
                             border: OutlineInputBorder(),
                           ),
                         ),
                         TextFormField(
-                          initialValue: supplier.address,
-                          onChanged: (value) => supplier.address = value,
+                          initialValue: forwarder.address,
+                          onChanged: (value) => forwarder.address = value,
                           keyboardType: .streetAddress,
                           minLines: 3,
                           maxLines: 5,
                           decoration: InputDecoration(
                             label: Text(
-                              _setting.columnName('supplier', 'address'),
+                              _setting.columnName('forwarder', 'address'),
                             ),
                             border: OutlineInputBorder(),
                           ),
                         ),
                         TextFormField(
-                          initialValue: supplier.email,
-                          onChanged: (value) => supplier.email = value,
+                          initialValue: forwarder.email,
+                          onChanged: (value) => forwarder.email = value,
                           keyboardType: .emailAddress,
                           decoration: InputDecoration(
                             label: Text(
-                              _setting.columnName('supplier', 'email'),
+                              _setting.columnName('forwarder', 'email'),
                             ),
                             border: OutlineInputBorder(),
                           ),
                         ),
 
                         TextFormField(
-                          initialValue: supplier.bank,
-                          onChanged: (value) => supplier.bank = value,
+                          initialValue: forwarder.bank,
+                          onChanged: (value) => forwarder.bank = value,
                           decoration: InputDecoration(
                             label: Text(
-                              _setting.columnName('supplier', 'bank'),
+                              _setting.columnName('forwarder', 'bank'),
                             ),
                             border: OutlineInputBorder(),
                           ),
                         ),
                         TextFormField(
-                          initialValue: supplier.bankAccountNumber,
+                          initialValue: forwarder.bankAccountNumber,
                           onChanged: (value) =>
-                              supplier.bankAccountNumber = value,
+                              forwarder.bankAccountNumber = value,
                           decoration: InputDecoration(
                             label: Text(
                               _setting.columnName(
-                                'supplier',
+                                'forwarder',
                                 'bank_account_number',
                               ),
                             ),
@@ -260,13 +235,13 @@ class _SupplierFormPageState extends State<SupplierFormPage>
                           keyboardType: .number,
                         ),
                         TextFormField(
-                          initialValue: supplier.bankRegisterName,
+                          initialValue: forwarder.bankRegisterName,
                           onChanged: (value) =>
-                              supplier.bankRegisterName = value,
+                              forwarder.bankRegisterName = value,
                           decoration: InputDecoration(
                             label: Text(
                               _setting.columnName(
-                                'supplier',
+                                'forwarder',
                                 'bank_register_name',
                               ),
                             ),
@@ -274,14 +249,14 @@ class _SupplierFormPageState extends State<SupplierFormPage>
                           ),
                         ),
                         TextFormField(
-                          initialValue: supplier.description,
-                          onChanged: (value) => supplier.description = value,
+                          initialValue: forwarder.description,
+                          onChanged: (value) => forwarder.description = value,
                           minLines: 3,
                           maxLines: 5,
                           keyboardType: .multiline,
                           decoration: InputDecoration(
                             label: Text(
-                              _setting.columnName('supplier', 'description'),
+                              _setting.columnName('forwarder', 'description'),
                             ),
                             border: OutlineInputBorder(),
                           ),
@@ -300,17 +275,17 @@ class _SupplierFormPageState extends State<SupplierFormPage>
                             return AccountClass().finds(_server, queryRequest);
                           },
                           label: Text(
-                            _setting.columnName('supplier', 'account'),
+                            _setting.columnName('forwarder', 'account'),
                           ),
-                          selected: supplier.account,
-                          onChanged: (model) => supplier.account = model,
+                          selected: forwarder.account,
+                          onChanged: (model) => forwarder.account = model,
                         ),
                         ElevatedButton(
                           onPressed: addContact,
                           child: Text('Tambah Kontak'),
                         ),
                         TableForm<ContactNumber>(
-                          rows: supplier.contactNumbers,
+                          rows: forwarder.contactNumbers,
                           columnSpacing: tablePadding,
                           columns: [
                             TableFormColumn(
@@ -396,7 +371,7 @@ class _SupplierFormPageState extends State<SupplierFormPage>
                                   message: 'Apakah yakin Hapus Semua Kontak?',
                                 )) {
                                   setState(() {
-                                    supplier.contactNumbers.removeAll();
+                                    forwarder.contactNumbers.removeAll();
                                   });
                                 }
                               },
@@ -406,7 +381,7 @@ class _SupplierFormPageState extends State<SupplierFormPage>
                               onPressed: () {
                                 setState(() {
                                   if (object.isNewRecord) {
-                                    supplier.contactNumbers.remove(object);
+                                    forwarder.contactNumbers.remove(object);
                                   } else {
                                     object.flagDestroy();
                                   }
@@ -435,14 +410,14 @@ class _SupplierFormPageState extends State<SupplierFormPage>
                       child: Text('Reset'),
                     ),
                     Visibility(
-                      visible: !supplier.isNewRecord,
+                      visible: !forwarder.isNewRecord,
                       child: ElevatedButton(
                         onPressed: _newRecord,
                         child: Text('Buat Baru'),
                       ),
                     ),
                     Visibility(
-                      visible: !supplier.isNewRecord,
+                      visible: !forwarder.isNewRecord,
                       child: ElevatedButton(
                         onPressed: _duplicateRecord,
                         child: Text('Menduplikasi'),

@@ -3,14 +3,12 @@ import 'dart:developer';
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:fe_pos/page/loading_page.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/flash.dart';
 
 mixin DefaultResponse<T extends StatefulWidget> on State<T> {
-  static const labelStyle = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.bold,
-  );
+  static const labelStyle = TextFormatter.labelStyle;
 
   dynamic defaultErrorResponse({required var error, final valueWhenError}) {
     Flash flash = Flash();

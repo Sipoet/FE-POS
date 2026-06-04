@@ -50,18 +50,28 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
     _controller.text =
         widget.initialValue?.value.format() ?? widget.controller?.text ?? '';
 
-    widget.controller?.addListener(() {
-      _controller.text = numberFormat(
-        _valueFromInput(widget.controller!.text)?.value,
-      );
-    });
-    widget.notifier?.addListener(() {
+    widget.controller?.addListener(controllerListener);
+    widget.notifier?.addListener(notifierListener);
+    super.initState();
+  }
+
+  void controllerListener() {
+    if (mounted) {
+      _controller.text = widget.controller!.text;
+    } else {
+      widget.controller!.removeListener(controllerListener);
+    }
+  }
+
+  void notifierListener() {
+    if (mounted) {
       setState(() {
         Money? value = widget.valueCallback?.call();
         _controller.text = value == null ? '' : numberFormat(value.value);
       });
-    });
-    super.initState();
+    } else {
+      widget.notifier!.removeListener(notifierListener);
+    }
   }
 
   @override
@@ -72,9 +82,6 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
 
   @override
   Widget build(BuildContext context) {
-    final value = widget.initialValue == null
-        ? null
-        : numberFormat(widget.initialValue?.value);
     return TextFormField(
       enableSuggestions: false,
       controller: _controller,
@@ -123,7 +130,6 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
         ),
         border: const OutlineInputBorder(),
       ),
-      initialValue: value,
     );
   }
 }

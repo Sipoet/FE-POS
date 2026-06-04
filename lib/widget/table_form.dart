@@ -71,7 +71,12 @@ class _DesktopTableFormState<T> extends State<DesktopTableForm<T>> {
 
   @override
   Widget build(BuildContext context) {
-    double maxWidth = columns.length * 200.0;
+    final minWidth = columns.length * 200.0;
+    final padding = MediaQuery.of(context).padding;
+    final maxWidth = <double>[
+      minWidth,
+      MediaQuery.sizeOf(context).width - padding.left - padding.right - 60,
+    ].max;
     return Scrollbar(
       thumbVisibility: true,
       trackVisibility: true,
@@ -81,7 +86,7 @@ class _DesktopTableFormState<T> extends State<DesktopTableForm<T>> {
         controller: _scrollController,
         scrollDirection: .horizontal,
         child: Container(
-          constraints: BoxConstraints(maxWidth: maxWidth),
+          constraints: BoxConstraints(minWidth: minWidth, maxWidth: maxWidth),
           child: Padding(
             padding: const EdgeInsets.only(bottom: 20),
             child: Table(

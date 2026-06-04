@@ -26,6 +26,7 @@ export 'login_page.dart';
 // master
 export 'item_page.dart';
 export 'supplier_page.dart';
+export 'forwarder_page.dart';
 export 'brand_page.dart';
 export 'item_type_page.dart';
 export 'discount_page.dart';

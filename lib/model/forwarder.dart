@@ -4,6 +4,7 @@ import 'package:fe_pos/model/contact_number.dart';
 export 'package:fe_pos/model/contact_number.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/tag.dart';
+export 'package:fe_pos/tool/custom_type.dart';
 
 class Forwarder extends Model with SaveNDestroyModel {
   String? code;
@@ -49,6 +50,9 @@ class Forwarder extends Model with SaveNDestroyModel {
     'address': address,
     'city': city,
     'description': description,
+    'contact_numbers_attributes': contactNumbers
+        .map((e) => e.asJson())
+        .toList(),
   };
 
   void setTags(List<Tag> newTags) {

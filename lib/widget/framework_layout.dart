@@ -49,7 +49,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
       //     pageFunct: () => const TestingPage(),
       //     key: 'test'),
       Menu(
-        icon: Icons.payment_sharp,
+        icon: Icons.people,
         isClosed: true,
         label: 'HRD',
         key: 'humanResource',
@@ -132,7 +132,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
         ],
       ),
       Menu(
-        icon: Icons.pages,
+        icon: Icons.stacked_line_chart,
         isClosed: true,
         label: 'Laporan',
         key: 'report',
@@ -348,7 +348,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
         ],
       ),
       Menu(
-        icon: Icons.money,
+        icon: Icons.currency_exchange,
         label: 'Keuangan',
         key: 'finance',
         children: [
@@ -381,7 +381,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
         key: 'purchase',
         children: [
           Menu(
-            icon: Icons.shopping_bag,
+            icon: Icons.shopping_basket,
             label: 'Pesanan Pembelian',
             isDisabled: !setting.isAuthorize('purchase_orders', 'read'),
             key: 'purchase_order',
@@ -396,7 +396,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           ),
           Menu(
             icon: Icons.shopping_bag,
-            label: 'Pembelian',
+            label: 'Invoice Pembelian',
             isDisabled: !setting.isAuthorize('purchase_invoices', 'read'),
             key: 'purchase_invoice',
             pageFunct: () => const PurchaseInvoicePage(),
@@ -524,15 +524,23 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             icon: Icons.local_shipping,
             isClosed: true,
             label: 'Supplier',
-            isDisabled: !setting.isAuthorize('ipos/suppliers', 'read'),
+            isDisabled: !setting.isAuthorize('suppliers', 'read'),
             key: 'supplier',
             pageFunct: () => const SupplierPage(),
+          ),
+          Menu(
+            icon: Icons.local_shipping,
+            isClosed: true,
+            label: 'Logistik/Ekspedisi',
+            isDisabled: !setting.isAuthorize('forwarders', 'read'),
+            key: 'forwarder',
+            pageFunct: () => const ForwarderPage(),
           ),
           Menu(
             icon: Icons.branding_watermark,
             isClosed: true,
             label: 'Merek',
-            isDisabled: !setting.isAuthorize('ipos/brands', 'read'),
+            isDisabled: !setting.isAuthorize('brands', 'read'),
             key: 'brand',
             pageFunct: () => const BrandPage(),
           ),

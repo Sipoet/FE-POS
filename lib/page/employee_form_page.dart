@@ -6,6 +6,7 @@ import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -512,13 +513,22 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                             labelStyle: labelStyle,
                             border: OutlineInputBorder(),
                           ),
+                          inputFormatters: [
+                            CustomNumberInputFormatter(
+                              maxLength: 16,
+                              formatType: .socialSecurity,
+                            ),
+                          ],
+                          keyboardType: .number,
                           initialValue: employee.idNumber,
                           onSaved: (newValue) {
-                            employee.idNumber = newValue.toString();
+                            employee.idNumber = newValue
+                                ?.replaceAll(' ', '')
+                                .toString();
                           },
                           validator: (newValue) {
-                            if (newValue == null) {
-                              return 'harus diisi';
+                            if (newValue != null && newValue.length != 16) {
+                              return 'tidak valid. jumlah digit harus 16';
                             }
                             return null;
                           },
@@ -561,6 +571,12 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           onChanged: (newValue) {
                             employee.bankAccount = newValue.toString();
                           },
+                          inputFormatters: [
+                            CustomNumberInputFormatter(
+                              formatType: .bankAccount,
+                            ),
+                          ],
+                          keyboardType: .number,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -595,12 +611,18 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           ),
                           initialValue: employee.contactNumber,
                           keyboardType: TextInputType.phone,
+
                           onSaved: (newValue) {
                             employee.contactNumber = newValue.toString();
                           },
                           onChanged: (newValue) {
                             employee.contactNumber = newValue.toString();
                           },
+                          inputFormatters: [
+                            CustomNumberInputFormatter(
+                              formatType: .phoneNumber,
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -655,6 +677,11 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           onChanged: (newValue) {
                             employee.taxNumber = newValue.toString();
                           },
+                          inputFormatters: [
+                            CustomNumberInputFormatter(
+                              formatType: .socialSecurity,
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 10),

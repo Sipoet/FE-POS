@@ -667,13 +667,6 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                     ),
                                 ],
                                 controller: menuController,
-                                onHover: (isHover) {
-                                  if (isHover) {
-                                    // menuController.open();
-                                  } else {
-                                    // menuController.close();
-                                  }
-                                },
                                 child: const Icon(Icons.table_rows_rounded),
                               ),
                             ),
