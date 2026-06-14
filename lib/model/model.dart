@@ -8,6 +8,7 @@ import 'package:fe_pos/tool/query_data.dart';
 import 'package:flutter/material.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 export 'package:fe_pos/tool/query_data.dart';
+export 'package:flutter/foundation.dart';
 
 final jsonEncoder = JsonEncoder();
 
@@ -75,8 +76,8 @@ abstract class Model with ChangeNotifier {
 
   @override
   bool operator ==(Object other) {
-    if (other is Model) {
-      return toJson() == other.toJson() && runtimeType == other.runtimeType;
+    if (other is Model && runtimeType == other.runtimeType) {
+      return id == other.id;
     }
     return false;
   }
@@ -182,18 +183,18 @@ abstract class ModelClass<T extends Model> {
     Map? relation,
     bool isRootIncluded = true,
   }) {
-    final relationData = relation?['data'];
-    if (relationData == null || included.isEmpty) {
+    final Map<String, dynamic>? relationData = relation?['data'];
+    if (included.isEmpty || relationData?['id'] == null) {
       return null;
     }
     final data = included.firstWhere(
       (row) =>
-          row['type'] == relationData['type'] &&
+          row['type'] == relationData!['type'] &&
           row['id'] == relationData['id'],
       orElse: () => null,
     );
     if (data == null) {
-      return null;
+      return initModel()..id = relationData!['id'];
     }
     return fromJson(data, included: isRootIncluded ? included : []);
   }

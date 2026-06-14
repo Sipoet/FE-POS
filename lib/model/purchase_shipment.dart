@@ -1,8 +1,54 @@
 import 'package:fe_pos/model/forwarder.dart';
 import 'package:fe_pos/model/location.dart';
+import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/model.dart';
+export 'package:fe_pos/model/employee.dart';
+export 'package:fe_pos/tool/purchase_calculator.dart';
 import 'package:fe_pos/model/purchase_shipment_detail.dart';
 export 'package:fe_pos/model/purchase_shipment_detail.dart';
+
+enum PurchaseShipmentStatus implements EnumTranslation {
+  draft,
+  confirmed,
+  delivered;
+
+  @override
+  String humanize() {
+    switch (this) {
+      case draft:
+        return 'draft';
+      case confirmed:
+        return 'confirmed';
+      case delivered:
+        return 'Terkirim';
+    }
+  }
+
+  @override
+  String toString() {
+    switch (this) {
+      case draft:
+        return 'draft';
+      case confirmed:
+        return 'confirmed';
+      case delivered:
+        return 'delivered';
+    }
+  }
+
+  static PurchaseShipmentStatus fromString(String value) {
+    switch (value) {
+      case 'draft':
+        return draft;
+      case 'confirmed':
+        return confirmed;
+      case 'delivered':
+        return delivered;
+      default:
+        throw 'unknow status of $value';
+    }
+  }
+}
 
 class PurchaseShipment extends Model with SaveNDestroyModel {
   List<PurchaseShipmentDetail> purchaseShipmentDetails = [];
@@ -13,7 +59,8 @@ class PurchaseShipment extends Model with SaveNDestroyModel {
   String? description;
   Money grandtotal;
   Forwarder? sender;
-  String? receiver;
+  Employee? receiver;
+  PurchaseShipmentStatus? status;
   PurchaseShipment({
     this.location,
     this.shippedAt,
@@ -23,6 +70,7 @@ class PurchaseShipment extends Model with SaveNDestroyModel {
     this.sender,
     this.receiver,
     super.id,
+    this.status,
     super.createdAt,
     super.updatedAt,
     List<PurchaseShipmentDetail>? purchaseShipmentDetails,
@@ -33,8 +81,10 @@ class PurchaseShipment extends Model with SaveNDestroyModel {
     'arrived_at': arrivedAt,
     'code': code,
     'sender': sender,
+    'status': status,
     'sender_id': sender?.id,
     'receiver': receiver,
+    'receiver_id': receiver?.id,
     'location': location,
     'location_id': location?.id,
     'grandtotal': grandtotal,
@@ -64,13 +114,21 @@ class PurchaseShipment extends Model with SaveNDestroyModel {
         included: included,
         relation: json['relationships']?['sender'],
       );
+      receiver = EmployeeClass().findRelationData(
+        included: included,
+        relation: json['relationships']?['receiver'],
+      );
     }
     code = attributes['code'];
-    receiver = attributes['receiver'];
     shippedAt = DateTime.tryParse(attributes['shipped_at'] ?? '');
     arrivedAt = DateTime.tryParse(attributes['arrived_at'] ?? '');
     description = attributes['description'];
     grandtotal = Money.tryParse(attributes['grandtotal']) ?? const Money(0);
+    try {
+      status = PurchaseShipmentStatus.fromString(attributes['status']);
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 }
 

@@ -28,10 +28,19 @@ class _AuthorizerFormFieldState extends State<AuthorizerFormField> {
   @override
   void initState() {
     _controller.text = widget.valueCallback.call() ?? '';
-    widget.notifier.addListener(() {
-      _controller.text = widget.valueCallback.call() ?? '';
-    });
+    widget.notifier.addListener(refreshValue);
     super.initState();
+  }
+
+  void refreshValue() {
+    _controller.text = widget.valueCallback.call() ?? '';
+  }
+
+  @override
+  void dispose() {
+    widget.notifier.removeListener(refreshValue);
+    _controller.dispose();
+    super.dispose();
   }
 
   @override

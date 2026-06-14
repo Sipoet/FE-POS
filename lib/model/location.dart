@@ -35,8 +35,8 @@ class Location extends Model {
     country = attributes['country'];
     postalCode = attributes['postal_code'];
     state = attributes['state'];
-    long = double.tryParse(attributes['long'] ?? '');
-    long = double.tryParse(attributes['lat'] ?? '');
+    long = double.tryParse(attributes['long'].toString());
+    lat = double.tryParse(attributes['lat'].toString());
 
     account = AccountClass().findRelationData(
       included: included,

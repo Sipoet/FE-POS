@@ -43,7 +43,7 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
   late final TabManager tabManager;
   final ValueNotifier<bool> modelToggleNotifier = ValueNotifier(false);
   bool _showForm = true;
-  bool _showSummary = true;
+
   final double width = 300;
   final menuController = MenuController();
   @override
@@ -74,7 +74,7 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
             setState(() {
               _showForm = false;
             });
-            flash.show(Text('Sukses Simpan Invoice Pembelian'), .success);
+            flash.show(Text('Sukses Simpan Pengiriman Pembelian'), .success);
             tabManager.changeTabHeader(
               widget,
               'Edit Produk ${purchaseShipment.code}',
@@ -87,7 +87,7 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
           } else {
             flash.showBanner(
               messageType: .error,
-              title: 'Gagal Simpan Invoice Pembelian',
+              title: 'Gagal Simpan Pengiriman Pembelian',
               description: purchaseShipment.errors.join(','),
             );
           }
@@ -102,7 +102,7 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
   void _resetRecord() {
     showConfirmDialog(
       message:
-          'Apakah yakin reset Invoice Pembelian "${purchaseShipment.code}"',
+          'Apakah yakin reset Pengiriman Pembelian "${purchaseShipment.code}"',
       onSubmit: () {
         setState(() {
           _showForm = false;
@@ -120,7 +120,7 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
   void _duplicateRecord() {
     showConfirmDialog(
       message:
-          'Apakah yakin duplikat Invoice Pembelian "${purchaseShipment.code}"',
+          'Apakah yakin duplikat Pengiriman Pembelian "${purchaseShipment.code}"',
       onSubmit: () {
         purchaseShipment.id = null;
         purchaseShipment.code = '';
@@ -130,13 +130,13 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
           purchaseShipmentDetail.costDetail = null;
         }
 
-        tabManager.changeTabHeader(widget, 'Tambah Invoice Pembelian');
+        tabManager.changeTabHeader(widget, 'Tambah Pengiriman Pembelian');
       },
     );
   }
 
   void _newRecord() {
-    tabManager.changeTabHeader(widget, 'Tambah Invoice Pembelian');
+    tabManager.changeTabHeader(widget, 'Tambah Pengiriman Pembelian');
     setState(() {
       _showForm = false;
     });
@@ -194,6 +194,48 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
         .sum;
   }
 
+  void confirmShipment() {
+    _server.post('/purchase_shipments/${purchaseShipment.id}/confirmed').then((
+      response,
+    ) {
+      if (response.statusCode == 200) {
+        setState(() {
+          purchaseShipment.status = .confirmed;
+        });
+        flash.show(Text('Sukses Confirm Pengiriman Pembelian'), .success);
+      } else if (response.statusCode == 409) {
+        flash.showBanner(
+          messageType: .error,
+          title: 'Gagal Confirm Pengiriman Pembelian',
+          description: (response.data['errors'] ?? []).join(','),
+        );
+      } else {
+        flash.show(Text('Gagal Confirm Pengiriman Pembelian'), .error);
+      }
+    });
+  }
+
+  void redraftShipment() {
+    _server.post('/purchase_shipments/${purchaseShipment.id}/draft').then((
+      response,
+    ) {
+      if (response.statusCode == 200) {
+        setState(() {
+          purchaseShipment.status = .draft;
+        });
+        flash.show(Text('Sukses Draft Pengiriman Pembelian'), .success);
+      } else if (response.statusCode == 409) {
+        flash.showBanner(
+          messageType: .error,
+          title: 'Gagal Draft Pengiriman Pembelian',
+          description: response.data['message'],
+        );
+      } else {
+        flash.show(Text('Gagal Draft Pengiriman Pembelian'), .error);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -223,6 +265,40 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                 ),
                                 label: const Text('Riwayat'),
                                 icon: const Icon(Icons.history),
+                              ),
+                            ),
+                            Visibility(
+                              visible: purchaseShipment.status == .draft,
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 15.0),
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    if (await showConfirmDialog2(
+                                      message:
+                                          'Apakah yakin confirm Pengiriman pembelian ${purchaseShipment.code}?',
+                                    )) {
+                                      confirmShipment();
+                                    }
+                                  },
+                                  child: const Text('Confirm'),
+                                ),
+                              ),
+                            ),
+                            Visibility(
+                              visible: purchaseShipment.status == .confirmed,
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 15.0),
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    if (await showConfirmDialog2(
+                                      message:
+                                          'Apakah yakin redraft Pengiriman pembelian ${purchaseShipment.code}?',
+                                    )) {
+                                      redraftShipment();
+                                    }
+                                  },
+                                  child: const Text('Draft'),
+                                ),
                               ),
                             ),
                             const Divider(),
@@ -314,31 +390,39 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                 ),
                                 child: SizedBox(
                                   width: width,
-                                  child: AuthorizerFormField(
-                                    notifier: modelToggleNotifier,
-                                    tableName: 'purchaseShipment',
-                                    columnName: 'receiver',
-                                    childBuilder: (controller) => TextFormField(
-                                      decoration: InputDecoration(
-                                        labelText: setting.columnName(
-                                          'purchaseShipment',
-                                          'receiver',
-                                        ),
-                                        labelStyle: TextFormatter.labelStyle,
-                                        border: const OutlineInputBorder(),
+                                  child: AsyncDropdown<Employee>(
+                                    label: Text(
+                                      setting.columnName(
+                                        'purchaseShipment',
+                                        'receiver',
                                       ),
-                                      controller: controller,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'harus diisi';
-                                        }
-                                        return null;
-                                      },
-                                      onChanged: (value) =>
-                                          purchaseShipment.receiver = value,
+                                      style: TextFormatter.labelStyle,
                                     ),
-                                    valueCallback: () =>
+                                    textOnSelected: (employee) => employee.name,
+                                    textOnSearch: (employee) =>
+                                        "${employee.name.toCapitalize()} (${employee.status.humanize()})",
+                                    notifier: modelToggleNotifier,
+                                    valueFallback: () =>
                                         purchaseShipment.receiver,
+                                    onChanged: (model) =>
+                                        purchaseShipment.receiver = model,
+                                    request: (queryRequest) {
+                                      queryRequest.sorts = [
+                                        SortData(
+                                          key: 'status',
+                                          isAscending: false,
+                                        ),
+                                        SortData(
+                                          key: 'name',
+                                          isAscending: true,
+                                        ),
+                                      ];
+                                      return EmployeeClass().finds(
+                                        _server,
+                                        queryRequest,
+                                      );
+                                    },
+                                    modelClass: EmployeeClass(),
                                   ),
                                 ),
                               ),
@@ -391,6 +475,7 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                 child: SizedBox(
                                   width: width,
                                   child: DateFormField<DateTime>(
+                                    key: ValueKey(purchaseShipment.shippedAt),
                                     label: Text(
                                       setting.columnName(
                                         'purchaseShipment',
@@ -424,6 +509,7 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                 child: SizedBox(
                                   width: width,
                                   child: DateFormField<DateTime>(
+                                    key: ValueKey(purchaseShipment.arrivedAt),
                                     label: Text(
                                       setting.columnName(
                                         'purchaseShipment',
@@ -483,6 +569,18 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                     modelClass: PurchaseInvoiceClass(),
                                     request: (queryRequest) {
                                       queryRequest.include = ['supplier'];
+                                      queryRequest.filters = [
+                                        ComparisonFilterData(
+                                          key: 'status',
+                                          value: 'confirmed',
+                                        ),
+                                      ];
+                                      queryRequest.sorts = [
+                                        SortData(
+                                          key: 'transaction_date',
+                                          isAscending: false,
+                                        ),
+                                      ];
                                       return PurchaseInvoiceClass().finds(
                                         _server,
                                         queryRequest,
@@ -509,9 +607,10 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                     NumberFormField<int>(
                                       initialValue:
                                           purchaseShipmentDetail.sackQuantity,
-                                      onChanged: (value) =>
-                                          purchaseShipmentDetail.sackQuantity =
-                                              value ?? 0,
+                                      onChanged: (value) => setState(() {
+                                        purchaseShipmentDetail.sackQuantity =
+                                            value ?? 0;
+                                      }),
                                     ),
                               ),
                             if (setting.canShow(
@@ -616,37 +715,67 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                         Row(
                           mainAxisAlignment: .spaceBetween,
                           children: [
-                            AuthorizerFormField(
-                              columnName: 'description',
-                              tableName: 'purchaseShipment',
-                              notifier: modelToggleNotifier,
-                              valueCallback: () => purchaseShipment.description,
-                              childBuilder: (controller) => Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 7,
-                                  vertical: 5,
-                                ),
-                                child: SizedBox(
-                                  width: width,
-                                  child: TextFormField(
-                                    controller: controller,
-                                    decoration: InputDecoration(
-                                      labelText: setting.columnName(
-                                        'purchaseShipment',
-                                        'description',
+                            Column(
+                              crossAxisAlignment: .start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 5.0),
+                                  child: RichText(
+                                    text: TextSpan(
+                                      text: 'Total Karung/Box: ',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: .bold,
+                                        color: Colors.black,
                                       ),
-                                      labelStyle: TextFormatter.labelStyle,
-                                      border: const OutlineInputBorder(),
+                                      children: [
+                                        TextSpan(
+                                          text: totalItem.format(),
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: .normal,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    keyboardType: .multiline,
-                                    minLines: 3,
-                                    maxLines: 5,
-                                    onChanged: (value) =>
-                                        purchaseShipment.description = value,
                                   ),
                                 ),
-                              ),
+                                AuthorizerFormField(
+                                  columnName: 'description',
+                                  tableName: 'purchaseShipment',
+                                  notifier: modelToggleNotifier,
+                                  valueCallback: () =>
+                                      purchaseShipment.description,
+                                  childBuilder: (controller) => Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 7,
+                                      vertical: 5,
+                                    ),
+                                    child: SizedBox(
+                                      width: width,
+                                      child: TextFormField(
+                                        controller: controller,
+                                        decoration: InputDecoration(
+                                          labelText: setting.columnName(
+                                            'purchaseShipment',
+                                            'description',
+                                          ),
+                                          labelStyle: TextFormatter.labelStyle,
+                                          border: const OutlineInputBorder(),
+                                        ),
+                                        keyboardType: .multiline,
+                                        minLines: 3,
+                                        maxLines: 5,
+                                        onChanged: (value) =>
+                                            purchaseShipment.description =
+                                                value,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
+
                             SizedBox(
                               width: width,
                               child: MoneyFormField(
@@ -703,4 +832,9 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
       ),
     );
   }
+
+  int get totalItem => purchaseShipment.purchaseShipmentDetails
+      .whereNot((e) => e.isDestroyed)
+      .map<int>((e) => e.sackQuantity)
+      .sum;
 }

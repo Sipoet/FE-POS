@@ -356,6 +356,8 @@ class AsyncDropdown<T extends Model> extends StatefulWidget {
     required this.textOnSearch,
     this.textOnSelected,
     this.compareValue,
+    this.notifier,
+    this.valueFallback,
     required this.modelClass,
     this.selected,
   });
@@ -368,6 +370,8 @@ class AsyncDropdown<T extends Model> extends StatefulWidget {
   final T? selected;
   final bool allowClear;
   final bool? isDense;
+  final ChangeNotifier? notifier;
+  final ValueCallBack<T>? valueFallback;
   final FocusNode? focusNode;
   final int selectedDisplayLimit;
   final void Function(T? model)? onChanged;
@@ -394,16 +398,26 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
   late final Server server;
   CancelToken _cancelToken = CancelToken();
   late final FocusNode _focusNode;
+  T? initialSelected;
 
   @override
   void initState() {
     server = context.read<Server>();
+    initialSelected = widget.selected ?? widget.valueFallback?.call();
     _focusNode = widget.focusNode ?? FocusNode();
+    widget.notifier?.addListener(refreshDropdown);
     super.initState();
+  }
+
+  void refreshDropdown() {
+    setState(() {
+      initialSelected = widget.valueFallback?.call();
+    });
   }
 
   @override
   void dispose() {
+    widget.notifier?.removeListener(refreshDropdown);
     _cancelToken.cancel();
     super.dispose();
   }
@@ -422,7 +436,7 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
               if (response.statusCode == 200) {
                 final models = convertToOptions(
                   response.data['data'],
-                  response.data['included'],
+                  response.data['included'] ?? [],
                 );
                 return QueryResponse<T>(
                   models: models,
@@ -445,13 +459,14 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
   Widget build(BuildContext context) {
     final textFormat = widget.textOnSelected ?? widget.textOnSearch;
     return DropdownSearch<T>(
+      key: ValueKey(initialSelected),
       items: getData,
       onChanged: widget.onChanged,
       onSaved: widget.onSaved,
       validator: widget.validator,
       compareFn: compareResult,
       itemAsString: widget.textOnSearch,
-      selectedItem: widget.selected,
+      selectedItem: initialSelected,
       onBeforePopupOpening: (selItems) {
         return Future.delayed(Durations.long4, () {
           if (_focusNode.canRequestFocus) {

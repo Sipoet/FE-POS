@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:fe_pos/model/purchase_invoice.dart';
 import 'package:fe_pos/model/purchase_order.dart';
+import 'package:fe_pos/model/unit_of_measurement.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
@@ -88,6 +89,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
             'cost_details',
             'purchase_order',
             'purchase_invoice_details',
+            'purchase_invoice_details.uom',
             'purchase_invoice_details.taggings',
             'purchase_invoice_details.tags',
             'purchase_invoice_details.product',
@@ -97,7 +99,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
           (isSuccess) {
             if (isSuccess) {
               setState(() {
-                purchaseInvoice.purchaseInvoiceDetails;
+                recalculateProductTotal();
               });
             }
           },
@@ -252,10 +254,14 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
     purchaseInvoice.discountTotal = headerResult.discountTotal;
     purchaseInvoice.grandtotal = headerResult.grandtotal;
     purchaseInvoice.taxAmount = headerResult.taxAmount;
+    recalculateProductTotal();
+  }
+
+  void recalculateProductTotal() {
     List<String> productTotal = [];
     for (final entries
         in purchaseInvoice.purchaseInvoiceDetails
-            .groupListsBy((e) => e.uom)
+            .groupListsBy((e) => e.uom?.name)
             .entries) {
       double value = entries.value.map<double>((e) => e.quantity).sum;
       productTotal.add('${value.format()} ${entries.key}');
@@ -315,13 +321,20 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
         .toList();
     purchaseInvoice.purchaseInvoiceDetails.removeAll();
     purchaseInvoice.purchaseInvoiceDetails = purchaseOrder.purchaseOrderDetails
-        .map<PurchaseInvoiceDetail>((purchaseInvoiceDetail) {
-          final newPurchaseInvoiceDetail =
-              PurchaseInvoiceDetailClass().initModel()..setFromJson(
-                purchaseInvoiceDetail.rawData['data'],
-                included: purchaseInvoiceDetail.rawData['included'],
-              );
-          newPurchaseInvoiceDetail.id = null;
+        .map<PurchaseInvoiceDetail>((purchaseOrderDetail) {
+          final newPurchaseInvoiceDetail = PurchaseInvoiceDetail(
+            product: purchaseOrderDetail.product,
+            price: purchaseOrderDetail.price,
+            quantity: purchaseOrderDetail.quantity,
+            uom: purchaseOrderDetail.uom,
+            total: purchaseOrderDetail.total,
+            subtotal: purchaseOrderDetail.subtotal,
+            barcode: purchaseOrderDetail.product?.barcodeUsingBatch == true
+                ? null
+                : purchaseOrderDetail.product?.barcode,
+            discountDetails: purchaseOrderDetail.discountDetails,
+            discountAmount: purchaseOrderDetail.discountAmount,
+          );
           for (final tagging in newPurchaseInvoiceDetail.taggings) {
             tagging.id = null;
           }
@@ -338,6 +351,48 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
           ),
         )
         .toList();
+  }
+
+  void confirmInvoice() {
+    _server.post('/purchase_invoices/${purchaseInvoice.id}/confirmed').then((
+      response,
+    ) {
+      if (response.statusCode == 200) {
+        setState(() {
+          purchaseInvoice.status = .confirmed;
+        });
+        flash.show(Text('Sukses Confirm Invoice Pembelian'), .success);
+      } else if (response.statusCode == 409) {
+        flash.showBanner(
+          messageType: .error,
+          title: 'Gagal Confirm Invoice Pembelian',
+          description: (response.data['errors'] ?? []).join(','),
+        );
+      } else {
+        flash.show(Text('Gagal Confirm Invoice Pembelian'), .error);
+      }
+    });
+  }
+
+  void redraftInvoice() {
+    _server.post('/purchase_invoices/${purchaseInvoice.id}/draft').then((
+      response,
+    ) {
+      if (response.statusCode == 200) {
+        setState(() {
+          purchaseInvoice.status = .draft;
+        });
+        flash.show(Text('Sukses Draft Invoice Pembelian'), .success);
+      } else if (response.statusCode == 409) {
+        flash.showBanner(
+          messageType: .error,
+          title: 'Gagal Draft Invoice Pembelian',
+          description: response.data['message'],
+        );
+      } else {
+        flash.show(Text('Gagal Draft Invoice Pembelian'), .error);
+      }
+    });
   }
 
   @override
@@ -380,6 +435,40 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 ),
                                 label: const Text('Riwayat'),
                                 icon: const Icon(Icons.history),
+                              ),
+                            ),
+                            Visibility(
+                              visible: purchaseInvoice.status == .draft,
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 15.0),
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    if (await showConfirmDialog2(
+                                      message:
+                                          'Apakah yakin confirm invoice pembelian ${purchaseInvoice.code}?',
+                                    )) {
+                                      confirmInvoice();
+                                    }
+                                  },
+                                  child: const Text('Confirm'),
+                                ),
+                              ),
+                            ),
+                            Visibility(
+                              visible: purchaseInvoice.status == .confirmed,
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 15.0),
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    if (await showConfirmDialog2(
+                                      message:
+                                          'Apakah yakin redraft invoice pembelian ${purchaseInvoice.code}?',
+                                    )) {
+                                      redraftInvoice();
+                                    }
+                                  },
+                                  child: const Text('Draft'),
+                                ),
                               ),
                             ),
                             const Divider(),
@@ -435,14 +524,11 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                     allowClear: true,
                                     modelClass: PurchaseOrderClass(),
                                     request: (queryRequest) {
-                                      queryRequest.include = [
-                                        'supplier',
-                                        'location',
-                                        'cost_details',
-                                        'purchase_order_details',
-                                        'purchase_order_details.taggings',
-                                        'purchase_order_details.tags',
-                                        'purchase_order_details.product',
+                                      queryRequest.sorts = [
+                                        SortData(
+                                          key: 'transaction_date',
+                                          isAscending: false,
+                                        ),
                                       ];
                                       return PurchaseOrderClass().finds(
                                         _server,
@@ -454,15 +540,35 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                     textOnSearch: (purchaseOrder) =>
                                         '${purchaseOrder.code} - ${purchaseOrder.transactionDate?.format()}',
                                     onChanged: (purchaseOrder) {
-                                      setState(() {
-                                        purchaseInvoice.purchaseOrder =
-                                            purchaseOrder;
-                                        if (purchaseOrder != null) {
-                                          copyDataFromPurchaseOrder(
-                                            purchaseOrder,
-                                          );
-                                        }
-                                      });
+                                      purchaseInvoice.purchaseOrder =
+                                          purchaseOrder;
+                                      if (purchaseOrder == null) {
+                                        return;
+                                      }
+                                      purchaseOrder
+                                          .refresh(
+                                            _server,
+                                            include: [
+                                              'supplier',
+                                              'location',
+                                              'cost_details',
+                                              'purchase_order_details',
+                                              'purchase_order_details.taggings',
+                                              'purchase_order_details.tags',
+                                              'purchase_order_details.uom',
+                                              'purchase_order_details.product',
+                                            ],
+                                          )
+                                          .then((isSuccess) {
+                                            if (isSuccess) {
+                                              setState(() {
+                                                copyDataFromPurchaseOrder(
+                                                  purchaseOrder,
+                                                );
+                                              });
+                                              refreshSummary();
+                                            }
+                                          });
                                     },
                                     selected: purchaseInvoice.purchaseOrder,
                                   ),
@@ -632,6 +738,13 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                             ),
                           ],
                         ),
+                        Visibility(
+                          visible: purchaseInvoice.status != null,
+                          child: Text(
+                            'Status: ${purchaseInvoice.status?.humanize()}',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
                         const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -645,7 +758,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                             ),
                             SizedBox(
                               width: 50,
-                              child: SubmenuButton(
+                              child: MenuAnchor(
                                 menuChildren: [
                                   MenuItemButton(
                                     child: const Text('Tambah Detail'),
@@ -667,7 +780,12 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                     ),
                                 ],
                                 controller: menuController,
-                                child: const Icon(Icons.table_rows_rounded),
+                                child: IconButton(
+                                  onPressed: () => menuController.isOpen
+                                      ? menuController.close()
+                                      : menuController.open(),
+                                  icon: Icon(Icons.table_rows_rounded),
+                                ),
                               ),
                             ),
                           ],
@@ -692,7 +810,19 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                       textOnSearch: (model) =>
                                           "${model.barcode}-${model.description}",
                                       modelClass: ProductClass(),
-                                      // isDense: true,
+                                      request: (queryRequest) {
+                                        queryRequest.include = ['base_uom'];
+                                        queryRequest.filters = [
+                                          ComparisonFilterData(
+                                            key: 'supplier',
+                                            value: purchaseInvoice.supplier?.id,
+                                          ),
+                                        ];
+                                        return ProductClass().finds(
+                                          _server,
+                                          queryRequest,
+                                        );
+                                      },
                                       selected: purchaseInvoiceDetail.product,
                                       onChanged: (product) {
                                         setState(() {
@@ -703,6 +833,9 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                             purchaseInvoiceDetail.barcode =
                                                 product?.barcode;
                                           }
+                                          purchaseInvoiceDetail.uom =
+                                              product?.baseUom;
+                                          modelToggleNotifier.toggle();
                                         });
                                       },
                                     ),
@@ -713,10 +846,10 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
                                 name: 'tags',
-                                title: 'Tag',
+                                title: 'Varian',
                                 desktopWidth: FlexColumnWidth(1.5),
                                 headerBuilder: (context) => Text(
-                                  'Tag',
+                                  'Varian',
                                   style: TextFormatter.tableLabelStyle,
                                 ),
                                 rowBuilder: (context, purchaseInvoiceDetail) =>
@@ -761,11 +894,14 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                                 RegExp(r'[A-Z0-9]'),
                                                 allow: true,
                                               ),
+                                              CustomNumberInputFormatter(
+                                                formatType: .bankAccount,
+                                                maxLength: 15,
+                                              ),
                                             ],
                                             decoration: InputDecoration(
                                               border: OutlineInputBorder(),
                                             ),
-                                            maxLength: 12,
                                             onChanged: (value) =>
                                                 purchaseInvoiceDetail.barcode =
                                                     value,
@@ -800,27 +936,25 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               TableFormColumn<PurchaseInvoiceDetail>(
                                 name: 'uom',
                                 title: 'Satuan',
-                                desktopWidth: FixedColumnWidth(130),
+                                desktopWidth: FixedColumnWidth(170),
                                 headerBuilder: (context) => Text(
                                   'Satuan',
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
                                 rowBuilder: (context, purchaseInvoiceDetail) =>
-                                    DropdownMenu<String>(
+                                    AsyncDropdown<UnitOfMeasurement>(
                                       width: 200,
-                                      enableFilter: true,
-                                      initialSelection:
+                                      valueFallback: () =>
                                           purchaseInvoiceDetail.uom,
-                                      onSelected: (value) => setState(() {
-                                        purchaseInvoiceDetail.uom = value ?? '';
-                                      }),
-                                      dropdownMenuEntries: [
-                                        DropdownMenuEntry(
-                                          value: 'pcs',
-                                          label: 'PCS',
-                                        ),
-                                      ],
+                                      notifier: modelToggleNotifier,
+                                      onChanged: (value) =>
+                                          purchaseInvoiceDetail.uom = value,
+                                      allowClear: false,
+                                      modelClass: UnitOfMeasurementClass(),
+                                      path:
+                                          '/products/${purchaseInvoiceDetail.product?.id}/unit_of_measurements',
+                                      textOnSearch: (model) => model.name ?? '',
                                     ),
                               ),
                             if (setting.canShow(
@@ -1104,6 +1238,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
           if (result) {
             setState(() {
               _showForm = false;
+              recalculateProductTotal();
             });
             flash.show(Text('Sukses Simpan Invoice Pembelian'), .success);
             tabManager.changeTabHeader(

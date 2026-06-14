@@ -5,6 +5,7 @@ import 'package:fe_pos/model/product_category.dart';
 import 'package:fe_pos/model/tag.dart';
 import 'package:fe_pos/model/supplier.dart';
 import 'package:fe_pos/model/brand.dart';
+import 'package:fe_pos/model/unit_of_measurement.dart';
 import 'package:fe_pos/tool/image_model.dart';
 export 'package:fe_pos/tool/image_model.dart';
 
@@ -17,7 +18,7 @@ class Product extends Model with SaveNDestroyModel {
   String description;
   String? supplierProductCode;
   String? brandName;
-  String baseUom;
+  UnitOfMeasurement? baseUom;
   ProductCategory? productCategory;
   bool barcodeUsingBatch;
   String barcode;
@@ -36,7 +37,7 @@ class Product extends Model with SaveNDestroyModel {
     this.barcode = '',
     this.productCategory,
     this.brandName,
-    this.baseUom = '',
+    this.baseUom,
     this.stockAccount,
     this.defaultImage,
     this.barcodeUsingBatch = false,
@@ -63,6 +64,7 @@ class Product extends Model with SaveNDestroyModel {
     'supplier': supplier,
     'barcode': barcode,
     'base_uom': baseUom,
+    'base_uom_id': baseUom?.id,
     'supplier_product_code': supplierProductCode,
     'sell_price': sellPrice,
     'stock_account': stockAccount,
@@ -99,7 +101,6 @@ class Product extends Model with SaveNDestroyModel {
     super.setFromJson(json, included: included);
     description = attributes['description'] ?? '';
     barcode = attributes['barcode'] ?? '';
-    baseUom = attributes['base_uom'] ?? '';
     supplierProductCode = attributes['supplier_product_code'];
     barcodeUsingBatch = attributes['barcode_using_batch'];
     brand = BrandClass().findRelationData(
@@ -119,6 +120,10 @@ class Product extends Model with SaveNDestroyModel {
     );
     supplier = SupplierClass().findRelationData(
       relation: json['relationships']?['supplier'],
+      included: included,
+    );
+    baseUom = UnitOfMeasurementClass().findRelationData(
+      relation: json['relationships']?['base_uom'],
       included: included,
     );
     taggings = TaggingClass().findRelationsData(

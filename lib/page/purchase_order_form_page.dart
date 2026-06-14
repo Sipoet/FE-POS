@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:fe_pos/model/product.dart';
 import 'package:fe_pos/model/purchase_order.dart';
+import 'package:fe_pos/model/unit_of_measurement.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
@@ -46,6 +47,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
   late final Server _server;
   late final Setting setting;
   late final TabManager tabManager;
+  final ValueNotifier<bool> modelToggleNotifier = ValueNotifier(false);
   bool _showForm = true;
   double margin = 1;
   String roundType = 'mark';
@@ -82,6 +84,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
             'location',
             'cost_details',
             'purchase_order_details',
+            'purchase_order_details.uom',
             'purchase_order_details.taggings',
             'purchase_order_details.tags',
             'purchase_order_details.product',
@@ -91,7 +94,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
           (isSuccess) {
             if (isSuccess) {
               setState(() {
-                purchaseOrder.purchaseOrderDetails;
+                recalculateProductTotal();
               });
             }
           },
@@ -246,10 +249,14 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
     purchaseOrder.discountTotal = headerResult.discountTotal;
     purchaseOrder.grandtotal = headerResult.grandtotal;
     purchaseOrder.taxAmount = headerResult.taxAmount;
+    recalculateProductTotal();
+  }
+
+  void recalculateProductTotal() {
     List<String> productTotal = [];
     for (final entries
         in purchaseOrder.purchaseOrderDetails
-            .groupListsBy((e) => e.uom)
+            .groupListsBy((e) => e.uom?.name)
             .entries) {
       double value = entries.value.map<double>((e) => e.quantity).sum;
       productTotal.add('${value.format()} ${entries.key}');
@@ -540,8 +547,12 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                       modelClass: ProductClass(),
                                       // isDense: true,
                                       selected: purchaseOrderDetail.product,
-                                      onChanged: (model) =>
-                                          purchaseOrderDetail.product = model,
+                                      onChanged: (product) => setState(() {
+                                        purchaseOrderDetail.product = product;
+                                        purchaseOrderDetail.uom =
+                                            product?.baseUom;
+                                        modelToggleNotifier.toggle();
+                                      }),
                                     ),
                               ),
                             if (setting.canShow('purchaseOrderDetail', 'tags'))
@@ -592,26 +603,26 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               TableFormColumn<PurchaseOrderDetail>(
                                 name: 'uom',
                                 title: 'Satuan',
-                                desktopWidth: FixedColumnWidth(130),
+                                desktopWidth: FixedColumnWidth(170),
                                 headerBuilder: (context) => Text(
                                   'Satuan',
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
                                 rowBuilder: (context, purchaseOrderDetail) =>
-                                    DropdownMenu<String>(
+                                    AsyncDropdown<UnitOfMeasurement>(
                                       width: 200,
-                                      enableFilter: true,
-                                      initialSelection: purchaseOrderDetail.uom,
-                                      onSelected: (value) => setState(() {
-                                        purchaseOrderDetail.uom = value ?? '';
+                                      valueFallback: () =>
+                                          purchaseOrderDetail.uom,
+                                      notifier: modelToggleNotifier,
+                                      onChanged: (value) => setState(() {
+                                        purchaseOrderDetail.uom = value;
                                       }),
-                                      dropdownMenuEntries: [
-                                        DropdownMenuEntry(
-                                          value: 'pcs',
-                                          label: 'PCS',
-                                        ),
-                                      ],
+                                      allowClear: false,
+                                      modelClass: UnitOfMeasurementClass(),
+                                      path:
+                                          '/products/${purchaseOrderDetail.product?.id}/unit_of_measurements',
+                                      textOnSearch: (model) => model.name ?? '',
                                     ),
                               ),
                             if (setting.canShow('purchaseOrderDetail', 'price'))
@@ -879,6 +890,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
           if (result) {
             setState(() {
               _showForm = false;
+              recalculateProductTotal();
             });
             flash.show(Text('Sukses Simpan Pesanan Pembelian'), .success);
             tabManager.changeTabHeader(

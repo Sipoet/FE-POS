@@ -612,10 +612,16 @@ extension ModelList on List<Model> {
     });
 
     for (final model in removing) {
-      remove(model);
+      removeAt(indexOf(model));
     }
   }
 }
 
 typedef ValueCallBack<T> = T? Function();
 typedef FormCallback<T> = void Function(T? value);
+
+extension ToggleChanged on ValueNotifier<bool> {
+  void toggle() {
+    value = !value;
+  }
+}

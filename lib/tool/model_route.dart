@@ -92,6 +92,10 @@ class ModelRoute {
       key: ObjectKey(model),
       purchaseOrder: model as PurchaseOrder,
     ),
+    'PurchaseShipment': (model) => PurchaseShipmentFormPage(
+      key: ObjectKey(model),
+      purchaseShipment: model as PurchaseShipment,
+    ),
     'PurchaseReturn': (model) => PurchaseReturnFormPage(
       key: ObjectKey(model),
       purchaseReturn: model as PurchaseReturn,
@@ -154,6 +158,7 @@ class ModelRoute {
     'Product': ProductClass(),
     'Tagging': TaggingClass(),
     'Supplier': SupplierClass(),
+    'Forwarder': ForwarderClass(),
     'ProductCategory': ProductCategoryClass(),
     'Account': AccountClass(),
     'Location': LocationClass(),

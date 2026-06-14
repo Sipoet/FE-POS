@@ -284,7 +284,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
           );
         }
       }
-      models.sort((a, b) => b.data['total'].compareTo(a.data['total']));
+      models.sort((a, b) => b.data?['total'].compareTo(a.data?['total']));
       return models;
     } else {
       for (var detail in data['data']) {
@@ -309,7 +309,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
           ),
         );
       }
-      models.sort((a, b) => b.data['total'].compareTo(a.data['total']));
+      models.sort((a, b) => b.data?['total'].compareTo(a.data?['total']));
       return models;
     }
   }

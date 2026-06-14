@@ -1,5 +1,6 @@
 import 'package:fe_pos/model/stock_keeping_unit.dart';
 import 'package:fe_pos/model/tag_key.dart';
+import 'package:fe_pos/model/unit_of_measurement.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -263,24 +264,23 @@ class _ProductFormPageState extends State<ProductFormPage>
                             ),
                             SizedBox(
                               width: 250,
-                              child: TextFormField(
-                                initialValue: product.baseUom,
+                              child: AsyncDropdown<UnitOfMeasurement>(
+                                selected: product.baseUom,
                                 onChanged: (value) => product.baseUom = value,
-                                keyboardType: TextInputType.text,
-                                decoration: InputDecoration(
-                                  label: Text(
-                                    "${_setting.columnName('product', 'base_uom')}*",
-                                    style: DefaultResponse.labelStyle,
-                                  ),
-                                  isDense: true,
-                                  border: OutlineInputBorder(),
+
+                                label: Text(
+                                  "${_setting.columnName('product', 'base_uom')}*",
+                                  style: DefaultResponse.labelStyle,
                                 ),
+                                modelClass: UnitOfMeasurementClass(),
+                                isDense: true,
                                 validator: (value) {
-                                  if (value == null || value.isEmpty) {
+                                  if (value == null) {
                                     return 'harus diisi';
                                   }
                                   return null;
                                 },
+                                textOnSearch: (model) => model.name ?? '',
                               ),
                             ),
                             SizedBox(

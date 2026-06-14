@@ -8,6 +8,42 @@ export 'package:fe_pos/tool/custom_type.dart';
 import 'package:fe_pos/tool/purchase_calculator.dart';
 export 'package:fe_pos/tool/purchase_calculator.dart';
 
+enum PurchaseInvoiceStatus implements EnumTranslation {
+  draft,
+  confirmed;
+
+  @override
+  String humanize() {
+    switch (this) {
+      case draft:
+        return 'draft';
+      case confirmed:
+        return 'confirmed';
+    }
+  }
+
+  @override
+  String toString() {
+    switch (this) {
+      case draft:
+        return 'draft';
+      case confirmed:
+        return 'confirmed';
+    }
+  }
+
+  static PurchaseInvoiceStatus fromString(String value) {
+    switch (value) {
+      case 'draft':
+        return draft;
+      case 'confirmed':
+        return confirmed;
+      default:
+        throw 'unknow status of $value';
+    }
+  }
+}
+
 class PurchaseInvoice extends Model with SaveNDestroyModel {
   String code;
   Supplier? supplier;
@@ -26,6 +62,7 @@ class PurchaseInvoice extends Model with SaveNDestroyModel {
   Money costTotal;
   TaxType taxType;
   Money taxAmount;
+  PurchaseInvoiceStatus? status;
   Percentage? taxValue;
   PurchaseOrder? purchaseOrder;
   List<PurchaseInvoiceDetail> purchaseInvoiceDetails = [];
@@ -35,6 +72,7 @@ class PurchaseInvoice extends Model with SaveNDestroyModel {
     this.location,
     this.taxType = .non,
     this.taxValue,
+    this.status,
     this.transactionDate,
     this.discountDetails,
     this.description,
@@ -72,6 +110,7 @@ class PurchaseInvoice extends Model with SaveNDestroyModel {
     'grandtotal': grandtotal,
     'barcoded_at': barcodedAt,
     'opened_at': openedAt,
+    'status': status,
     'purchase_order': purchaseOrder,
     'purchase_order_id': purchaseOrder?.id,
     'discount_detail': discountDetails?.map((e) => e.asJson()).toList(),
@@ -145,6 +184,11 @@ class PurchaseInvoice extends Model with SaveNDestroyModel {
     taxType = TaxType.fromString(attributes['tax_type'] ?? 'non');
     taxValue = Percentage.tryParse(attributes['tax_value']);
     taxAmount = Money.tryParse(attributes['tax_amount']) ?? const Money(0);
+    try {
+      status = PurchaseInvoiceStatus.fromString(attributes['status']);
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 
   @override

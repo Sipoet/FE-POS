@@ -1,6 +1,7 @@
 import 'package:fe_pos/model/discount_detail.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/product.dart';
+import 'package:fe_pos/model/unit_of_measurement.dart';
 
 class PurchaseOrderDetail extends Model {
   Product? product;
@@ -10,7 +11,7 @@ class PurchaseOrderDetail extends Model {
   Money discountAmount;
   List<DiscountDetail>? discountDetails;
   Money total;
-  String uom;
+  UnitOfMeasurement? uom;
   List<Tagging> taggings = [];
   PurchaseOrderDetail({
     this.discountDetails,
@@ -20,7 +21,7 @@ class PurchaseOrderDetail extends Model {
     this.subtotal = const Money(0),
     this.discountAmount = const Money(0),
     this.total = const Money(0),
-    this.uom = 'pcs',
+    this.uom,
     this.price = const Money(0),
   }) : taggings = taggings ?? [];
   @override
@@ -36,6 +37,7 @@ class PurchaseOrderDetail extends Model {
     'price': price,
     'total': total,
     'uom': uom,
+    'uom_id': uom?.id,
   };
 
   String? get productCode => product?.supplierProductCode;
@@ -57,6 +59,10 @@ class PurchaseOrderDetail extends Model {
         included: included,
         relation: json['relationships']?['taggings'],
       );
+      uom = UnitOfMeasurementClass().findRelationData(
+        relation: json['relationships']?['uom'],
+        included: included,
+      );
     }
     quantity = double.tryParse(attributes['quantity'] ?? '0') ?? 0;
     final klass = DiscountDetailClass();
@@ -70,7 +76,6 @@ class PurchaseOrderDetail extends Model {
     subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
     total = Money.tryParse(attributes['total']) ?? const Money(0);
     price = Money.tryParse(attributes['price']) ?? const Money(0);
-    uom = attributes['uom'];
   }
 
   void setTags(List<Tag> newTags) {

@@ -81,6 +81,21 @@ class _PurchaseShipmentPageState extends State<PurchaseShipmentPage>
     });
   }
 
+  void destroyRecord(PurchaseShipment purchaseShipment) {
+    purchaseShipment.destroy(server).then((isSuccess) {
+      if (isSuccess) {
+        flash.show(Text('Berhasil Hapus Pengiriman Pembelian'), .success);
+        refreshTable();
+      } else {
+        flash.showBanner(
+          title: 'Gagal Hapus Pengiriman Pembelian',
+          description: purchaseShipment.errors.join(', '),
+          messageType: .error,
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -107,6 +122,7 @@ class _PurchaseShipmentPageState extends State<PurchaseShipmentPage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<PurchaseShipment>(
+                enums: {'status': PurchaseShipmentStatus.values},
                 additionalHeaderActions: (menuController) => [
                   MenuItemButton(
                     child: Text('Tambah Pengiriman Pembelian'),
@@ -116,15 +132,32 @@ class _PurchaseShipmentPageState extends State<PurchaseShipmentPage>
                     },
                   ),
                 ],
-                rowAction: (purchase) => Row(
+                rowAction: (purchaseShipment) => Row(
                   spacing: 10,
                   children: [
                     IconButton.filled(
                       onPressed: () {
-                        openForm(purchase);
+                        openForm(purchaseShipment);
                       },
                       icon: const Icon(Icons.search_rounded),
                     ),
+                    if (purchaseShipment.status == .draft)
+                      IconButton.filled(
+                        onPressed: () async {
+                          if (await showConfirmDialog2(
+                            message:
+                                'Apakah yakin Hapus Pengiriman Pembelian ${purchaseShipment.code} ?',
+                          )) {
+                            destroyRecord(purchaseShipment);
+                          }
+                        },
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors
+                              .red
+                              .shade300, // Sets the background colorts the icon/foreground color
+                        ),
+                        icon: const Icon(Icons.delete),
+                      ),
                   ],
                 ),
                 onLoaded: (stateManager) {

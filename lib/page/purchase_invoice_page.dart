@@ -107,7 +107,10 @@ class _PurchaseInvoicePageState extends State<PurchaseInvoicePage>
             SizedBox(
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<PurchaseInvoice>(
-                enums: {'tax_type': TaxType.values},
+                enums: {
+                  'tax_type': TaxType.values,
+                  'status': PurchaseInvoiceStatus.values,
+                },
                 additionalHeaderActions: (menuController) => [
                   MenuItemButton(
                     child: Text('Tambah Invoice Pembelian'),

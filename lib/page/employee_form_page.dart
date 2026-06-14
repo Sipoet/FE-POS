@@ -53,8 +53,6 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     }
     if (employee.id != null) {
       Future.delayed(Duration.zero, () => fetchEmployee());
-    } else {
-      employee.schedules = [];
     }
     super.initState();
   }
@@ -96,17 +94,6 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
         'type': 'employee',
         'attributes': employee.asJson(),
         'relationships': {
-          'work_schedules': {
-            'data': employee.schedules
-                .map<Map>(
-                  (workSchedule) => {
-                    'id': workSchedule.id,
-                    'type': 'work_schedule',
-                    'attributes': workSchedule.asJson(),
-                  },
-                )
-                .toList(),
-          },
           'employee_day_offs': {
             'data': employee.employeeDayOffs
                 .map<Map>(
@@ -307,7 +294,6 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           label: const Text('User', style: labelStyle),
                           path: 'ipos/users',
                           textOnSearch: (value) => value.id.toString(),
-                          attributeKey: 'name',
                           onChanged: (userCode) {
                             employee.userCode = userCode?.id;
                           },
@@ -756,7 +742,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                               label: ElevatedButton(
                                 onPressed: () {
                                   setState(() {
-                                    employee.schedules.clear();
+                                    employee.employeeDayOffs.clear();
                                   });
                                 },
                                 child: const Text(

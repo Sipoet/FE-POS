@@ -1,8 +1,10 @@
 export 'package:fe_pos/model/product.dart';
+import 'package:fe_pos/model/stock_keeping_unit.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/purchase_invoice.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 export 'package:fe_pos/model/discount_detail.dart';
+import 'package:fe_pos/model/unit_of_measurement.dart';
 
 class PurchaseInvoiceDetail extends Model {
   Product? product;
@@ -13,21 +15,25 @@ class PurchaseInvoiceDetail extends Model {
   Money discountAmount;
   List<DiscountDetail>? discountDetails;
   Money total;
-  String uom;
+  StockKeepingUnit? sku;
+  UnitOfMeasurement? uom;
   List<Tagging> taggings = [];
   String? barcode;
   PurchaseInvoice? purchaseInvoice;
+  bool isNewVariant;
   PurchaseInvoiceDetail({
     this.discountDetails,
     this.quantity = 0,
     this.product,
     this.barcode,
+    this.sku,
+    this.isNewVariant = false,
     this.purchaseInvoice,
     List<Tagging>? taggings,
     this.subtotal = const Money(0),
     this.discountAmount = const Money(0),
     this.total = const Money(0),
-    this.uom = 'pcs',
+    this.uom,
     this.price = const Money(0),
   }) : taggings = taggings ?? [];
 
@@ -50,9 +56,11 @@ class PurchaseInvoiceDetail extends Model {
     'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
     'subtotal': subtotal,
     'margin': margin,
+    'sku': sku,
     'price': price,
     'total': total,
     'uom': uom,
+    'uom_id': uom?.id,
   };
 
   String? get productCode => product?.supplierProductCode;
@@ -88,6 +96,14 @@ class PurchaseInvoiceDetail extends Model {
         included: included,
         relation: json['relationships']?['supplier'],
       );
+      uom = UnitOfMeasurementClass().findRelationData(
+        relation: json['relationships']?['uom'],
+        included: included,
+      );
+      sku = StockKeepingUnitClass().findRelationData(
+        relation: json['relationships']?['sku'],
+        included: included,
+      );
     }
 
     quantity = double.tryParse(attributes['quantity'] ?? '0') ?? 0;
@@ -103,7 +119,6 @@ class PurchaseInvoiceDetail extends Model {
     total = Money.tryParse(attributes['total']) ?? const Money(0);
     price = Money.tryParse(attributes['price']) ?? const Money(0);
     barcode = attributes['barcode'];
-    uom = attributes['uom'];
   }
 
   void setTags(List<Tag> newTags) {

@@ -1,5 +1,4 @@
 import 'package:fe_pos/tool/table_decorator.dart';
-import 'package:flutter/material.dart';
 
 class Setting extends ChangeNotifier with ColumnTypeFinder {
   Map<String, Map<String, TableColumn>> _tableColumns = {};
