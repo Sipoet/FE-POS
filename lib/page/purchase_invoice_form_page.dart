@@ -963,7 +963,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
                                 name: 'price',
-                                title: 'Harga',
+                                title: 'Harga per Satuan',
                                 isNumeric: true,
                                 headerBuilder: (context) => Text(
                                   'Harga',

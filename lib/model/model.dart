@@ -371,14 +371,14 @@ mixin SaveNDestroyModel on Model {
 
   Future<bool> save(
     Server server, {
-    Map<String, dynamic>? includeAttributes,
+    List<String>? only,
     HttpContentType contentType = .json,
   }) async {
     Future request;
     dynamic body;
     Map<String, dynamic> attributes = asJson();
-    if (includeAttributes != null) {
-      attributes.addAll(includeAttributes);
+    if (only != null) {
+      attributes.removeWhere((key, value) => !only.contains(key));
     }
 
     if (isNewRecord) {

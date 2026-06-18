@@ -1,3 +1,4 @@
+import 'package:fe_pos/model/product_measurement.dart';
 import 'package:fe_pos/model/stock_keeping_unit.dart';
 import 'package:fe_pos/model/tag_key.dart';
 import 'package:fe_pos/model/unit_of_measurement.dart';
@@ -10,6 +11,8 @@ import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/image_carousel.dart';
 import 'package:fe_pos/widget/image_form_field.dart';
 import 'package:fe_pos/widget/money_form_field.dart';
+import 'package:fe_pos/widget/stock_sell_price_form_dialog.dart';
+import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/table_form.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +40,7 @@ class _ProductFormPageState extends State<ProductFormPage>
   final flash = Flash();
   bool _showForm = true;
   List<ProductTag> productTags = [];
-  List<bool> panelPool = List.generate(2, (e) => false);
+  Map<int, bool> panelPool = {};
 
   @override
   void initState() {
@@ -71,6 +74,8 @@ class _ProductFormPageState extends State<ProductFormPage>
             'brand',
             'stock_account',
             'images',
+            'product_measurements',
+            'base_uom',
           ],
         )
         .then((result) {
@@ -82,6 +87,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                 )
                 .toList();
           });
+          refreshSku();
         })
         .whenComplete(() {
           setState(() {
@@ -89,6 +95,21 @@ class _ProductFormPageState extends State<ProductFormPage>
           });
           hideLoadingPopup();
         });
+  }
+
+  void refreshSku() {
+    if (!_setting.isAuthorize('stock_keeping_units', 'read')) {
+      return;
+    }
+    final queryRequest = QueryRequest(
+      include: ['supplier', 'stock_sell_prices', 'stock_sell_prices.uom'],
+      filters: [ComparisonFilterData(key: 'product', value: product.id)],
+    );
+    StockKeepingUnitClass().finds(_server, queryRequest).then(((result) {
+      setState(() {
+        product.stockKeepingUnits = result.models;
+      });
+    }));
   }
 
   void _saveRecord() {
@@ -99,31 +120,21 @@ class _ProductFormPageState extends State<ProductFormPage>
 
     product.setTags(productTags.map((e) => e.tag!).toList());
 
-    product
-        .save(
-          _server,
-          contentType: .multipartForm,
-          includeAttributes: {
-            'taggings_attributes': product.taggings
-                .map((e) => e.asJson())
-                .toList(),
-          },
-        )
-        .then((result) {
-          if (result) {
-            setState(() {
-              product.images;
-            });
-            flash.show(Text('Sukses Simpan'), .success);
-            _tabManager.changeTabHeader(widget, 'Edit Produk ${product.id}');
-          } else {
-            flash.showBanner(
-              messageType: .error,
-              title: 'Gagal Simpan produk',
-              description: product.errors.join(','),
-            );
-          }
+    product.save(_server, contentType: .multipartForm).then((result) {
+      if (result) {
+        setState(() {
+          product.images;
         });
+        flash.show(Text('Sukses Simpan'), .success);
+        _tabManager.changeTabHeader(widget, 'Edit Produk ${product.id}');
+      } else {
+        flash.showBanner(
+          messageType: .error,
+          title: 'Gagal Simpan produk',
+          description: product.errors.join(','),
+        );
+      }
+    });
   }
 
   void _resetRecord() {
@@ -147,13 +158,15 @@ class _ProductFormPageState extends State<ProductFormPage>
     showConfirmDialog(
       message: 'Apakah yakin duplikat Produk "${product.id}"',
       onSubmit: () {
-        product.id = null;
-        product.barcode = '';
-        for (final tagging in product.taggings) {
-          tagging.id = null;
-        }
-        product.images.clear();
-        controller.clearImages();
+        setState(() {
+          product.id = null;
+          product.barcode = '';
+          for (final tagging in product.taggings) {
+            tagging.id = null;
+          }
+          product.images.clear();
+          controller.clearImages();
+        });
 
         _tabManager.changeTabHeader(widget, 'Tambah Produk');
       },
@@ -474,30 +487,51 @@ class _ProductFormPageState extends State<ProductFormPage>
                           children: [
                             ExpansionPanel(
                               canTapOnHeader: true,
-                              isExpanded: panelPool[0],
-                              headerBuilder: (context, isExpanded) => Row(
-                                spacing: 10,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 10.0),
-                                    child: Text(
-                                      'Detail Produk',
-                                      style: DefaultResponse.labelStyle,
-                                    ),
-                                  ),
-                                  if (panelPool[0])
-                                    IconButton.outlined(
-                                      onPressed: () => setState(() {
-                                        productTags.insert(0, ProductTag());
-                                      }),
-                                      icon: Icon(Icons.add),
-                                    ),
-                                ],
+                              isExpanded: panelPool[0] == true,
+                              headerBuilder: (context, isExpanded) => Padding(
+                                padding: const EdgeInsets.only(left: 10.0),
+                                child: Text(
+                                  'Detail Produk',
+                                  style: DefaultResponse.labelStyle,
+                                ),
                               ),
                               body: Padding(
                                 padding: const EdgeInsets.all(10.0),
                                 child: TableForm<ProductTag>(
                                   rows: productTags,
+                                  actionColumn: TableFormColumn(
+                                    desktopWidth: FixedColumnWidth(130),
+                                    rowBuilder: (context, productTag) => Align(
+                                      alignment: .topRight,
+                                      child: IconButton(
+                                        onPressed: () => setState(() {
+                                          productTags.remove(productTag);
+                                        }),
+                                        icon: Icon(Icons.delete),
+                                      ),
+                                    ),
+                                    headerBuilder: (context) => Row(
+                                      mainAxisAlignment: .spaceBetween,
+                                      children: [
+                                        IconButton(
+                                          onPressed: () => setState(() {
+                                            productTags.insert(0, ProductTag());
+                                          }),
+                                          icon: Icon(Icons.add),
+                                        ),
+                                        IconButton(
+                                          onPressed: () => showConfirmDialog(
+                                            message:
+                                                'Apakah yakin hapus semua?',
+                                            onSubmit: () => setState(() {
+                                              productTags.clear();
+                                            }),
+                                          ),
+                                          icon: Icon(Icons.delete),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                   columns: [
                                     TableFormColumn<ProductTag>(
                                       name: 'tag_key',
@@ -657,125 +691,298 @@ class _ProductFormPageState extends State<ProductFormPage>
                                         ),
                                       ),
                                     ),
-                                    TableFormColumn<ProductTag>(
-                                      name: 'action',
-                                      title: '',
-                                      desktopWidth: FixedColumnWidth(80),
-                                      headerBuilder: (context) => IconButton(
-                                        onPressed: () => showConfirmDialog(
-                                          message: 'Apakah yakin hapus semua?',
-                                          onSubmit: () => setState(() {
-                                            productTags.clear();
-                                          }),
-                                        ),
-                                        icon: Icon(Icons.delete),
-                                      ),
-                                      rowBuilder: (context, productTag) =>
-                                          IconButton(
-                                            onPressed: () => setState(() {
-                                              productTags.remove(productTag);
-                                            }),
-                                            icon: Icon(Icons.delete),
-                                          ),
-                                    ),
                                   ],
                                 ),
                               ),
                             ),
                             ExpansionPanel(
-                              isExpanded: panelPool[1],
+                              isExpanded: panelPool[1] == true,
                               canTapOnHeader: true,
                               headerBuilder: (context, isExpanded) => Padding(
-                                padding: const EdgeInsets.all(10),
+                                padding: const .all(10),
                                 child: Text(
-                                  'SKU',
+                                  'Produk Satuan',
                                   style: DefaultResponse.labelStyle,
                                 ),
                               ),
-                              body: SizedBox(
-                                height: bodyScreenHeight,
-                                child: CustomAsyncDataTable<StockKeepingUnit>(
-                                  fetchData: (QueryRequest request) {
-                                    if (product.isNewRecord) {
-                                      return Future.value(
-                                        DataTableResponse<StockKeepingUnit>(
-                                          totalPage: 1,
-                                          models: [],
+                              body: TableForm<ProductMeasurement>(
+                                columns: [
+                                  TableFormColumn(
+                                    title: 'Satuan',
+                                    headerBuilder: (context) => Text(
+                                      'Satuan',
+                                      style: DefaultResponse.labelStyle,
+                                    ),
+                                    rowBuilder: (context, productMeasurement) =>
+                                        AsyncDropdown<UnitOfMeasurement>(
+                                          selected: productMeasurement.uom,
+                                          textOnSearch: (uom) => uom.name ?? '',
+                                          modelClass: UnitOfMeasurementClass(),
+                                          onChanged: (model) =>
+                                              productMeasurement.uom = model,
                                         ),
-                                      );
-                                    }
-                                    request.filters.add(
-                                      ComparisonFilterData(
-                                        key: 'product_id',
-                                        value: product.id.toString(),
+                                  ),
+                                  TableFormColumn(
+                                    title: 'Konversi',
+                                    isNumeric: true,
+                                    headerBuilder: (context) => Text(
+                                      'Konversi',
+                                      style: DefaultResponse.labelStyle,
+                                    ),
+                                    rowBuilder: (context, productMeasurement) =>
+                                        NumberFormField<double>(
+                                          initialValue:
+                                              productMeasurement.conversion,
+                                          validator: (value) {
+                                            if (value == null) {
+                                              return 'harus diisi';
+                                            }
+                                            if (value < 0) {
+                                              return 'tidak boleh negatif';
+                                            }
+                                            return null;
+                                          },
+                                          onChanged: (value) =>
+                                              productMeasurement.conversion =
+                                                  value ?? 0,
+                                        ),
+                                  ),
+                                ],
+                                actionColumn: TableFormColumn(
+                                  desktopWidth: FixedColumnWidth(130),
+                                  headerBuilder: (context) => Row(
+                                    mainAxisAlignment: .spaceBetween,
+                                    children: [
+                                      IconButton(
+                                        onPressed: () => setState(() {
+                                          product.productMeasurements.add(
+                                            ProductMeasurementClass()
+                                                .initModel(),
+                                          );
+                                        }),
+                                        icon: Icon(Icons.add),
                                       ),
-                                    );
-                                    return StockKeepingUnitClass()
-                                        .finds(_server, request)
-                                        .then(
-                                          (
-                                            queryResponse,
-                                          ) => DataTableResponse<StockKeepingUnit>(
-                                            totalPage:
-                                                queryResponse
-                                                    .metadata['total_pages'] ??
-                                                1,
-                                            models: queryResponse.models,
-                                          ),
-                                        );
-                                  },
-                                  columns: [
-                                    TableColumn(
-                                      clientWidth: 200,
-                                      name: 'barcode',
-                                      humanizeName: 'Barcode',
-                                    ),
-                                    TableColumn(
-                                      clientWidth: 150,
-                                      name: 'prodDate',
-                                      type: TableColumnType.date,
-                                      humanizeName: 'Tanggal Produksi',
-                                    ),
-                                    TableColumn(
-                                      clientWidth: 200,
-                                      name: 'description',
-                                      humanizeName: 'Deskripsi',
-                                    ),
-                                    TableColumn(
-                                      clientWidth: 120,
-                                      name: 'quantity',
-                                      type: TableColumnType.double,
-                                      humanizeName: 'Jumlah',
-                                    ),
-                                    TableColumn(
-                                      clientWidth: 120,
-                                      name: 'uom',
-                                      humanizeName: 'Satuan',
-                                    ),
-                                    TableColumn(
-                                      clientWidth: 180,
-                                      name: 'cogs',
-                                      type: TableColumnType.money,
-                                      humanizeName: 'HPP',
-                                    ),
-                                    TableColumn(
-                                      clientWidth: 180,
-                                      name: 'sell_price',
-                                      type: TableColumnType.money,
-                                      humanizeName: 'Harga Jual',
-                                    ),
-                                    TableColumn(
-                                      clientWidth: 150,
-                                      name: 'expired_date',
-                                      type: TableColumnType.date,
-                                      humanizeName: 'Tanggal Expired',
-                                    ),
-                                  ],
-                                  showFilter: true,
-                                  showSummary: true,
+                                      IconButton(
+                                        onPressed: () async {
+                                          if (await showConfirmDialog2(
+                                            message:
+                                                'Yakin Mau Hapus Semua Satuan Produk',
+                                          )) {
+                                            setState(() {
+                                              product.productMeasurements
+                                                  .removeAll();
+                                            });
+                                          }
+                                        },
+                                        icon: Icon(Icons.delete),
+                                      ),
+                                    ],
+                                  ),
+                                  rowBuilder: (context, productMeasurement) =>
+                                      Align(
+                                        alignment: .topRight,
+                                        child: IconButton(
+                                          onPressed: () => setState(() {
+                                            product.productMeasurements.remove(
+                                              productMeasurement,
+                                            );
+                                          }),
+                                          icon: Icon(Icons.delete),
+                                        ),
+                                      ),
                                 ),
+                                rows: product.productMeasurements,
                               ),
                             ),
+                            if (_setting.isAuthorize(
+                              'stock_keeping_units',
+                              'read',
+                            ))
+                              ExpansionPanel(
+                                isExpanded: panelPool[2] == true,
+                                canTapOnHeader: true,
+                                headerBuilder: (context, isExpanded) => Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Text(
+                                    'SKU / Varian',
+                                    style: DefaultResponse.labelStyle,
+                                  ),
+                                ),
+                                body: TableForm<StockKeepingUnit>(
+                                  columns: [
+                                    TableFormColumn(
+                                      title: 'Barcode',
+                                      headerBuilder: (context) => Text(
+                                        'Barcode',
+                                        style: DefaultResponse.labelStyle,
+                                      ),
+                                      rowBuilder: (context, stockKeepingUnit) =>
+                                          SelectableText(
+                                            stockKeepingUnit.barcode,
+                                          ),
+                                    ),
+                                    TableFormColumn(
+                                      title: 'Kode Unik',
+                                      headerBuilder: (context) => Text(
+                                        'Kode Unik',
+                                        style: DefaultResponse.labelStyle,
+                                      ),
+                                      rowBuilder: (context, stockKeepingUnit) =>
+                                          SelectableText(
+                                            stockKeepingUnit.uniqCode,
+                                          ),
+                                    ),
+                                    TableFormColumn(
+                                      title: 'Jumlah',
+                                      isNumeric: true,
+                                      headerBuilder: (context) => Text(
+                                        'Jumlah',
+                                        style: DefaultResponse.labelStyle,
+                                        textAlign: .right,
+                                      ),
+                                      rowBuilder: (context, stockKeepingUnit) =>
+                                          SelectableText(
+                                            stockKeepingUnit.quantity
+                                                    ?.format() ??
+                                                '',
+                                            textAlign: .right,
+                                          ),
+                                    ),
+                                    TableFormColumn(
+                                      title: 'Avg HPP',
+                                      isNumeric: true,
+                                      headerBuilder: (context) => Text(
+                                        'Avg HPP',
+                                        style: DefaultResponse.labelStyle,
+                                        textAlign: .right,
+                                      ),
+                                      rowBuilder: (context, stockKeepingUnit) =>
+                                          SelectableText(
+                                            stockKeepingUnit.cogs?.format() ??
+                                                '',
+                                            textAlign: .right,
+                                          ),
+                                    ),
+                                    TableFormColumn(
+                                      title: 'Harga Jual',
+                                      isNumeric: true,
+                                      headerBuilder: (context) => Text(
+                                        'Harga Jual',
+                                        style: DefaultResponse.labelStyle,
+                                        textAlign: .right,
+                                      ),
+                                      rowBuilder: (context, stockKeepingUnit) =>
+                                          Column(
+                                            spacing: 10,
+                                            children: [
+                                              Text(
+                                                stockKeepingUnit.stockSellPrices
+                                                    .map<String>(
+                                                      (stockSellPrice) =>
+                                                          stockSellPrice
+                                                              .priceWithUomText,
+                                                    )
+                                                    .join('\n'),
+                                                overflow: .ellipsis,
+                                                textAlign: .right,
+                                                maxLines: 2,
+                                              ),
+                                              ElevatedButton.icon(
+                                                onPressed: () =>
+                                                    showStockSellPriceDialog(
+                                                      stockKeepingUnit,
+                                                    ),
+                                                icon: Icon(Icons.edit),
+                                                label: Text('ubah'),
+                                              ),
+                                            ],
+                                          ),
+                                    ),
+                                    TableFormColumn(
+                                      title: 'Supplier',
+                                      isNumeric: true,
+                                      headerBuilder: (context) => Text(
+                                        'Supplier',
+                                        style: DefaultResponse.labelStyle,
+                                      ),
+                                      rowBuilder: (context, stockKeepingUnit) =>
+                                          TextButton(
+                                            onPressed:
+                                                stockKeepingUnit.supplier ==
+                                                    null
+                                                ? null
+                                                : () {},
+                                            child: Text(
+                                              stockKeepingUnit.supplier?.name ??
+                                                  '',
+                                            ),
+                                          ),
+                                    ),
+                                    TableFormColumn(
+                                      title: 'Tanggal Expired',
+                                      isNumeric: true,
+                                      headerBuilder: (context) => Text(
+                                        'Tanggal Expired',
+                                        style: DefaultResponse.labelStyle,
+                                      ),
+                                      rowBuilder: (context, stockKeepingUnit) =>
+                                          Text(
+                                            stockKeepingUnit.expiredDate
+                                                    ?.format() ??
+                                                '',
+                                          ),
+                                    ),
+                                    TableFormColumn(
+                                      title: 'Tanggal Produksi',
+                                      isNumeric: true,
+                                      headerBuilder: (context) => Text(
+                                        'Tanggal Produksi',
+                                        style: DefaultResponse.labelStyle,
+                                      ),
+                                      rowBuilder: (context, stockKeepingUnit) =>
+                                          Text(
+                                            stockKeepingUnit.prodDate
+                                                    ?.format() ??
+                                                '',
+                                          ),
+                                    ),
+                                    TableFormColumn(
+                                      title: 'Tanggal Beli',
+                                      isNumeric: true,
+                                      headerBuilder: (context) => Text(
+                                        'Tanggal Beli',
+                                        style: DefaultResponse.labelStyle,
+                                      ),
+                                      rowBuilder: (context, stockKeepingUnit) =>
+                                          Text(
+                                            stockKeepingUnit.purchaseDate
+                                                    ?.format() ??
+                                                '',
+                                          ),
+                                    ),
+                                    TableFormColumn(
+                                      title: 'Kode Produksi',
+                                      isNumeric: true,
+                                      headerBuilder: (context) => Text(
+                                        'Kode Produksi',
+                                        style: DefaultResponse.labelStyle,
+                                      ),
+                                      rowBuilder: (context, stockKeepingUnit) =>
+                                          Text(stockKeepingUnit.batchCode),
+                                    ),
+                                  ],
+                                  rows: product.stockKeepingUnits,
+                                  actionColumn: TableFormColumn(
+                                    desktopWidth: FixedColumnWidth(60),
+                                    headerBuilder: (context) => IconButton(
+                                      onPressed: refreshSku,
+                                      icon: Icon(Icons.refresh),
+                                    ),
+                                    rowBuilder: (context, model) =>
+                                        const SizedBox(),
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ],
@@ -792,9 +999,12 @@ class _ProductFormPageState extends State<ProductFormPage>
                       onPressed: _saveRecord,
                       child: Text('Simpan'),
                     ),
-                    ElevatedButton(
-                      onPressed: _resetRecord,
-                      child: Text('Reset'),
+                    Visibility(
+                      visible: !product.isNewRecord,
+                      child: ElevatedButton(
+                        onPressed: _resetRecord,
+                        child: Text('Reset'),
+                      ),
                     ),
                     Visibility(
                       visible: !product.isNewRecord,
@@ -837,6 +1047,21 @@ class _ProductFormPageState extends State<ProductFormPage>
         });
       }
     });
+  }
+
+  void showStockSellPriceDialog(StockKeepingUnit stockKeepingUnit) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final navigator = Navigator.of(context);
+        return StockSellPriceFormDialog(
+          tabManager: _tabManager,
+          navigator: navigator,
+          productMeasurements: product.productMeasurements,
+          stockKeepingUnit: stockKeepingUnit,
+        );
+      },
+    );
   }
 }
 

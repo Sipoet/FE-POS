@@ -106,6 +106,7 @@ class _BrandFormPageState extends State<BrandFormPage>
     });
   }
 
+  final width = 350.0;
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -125,26 +126,36 @@ class _BrandFormPageState extends State<BrandFormPage>
                       spacing: 10,
                       crossAxisAlignment: .start,
                       children: [
-                        TextFormField(
-                          initialValue: brand.name,
-                          onChanged: (value) => brand.name = value,
-                          readOnly: true,
-                          decoration: InputDecoration(
-                            label: Text(_setting.columnName('brand', 'name')),
-                            border: OutlineInputBorder(),
+                        SizedBox(
+                          width: width,
+                          child: TextFormField(
+                            initialValue: brand.name,
+                            onChanged: (value) => brand.name = value,
+                            decoration: InputDecoration(
+                              label: Text(_setting.columnName('brand', 'name')),
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              if (value?.isNotEmpty == false) {
+                                return 'harus diisi';
+                              }
+                              return null;
+                            },
                           ),
                         ),
-                        TextFormField(
-                          initialValue: brand.description,
-                          onChanged: (value) => brand.description = value,
-                          readOnly: true,
-                          minLines: 3,
-                          maxLines: 5,
-                          decoration: InputDecoration(
-                            label: Text(
-                              _setting.columnName('brand', 'description'),
+                        SizedBox(
+                          width: width,
+                          child: TextFormField(
+                            initialValue: brand.description,
+                            onChanged: (value) => brand.description = value,
+                            minLines: 3,
+                            maxLines: 5,
+                            decoration: InputDecoration(
+                              label: Text(
+                                _setting.columnName('brand', 'description'),
+                              ),
+                              border: OutlineInputBorder(),
                             ),
-                            border: OutlineInputBorder(),
                           ),
                         ),
                       ],

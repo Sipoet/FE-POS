@@ -490,7 +490,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                             ),
                             SizedBox(
                               width: 50,
-                              child: SubmenuButton(
+                              child: MenuAnchor(
                                 menuChildren: [
                                   MenuItemButton(
                                     child: const Text('Tambah Detail'),
@@ -513,14 +513,17 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                     ),
                                 ],
                                 controller: menuController,
-                                onHover: (isHover) {
-                                  if (isHover) {
-                                    // menuController.open();
-                                  } else {
-                                    // menuController.close();
-                                  }
-                                },
-                                child: const Icon(Icons.table_rows_rounded),
+
+                                child: IconButton(
+                                  onPressed: () {
+                                    if (menuController.isOpen) {
+                                      menuController.close();
+                                    } else {
+                                      menuController.open();
+                                    }
+                                  },
+                                  icon: Icon(Icons.table_rows_rounded),
+                                ),
                               ),
                             ),
                           ],
@@ -545,7 +548,19 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                       textOnSearch: (model) =>
                                           "${model.barcode}-${model.description}",
                                       modelClass: ProductClass(),
-                                      // isDense: true,
+                                      request: (queryRequest) {
+                                        queryRequest.include = ['base_uom'];
+                                        queryRequest.filters = [
+                                          ComparisonFilterData(
+                                            key: 'supplier',
+                                            value: purchaseOrder.supplier?.id,
+                                          ),
+                                        ];
+                                        return ProductClass().finds(
+                                          _server,
+                                          queryRequest,
+                                        );
+                                      },
                                       selected: purchaseOrderDetail.product,
                                       onChanged: (product) => setState(() {
                                         purchaseOrderDetail.product = product;
@@ -628,7 +643,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                             if (setting.canShow('purchaseOrderDetail', 'price'))
                               TableFormColumn<PurchaseOrderDetail>(
                                 name: 'price',
-                                title: 'Harga',
+                                title: 'Harga per Satuan',
                                 isNumeric: true,
                                 headerBuilder: (context) => Text(
                                   'Harga',

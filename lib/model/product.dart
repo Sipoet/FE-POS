@@ -1,6 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/product_category.dart';
+import 'package:fe_pos/model/product_measurement.dart';
+import 'package:fe_pos/model/stock_keeping_unit.dart';
 
 import 'package:fe_pos/model/tag.dart';
 import 'package:fe_pos/model/supplier.dart';
@@ -27,6 +29,8 @@ class Product extends Model with SaveNDestroyModel {
   Money sellPrice;
   Account? stockAccount;
   List<Tagging> taggings = [];
+  List<ProductMeasurement> productMeasurements = [];
+  List<StockKeepingUnit> stockKeepingUnits = [];
   List<ImageModel> images = [];
   ImageModel? defaultImage;
 
@@ -69,6 +73,9 @@ class Product extends Model with SaveNDestroyModel {
     'sell_price': sellPrice,
     'stock_account': stockAccount,
     'stock_account_id': stockAccount?.id,
+    'product_measurements_attributes': productMeasurements,
+    'stock_keeping_units_attributes': stockKeepingUnits,
+    'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
   };
 
   List<ImageModel> get markedDestroyedImages =>
@@ -132,6 +139,14 @@ class Product extends Model with SaveNDestroyModel {
     );
     images = ImageModelClass().findRelationsData(
       relation: json['relationships']?['images'],
+      included: included,
+    );
+    productMeasurements = ProductMeasurementClass().findRelationsData(
+      relation: json['relationships']?['product_measurements'],
+      included: included,
+    );
+    stockKeepingUnits = StockKeepingUnitClass().findRelationsData(
+      relation: json['relationships']?['stock_keeping_units'],
       included: included,
     );
     defaultImage = attributes['image'] == null

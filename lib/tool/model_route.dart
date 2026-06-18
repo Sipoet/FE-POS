@@ -187,5 +187,6 @@ class ModelRoute {
     'Company': TagClass(),
     'PurchaseShipment': TagClass(),
     'PurchaseShipmentDetail': TagClass(),
+    'UnitOfMeasurement': UnitOfMeasurementClass(),
   });
 }

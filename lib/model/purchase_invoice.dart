@@ -152,12 +152,10 @@ class PurchaseInvoice extends Model with SaveNDestroyModel {
             relation: json['relationships']['location'],
           ) ??
           Location(id: attributes['location_id']);
-      purchaseOrder =
-          PurchaseOrderClass().findRelationData(
-            included: included,
-            relation: json['relationships']['purchase_order'],
-          ) ??
-          PurchaseOrder(id: attributes['purchase_order_id']);
+      purchaseOrder = PurchaseOrderClass().findRelationData(
+        included: included,
+        relation: json['relationships']['purchase_order'],
+      );
       costDetails = CostDetailClass().findRelationsData(
         included: included,
         relation: json['relationships']['cost_details'],
@@ -166,6 +164,8 @@ class PurchaseInvoice extends Model with SaveNDestroyModel {
     id = json['id'];
     code = attributes['code'] ?? '';
     transactionDate = Date.tryParse(attributes['transaction_date'] ?? '');
+    barcodedAt = Date.tryParse(attributes['barcoded_at'] ?? '');
+    openedAt = Date.tryParse(attributes['opened_at'] ?? '');
     description = attributes['description'];
     // productTotal = attributes['product_total'];
     subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);

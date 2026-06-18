@@ -46,3 +46,4 @@ export 'package:fe_pos/model/stock_keeping_unit.dart';
 export 'package:fe_pos/model/purchase_shipment.dart';
 export 'package:fe_pos/model/purchase_shipment_detail.dart';
 export 'package:fe_pos/model/forwarder.dart';
+export 'package:fe_pos/model/unit_of_measurement.dart';

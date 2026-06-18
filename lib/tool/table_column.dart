@@ -259,13 +259,14 @@ class ImageTableColumnType extends TableColumnType<ImageModel> {
       builder: (context) {
         final navigator = Navigator.of(context);
         return Dialog(
+          backgroundColor: Colors.transparent,
           child: Stack(
             children: [
               Image(image: value),
               Positioned(
                 top: 0,
                 right: 0,
-                child: IconButton.outlined(
+                child: IconButton.filled(
                   onPressed: () => navigator.pop(),
                   icon: Icon(Icons.close),
                 ),

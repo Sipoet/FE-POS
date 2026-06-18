@@ -63,33 +63,24 @@ class _ProductCategoryFormPageState extends State<ProductCategoryFormPage>
       return;
     }
     _formState.currentState?.save();
-    productCategory
-        .save(
-          _server,
-          includeAttributes: {
-            'tag_key_groups_attributes': productCategory.tagKeyGroups
-                .map((e) => e.asJson())
-                .toList(),
-          },
-        )
-        .then((result) {
-          if (result) {
-            setState(() {
-              productCategory;
-            });
-            flash.show(Text('Sukses Simpan'), .success);
-            _tabManager.changeTabHeader(
-              widget,
-              'Edit Kategori Produk ${productCategory.name}',
-            );
-          } else {
-            flash.showBanner(
-              messageType: .error,
-              title: 'Gagal Simpan Kategori Produk',
-              description: productCategory.errors.join(','),
-            );
-          }
+    productCategory.save(_server).then((result) {
+      if (result) {
+        setState(() {
+          productCategory;
         });
+        flash.show(Text('Sukses Simpan'), .success);
+        _tabManager.changeTabHeader(
+          widget,
+          'Edit Kategori Produk ${productCategory.name}',
+        );
+      } else {
+        flash.showBanner(
+          messageType: .error,
+          title: 'Gagal Simpan Kategori Produk',
+          description: productCategory.errors.join(','),
+        );
+      }
+    });
   }
 
   void _resetRecord() {

@@ -12,7 +12,11 @@ class TagKey extends Model with SaveNDestroyModel {
     : tags = tags ?? [];
 
   @override
-  Map<String, dynamic> toMap() => {'name': name, 'group': group};
+  Map<String, dynamic> toMap() => {
+    'name': name,
+    'group': group,
+    'tags_attributes': tags.map((e) => e.asJson()).toList(),
+  };
 
   @override
   String get path => 'tag_keys';

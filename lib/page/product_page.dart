@@ -83,6 +83,7 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
       'product_category',
       'supplier',
       'brand',
+      'base_uom',
       'stock_account',
     ];
     request.filters.addAll(_filter);

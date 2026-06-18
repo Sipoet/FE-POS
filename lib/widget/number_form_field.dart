@@ -220,7 +220,7 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
             }
           : null,
       inputFormatters: [
-        CustomNumberInputFormatter(formatType: .number, separator: ','),
+        CustomNumberInputFormatter(formatType: .amount, separator: ','),
       ],
       decoration: decoration,
     );

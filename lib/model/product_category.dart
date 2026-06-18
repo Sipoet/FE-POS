@@ -21,6 +21,7 @@ class ProductCategory extends Model with SaveNDestroyModel {
     'name': name,
     'description': description,
     'parent': parent,
+    'tag_key_groups_attributes': tagKeyGroups.map((e) => e.asJson()).toList(),
   };
 
   List<TagKey> get tagKeys => tagKeyGroups
@@ -54,6 +55,7 @@ class ProductCategory extends Model with SaveNDestroyModel {
     parent = ProductCategoryClass().findRelationData(
       relation: json['relationships']?['parent'],
       included: included,
+      isRootIncluded: false,
     );
     tagKeyGroups = TagKeyGroupClass().findRelationsData(
       relation: json['relationships']?['tag_key_groups'],

@@ -54,29 +54,22 @@ class _TagKeyFormPageState extends State<TagKeyFormPage>
       return;
     }
     _formState.currentState?.save();
-    tagKey
-        .save(
-          _server,
-          includeAttributes: {
-            'tags_attributes': tagKey.tags.map((e) => e.asJson()).toList(),
-          },
-        )
-        .then((result) {
-          if (result) {
-            setState(() {
-              tagKey;
-            });
-            flash.show(Text('Sukses Simpan'), .success);
-            _tabManager.changeTabHeader(widget, 'Edit Tag Key ${tagKey.id}');
-          } else {
-            flash.showBanner(
-              messageType: .error,
-              title: 'Gagal Simpan Tag Key',
-              description: tagKey.errors.join(','),
-            );
-            debugPrint(tagKey.errors.join(','));
-          }
+    tagKey.save(_server).then((result) {
+      if (result) {
+        setState(() {
+          tagKey;
         });
+        flash.show(Text('Sukses Simpan'), .success);
+        _tabManager.changeTabHeader(widget, 'Edit Tag Key ${tagKey.id}');
+      } else {
+        flash.showBanner(
+          messageType: .error,
+          title: 'Gagal Simpan Tag Key',
+          description: tagKey.errors.join(','),
+        );
+        debugPrint(tagKey.errors.join(','));
+      }
+    });
   }
 
   void _resetRecord() {

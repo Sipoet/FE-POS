@@ -13,13 +13,13 @@ class DiscountDetailFormDialog extends StatefulWidget {
   final List<DiscountDetail> discountDetails;
   final NavigatorState navigator;
   final List<Widget> descriptions;
-  DiscountDetailFormDialog({
+  const DiscountDetailFormDialog({
     super.key,
     required this.tabManager,
     required this.navigator,
     this.descriptions = const [],
     List<DiscountDetail>? discountDetails,
-  }) : discountDetails = discountDetails ?? [];
+  }) : discountDetails = discountDetails ?? const [];
 
   @override
   State<DiscountDetailFormDialog> createState() =>
@@ -47,6 +47,7 @@ class _DiscountDetailFormDialogState extends State<DiscountDetailFormDialog>
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
     return Form(
       key: _formKey,
       autovalidateMode: .always,
@@ -62,8 +63,8 @@ class _DiscountDetailFormDialogState extends State<DiscountDetailFormDialog>
           ],
         ),
         content: SizedBox(
-          height: 1000,
-          width: 1000,
+          height: size.height - 30,
+          width: size.width - 30,
           child: Scrollbar(
             thumbVisibility: true,
             trackVisibility: true,

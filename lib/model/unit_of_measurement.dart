@@ -12,6 +12,9 @@ class UnitOfMeasurement extends Model {
     'group_conversion': groupConversion,
   };
   @override
+  String get modelValue => name ?? '';
+
+  @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'] ?? {};
     super.setFromJson(json, included: included);
