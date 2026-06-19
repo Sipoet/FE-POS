@@ -438,10 +438,6 @@ class Percentage {
     return Percentage(parsed / 100);
   }
 
-  Percentage dup() {
-    return Percentage(value);
-  }
-
   @override
   String toString() {
     if (value.isInfinite) {

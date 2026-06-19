@@ -128,26 +128,19 @@ class _SalesPaymentPageState extends State<SalesPaymentPage> {
                                       paymentProvider.name,
                                   selected: salesPayment.paymentProvider,
                                   modelClass: PaymentProviderClass(),
-                                  request:
-                                      ({
-                                        int page = 1,
-                                        int limit = 20,
-                                        String searchText = '',
-                                        required CancelToken cancelToken,
-                                      }) {
-                                        return _server.get(
-                                          'payment_providers',
-                                          queryParam: {
-                                            'page[page]': page.toString(),
-                                            'page[limit]': limit.toString(),
-                                            'search_text': searchText,
-                                            'filter[status][eq]':
-                                                PaymentProviderStatus.active
-                                                    .toString(),
-                                          },
-                                          cancelToken: cancelToken,
-                                        );
-                                      },
+                                  request: (QueryRequest queryRequest) {
+                                    queryRequest.filters.add(
+                                      ComparisonFilterData(
+                                        key: 'status',
+                                        value: PaymentProviderStatus.active
+                                            .toString(),
+                                      ),
+                                    );
+                                    return PaymentProviderClass().finds(
+                                      _server,
+                                      queryRequest,
+                                    );
+                                  },
                                   validator: (value) {
                                     if (value == null && !salesPayment.isCash) {
                                       return 'harus diisi';

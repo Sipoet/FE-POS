@@ -556,26 +556,3 @@ class _CustomAsyncDataTableState<T extends Model>
     );
   }
 }
-
-class DataTableRequest {
-  int page;
-  Map<String, dynamic> filter;
-  List<SortData> sorts;
-  DataTableRequest({
-    this.page = 1,
-    this.sorts = const [],
-    this.filter = const {},
-  });
-}
-
-class DataTableResponse<T extends Model> {
-  int totalPage;
-  List<T> models;
-  DataTableResponse({this.totalPage = 0, this.models = const []});
-}
-
-class SortData {
-  String key;
-  bool isAscending;
-  SortData({required this.key, required this.isAscending});
-}

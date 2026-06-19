@@ -80,11 +80,6 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
     super.dispose();
   }
 
-  Money? _valueFromInput(String input) {
-    input = input.replaceAll(',', '');
-    return Money.tryParse(input);
-  }
-
   @override
   Widget build(BuildContext context) {
     return TextFormField(

@@ -1,7 +1,16 @@
+import 'package:fe_pos/model/item.dart';
 import 'package:fe_pos/model/model.dart';
 
 class DiscountRule extends Model {
-  DiscountRule({super.id, super.createdAt, super.updatedAt});
+  Item? item;
+  String code;
+  DiscountRule({
+    super.id,
+    this.code = '',
+    this.item,
+    super.createdAt,
+    super.updatedAt,
+  });
   @override
   Map<String, dynamic> toMap() => {};
 
@@ -12,6 +21,11 @@ class DiscountRule extends Model {
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];
+    code = attributes['code'];
+    item = ItemClass().findRelationData(
+      included: included,
+      relation: json['relationships']?['item'],
+    );
   }
 
   @override

@@ -90,7 +90,7 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
         'items/with_discount_rule',
         queryParam: {'barcode': barcode},
       );
-      if (response == null || response.statusCode != 200) {
+      if (response.statusCode != 200) {
         flash.showBanner(
           messageType: ToastificationType.error,
           title: 'barcode tidak ditemukan',
