@@ -73,8 +73,12 @@ class Product extends Model with SaveNDestroyModel {
     'sell_price': sellPrice,
     'stock_account': stockAccount,
     'stock_account_id': stockAccount?.id,
-    'product_measurements_attributes': productMeasurements,
-    'stock_keeping_units_attributes': stockKeepingUnits,
+    'product_measurements_attributes': productMeasurements
+        .map((e) => e.asJson())
+        .toList(),
+    'stock_keeping_units_attributes': stockKeepingUnits
+        .map((e) => e.asJson())
+        .toList(),
     'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
   };
 

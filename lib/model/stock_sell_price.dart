@@ -26,7 +26,7 @@ class StockSellPrice extends Model {
   };
 
   String get priceWithUomText =>
-      "${sellPrice?.format()}${maxQuantity == null ? '' : ' max ${maxQuantity}'} per ${uom?.name}";
+      "${sellPrice?.format()}${maxQuantity == null ? '' : ' max $maxQuantity'} per ${uom?.name}";
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);

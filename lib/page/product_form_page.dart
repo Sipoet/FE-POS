@@ -75,6 +75,7 @@ class _ProductFormPageState extends State<ProductFormPage>
             'stock_account',
             'images',
             'product_measurements',
+            'product_measurements.uom',
             'base_uom',
           ],
         )
@@ -392,18 +393,19 @@ class _ProductFormPageState extends State<ProductFormPage>
                                 }),
                               ),
                             ),
-                            SizedBox(
-                              width: 250,
-                              child: MoneyFormField(
-                                label: Text(
-                                  'Harga Jual',
-                                  style: DefaultResponse.labelStyle,
+                            if (_setting.canShow('product', 'sell_price'))
+                              SizedBox(
+                                width: 250,
+                                child: MoneyFormField(
+                                  label: Text(
+                                    'Harga Jual',
+                                    style: DefaultResponse.labelStyle,
+                                  ),
+                                  onChanged: (value) => product.sellPrice =
+                                      value ?? const Money(0),
+                                  initialValue: product.sellPrice,
                                 ),
-                                onChanged: (value) =>
-                                    product.sellPrice = value ?? const Money(0),
-                                initialValue: product.sellPrice,
                               ),
-                            ),
                             SizedBox(
                               width: 250,
                               child: AsyncDropdown<Supplier>(
@@ -848,56 +850,71 @@ class _ProductFormPageState extends State<ProductFormPage>
                                             textAlign: .right,
                                           ),
                                     ),
-                                    TableFormColumn(
-                                      title: 'Avg HPP',
-                                      isNumeric: true,
-                                      headerBuilder: (context) => Text(
-                                        'Avg HPP',
-                                        style: DefaultResponse.labelStyle,
-                                        textAlign: .right,
+                                    if (_setting.canShow(
+                                      'stockKeepingUnit',
+                                      'cogs',
+                                    ))
+                                      TableFormColumn(
+                                        title: 'Avg HPP',
+                                        isNumeric: true,
+                                        headerBuilder: (context) => Text(
+                                          'Avg HPP',
+                                          style: DefaultResponse.labelStyle,
+                                          textAlign: .right,
+                                        ),
+                                        rowBuilder:
+                                            (context, stockKeepingUnit) =>
+                                                SelectableText(
+                                                  stockKeepingUnit.cogs
+                                                          ?.format() ??
+                                                      '',
+                                                  textAlign: .right,
+                                                ),
                                       ),
-                                      rowBuilder: (context, stockKeepingUnit) =>
-                                          SelectableText(
-                                            stockKeepingUnit.cogs?.format() ??
-                                                '',
-                                            textAlign: .right,
-                                          ),
-                                    ),
-                                    TableFormColumn(
-                                      title: 'Harga Jual',
-                                      isNumeric: true,
-                                      headerBuilder: (context) => Text(
-                                        'Harga Jual',
-                                        style: DefaultResponse.labelStyle,
-                                        textAlign: .right,
+                                    if (_setting.canShow(
+                                      'stockKeepingUnit',
+                                      'sell_price',
+                                    ))
+                                      TableFormColumn(
+                                        title: 'Harga Jual',
+                                        isNumeric: true,
+                                        headerBuilder: (context) => Text(
+                                          'Harga Jual',
+                                          style: DefaultResponse.labelStyle,
+                                          textAlign: .right,
+                                        ),
+                                        rowBuilder:
+                                            (
+                                              context,
+                                              stockKeepingUnit,
+                                            ) => Column(
+                                              spacing: 10,
+                                              children: [
+                                                Text(
+                                                  stockKeepingUnit
+                                                      .stockSellPrices
+                                                      .map<String>(
+                                                        (
+                                                          stockSellPrice,
+                                                        ) => stockSellPrice
+                                                            .priceWithUomText,
+                                                      )
+                                                      .join('\n'),
+                                                  overflow: .ellipsis,
+                                                  textAlign: .right,
+                                                  maxLines: 2,
+                                                ),
+                                                ElevatedButton.icon(
+                                                  onPressed: () =>
+                                                      showStockSellPriceDialog(
+                                                        stockKeepingUnit,
+                                                      ),
+                                                  icon: Icon(Icons.edit),
+                                                  label: Text('ubah'),
+                                                ),
+                                              ],
+                                            ),
                                       ),
-                                      rowBuilder: (context, stockKeepingUnit) =>
-                                          Column(
-                                            spacing: 10,
-                                            children: [
-                                              Text(
-                                                stockKeepingUnit.stockSellPrices
-                                                    .map<String>(
-                                                      (stockSellPrice) =>
-                                                          stockSellPrice
-                                                              .priceWithUomText,
-                                                    )
-                                                    .join('\n'),
-                                                overflow: .ellipsis,
-                                                textAlign: .right,
-                                                maxLines: 2,
-                                              ),
-                                              ElevatedButton.icon(
-                                                onPressed: () =>
-                                                    showStockSellPriceDialog(
-                                                      stockKeepingUnit,
-                                                    ),
-                                                icon: Icon(Icons.edit),
-                                                label: Text('ubah'),
-                                              ),
-                                            ],
-                                          ),
-                                    ),
                                     TableFormColumn(
                                       title: 'Supplier',
                                       isNumeric: true,
