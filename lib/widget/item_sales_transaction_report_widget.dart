@@ -1,5 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:fe_pos/model/item.dart';
+import 'package:fe_pos/model/brand.dart';
+import 'package:fe_pos/model/supplier.dart';
 import 'package:fe_pos/page/brand_form_page.dart';
 import 'package:fe_pos/page/item_type_form_page.dart';
 import 'package:fe_pos/page/supplier_form_page.dart';
@@ -163,7 +165,7 @@ class _ItemSalesTransactionReportWidgetState
         tabTitle = 'Supplier ${row['identifier']}';
         detailPage = SupplierFormPage(
           key: ValueKey(tabTitle),
-          supplier: Supplier(id: row['identifier'], code: row['identifier']),
+          supplier: Supplier(id: row['identifier'], name: row['identifier']),
         );
         break;
       default:

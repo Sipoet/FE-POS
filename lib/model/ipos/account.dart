@@ -1,0 +1,50 @@
+import 'package:fe_pos/model/model.dart';
+
+class IposAccount extends Model {
+  String code;
+  String name;
+  String? parentCode;
+  bool cashBank;
+  String? currency;
+  IposAccount({
+    super.id,
+    this.parentCode,
+    super.updatedAt,
+    this.cashBank = false,
+    this.currency = '',
+    this.code = '',
+    this.name = '',
+  });
+
+  @override
+  String get path => 'ipos/accounts';
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    super.setFromJson(json, included: included);
+    final attributes = json['attributes'];
+    code = attributes['code'];
+    name = attributes['name'];
+    parentCode = attributes['parentacc'];
+    currency = attributes['matauang'];
+    cashBank = attributes['kasbank'] ?? false;
+  }
+
+  @override
+  Map<String, dynamic> toMap() => {
+    'code': code,
+    'name': name,
+    'parentacc': parentCode,
+    'updated_at': updatedAt,
+    'matauang': currency,
+    'kasbank': cashBank,
+  };
+
+  @override
+  String get modelValue => '$code - $name';
+}
+
+class IposAccountClass extends ModelClass<IposAccount> {
+  @override
+  IposAccount initModel() => IposAccount();
+}

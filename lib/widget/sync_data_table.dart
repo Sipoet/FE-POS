@@ -81,6 +81,7 @@ class _SyncDataTableState<T extends Model> extends State<SyncDataTable<T>>
         TableColumn tableColumn = entry.value;
         return decorateColumn(
           tableColumn,
+          context: context,
           tabManager: tabManager,
           listEnumValues: widget.enums[tableColumn.name],
           showFilter: widget.showFilter,
@@ -448,11 +449,13 @@ class SyncTableController<T extends Model> extends ChangeNotifier {
     List<TableColumn> tableColumns, {
     int fixedLeftColumns = 0,
     bool showFilter = false,
+    required BuildContext context,
     required TabManager tabManager,
   }) {
     columns = tableColumns;
     trinaController.setTableColumns(
       columns,
+      context: context,
       fixedLeftColumns: fixedLeftColumns,
       showFilter: showFilter,
       tabManager: tabManager,

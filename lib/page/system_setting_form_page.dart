@@ -126,23 +126,16 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
           ),
           Visibility(
             visible: systemSetting.valueType == SettingValueType.date,
-            child: DateFormField(
-              initialValue: systemSetting.value is Date
-                  ? systemSetting.value.toDateTime()
-                  : null,
-              dateType: DateType(),
-              onChanged: (value) => systemSetting.value = value == null
-                  ? null
-                  : Date.parsingDateTime(value),
+            child: DateFormField<Date>(
+              initialValue: systemSetting.value,
+              onChanged: (value) => systemSetting.value = value,
               label: Text(_setting.columnName('systemSetting', 'value')),
             ),
           ),
           Visibility(
             visible: systemSetting.valueType == SettingValueType.datetime,
-            child: DateFormField(
-              initialValue: systemSetting.value is DateTime
-                  ? systemSetting.value
-                  : null,
+            child: DateFormField<DateTime>(
+              initialValue: systemSetting.value,
               onChanged: (value) => systemSetting.value = value,
               label: Text(_setting.columnName('systemSetting', 'value')),
             ),
@@ -150,9 +143,7 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
           Visibility(
             visible: systemSetting.valueType == SettingValueType.time,
             child: TimeFormField(
-              initialValue: systemSetting.value is TimeOfDay
-                  ? systemSetting.value
-                  : null,
+              initialValue: systemSetting.value,
               onChanged: (value) => systemSetting.value = value,
               label: Text(_setting.columnName('systemSetting', 'value')),
             ),
@@ -192,7 +183,7 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
       'data': {
         'id': systemSetting.id,
         'type': 'system_setting',
-        'attributes': systemSetting.toJson(),
+        'attributes': systemSetting.asJson(),
       },
     };
     server

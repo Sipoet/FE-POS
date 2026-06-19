@@ -95,10 +95,10 @@ class _ItemFormPageState extends State<ItemFormPage>
                     visible: _setting.canShow('ipos::Item', 'brand_name'),
                     child: IgnorePointer(
                       ignoring: !_setting.isAuthorize('ipos/brands', 'read'),
-                      child: AsyncDropdown<Brand>(
+                      child: AsyncDropdown<IposBrand>(
                         allowClear: false,
                         textOnSearch: (e) => e.modelValue,
-                        modelClass: BrandClass(),
+                        modelClass: IposBrandClass(),
                         label: Text(
                           _setting.columnName('ipos::Item', 'brand_name'),
                         ),
@@ -132,11 +132,11 @@ class _ItemFormPageState extends State<ItemFormPage>
                     visible: _setting.canShow('ipos::Item', 'supplier_code'),
                     child: IgnorePointer(
                       ignoring: !_setting.isAuthorize('ipos/suppliers', 'read'),
-                      child: AsyncDropdown<Supplier>(
+                      child: AsyncDropdown<IposSupplier>(
                         allowClear: false,
                         textOnSearch: (model) =>
                             '${model.code} - ${model.name}',
-                        modelClass: SupplierClass(),
+                        modelClass: IposSupplierClass(),
                         label: Text(
                           _setting.columnName('ipos::Item', 'supplier_code'),
                         ),
@@ -224,7 +224,7 @@ class _ItemFormPageState extends State<ItemFormPage>
     final server = context.read<Server>();
     if (item.isNewRecord) return;
     final params = {
-      'data': {'id': item.id, 'type': 'item', 'attributes': item.toJson()},
+      'data': {'id': item.id, 'type': 'item', 'attributes': item.asJson()},
     };
     server
         .put('ipos/items/${item.code}', body: params)

@@ -2,6 +2,7 @@ import 'package:fe_pos/model/purchase_order.dart';
 import 'package:fe_pos/page/purchase_order_form_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
+import 'package:fe_pos/tool/purchase_calculator.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
@@ -37,7 +38,7 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
     server = context.read<Server>();
     flash = Flash();
     setting = context.read<Setting>();
-    columns = setting.tableColumn('ipos::PurchaseOrder');
+    columns = setting.tableColumn('purchaseOrder');
     Future.delayed(Duration.zero, refreshTable);
     super.initState();
   }
@@ -57,7 +58,7 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
   ) {
     request.filters = _filters;
 
-    request.includeAddAll(['supplier', 'purchase']);
+    request.includeAddAll(['supplier', 'location']);
     return PurchaseOrderClass()
         .finds(server, request)
         .then(
@@ -72,11 +73,12 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
         );
   }
 
-  void viewRecord(PurchaseOrder purchaseOrder) {
+  void openForm(PurchaseOrder purchaseOrder) {
+    final text = purchaseOrder.isNewRecord ? 'Tambah' : 'Lihat';
     var tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-        'Lihat Pesanan Pembelian ${purchaseOrder.code}',
+        '$text Pesanan Pembelian ${purchaseOrder.code}',
         PurchaseOrderFormPage(purchaseOrder: purchaseOrder),
       );
     });
@@ -108,12 +110,22 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
             SizedBox(
               height: bodyScreenHeight - 60,
               child: CustomAsyncDataTable<PurchaseOrder>(
+                enums: {'tax_type': TaxType.values},
+                additionalHeaderActions: (menuController) => [
+                  MenuItemButton(
+                    child: Text('Tambah Pesanan Pembelian'),
+                    onPressed: () {
+                      menuController.close();
+                      openForm(PurchaseOrderClass().initModel());
+                    },
+                  ),
+                ],
                 rowAction: (purchaseOrder) => Row(
                   spacing: 10,
                   children: [
                     IconButton.filled(
                       onPressed: () {
-                        viewRecord(purchaseOrder);
+                        openForm(purchaseOrder);
                       },
                       icon: const Icon(Icons.search_rounded),
                     ),
@@ -121,7 +133,7 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
                 ),
                 onLoaded: (stateManager) {
                   _source = stateManager;
-                  _source.sortDescending(_source.columns[2]);
+                  _source.sortDescending(_source.columns[1]);
                 },
                 columns: columns,
                 fetchData: fetchPurchaseOrders,

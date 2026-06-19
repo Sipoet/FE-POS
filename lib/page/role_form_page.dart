@@ -280,11 +280,11 @@ class _RoleFormPageState extends State<RoleFormPage>
     role.columnAuthorizes = _decodeColumnAuthorize();
     role.accessAuthorizes = _decodeAccessAuhorize();
     final server = context.read<Server>();
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'role',
         'id': role.id,
-        'attributes': role.toJson(),
+        'attributes': role.asJson(),
         'relationships': {
           'column_authorizes': {
             'data': role.columnAuthorizes
@@ -292,7 +292,7 @@ class _RoleFormPageState extends State<RoleFormPage>
                   (columnAuthorize) => {
                     'id': columnAuthorize.id,
                     'type': 'column_authorize',
-                    'attributes': columnAuthorize.toJson(),
+                    'attributes': columnAuthorize.asJson(),
                   },
                 )
                 .toList(),
@@ -303,7 +303,7 @@ class _RoleFormPageState extends State<RoleFormPage>
                   (accessAuthorize) => {
                     'id': accessAuthorize.id,
                     'type': 'access_authorize',
-                    'attributes': accessAuthorize.toJson(),
+                    'attributes': accessAuthorize.asJson(),
                   },
                 )
                 .toList(),
@@ -314,7 +314,7 @@ class _RoleFormPageState extends State<RoleFormPage>
                   (roleWorkSchedule) => {
                     'id': roleWorkSchedule.id,
                     'type': 'role_work_schedule',
-                    'attributes': roleWorkSchedule.toJson(),
+                    'attributes': roleWorkSchedule.asJson(),
                   },
                 )
                 .toList(),

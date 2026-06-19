@@ -1,0 +1,32 @@
+import 'package:fe_pos/model/model.dart';
+
+class IposBrand extends Model {
+  String description;
+  String name;
+
+  IposBrand({this.description = '', this.name = '', super.id});
+
+  @override
+  Map<String, dynamic> toMap() => {'description': description, 'name': name};
+
+  @override
+  String get modelValue => name;
+  @override
+  String get path => 'ipos/brands';
+
+  @override
+  String get id => name;
+
+  @override
+  void setFromJson(Map<String, dynamic> json, {List included = const []}) {
+    var attributes = json['attributes'];
+    super.setFromJson(json, included: included);
+    description = attributes['description'] ?? '';
+    name = attributes['name'];
+  }
+}
+
+class IposBrandClass extends ModelClass<IposBrand> {
+  @override
+  IposBrand initModel() => IposBrand();
+}

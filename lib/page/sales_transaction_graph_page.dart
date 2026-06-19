@@ -54,8 +54,8 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   final salesReportController = SalesChartController();
   final yearNow = DateTime.now().year;
   List<ItemType> _itemTypes = [];
-  List<Supplier> _suppliers = [];
-  List<Brand> _brands = [];
+  List<IposSupplier> _suppliers = [];
+  List<IposBrand> _brands = [];
   List<Item> _items = [];
   bool _separatePurchaseYear = false;
   String _groupType = 'period';
@@ -172,7 +172,11 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
       // final groupModels = convertResponseToHashModels(data);
 
       if (_source != null) {
-        _source?.setTableColumns(_columns, tabManager: tabManager);
+        _source?.setTableColumns(
+          _columns,
+          tabManager: tabManager,
+          context: context,
+        );
         // _source?.setModels(groupModels);
         _source?.sortAscending(_source!.columns.first);
       }
@@ -280,7 +284,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
           );
         }
       }
-      models.sort((a, b) => b.data['total'].compareTo(a.data['total']));
+      models.sort((a, b) => b.data?['total'].compareTo(a.data?['total']));
       return models;
     } else {
       for (var detail in data['data']) {
@@ -305,7 +309,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
           ),
         );
       }
-      models.sort((a, b) => b.data['total'].compareTo(a.data['total']));
+      models.sort((a, b) => b.data?['total'].compareTo(a.data?['total']));
       return models;
     }
   }
@@ -513,13 +517,13 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
               ),
               SizedBox(
                 width: 300,
-                child: AsyncDropdownMultiple<Supplier>(
+                child: AsyncDropdownMultiple<IposSupplier>(
                   label: const Text('Supplier :', style: _filterLabelStyle),
                   key: const ValueKey('supplierSelect'),
                   textOnSearch: (supplier) =>
                       "${supplier.code} - ${supplier.name}",
                   textOnSelected: (supplier) => supplier.code,
-                  modelClass: SupplierClass(),
+                  modelClass: IposSupplierClass(),
                   attributeKey: 'kode',
 
                   onChanged: (value) => _suppliers = value,
@@ -527,12 +531,12 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
               ),
               SizedBox(
                 width: 300,
-                child: AsyncDropdownMultiple<Brand>(
+                child: AsyncDropdownMultiple<IposBrand>(
                   label: const Text('Merek :', style: _filterLabelStyle),
                   key: const ValueKey('brandSelect'),
                   textOnSearch: (brand) => brand.name,
                   textOnSelected: (brand) => brand.name,
-                  modelClass: BrandClass(),
+                  modelClass: IposBrandClass(),
                   attributeKey: 'nama',
 
                   onChanged: (value) => _brands = value,

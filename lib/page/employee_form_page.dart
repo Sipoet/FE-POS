@@ -6,6 +6,7 @@ import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -52,8 +53,6 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     }
     if (employee.id != null) {
       Future.delayed(Duration.zero, () => fetchEmployee());
-    } else {
-      employee.schedules = [];
     }
     super.initState();
   }
@@ -90,29 +89,18 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
     if (request != null) {
       return;
     }
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'employee',
-        'attributes': employee.toJson(),
+        'attributes': employee.asJson(),
         'relationships': {
-          'work_schedules': {
-            'data': employee.schedules
-                .map<Map>(
-                  (workSchedule) => {
-                    'id': workSchedule.id,
-                    'type': 'work_schedule',
-                    'attributes': workSchedule.toJson(),
-                  },
-                )
-                .toList(),
-          },
           'employee_day_offs': {
             'data': employee.employeeDayOffs
                 .map<Map>(
                   (employeeDayOff) => {
                     'id': employeeDayOff.id,
                     'type': 'employee_day_off',
-                    'attributes': employeeDayOff.toJson(),
+                    'attributes': employeeDayOff.asJson(),
                   },
                 )
                 .toList(),
@@ -205,7 +193,8 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
   void loadImage(String imageCode) async {
     final response = await _server.get(
       'assets/$imageCode',
-      responseType: 'file',
+      responseType: .bytes,
+      acceptHeader: .image,
     );
     if (response.statusCode == 200) {
       setState(() {
@@ -305,7 +294,6 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           label: const Text('User', style: labelStyle),
                           path: 'ipos/users',
                           textOnSearch: (value) => value.id.toString(),
-                          attributeKey: 'name',
                           onChanged: (userCode) {
                             employee.userCode = userCode?.id;
                           },
@@ -511,13 +499,22 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                             labelStyle: labelStyle,
                             border: OutlineInputBorder(),
                           ),
+                          inputFormatters: [
+                            CustomNumberInputFormatter(
+                              maxLength: 16,
+                              formatType: .socialSecurity,
+                            ),
+                          ],
+                          keyboardType: .number,
                           initialValue: employee.idNumber,
                           onSaved: (newValue) {
-                            employee.idNumber = newValue.toString();
+                            employee.idNumber = newValue
+                                ?.replaceAll(' ', '')
+                                .toString();
                           },
                           validator: (newValue) {
-                            if (newValue == null) {
-                              return 'harus diisi';
+                            if (newValue != null && newValue.length != 16) {
+                              return 'tidak valid. jumlah digit harus 16';
                             }
                             return null;
                           },
@@ -560,6 +557,12 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           onChanged: (newValue) {
                             employee.bankAccount = newValue.toString();
                           },
+                          inputFormatters: [
+                            CustomNumberInputFormatter(
+                              formatType: .bankAccount,
+                            ),
+                          ],
+                          keyboardType: .number,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -594,12 +597,18 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           ),
                           initialValue: employee.contactNumber,
                           keyboardType: TextInputType.phone,
+
                           onSaved: (newValue) {
                             employee.contactNumber = newValue.toString();
                           },
                           onChanged: (newValue) {
                             employee.contactNumber = newValue.toString();
                           },
+                          inputFormatters: [
+                            CustomNumberInputFormatter(
+                              formatType: .phoneNumber,
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -654,6 +663,11 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                           onChanged: (newValue) {
                             employee.taxNumber = newValue.toString();
                           },
+                          inputFormatters: [
+                            CustomNumberInputFormatter(
+                              formatType: .socialSecurity,
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -728,7 +742,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
                               label: ElevatedButton(
                                 onPressed: () {
                                   setState(() {
-                                    employee.schedules.clear();
+                                    employee.employeeDayOffs.clear();
                                   });
                                 },
                                 child: const Text(

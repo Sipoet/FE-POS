@@ -1,6 +1,5 @@
 import 'package:fe_pos/tool/custom_type.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
-import 'package:fe_pos/tool/thousand_separator_formatter.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:flutter/material.dart';
 
@@ -77,16 +76,19 @@ class PercentageType with TextFormatter implements NumType<Percentage> {
 
 class NumberFormField<T> extends StatefulWidget {
   final T? initialValue;
-  final void Function(T? value)? onChanged;
-  final void Function(T? value)? onSaved;
-  final void Function(T? value)? onFieldSubmitted;
+  final FormCallback<T>? onChanged;
+  final FormCallback<T>? onSaved;
+  final FormCallback<T>? onFieldSubmitted;
   final String? Function(T? value)? validator;
   final NumType<T>? numType;
   final Widget? label;
+  final ChangeNotifier? notifier;
   final TextEditingController? controller;
   final bool readOnly;
-  final bool isDense;
+  final bool? enabled;
+  final bool? isDense;
   final FocusNode? focusNode;
+  final ValueCallBack<T>? valueCallback;
   final String? hintText;
   const NumberFormField({
     super.key,
@@ -95,11 +97,14 @@ class NumberFormField<T> extends StatefulWidget {
     this.onChanged,
     this.onSaved,
     this.numType,
+    this.valueCallback,
     this.label,
+    this.notifier,
     this.hintText,
     this.validator,
     this.focusNode,
-    this.isDense = false,
+    this.enabled,
+    this.isDense,
     this.readOnly = false,
     this.controller,
   });
@@ -110,8 +115,8 @@ class NumberFormField<T> extends StatefulWidget {
 
 class _NumberFormFieldState<T> extends State<NumberFormField<T>>
     with TextFormatter {
-  String? initialValue;
   late final NumType<T> numType;
+  final _controller = TextEditingController();
 
   T? _valueFromInput(String input) {
     input = input.replaceAll(',', '');
@@ -123,6 +128,7 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
 
   @override
   void dispose() {
+    _controller.dispose();
     super.dispose();
   }
 
@@ -134,10 +140,33 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
       numType = getNumTypeBasedType() as NumType<T>;
     }
 
-    initialValue = widget.initialValue == null
-        ? null
-        : numberFormat(widget.initialValue);
+    widget.controller?.addListener(controllerListener);
+    _controller.text =
+        widget.controller?.text ??
+        (widget.initialValue == null ? '' : numberFormat(widget.initialValue));
+    widget.notifier?.addListener(notifierListener);
     super.initState();
+  }
+
+  void controllerListener() {
+    if (mounted) {
+      setState(() {
+        _controller.text = widget.controller!.text;
+      });
+    } else {
+      widget.controller!.removeListener(controllerListener);
+    }
+  }
+
+  void notifierListener() {
+    if (mounted) {
+      setState(() {
+        T? value = widget.valueCallback?.call();
+        _controller.text = value == null ? '' : numberFormat(value);
+      });
+    } else {
+      widget.notifier!.removeListener(notifierListener);
+    }
   }
 
   NumType getNumTypeBasedType() {
@@ -161,7 +190,7 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
         .copyWith(isDense: widget.isDense);
     return TextFormField(
       enableSuggestions: false,
-      controller: widget.controller,
+      controller: _controller,
       readOnly: widget.readOnly,
       focusNode: widget.focusNode,
       enabled: widget.enabled,
@@ -190,9 +219,10 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
               return widget.validator!(number);
             }
           : null,
-      inputFormatters: [ThousandSeparatorFormatter()],
+      inputFormatters: [
+        CustomNumberInputFormatter(formatType: .amount, separator: ','),
+      ],
       decoration: decoration,
-      initialValue: initialValue,
     );
   }
 }

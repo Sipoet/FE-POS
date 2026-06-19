@@ -1,4 +1,4 @@
-import 'package:fe_pos/model/brand.dart';
+import 'package:fe_pos/model/ipos/brand.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
 
@@ -40,11 +40,11 @@ class _TestingPageState extends State<TestingPage> {
               Container(
                 padding: const EdgeInsets.only(right: 10),
                 constraints: const BoxConstraints(maxWidth: 600),
-                child: AsyncDropdownMultiple<Brand>(
+                child: AsyncDropdownMultiple<IposBrand>(
                   label: const Text('Merek :'),
                   key: const ValueKey('brandSelect'),
-                  textOnSearch: (Brand brand) => brand.name,
-                  modelClass: BrandClass(),
+                  textOnSearch: (IposBrand brand) => brand.name,
+                  modelClass: IposBrandClass(),
                   attributeKey: 'merek',
 
                   onChanged: (value) {

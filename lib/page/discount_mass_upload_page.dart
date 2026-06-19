@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fe_pos/model/discount.dart';
 import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/file_saver.dart';
@@ -121,7 +119,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
     fileSaver.downloadRemote(
       path: 'discounts/template_mass_upload_excel',
       server: _server,
-      extFile: 'xlsx',
+      acceptHeader: .xlsx,
     );
   }
 
@@ -134,10 +132,10 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
   }
 
   Future createOrUpdateDiscount(Discount discount, int index) async {
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'discount',
-        'attributes': discount.toJson(),
+        'attributes': discount.asJson(),
         'relationships': {
           'discount_filters': {
             'data': discount.discountFilters
@@ -145,7 +143,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
                   (discountFilter) => {
                     'id': discountFilter.id,
                     'type': 'discount_filter',
-                    'attributes': discountFilter.toJson(),
+                    'attributes': discountFilter.asJson(),
                   },
                 )
                 .toList(),
@@ -154,7 +152,7 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
       },
     };
     debugPrint(body.toString());
-    dynamic request;
+    Response request;
     if (discount.id == null) {
       request = await _server.post('discounts', body: body);
     } else {
@@ -207,17 +205,17 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
           startTime: DateTime.parse(row[11]?.value.toString() ?? ''),
           endTime: DateTime.parse(row[12]?.value.toString() ?? ''),
         );
-        List<Supplier>? suppliers = _cleanText(row[1]?.value?.toString())
+        List<IposSupplier>? suppliers = _cleanText(row[1]?.value?.toString())
             ?.split(',')
-            .map<Supplier>((value) => Supplier(id: value, code: value))
+            .map<IposSupplier>((value) => IposSupplier(id: value, code: value))
             .toList();
         if (suppliers != null) {
           discount.suppliers = suppliers;
           discount.supplierCode = suppliers.first.code;
         }
-        List<Brand>? brands = _cleanText(row[2]?.value?.toString())
+        List<IposBrand>? brands = _cleanText(row[2]?.value?.toString())
             ?.split(',')
-            .map<Brand>((value) => Brand(id: value, name: value))
+            .map<IposBrand>((value) => IposBrand(id: value, name: value))
             .toList();
         if (brands != null) {
           discount.brands = brands;

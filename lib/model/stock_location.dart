@@ -1,27 +1,27 @@
 import 'package:fe_pos/model/item.dart';
-import 'package:fe_pos/model/location.dart';
+import 'package:fe_pos/model/ipos/location.dart';
 export 'package:fe_pos/model/item.dart';
-export 'package:fe_pos/model/location.dart';
+export 'package:fe_pos/model/ipos/location.dart';
 import 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
 class StockLocation extends Model {
   double quantity;
   Item item;
-  Location location;
+  IposLocation location;
 
   String? rack;
   StockLocation({
     Item? item,
     this.rack,
-    Location? location,
+    IposLocation? location,
     this.quantity = 0,
     super.id,
 
     super.createdAt,
     super.updatedAt,
   }) : item = item ?? Item(),
-       location = location ?? Location();
+       location = location ?? IposLocation();
 
   @override
   Map<String, dynamic> toMap() => {
@@ -53,11 +53,11 @@ class StockLocation extends Model {
           ) ??
           Item(id: attributes['item_code'], code: attributes['item_code']);
       location =
-          LocationClass().findRelationData(
+          IposLocationClass().findRelationData(
             included: included,
             relation: json['relationships']?['location'],
           ) ??
-          Location(
+          IposLocation(
             id: attributes['location_code'],
             code: attributes['location_code'],
           );

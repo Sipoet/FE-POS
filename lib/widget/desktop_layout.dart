@@ -52,12 +52,11 @@ class _DesktopLayoutState extends State<DesktopLayout>
   Widget build(BuildContext context) {
     final tabManager = context.watch<TabManager>();
     final server = context.read<Server>();
-    final message =
-        'SERVER: ${widget.host} | USER: ${widget.userName} | Allegra POS';
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          message,
+          'SERVER: ${widget.host} | USER: ${widget.userName} | Allegra POS',
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -181,6 +180,7 @@ class _TopMenuBarState extends State<TopMenuBar> with PlatformChecker {
   @override
   Widget build(BuildContext context) {
     return PlutoMenuBar(
+      height: 35,
       showBackButton: false,
       mode: isMobile() ? PlutoMenuBarMode.tap : PlutoMenuBarMode.hover,
       menus: decorateMenus(widget.menuTree),

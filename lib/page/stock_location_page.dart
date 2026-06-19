@@ -76,7 +76,11 @@ class _StockLocationPageState extends State<StockLocationPage>
   void downloadRacksheet() {
     showLoadingPopup();
     server
-        .get('ipos/item_stocks/download_racksheets', type: 'xlsx')
+        .get(
+          'ipos/item_stocks/download_racksheets',
+          acceptHeader: .xlsx,
+          responseType: .bytes,
+        )
         .then((response) async {
           if (response.statusCode == 409) {
             flash.showBanner(

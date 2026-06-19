@@ -275,10 +275,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
       return;
     }
     _source?.setShowLoading(true);
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'discount',
-        'attributes': discount.toJson(),
+        'attributes': discount.asJson(),
         'relationships': {
           'discount_filters': {
             'data': discount.discountFilters
@@ -286,7 +286,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   (discountItem) => {
                     'id': discountItem.id,
                     'type': 'discount_filter',
-                    'attributes': discountItem.toJson(),
+                    'attributes': discountItem.asJson(),
                   },
                 )
                 .toList(),
@@ -394,10 +394,10 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   }
 
   void _submit() async {
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'discount',
-        'attributes': discount.toJson(),
+        'attributes': discount.asJson(),
         'relationships': {
           'discount_filters': {
             'data': discount.discountFilters
@@ -405,7 +405,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                   (discountItem) => {
                     'id': discountItem.id,
                     'type': 'discount_filter',
-                    'attributes': discountItem.toJson(),
+                    'attributes': discountItem.asJson(),
                   },
                 )
                 .toList(),
@@ -460,7 +460,11 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   void downloadDiscountItems() {
     showLoadingPopup();
     server
-        .get('discounts/${discount.id}/download_items', type: 'xlsx')
+        .get(
+          'discounts/${discount.id}/download_items',
+          responseType: .bytes,
+          acceptHeader: .xlsx,
+        )
         .then((response) async {
           if (response.statusCode != 200) {
             flash.showBanner(
@@ -650,7 +654,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     const SizedBox(height: 10),
                                     SizedBox(
                                       width: 400,
-                                      child: AsyncDropdownMultiple<Supplier>(
+                                      child: AsyncDropdownMultiple<IposSupplier>(
                                         key: const ValueKey('supplierSelect'),
                                         selecteds: discount.suppliers,
                                         attributeKey: 'kode',
@@ -658,7 +662,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                             supplier.code,
                                         // textOnSearch: (supplier) =>
                                         //     '${supplier.code} - ${supplier.name}',
-                                        modelClass: SupplierClass(),
+                                        modelClass: IposSupplierClass(),
                                         label: const Text(
                                           'Supplier:',
                                           style: labelStyle,
@@ -680,12 +684,12 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     const SizedBox(height: 10),
                                     SizedBox(
                                       width: 400,
-                                      child: AsyncDropdownMultiple<Brand>(
+                                      child: AsyncDropdownMultiple<IposBrand>(
                                         key: const ValueKey('brandSelect'),
                                         selecteds: discount.brands,
                                         attributeKey: 'merek',
                                         textOnSearch: (brand) => brand.name,
-                                        modelClass: BrandClass(),
+                                        modelClass: IposBrandClass(),
                                         label: const Text(
                                           'Merek:',
                                           style: labelStyle,
@@ -761,7 +765,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     const SizedBox(height: 10),
                                     SizedBox(
                                       width: 400,
-                                      child: AsyncDropdownMultiple<Supplier>(
+                                      child: AsyncDropdownMultiple<IposSupplier>(
                                         key: const ValueKey(
                                           'blacklistSupplierSelect',
                                         ),
@@ -771,7 +775,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                             supplier.code,
                                         // textOnSearch: (supplier) =>
                                         //     '${supplier.code} - ${supplier.name}',
-                                        modelClass: SupplierClass(),
+                                        modelClass: IposSupplierClass(),
                                         label: const Text(
                                           'Blacklist Supplier:',
                                           style: labelStyle,
@@ -784,7 +788,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
                                     const SizedBox(height: 10),
                                     SizedBox(
                                       width: 400,
-                                      child: AsyncDropdownMultiple<Brand>(
+                                      child: AsyncDropdownMultiple<IposBrand>(
                                         key: const ValueKey(
                                           'blacklistBrandSelect',
                                         ),
@@ -792,7 +796,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
 
                                         attributeKey: 'merek',
                                         textOnSearch: (brand) => brand.name,
-                                        modelClass: BrandClass(),
+                                        modelClass: IposBrandClass(),
                                         label: const Text(
                                           'Blacklist Merek:',
                                           style: labelStyle,

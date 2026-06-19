@@ -1,11 +1,15 @@
 import 'dart:developer';
 
+import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:fe_pos/page/loading_page.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/tool/flash.dart';
 
 mixin DefaultResponse<T extends StatefulWidget> on State<T> {
+  static const labelStyle = TextFormatter.labelStyle;
+
   dynamic defaultErrorResponse({required var error, final valueWhenError}) {
     Flash flash = Flash();
     if (error.runtimeType.toString() == '_TypeError' ||
@@ -65,10 +69,8 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
   double get bodyScreenHeight {
     final padding = MediaQuery.of(context).padding;
     final size = MediaQuery.of(context).size;
-    double headerHeight = size.width > 800 ? 200 : 120;
-    double tableHeight =
-        size.height - padding.top - padding.bottom - headerHeight;
-    return tableHeight < 400 ? 400.0 : tableHeight;
+    double tableHeight = size.height - padding.top - padding.bottom - 150;
+    return <double>[400.0, tableHeight].max;
   }
 
   void showConfirmDialog({
@@ -101,5 +103,29 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
         return alert;
       },
     );
+  }
+
+  Future<bool> showConfirmDialog2({String message = 'Apakah Anda Yakin?'}) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text("Konfirmasi"),
+        content: Text(message),
+        actions: [
+          ElevatedButton(
+            child: const Text("Kembali"),
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+          ),
+          ElevatedButton(
+            child: const Text("Submit"),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+          ),
+        ],
+      ),
+    ).then((isSuccess) => isSuccess ?? false);
   }
 }

@@ -3,9 +3,11 @@ import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/custom_async_data_table.dart';
+import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/model/session_state.dart';
+import 'package:fe_pos/page/supplier_form_page.dart';
 
 class SupplierPage extends StatefulWidget {
   const SupplierPage({super.key});
@@ -17,8 +19,6 @@ class SupplierPage extends StatefulWidget {
 class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
   late final TableController _source;
   late final Server server;
-
-  final cancelToken = CancelToken();
   late Flash flash;
   late final Setting setting;
 
@@ -33,7 +33,6 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
 
   @override
   void dispose() {
-    cancelToken.cancel();
     super.dispose();
   }
 
@@ -56,6 +55,32 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
         );
   }
 
+  void openForm(Supplier supplier) {
+    final tabManager = context.read<TabManager>();
+
+    final desc = supplier.isNewRecord ? 'Tambah' : 'Edit';
+    tabManager.addTab(
+      '$desc Supplier ${supplier.name}',
+      SupplierFormPage(supplier: supplier),
+    );
+  }
+
+  void deleteRecord(Supplier supplier) {
+    showConfirmDialog(
+      message: 'Apakah Yakin Hapus Supplier ${supplier.name}',
+      onSubmit: () {
+        supplier.destroy(server).then((result) {
+          if (result) {
+            flash.show(Text('Sukses hapus ${supplier.name}'), .success);
+            refreshTable();
+          } else {
+            flash.show(Text('Gagal hapus ${supplier.name}'), .error);
+          }
+        });
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -74,10 +99,31 @@ class _SupplierPageState extends State<SupplierPage> with DefaultResponse {
               height: bodyScreenHeight,
               child: CustomAsyncDataTable<Supplier>(
                 onLoaded: (stateManager) => _source = stateManager,
+                additionalHeaderActions: (menuController) => [
+                  MenuItemButton(
+                    child: const Text('Tambah Supplier'),
+                    onPressed: () {
+                      menuController.close();
+                      openForm(Supplier());
+                    },
+                  ),
+                ],
+                rowAction: (model) => Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => openForm(model),
+                      icon: Icon(Icons.edit),
+                    ),
+                    IconButton(
+                      onPressed: () => deleteRecord(model),
+                      icon: Icon(Icons.delete),
+                    ),
+                  ],
+                ),
                 fixedLeftColumns: 0,
                 fetchData: fetchSuppliers,
                 showFilter: true,
-                columns: setting.tableColumn('ipos::Supplier'),
+                columns: setting.tableColumn('supplier'),
               ),
             ),
           ],

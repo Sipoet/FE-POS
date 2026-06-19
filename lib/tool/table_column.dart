@@ -50,7 +50,11 @@ mixin ColumnTypeFinder {
       case 'link':
       case 'model':
         return ModelTableColumnType(
-          modelClass: route.modelClassOf(options['class_name']),
+          modelClass: options['class_name'] == null
+              ? null
+              : route.modelClassOf(options['class_name']),
+          isPolymorphic: options['polymorphic'] == true,
+          modelTypeField: options['model_type'],
         );
       case 'enum':
         return EnumTableColumnType(
@@ -65,6 +69,8 @@ mixin ColumnTypeFinder {
                   .toList() ??
               <DropdownMenuEntry<String>>[],
         );
+      case 'image':
+        return ImageTableColumnType();
       default:
         return TextTableColumnType();
     }
@@ -140,10 +146,26 @@ abstract class TableColumnType<T> {
     required T value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   });
   T? convert(dynamic value);
 
   TrinaColumnType get trinaColumnType;
+
+  static TableColumnType get integer => NumberTableColumnType(IntegerType());
+  static TableColumnType get double => NumberTableColumnType(DoubleType());
+  static TableColumnType get money => MoneyTableColumnType();
+  static TableColumnType get date => DateTableColumnType(DateRangeType());
+  static TableColumnType get datetime =>
+      DateTableColumnType(DateTimeRangeType());
+  static TableColumnType get percentage => PercentageTableColumnType();
+  static TableColumnType get text => TextTableColumnType();
+  static TableColumnType get contact => ContactTableColumnType();
+  static TableColumnType get time => TimeTableColumnType();
+  static TableColumnType model(ModelClass modelClass) =>
+      ModelTableColumnType(modelClass: modelClass);
+  static TableColumnType enums(List<DropdownMenuEntry<String>> enumList) =>
+      EnumTableColumnType(availableValues: enumList);
 }
 
 class TextTableColumnType extends TableColumnType<String> {
@@ -193,6 +215,7 @@ class TextTableColumnType extends TableColumnType<String> {
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     return SelectableText(value?.toString() ?? '');
   }
@@ -204,12 +227,79 @@ class TextTableColumnType extends TableColumnType<String> {
   TrinaColumnType get trinaColumnType => TrinaColumnType.text();
 }
 
+class ImageTableColumnType extends TableColumnType<ImageModel> {
+  @override
+  Widget renderFilter({
+    Widget? label,
+    required String name,
+    Key? key,
+    required FilterFormController controller,
+  }) {
+    return SizedBox();
+  }
+
+  @override
+  Widget renderCell({
+    ImageModel? value,
+    required TableColumn column,
+    TabManager? tabManager,
+    required BuildContext context,
+  }) {
+    return value == null
+        ? const SizedBox()
+        : InkWell(
+            onTap: () => _openImageViewer(context, value),
+            child: SizedBox(width: 60, child: Image(image: value)),
+          );
+  }
+
+  void _openImageViewer(BuildContext context, ImageModel value) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final navigator = Navigator.of(context);
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Stack(
+            children: [
+              Image(image: value),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton.filled(
+                  onPressed: () => navigator.pop(),
+                  icon: Icon(Icons.close),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  ImageModel? convert(Object? value) {
+    if (value is ImageModel) {
+      return value;
+    } else if (value is Map<String, dynamic>) {
+      return ImageModelClass().fromJson(value);
+    } else {
+      return null;
+    }
+  }
+
+  @override
+  TrinaColumnType get trinaColumnType => TrinaColumnType.text();
+}
+
 class ContactTableColumnType extends TextTableColumnType with PlatformChecker {
   @override
   Widget renderCell({
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     if (value is String && value.trim().isNotEmpty) {
       return Wrap(
@@ -318,6 +408,7 @@ class ActionTableColumnType<T extends Model> extends TableColumnType<T> {
     required T value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     return action(value);
   }
@@ -385,6 +476,7 @@ class DateTableColumnType<T extends DateTime> extends TableColumnType<T> {
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     if (value == null) {
       return SizedBox();
@@ -493,6 +585,7 @@ class TimeTableColumnType extends TableColumnType<TimeOfDay> {
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     if (value is TimeOfDay) {
       return SelectableText(value.format24Hour());
@@ -547,6 +640,7 @@ class NumberTableColumnType<T> extends TableColumnType<T> with TextFormatter {
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     if (value is T) {
       return SelectableText(numberFormat(value), textAlign: .right);
@@ -860,6 +954,7 @@ class MoneyTableColumnType extends TableColumnType<Money> {
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     if (value is Money) {
       return SelectableText(value.format(), textAlign: .right);
@@ -884,9 +979,15 @@ class MoneyTableColumnType extends TableColumnType<Money> {
 
 class ModelTableColumnType<T extends Model> extends TableColumnType<T>
     with PlatformChecker {
-  ModelClass<T> modelClass;
+  ModelClass<T>? modelClass;
+  String? modelTypeField;
+  bool isPolymorphic;
   final route = ModelRoute();
-  ModelTableColumnType({required this.modelClass});
+  ModelTableColumnType({
+    this.modelClass,
+    this.modelTypeField,
+    this.isPolymorphic = false,
+  });
   @override
   Widget renderFilter({
     Widget? label,
@@ -894,13 +995,17 @@ class ModelTableColumnType<T extends Model> extends TableColumnType<T>
     Key? key,
     required FilterFormController controller,
   }) {
-    return ModelFilterForm(
-      name: name,
-      controller: controller,
-      key: key,
-      modelClass: modelClass,
-      label: label,
-    );
+    if (isPolymorphic) {
+      return Text('not support multi model type');
+    } else {
+      return ModelFilterForm(
+        name: name,
+        controller: controller,
+        key: key,
+        modelClass: modelClass!,
+        label: label,
+      );
+    }
   }
 
   @override
@@ -908,10 +1013,11 @@ class ModelTableColumnType<T extends Model> extends TableColumnType<T>
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     if (value is T) {
-      return InkWell(
-        onTap: () => _openModelDetailPage(
+      return TextButton(
+        onPressed: () => _openModelDetailPage(
           tableColumn: column,
           value: value,
           tabManager: tabManager,
@@ -950,7 +1056,17 @@ class ModelTableColumnType<T extends Model> extends TableColumnType<T>
   }
 
   @override
-  T convert(dynamic value) => value is T ? value : modelClass.fromJson(value);
+  T convert(dynamic value) {
+    if (value is T) {
+      return value;
+    }
+    if (isPolymorphic) {
+      String className = value['attributes']?[modelTypeField];
+      return route.modelClassOf(className)?.fromJson(value) as T;
+    } else {
+      return modelClass!.fromJson(value);
+    }
+  }
 
   @override
   TrinaColumnType get trinaColumnType => TrinaColumnType.text();
@@ -1050,6 +1166,7 @@ class PercentageTableColumnType extends TableColumnType<Percentage>
     Object? value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     if (value is Percentage) {
       return Text(value.format(), textAlign: .right);
@@ -1087,6 +1204,7 @@ class BooleanTableColumnType extends TableColumnType<bool> {
     required bool value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     return Text(value.toString());
   }
@@ -1204,6 +1322,7 @@ class EnumTableColumnType extends TableColumnType<String> with TextFormatter {
     required Object value,
     required TableColumn column,
     TabManager? tabManager,
+    required BuildContext context,
   }) {
     String text = convert(value);
     return Text(text);

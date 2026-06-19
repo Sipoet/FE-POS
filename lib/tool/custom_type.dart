@@ -1,10 +1,20 @@
+import 'package:fe_pos/model/model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pluralize/pluralize.dart';
+import 'package:big_decimal/big_decimal.dart';
 
 final plurale = Pluralize()
   ..addSingularRule(RegExp(r'leaves', caseSensitive: false), 'leave')
   ..addSingularRule(RegExp(r'ipos', caseSensitive: false), 'ipos');
+
+extension MoneyList on Iterable<Money> {
+  Money get sum => fold(const Money(0), (a, b) => a + b);
+}
+
+extension DecimalList on Iterable<BigDecimal> {
+  BigDecimal get sum => fold(BigDecimal.parse('0'), (a, b) => a + b);
+}
 
 extension StringExt on String {
   String toSnakeCase() => unclassify().toLowerCase().replaceAll(' ', '_');
@@ -57,7 +67,7 @@ extension DateTimeExt on DateTime {
     ).beginningOfDay().subtract(Duration(milliseconds: 1));
   }
 
-  String toJson() => format();
+  String asJson() => format();
 
   DateTime beginningOfWeek() {
     int dayT = weekday;
@@ -141,7 +151,7 @@ class Date extends DateTime {
     return DateFormat(pattern, locale).format(this);
   }
 
-  String toJson() {
+  String asJson() {
     return toIso8601String();
   }
 
@@ -208,13 +218,6 @@ class Money {
   final String symbol;
   final double rate;
   const Money(this.value, {this.symbol = 'Rp', this.rate = 1});
-  Money operator +(var other) {
-    if (other is Money) {
-      return Money(value + other.value, symbol: symbol);
-    } else {
-      return Money(value + other, symbol: symbol);
-    }
-  }
 
   static Money parse(value) {
     if (value is double) {
@@ -246,7 +249,7 @@ class Money {
 
   String format({int? decimalDigits}) {
     return NumberFormat.currency(
-      locale: "id_ID",
+      locale: "en_US",
       symbol: symbol,
       decimalDigits: decimalDigits,
     ).format(value);
@@ -261,17 +264,7 @@ class Money {
     return value.compareTo(other.value);
   }
 
-  Money operator *(Object other) {
-    if (other is Money) {
-      return Money(value * other.value, symbol: symbol);
-    } else if (other is num) {
-      return Money(value * other, symbol: symbol);
-    } else {
-      throw 'not supported power ${other.toString()}';
-    }
-  }
-
-  String toJson() {
+  String asJson() {
     return value.toString();
   }
 
@@ -293,27 +286,81 @@ class Money {
   @override
   int get hashCode => Object.hash(value, symbol, rate);
 
-  Money operator /(var other) {
+  Money operator +(var other) {
+    BigDecimal result = BigDecimal.parse(value.toString());
     if (other is Money) {
-      return Money(value / other.value, symbol: symbol);
+      result += BigDecimal.parse(other.value.toString());
     } else if (other is num) {
-      return Money(value / other, symbol: symbol);
+      result += BigDecimal.parse(other.toString());
+    } else if (other is Percentage) {
+      result +=
+          (BigDecimal.parse(value.toString()) *
+          BigDecimal.parse(other.value.toString()));
     } else {
       return Money(double.nan, symbol: symbol);
     }
+    return Money(result.toDouble(), symbol: symbol);
+  }
+
+  Money operator *(Object other) {
+    BigDecimal result = BigDecimal.parse(value.toString());
+    if (other is Money) {
+      result *= BigDecimal.parse(other.value.toString());
+    } else if (other is num) {
+      result *= BigDecimal.parse(other.toString());
+    } else if (other is Percentage) {
+      result *= BigDecimal.parse(other.value.toString());
+    } else {
+      return Money(double.nan, symbol: symbol);
+    }
+    return Money(result.toDouble(), symbol: symbol);
+  }
+
+  Money operator /(var other) {
+    BigDecimal result = BigDecimal.parse(value.toString());
+    if (other is Money) {
+      result = result.divide(
+        BigDecimal.parse(other.value.toString()),
+        roundingMode: .HALF_EVEN,
+        scale: 5,
+      );
+    } else if (other is num) {
+      result = result.divide(
+        BigDecimal.parse(other.toString()),
+        roundingMode: .HALF_EVEN,
+        scale: 5,
+      );
+    } else if (other is Percentage) {
+      result = result.divide(
+        BigDecimal.parse(other.value.toString()),
+        roundingMode: .HALF_EVEN,
+        scale: 5,
+      );
+    } else {
+      return Money(double.nan, symbol: symbol);
+    }
+    return Money(result.toDouble(), symbol: symbol);
   }
 
   Money operator -(var other) {
+    BigDecimal result = BigDecimal.parse(value.toString());
     if (other == null) {
       return this;
     } else if (other is Money) {
-      return Money(value - other.value, symbol: symbol);
+      result -= BigDecimal.parse(other.value.toString());
     } else if (other is num) {
-      return Money(value - other, symbol: symbol);
+      result -= BigDecimal.parse(other.toString());
+    } else if (other is Percentage) {
+      result -=
+          (BigDecimal.parse(value.toString()) *
+          BigDecimal.parse(other.value.toString()));
     } else {
       return Money(double.nan, symbol: symbol);
     }
+    return Money(result.toDouble(), symbol: symbol);
   }
+
+  BigDecimal toDecimal() => BigDecimal.parse(value.toString());
 
   bool operator >(var other) {
     if (other is Money) {
@@ -348,21 +395,14 @@ class Money {
   }
 }
 
-extension DoubleFormat on double {
+extension DoubleFormat on num {
   String format({String pattern = ',##0.##'}) =>
-      NumberFormat(pattern, "en_US").format(this);
+      NumberFormat(pattern, "id_ID").format(this);
 }
 
 class Percentage {
   final double value;
   const Percentage(this.value);
-  Percentage operator +(var other) {
-    if (other is Percentage) {
-      return Percentage(value + other.value);
-    } else {
-      return Percentage(value + other);
-    }
-  }
 
   static Percentage parse(dynamic val) {
     if (val is String) {
@@ -388,6 +428,10 @@ class Percentage {
     }
   }
 
+  Percentage dup() {
+    return Percentage(value);
+  }
+
   static Percentage? inputParse(String val) {
     var parsed = double.tryParse(val);
     if (parsed == null) return null;
@@ -409,7 +453,7 @@ class Percentage {
     return ((value * 10000).round() / 100).toString();
   }
 
-  String toJson() => format();
+  String asJson() => format();
 
   String format() {
     return "${toString()}%";
@@ -423,27 +467,64 @@ class Percentage {
     return value.compareTo(other.value);
   }
 
+  Percentage operator +(var other) {
+    if (other is Percentage) {
+      final decimal =
+          (BigDecimal.parse(value.toString()) +
+          BigDecimal.parse(other.value.toString()));
+      return Percentage(decimal.toDouble());
+    } else {
+      final decimal =
+          (BigDecimal.parse(value.toString()) +
+          BigDecimal.parse(other.toString()));
+      return Percentage(decimal.toDouble());
+    }
+  }
+
   Percentage operator *(var other) {
     if (other is Percentage) {
-      return Percentage(value * other.value);
+      final decimal =
+          (BigDecimal.parse(value.toString()) *
+          BigDecimal.parse(other.value.toString()));
+      return Percentage(decimal.toDouble());
     } else {
-      return Percentage(value * other);
+      final decimal =
+          (BigDecimal.parse(value.toString()) *
+          BigDecimal.parse(other.toString()));
+      return Percentage(decimal.toDouble());
     }
   }
 
   Percentage operator /(var other) {
+    BigDecimal decimal = BigDecimal.parse(value.toString());
     if (other is Percentage) {
-      return Percentage(value / other.value);
+      decimal = decimal.divide(
+        BigDecimal.parse(other.value.toString()),
+        roundingMode: .HALF_EVEN,
+        scale: 5,
+      );
+      return Percentage(decimal.toDouble());
     } else {
+      decimal = decimal.divide(
+        BigDecimal.parse(other.toString()),
+        roundingMode: .HALF_EVEN,
+        scale: 5,
+      );
       return Percentage(value / other);
     }
   }
 
   Percentage operator -(var other) {
     if (other is Percentage) {
-      return Percentage(value - other.value);
+      final decimal =
+          (BigDecimal.parse(value.toString()) -
+          BigDecimal.parse(other.value.toString()));
+      return Percentage(decimal.toDouble());
     } else {
-      return Percentage(value - other);
+      final decimal =
+          (BigDecimal.parse(value.toString()) -
+          BigDecimal.parse(other.toString()));
+      return Percentage(decimal.toDouble());
     }
   }
 
@@ -486,7 +567,7 @@ extension TimeDay on TimeOfDay {
     return TimeOfDay.fromDateTime(datetime);
   }
 
-  String toJson() {
+  String asJson() {
     return format24Hour();
   }
 
@@ -518,5 +599,33 @@ extension TimeDay on TimeOfDay {
       debugPrint(e.toString());
       return null;
     }
+  }
+}
+
+extension ModelList on List<Model> {
+  // flag destroy in list if recorded on database. else is removed from list
+  // follow nested attributes pattern
+  void removeAll() {
+    List<Model> removing = [];
+    forEach((model) {
+      if (model.isNewRecord) {
+        removing.add(model);
+      } else {
+        model.flagDestroy();
+      }
+    });
+
+    for (final model in removing) {
+      removeAt(indexOf(model));
+    }
+  }
+}
+
+typedef ValueCallBack<T> = T? Function();
+typedef FormCallback<T> = void Function(T? value);
+
+extension ToggleChanged on ValueNotifier<bool> {
+  void toggle() {
+    value = !value;
   }
 }

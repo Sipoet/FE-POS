@@ -24,7 +24,6 @@ class ItemReportPage extends StatefulWidget {
 class _ItemReportPageState extends State<ItemReportPage>
     with AutomaticKeepAliveClientMixin, LoadingPopup, DefaultResponse {
   late Server server;
-  String? _reportType;
   double minimumColumnWidth = 150;
   late final SyncTableController<ItemReport> _source;
   late final Flash flash;
@@ -32,6 +31,7 @@ class _ItemReportPageState extends State<ItemReportPage>
   late final TabManager _tabManager;
   // List<ItemReport> itemReports = [];
 
+  String? _reportType;
   @override
   void initState() {
     server = context.read<Server>();
@@ -94,7 +94,7 @@ class _ItemReportPageState extends State<ItemReportPage>
     return server.get(
       'item_reports',
       queryParam: param,
-      type: _reportType ?? 'json',
+      responseType: param['report_type'] == 'json' ? .json : .bytes,
     );
   }
 
@@ -155,7 +155,6 @@ class _ItemReportPageState extends State<ItemReportPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
     return VerticalBodyScroll(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

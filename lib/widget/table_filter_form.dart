@@ -184,6 +184,96 @@ class _TableFilterFormState extends State<TableFilterForm> {
             ),
           );
         }
+        if (widget.showCanopy) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 15),
+            child: ExpansionPanelList(
+              expansionCallback: (panelIndex, isExpanded) => setState(() {
+                isShowFilter = isExpanded;
+              }),
+              dividerColor: Colors.grey,
+              children: [
+                ExpansionPanel(
+                  canTapOnHeader: true,
+                  headerBuilder: (context, isOpen) {
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 15, top: 10),
+                      child: Text("Filter", style: _labelStyle),
+                    );
+                  },
+                  isExpanded: isShowFilter,
+                  body: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Form(
+                      key: _key,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 10,
+                        children: [
+                          Wrap(
+                            runSpacing: 10.0,
+                            spacing: 10.0,
+                            children: widget.columns
+                                .where((element) => element.canFilter)
+                                .map<Widget>((column) => formFilter(column))
+                                .toList(),
+                          ),
+                          const Divider(),
+                          Wrap(
+                            runSpacing: 10.0,
+                            spacing: 10.0,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    if (_key.currentState!.validate()) {
+                                      _key.currentState!.save();
+                                      widget.onSubmit(
+                                        controller.decoratedFilter,
+                                      );
+                                    }
+                                  },
+                                  child: const Text('Cari'),
+                                ),
+                              ),
+                              Visibility(
+                                visible: widget.onDownload != null,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      if (_key.currentState!.validate()) {
+                                        _key.currentState!.save();
+                                        widget.onDownload!(
+                                          controller.decoratedFilter,
+                                        );
+                                      }
+                                    },
+                                    child: const Text('Download'),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    controller.removeAllFilter();
+                                  },
+                                  child: const Text('Reset'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

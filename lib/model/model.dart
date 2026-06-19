@@ -1,12 +1,16 @@
 import 'dart:async';
-import 'dart:collection';
+import 'dart:convert';
 
 import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/custom_type.dart';
+import 'package:fe_pos/tool/image_model.dart';
 import 'package:fe_pos/tool/query_data.dart';
 import 'package:flutter/material.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 export 'package:fe_pos/tool/query_data.dart';
+export 'package:flutter/foundation.dart';
+
+final jsonEncoder = JsonEncoder();
 
 abstract class Model with ChangeNotifier {
   DateTime? createdAt;
@@ -36,7 +40,7 @@ abstract class Model with ChangeNotifier {
 
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     final attributes = json['attributes'] ?? {};
-    id = json['id'];
+    id = int.tryParse(json['id'] ?? '') ?? json['id'];
     createdAt = DateTime.tryParse(attributes?['created_at'] ?? '');
     updatedAt = DateTime.tryParse(attributes?['updated_at'] ?? '');
     rawData = {'data': json, 'included': included};
@@ -44,10 +48,13 @@ abstract class Model with ChangeNotifier {
   }
 
   Future<bool> refresh(Server server, {List<String> include = const []}) {
+    if (isNewRecord) {
+      return Future.value(false);
+    }
     return server
         .get(
           "$path/${id.toString()}",
-          queryParam: {'include': include.join(',')},
+          queryParam: {'included': include.join(',')},
         )
         .then(
           (response) {
@@ -69,14 +76,14 @@ abstract class Model with ChangeNotifier {
 
   @override
   bool operator ==(Object other) {
-    if (other is Model) {
-      return id == other.id && runtimeType == other.runtimeType;
+    if (other is Model && runtimeType == other.runtimeType) {
+      return id == other.id;
     }
     return false;
   }
 
   @override
-  int get hashCode => '$modelName|$id'.hashCode;
+  int get hashCode => asJson().hashCode;
 
   int compareTo(Model b) {
     return modelValue.compareTo(b.modelValue);
@@ -100,26 +107,43 @@ abstract class Model with ChangeNotifier {
     return value;
   }
 
-  Map<String, dynamic> toJson() {
-    var json = asMap();
-    json.forEach((key, object) {
-      if (object is Money) {
-        json[key] = object.value;
-      } else if (object is Percentage) {
-        json[key] = object.value * 100;
-      } else if (object is Date) {
-        json[key] = object.toIso8601String();
-      } else if (object is DateTime) {
-        json[key] = object.toUtc().toIso8601String();
-      } else if (object is Enum) {
-        json[key] = object.toString();
-      } else if (object is String) {
-        json[key] = object.trim();
-      } else if (object is TimeOfDay) {
-        json[key] = object.toJson();
-      }
-    });
+  String toJson() => jsonEncoder.convert(asJson());
+
+  Map<String, dynamic> asJson() {
+    Map<String, dynamic> json = asMap();
+    for (String key in json.keys.toList()) {
+      var object = json[key];
+      json[key] = convert(object);
+    }
     return json;
+  }
+
+  dynamic convert(Object? object, {List<String> parentKey = const []}) {
+    if (object is Money) {
+      return object.value;
+    } else if (object is Percentage) {
+      return object.value;
+    } else if (object is Date) {
+      return object.toIso8601String();
+    } else if (object is DateTime) {
+      return object.toUtc().toIso8601String();
+    } else if (object is Enum) {
+      return object.toString();
+    } else if (object is String) {
+      return object.trim();
+    } else if (object is Model) {
+      return object.id;
+    } else if (object is File) {
+      return MultipartFile.fromFileSync(object.path);
+    } else if (object is ImageModel) {
+      return object.asMapData();
+    } else if (object is TimeOfDay) {
+      return object.asJson();
+    } else if (object is Iterable) {
+      return object.map((e) => convert(e)).toList();
+    } else {
+      return object;
+    }
   }
 
   Map<String, dynamic> toMap();
@@ -133,7 +157,10 @@ abstract class Model with ChangeNotifier {
   }
 
   void reset() {
-    setFromJson(rawData['data'] ?? {}, included: rawData['included'] ?? []);
+    setFromJson(
+      rawData['data'] ?? {'attributes': {}},
+      included: rawData['included'] ?? [],
+    );
     notifyListeners();
   }
 
@@ -143,7 +170,7 @@ abstract class Model with ChangeNotifier {
   String get valueWithDescription =>
       [modelValue, valueDescription].where((e) => e != null).join(' - ');
 
-  bool get isNewRecord => id == null;
+  bool get isNewRecord => id == null || (id is String && id.isEmpty);
 }
 
 abstract class ModelClass<T extends Model> {
@@ -151,24 +178,32 @@ abstract class ModelClass<T extends Model> {
 
   String get path => initModel().path;
 
-  T? findRelationData({List included = const [], Map? relation}) {
-    final relationData = relation?['data'];
-    if (relationData == null || included.isEmpty) {
+  T? findRelationData({
+    List included = const [],
+    Map? relation,
+    bool isRootIncluded = true,
+  }) {
+    final Map<String, dynamic>? relationData = relation?['data'];
+    if (included.isEmpty || relationData?['id'] == null) {
       return null;
     }
     final data = included.firstWhere(
       (row) =>
-          row['type'] == relationData['type'] &&
+          row['type'] == relationData!['type'] &&
           row['id'] == relationData['id'],
       orElse: () => null,
     );
     if (data == null) {
-      return null;
+      return initModel()..id = relationData!['id'];
     }
-    return fromJson(data, included: included);
+    return fromJson(data, included: isRootIncluded ? included : []);
   }
 
-  List<T> findRelationsData({List included = const [], Map? relation}) {
+  List<T> findRelationsData({
+    List included = const [],
+    Map? relation,
+    bool isRootIncluded = true,
+  }) {
     final relationData = relation?['data'];
     if (relationData == null || included.isEmpty) {
       return [];
@@ -180,26 +215,10 @@ abstract class ModelClass<T extends Model> {
         orElse: () => null,
       );
       if (data != null) {
-        values.add(fromJson(data, included: included));
+        values.add(fromJson(data, included: isRootIncluded ? included : []));
       }
     }
     return values;
-  }
-
-  HasManyRelationShip<T> findRelationsData2({
-    List included = const [],
-    Map? relation,
-    required String foreignKey,
-    dynamic foreignId,
-  }) {
-    QueryRequest queryRequest = QueryRequest(
-      filters: [ComparisonFilterData(key: foreignKey, value: foreignId)],
-    );
-    return HasManyRelationShip<T>(
-      getData: (server) =>
-          finds(server, queryRequest).then((result) => result.models),
-      values: findRelationsData(included: included, relation: relation),
-    );
   }
 
   T fromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -272,26 +291,127 @@ abstract class ModelClass<T extends Model> {
 }
 
 mixin SaveNDestroyModel on Model {
-  Future<bool> save(Server server) async {
+  void asFormData({
+    required FormData formData,
+    required Map<String, dynamic> data,
+    List<String> parentKey = const [],
+  }) {
+    for (String key in data.keys.toList()) {
+      var object = data[key];
+      String formKey = formDataKey(parentKey + [key]);
+      if (object == null) {
+        formData.fields.add(MapEntry(formKey, ''));
+      } else if (object is Money) {
+        formData.fields.add(MapEntry(formKey, object.value.toString()));
+      } else if (object is Percentage) {
+        double value = object.value * 100;
+        formData.fields.add(MapEntry(formKey, value.toString()));
+      } else if (object is Date) {
+        formData.fields.add(MapEntry(formKey, object.toIso8601String()));
+      } else if (object is DateTime) {
+        formData.fields.add(
+          MapEntry(formKey, object.toUtc().toIso8601String()),
+        );
+      } else if (object is Enum) {
+        object.toString();
+        formData.fields.add(MapEntry(formKey, object.toString()));
+      } else if (object is String) {
+        formData.fields.add(MapEntry(formKey, object.trim()));
+      } else if (object is Model) {
+        formData.fields.add(MapEntry(formKey, object.id.toString()));
+      } else if (object is File) {
+        formData.files.add(
+          MapEntry(formKey, MultipartFile.fromFileSync(object.path)),
+        );
+      } else if (object is ImageModel) {
+        final value = object.asMapData();
+        if (value is MultipartFile) {
+          formData.files.add(MapEntry(formKey, value));
+        } else if (object is Map) {
+          formData.fields.add(MapEntry(formKey, value.toString()));
+        } else {
+          formData.fields.add(MapEntry(formKey, ''));
+        }
+      } else if (object is TimeOfDay) {
+        formData.fields.add(MapEntry(formKey, object.asJson()));
+      } else if (object is List || object is Set) {
+        for (var row in object) {
+          if (row is MultipartFile) {
+            formData.files.add(MapEntry("$formKey[]", row));
+          } else if (row is Map<String, dynamic>) {
+            asFormData(
+              data: row,
+              formData: formData,
+              parentKey: parentKey + [key, ''],
+            );
+          } else {
+            asFormData(
+              data: {'': row},
+              formData: formData,
+              parentKey: parentKey + [key],
+            );
+          }
+        }
+      } else {
+        formData.fields.add(MapEntry(formKey, object.toString()));
+      }
+    }
+  }
+
+  String formDataKey(List<String> keys) {
+    String newKeys = keys.first;
+    if (keys.length == 1) {
+      return newKeys;
+    }
+    for (var key in keys.sublist(1, keys.length)) {
+      newKeys += '[$key]';
+    }
+    return newKeys;
+  }
+
+  Future<bool> save(
+    Server server, {
+    List<String>? only,
+    HttpContentType contentType = .json,
+  }) async {
     Future request;
+    dynamic body;
+    Map<String, dynamic> attributes = asJson();
+    if (only != null) {
+      attributes.removeWhere((key, value) => !only.contains(key));
+    }
+
     if (isNewRecord) {
-      request = server.post(
-        path,
-        body: {
-          'data': {'type': modelName, 'attributes': toJson()},
-        },
-      );
+      if (contentType == .json) {
+        body = {
+          'data': {'type': modelName, 'attributes': attributes},
+        };
+      } else {
+        body = FormData();
+        asFormData(
+          formData: body,
+          data: attributes,
+          parentKey: ['data', 'attributes'],
+        );
+        body.fields.add(MapEntry('data[type]', modelName));
+      }
+      request = server.post(path, body: body, contentType: contentType);
     } else {
-      request = server.put(
-        "$path/$id",
-        body: {
-          'data': {
-            'id': id.toString(),
-            'type': modelName,
-            'attributes': toJson(),
-          },
-        },
-      );
+      if (contentType == .json) {
+        body = {
+          'data': {'id': id, 'type': modelName, 'attributes': attributes},
+        };
+      } else {
+        body = FormData();
+        asFormData(
+          formData: body,
+          data: attributes,
+          parentKey: ['data', 'attributes'],
+        );
+        body.fields.add(MapEntry('data[type]', modelName));
+        body.fields.add(MapEntry('data[id]', id.toString()));
+      }
+      request = server.put("$path/$id", body: body, contentType: contentType);
     }
     return request.then(
       (response) {
@@ -338,21 +458,6 @@ mixin SaveNDestroyModel on Model {
           },
         );
   }
-}
-
-class HasManyRelationShip<T extends Model> extends ChangeNotifier
-    with IterableMixin<T> {
-  List<T> values;
-  Future<List<T>> Function(Server server) getData;
-  HasManyRelationShip({this.values = const [], required this.getData});
-  Future<List<T>> reload(Server server) async {
-    values = await getData(server);
-    notifyListeners();
-    return values;
-  }
-
-  @override
-  Iterator<T> get iterator => values.iterator;
 }
 
 class BelongsToRelationShip<T extends Model> {

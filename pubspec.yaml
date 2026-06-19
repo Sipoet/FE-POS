@@ -60,12 +60,16 @@ dependencies:
   fl_chart: ^1.1.1
   flutter_colorpicker: ^1.1.0
   flutter_barcode_scanner_plus: ^3.0.7
+  flutter_simple_treeview: ^3.0.2
   pluralize: ^0.0.8
   month_picker_dialog: ^6.7.2
   async: ^2.13.0
   url_launcher: ^6.3.2
   phosphor_flutter: ^2.1.0
   path: ^1.9.1
+  super_drag_and_drop: ^0.9.1
+  uuid: ^4.5.3
+  big_decimal: ^0.7.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

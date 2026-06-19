@@ -218,7 +218,11 @@ class _DiscountPageState extends State<DiscountPage>
   void downloadActiveDiscountItems() {
     showLoadingPopup();
     server
-        .get('discounts/download_active_items', type: 'xlsx')
+        .get(
+          'discounts/download_active_items',
+          responseType: .bytes,
+          acceptHeader: .xlsx,
+        )
         .then((response) async {
           if (response.statusCode != 200) {
             flash.showBanner(
@@ -235,8 +239,8 @@ class _DiscountPageState extends State<DiscountPage>
             filename.indexOf('filename="') + 10,
             filename.indexOf('xlsx";') + 4,
           );
-          var downloader = const FileSaver();
-          downloader.download(
+          var fileSaver = const FileSaver();
+          fileSaver.download(
             filename,
             response.data,
             'xlsx',
@@ -255,7 +259,11 @@ class _DiscountPageState extends State<DiscountPage>
   void downloadDiscountItems(discount) {
     showLoadingPopup();
     server
-        .get('discounts/${discount.id}/download_items', type: 'xlsx')
+        .get(
+          'discounts/${discount.id}/download_items',
+          responseType: .bytes,
+          acceptHeader: .xlsx,
+        )
         .then((response) async {
           if (response.statusCode != 200) {
             flash.showBanner(
@@ -272,8 +280,8 @@ class _DiscountPageState extends State<DiscountPage>
             filename.indexOf('filename="') + 10,
             filename.indexOf('xlsx";') + 4,
           );
-          var downloader = const FileSaver();
-          downloader.download(
+          var fileSaver = const FileSaver();
+          fileSaver.download(
             filename,
             response.data,
             'xlsx',

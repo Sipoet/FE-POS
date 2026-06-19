@@ -13,16 +13,17 @@ class Menu {
   final List<Menu> children;
   final Widget Function() pageFunct;
   final bool isDisabled;
-  Menu(
-      {required this.icon,
-      this.isClosed = true,
-      required this.label,
-      required this.key,
-      String? tabTitle,
-      this.isDisabled = false,
-      this.children = const <Menu>[],
-      this.pageFunct = defaultPage})
-      : _tabTitle = tabTitle;
+  Menu({
+    required this.icon,
+    this.isClosed = true,
+    required this.label,
+    required this.key,
+    String? tabTitle,
+    this.isDisabled = false,
+    List<Menu>? children,
+    this.pageFunct = defaultPage,
+  }) : _tabTitle = tabTitle,
+       children = children ?? [];
   String get tabTitle => _tabTitle ?? label;
   Widget get page => pageFunct();
   bool isNotAuthorize() {

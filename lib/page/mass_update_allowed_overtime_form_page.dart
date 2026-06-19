@@ -148,7 +148,7 @@ class _MassUpdateAllowedOvertimeFormPageState
 
   void _submit() async {
     _source.setShowLoading(true);
-    Map body = {
+    Map<String, dynamic> body = {
       'employee_ids': _employees.map((e) => e.id).toList(),
       'shift': _shift,
       'date': _dateTime.toIso8601String(),

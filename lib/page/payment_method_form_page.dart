@@ -39,11 +39,11 @@ class _PaymentMethodFormPageState extends State<PaymentMethodFormPage>
   }
 
   void _submit() async {
-    Map body = {
+    Map<String, dynamic> body = {
       'data': {
         'type': 'payment_method',
         'id': paymentMethod.id,
-        'attributes': paymentMethod.toJson(),
+        'attributes': paymentMethod.asJson(),
       },
     };
     var request = paymentMethod.id == null

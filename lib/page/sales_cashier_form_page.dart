@@ -58,44 +58,58 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
   void fetchSalesCashier() {
     showLoadingPopup();
 
-    _server.get('sales/show', queryParam: {
-      'code': Uri.encodeComponent(salesCashier.id),
-      'include': 'sale_items'
-    }).then((response) {
-      if (response.statusCode == 200) {
-        setState(() {
-          salesCashier.setFromJson(response.data['data'],
-              included: response.data['included']);
-        });
-      }
-    }, onError: (error) {
-      defaultErrorResponse(error: error);
-    }).whenComplete(() => hideLoadingPopup());
+    _server
+        .get(
+          'sales/show',
+          queryParam: {
+            'code': Uri.encodeComponent(salesCashier.id),
+            'include': 'sale_items',
+          },
+        )
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              setState(() {
+                salesCashier.setFromJson(
+                  response.data['data'],
+                  included: response.data['included'],
+                );
+              });
+            }
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+          },
+        )
+        .whenComplete(() => hideLoadingPopup());
   }
 
   Future<Item?> fetchDataItem(String barcode) async {
     try {
-      var response = await _server
-          .get('items/with_discount_rule', queryParam: {'barcode': barcode});
+      var response = await _server.get(
+        'items/with_discount_rule',
+        queryParam: {'barcode': barcode},
+      );
       if (response == null || response.statusCode != 200) {
         flash.showBanner(
-            messageType: ToastificationType.error,
-            title: 'barcode tidak ditemukan',
-            description: 'barcode $barcode tidak ditemukan');
+          messageType: ToastificationType.error,
+          title: 'barcode tidak ditemukan',
+          description: 'barcode $barcode tidak ditemukan',
+        );
         return null;
       }
       var data = response.data;
-      return ItemClass().fromJson(
-        data['data'],
-        included: data['included'],
-      );
+      return ItemClass().fromJson(data['data'], included: data['included']);
     } catch (e) {
       return null;
     }
   }
 
-  void addItem(
-      {required Item item, required String barcode, required int quantity}) {
+  void addItem({
+    required Item item,
+    required String barcode,
+    required int quantity,
+  }) {
     var salesCashierItem = SalesCashierItem(
       item: item,
       itemBarcode: barcode,
@@ -109,7 +123,9 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
   }
 
   void checkDiscount(
-      SalesCashierItem salesCashierItem, List<DiscountRule> discountRules) {}
+    SalesCashierItem salesCashierItem,
+    List<DiscountRule> discountRules,
+  ) {}
 
   Future<Item?> openItemModal(String barcode) async {
     return showDialog<Item>(
@@ -123,22 +139,26 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
 
   void _removeItem(SalesCashierItem salesCashierItem) {
     showDialog<bool>(
-        context: context,
-        builder: (BuildContext context) {
-          final navigator = Navigator.of(context);
-          return AlertDialog(
-            actions: [
-              ElevatedButton(
-                  onPressed: () => navigator.pop(true),
-                  child: const Text('Ya')),
-              ElevatedButton(
-                  onPressed: () => navigator.pop(false),
-                  child: const Text('Tidak/Kembali')),
-            ],
-            content: Text(
-                'Apakah Kamu Yakin hapus ${salesCashierItem.itemBarcode}?'),
-          );
-        }).then((result) {
+      context: context,
+      builder: (BuildContext context) {
+        final navigator = Navigator.of(context);
+        return AlertDialog(
+          actions: [
+            ElevatedButton(
+              onPressed: () => navigator.pop(true),
+              child: const Text('Ya'),
+            ),
+            ElevatedButton(
+              onPressed: () => navigator.pop(false),
+              child: const Text('Tidak/Kembali'),
+            ),
+          ],
+          content: Text(
+            'Apakah Kamu Yakin hapus ${salesCashierItem.itemBarcode}?',
+          ),
+        );
+      },
+    ).then((result) {
       if (result == true) {
         setState(() {
           salesCashier.salesCashierItems.remove(salesCashierItem);
@@ -150,8 +170,10 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
   void _openCashDrawer() {}
   void _displayDetailItem() {}
   void _displayItemPrice() {}
-  static const labelStyle =
-      TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+  static const labelStyle = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+  );
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -180,26 +202,33 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                         height: 35,
                         child: TextFormField(
                           decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.all(5),
-                              labelText:
-                                  setting.columnName('salesCashier', 'code'),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder()),
+                            contentPadding: const EdgeInsets.all(5),
+                            labelText: setting.columnName(
+                              'salesCashier',
+                              'code',
+                            ),
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
+                          ),
                           initialValue: salesCashier.code,
                         ),
                       ),
                     ),
                     Text('Lokasi: ${salesCashier.location}'),
                     Visibility(
-                      visible:
-                          setting.canShow('salesCashier', 'transaction_date'),
+                      visible: setting.canShow(
+                        'salesCashier',
+                        'transaction_date',
+                      ),
                       child: SizedBox(
                         width: 250,
                         height: 35,
                         child: DateFormField(
                           label: Text(
                             setting.columnName(
-                                'salesCashier', 'transaction_date'),
+                              'salesCashier',
+                              'transaction_date',
+                            ),
                             style: labelStyle,
                           ),
                           initialValue: salesCashier.transactionDate,
@@ -242,9 +271,7 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                     ),
                   ],
                 ),
-                const SizedBox(
-                  height: 5,
-                ),
+                const SizedBox(height: 5),
                 Row(
                   children: [
                     SizedBox(
@@ -253,16 +280,15 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                       child: NumberFormField<int>(
                         controller: quantityController,
                         label: Text(
-                            setting.columnName('salesCashier', 'quantity'),
-                            style: labelStyle),
+                          setting.columnName('salesCashier', 'quantity'),
+                          style: labelStyle,
+                        ),
                         onChanged: (value) => setState(() {
                           quantity = value ?? 0;
                         }),
                       ),
                     ),
-                    const SizedBox(
-                      width: 10,
-                    ),
+                    const SizedBox(width: 10),
                     SizedBox(
                       width: 300,
                       height: 35,
@@ -274,105 +300,125 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                           item ??= await openItemModal(value);
                           if (item != null) {
                             addItem(
-                                barcode: value, item: item, quantity: quantity);
+                              barcode: value,
+                              item: item,
+                              quantity: quantity,
+                            );
                             barcodeController.text = '';
                             quantity = 1;
                             quantityController.setValue(quantity);
                           }
                         },
                         decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.all(5),
-                            label: Text(
-                              'Kode Item',
-                              style: labelStyle,
-                            ),
-                            border: OutlineInputBorder()),
+                          contentPadding: EdgeInsets.all(5),
+                          label: Text('Kode Item', style: labelStyle),
+                          border: OutlineInputBorder(),
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 Table(
                   border: TableBorder.all(),
-                  children: [
-                        const TableRow(children: [
-                          TableCell(child: Text('Barcode')),
-                          TableCell(child: Text('Keterangan')),
-                          TableCell(child: Text('Merek')),
-                          TableCell(child: Text('Jenis')),
-                          TableCell(child: Text('jumlah')),
-                          TableCell(child: Text('satuan')),
-                          TableCell(child: Text('harga')),
-                          TableCell(child: Text('Pot%/ nom')),
-                          TableCell(child: Text('Total')),
-                          TableCell(child: Text('Tgl Exp')),
-                          TableCell(child: SizedBox()),
-                        ]),
+                  children:
+                      [
+                        const TableRow(
+                          children: [
+                            TableCell(child: Text('Barcode')),
+                            TableCell(child: Text('Keterangan')),
+                            TableCell(child: Text('Merek')),
+                            TableCell(child: Text('Jenis')),
+                            TableCell(child: Text('jumlah')),
+                            TableCell(child: Text('satuan')),
+                            TableCell(child: Text('harga')),
+                            TableCell(child: Text('Pot%/ nom')),
+                            TableCell(child: Text('Total')),
+                            TableCell(child: Text('Tgl Exp')),
+                            TableCell(child: SizedBox()),
+                          ],
+                        ),
                       ] +
                       salesCashier.salesCashierItems
                           .map<TableRow>(
-                            (salesCashierItem) => TableRow(children: [
-                              TableCell(
-                                  child: Text(salesCashierItem.itemBarcode)),
-                              TableCell(child: Text(salesCashierItem.itemName)),
-                              TableCell(
-                                  child: Text(salesCashierItem.brandName)),
-                              TableCell(
-                                  child: Text(salesCashierItem.itemTypeName)),
-                              TableCell(
+                            (salesCashierItem) => TableRow(
+                              children: [
+                                TableCell(
+                                  child: Text(salesCashierItem.itemBarcode),
+                                ),
+                                TableCell(
+                                  child: Text(salesCashierItem.itemName),
+                                ),
+                                TableCell(
+                                  child: Text(salesCashierItem.brandName),
+                                ),
+                                TableCell(
+                                  child: Text(salesCashierItem.itemTypeName),
+                                ),
+                                TableCell(
                                   child: Text(
-                                      salesCashierItem.quantity.toString())),
-                              TableCell(child: Text(salesCashierItem.uom)),
-                              TableCell(
-                                  child:
-                                      Text(salesCashierItem.price.toString())),
-                              TableCell(
+                                    salesCashierItem.quantity.toString(),
+                                  ),
+                                ),
+                                TableCell(child: Text(salesCashierItem.uom)),
+                                TableCell(
                                   child: Text(
-                                      "${salesCashierItem.discountAmount.toString()}( ${(salesCashierItem.discountPercentage ?? '0%').toString()} )")),
-                              TableCell(
-                                  child:
-                                      Text(salesCashierItem.total.toString())),
-                              TableCell(
+                                    salesCashierItem.price.toString(),
+                                  ),
+                                ),
+                                TableCell(
                                   child: Text(
-                                      salesCashierItem.expiredDate?.format() ??
-                                          '-')),
-                              TableCell(
+                                    "${salesCashierItem.discountAmount.toString()}( ${(salesCashierItem.discountPercentage ?? '0%').toString()} )",
+                                  ),
+                                ),
+                                TableCell(
+                                  child: Text(
+                                    salesCashierItem.total.toString(),
+                                  ),
+                                ),
+                                TableCell(
+                                  child: Text(
+                                    salesCashierItem.expiredDate?.format() ??
+                                        '-',
+                                  ),
+                                ),
+                                TableCell(
                                   child: PopupMenuButton(
-                                icon: const Icon(Icons.more_vert_outlined),
-                                itemBuilder: (context) => [
-                                  PopupMenuItem(
-                                    child: const Text('Hapus'),
-                                    onTap: () => _removeItem(salesCashierItem),
-                                  )
-                                ],
-                              )),
-                            ]),
+                                    icon: const Icon(Icons.more_vert_outlined),
+                                    itemBuilder: (context) => [
+                                      PopupMenuItem(
+                                        child: const Text('Hapus'),
+                                        onTap: () =>
+                                            _removeItem(salesCashierItem),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           )
                           .toList(),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
                   children: [
                     ElevatedButton(
-                        onPressed: () => {_openCashDrawer()},
-                        child: const Text('Buka Laci')),
+                      onPressed: () => {_openCashDrawer()},
+                      child: const Text('Buka Laci'),
+                    ),
                     ElevatedButton(
-                        onPressed: () => {_displayDetailItem()},
-                        child: const Text('Detail Item')),
+                      onPressed: () => {_displayDetailItem()},
+                      child: const Text('Detail Item'),
+                    ),
                     ElevatedButton(
-                        onPressed: () => {_displayItemPrice()},
-                        child: const Text('Lihat Harga')),
+                      onPressed: () => {_displayItemPrice()},
+                      child: const Text('Lihat Harga'),
+                    ),
                   ],
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -383,11 +429,14 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                         height: 35,
                         child: TextFormField(
                           decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.all(5),
-                              labelText:
-                                  setting.columnName('salesCashier', 'voucher'),
-                              labelStyle: labelStyle,
-                              border: const OutlineInputBorder()),
+                            contentPadding: const EdgeInsets.all(5),
+                            labelText: setting.columnName(
+                              'salesCashier',
+                              'voucher',
+                            ),
+                            labelStyle: labelStyle,
+                            border: const OutlineInputBorder(),
+                          ),
                           initialValue: salesCashier.code,
                         ),
                       ),
@@ -395,25 +444,34 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                     Row(
                       children: [
                         Visibility(
-                            visible: setting.canShow('salesCashier',
-                                    'header_discount_percentage') ||
-                                setting.canShow(
-                                    'salesCashier', 'header_discount_amount'),
-                            child: Text(
-                              '${setting.columnName('salesCashier', 'header_discount_amount')}: ',
-                              style: labelStyle,
-                            )),
+                          visible:
+                              setting.canShow(
+                                'salesCashier',
+                                'header_discount_percentage',
+                              ) ||
+                              setting.canShow(
+                                'salesCashier',
+                                'header_discount_amount',
+                              ),
+                          child: Text(
+                            '${setting.columnName('salesCashier', 'header_discount_amount')}: ',
+                            style: labelStyle,
+                          ),
+                        ),
                         Visibility(
                           visible: setting.canShow(
-                              'salesCashier', 'header_discount_percentage'),
+                            'salesCashier',
+                            'header_discount_percentage',
+                          ),
                           child: SizedBox(
                             width: 70,
                             height: 35,
                             child: TextFormField(
                               decoration: const InputDecoration(
-                                  suffixIcon: Icon(Icons.percent),
-                                  contentPadding: EdgeInsets.all(5),
-                                  border: OutlineInputBorder()),
+                                suffixIcon: Icon(Icons.percent),
+                                contentPadding: EdgeInsets.all(5),
+                                border: OutlineInputBorder(),
+                              ),
                               initialValue: salesCashier
                                   .headerDiscountPercentage
                                   ?.toString(),
@@ -422,7 +480,9 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                         ),
                         Visibility(
                           visible: setting.canShow(
-                              'salesCashier', 'header_discount_amount'),
+                            'salesCashier',
+                            'header_discount_amount',
+                          ),
                           child: SizedBox(
                             width: 250,
                             height: 35,
@@ -431,16 +491,13 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                             ),
                           ),
                         ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        const Text(
-                          'Subtotal: ',
-                          style: labelStyle,
-                        ),
+                        const SizedBox(width: 10),
+                        const Text('Subtotal: ', style: labelStyle),
                         Visibility(
-                          visible:
-                              setting.canShow('salesCashier', 'total_item'),
+                          visible: setting.canShow(
+                            'salesCashier',
+                            'total_item',
+                          ),
                           child: SizedBox(
                             width: 70,
                             height: 35,
@@ -458,9 +515,10 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                             child: TextFormField(
                               readOnly: true,
                               decoration: const InputDecoration(
-                                  prefixText: 'Rp.',
-                                  contentPadding: EdgeInsets.all(5),
-                                  border: OutlineInputBorder()),
+                                prefixText: 'Rp.',
+                                contentPadding: EdgeInsets.all(5),
+                                border: OutlineInputBorder(),
+                              ),
                               initialValue: salesCashier.subtotal.format(),
                             ),
                           ),
@@ -469,9 +527,7 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                     ),
                   ],
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -481,74 +537,83 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                         width: 200,
                         initialSelection: salesCashier.taxType,
                         label: Text(
-                            setting.columnName('salesCashier', 'tax_type')),
+                          setting.columnName('salesCashier', 'tax_type'),
+                        ),
                         dropdownMenuEntries: SalesTaxType.values
-                            .map<DropdownMenuEntry<SalesTaxType>>((taxType) =>
-                                DropdownMenuEntry<SalesTaxType>(
-                                    value: taxType, label: taxType.toString()))
+                            .map<DropdownMenuEntry<SalesTaxType>>(
+                              (taxType) => DropdownMenuEntry<SalesTaxType>(
+                                value: taxType,
+                                label: taxType.toString(),
+                              ),
+                            )
                             .toList(),
                         inputDecorationTheme: const InputDecorationTheme(
-                            border: OutlineInputBorder(),
-                            isDense: true,
-                            contentPadding: EdgeInsets.all(5)),
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                          contentPadding: EdgeInsets.all(5),
+                        ),
                       ),
                     ),
                     Row(
                       children: [
-                        const Text(
-                          'Pajak: ',
-                          style: labelStyle,
-                        ),
+                        const Text('Pajak: ', style: labelStyle),
                         Visibility(
-                          visible:
-                              setting.canShow('salesCashier', 'tax_percentage'),
+                          visible: setting.canShow(
+                            'salesCashier',
+                            'tax_percentage',
+                          ),
                           child: SizedBox(
                             width: 70,
                             height: 35,
                             child: TextFormField(
                               readOnly: true,
                               decoration: const InputDecoration(
-                                  suffixIcon: Icon(Icons.percent),
-                                  contentPadding: EdgeInsets.all(5),
-                                  border: OutlineInputBorder()),
-                              initialValue:
-                                  salesCashier.taxPercentage?.toString(),
+                                suffixIcon: Icon(Icons.percent),
+                                contentPadding: EdgeInsets.all(5),
+                                border: OutlineInputBorder(),
+                              ),
+                              initialValue: salesCashier.taxPercentage
+                                  ?.toString(),
                             ),
                           ),
                         ),
                         Visibility(
-                          visible:
-                              setting.canShow('salesCashier', 'tax_amount'),
+                          visible: setting.canShow(
+                            'salesCashier',
+                            'tax_amount',
+                          ),
                           child: SizedBox(
                             width: 250,
                             height: 35,
                             child: TextFormField(
                               readOnly: true,
                               decoration: const InputDecoration(
-                                  contentPadding: EdgeInsets.all(5),
-                                  border: OutlineInputBorder()),
+                                contentPadding: EdgeInsets.all(5),
+                                border: OutlineInputBorder(),
+                              ),
                               initialValue: salesCashier.taxAmount.format(),
                             ),
                           ),
                         ),
-                        const SizedBox(
-                          width: 10,
-                        ),
+                        const SizedBox(width: 10),
                         Text(
                           '${setting.columnName('salesCashier', 'round_amount')}: ',
                           style: labelStyle,
                         ),
                         Visibility(
-                          visible:
-                              setting.canShow('salesCashier', 'round_amount'),
+                          visible: setting.canShow(
+                            'salesCashier',
+                            'round_amount',
+                          ),
                           child: SizedBox(
                             width: 250,
                             height: 35,
                             child: TextFormField(
                               readOnly: true,
                               decoration: const InputDecoration(
-                                  contentPadding: EdgeInsets.all(5),
-                                  border: OutlineInputBorder()),
+                                contentPadding: EdgeInsets.all(5),
+                                border: OutlineInputBorder(),
+                              ),
                               initialValue: salesCashier.roundAmount.format(),
                             ),
                           ),
@@ -557,16 +622,15 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                     ),
                   ],
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Visibility(
                       visible: setting.canShow('salesCashier', 'location'),
                       child: Text(
-                          "${setting.columnName('salesCashier', 'location')}: ${salesCashier.location}"),
+                        "${setting.columnName('salesCashier', 'location')}: ${salesCashier.location}",
+                      ),
                     ),
                     Visibility(
                       visible: setting.canShow('salesCashier', 'other_cost'),
@@ -582,9 +646,10 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                             child: TextFormField(
                               readOnly: true,
                               decoration: const InputDecoration(
-                                  prefixText: 'Rp.',
-                                  contentPadding: EdgeInsets.all(5),
-                                  border: OutlineInputBorder()),
+                                prefixText: 'Rp.',
+                                contentPadding: EdgeInsets.all(5),
+                                border: OutlineInputBorder(),
+                              ),
                               initialValue: salesCashier.roundAmount.toString(),
                             ),
                           ),
@@ -593,9 +658,7 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                     ),
                   ],
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 Visibility(
                   visible: setting.canShow('salesCashier', 'description'),
                   child: Padding(
@@ -604,10 +667,13 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                       width: 300,
                       child: TextFormField(
                         decoration: InputDecoration(
-                            labelText: setting.columnName(
-                                'salesCashier', 'description'),
-                            labelStyle: labelStyle,
-                            border: const OutlineInputBorder()),
+                          labelText: setting.columnName(
+                            'salesCashier',
+                            'description',
+                          ),
+                          labelStyle: labelStyle,
+                          border: const OutlineInputBorder(),
+                        ),
                         readOnly: true,
                         minLines: 3,
                         maxLines: 5,
@@ -621,31 +687,37 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
                   spacing: 10,
                   children: [
                     ElevatedButton(
-                        onPressed: () => _updateSalesCashier(),
-                        child: const Text('Simpan')),
+                      onPressed: () => _updateSalesCashier(),
+                      child: const Text('Simpan'),
+                    ),
                     Visibility(
                       visible: !salesCashier.isNewRecord,
                       child: ElevatedButton.icon(
-                          icon: const Icon(Icons.print),
-                          onPressed: () => _printReceipt(),
-                          label: const Text('Cetak Struk')),
+                        icon: const Icon(Icons.print),
+                        onPressed: () => _printReceipt(),
+                        label: const Text('Cetak Struk'),
+                      ),
                     ),
                     ElevatedButton(
-                        onPressed: () => _pay(), child: const Text('Bayar')),
-                    Visibility(
-                      visible: salesCashier.isNewRecord,
-                      child: ElevatedButton(
-                          onPressed: () => _openPending(),
-                          child: const Text('Buka Pending')),
+                      onPressed: () => _pay(),
+                      child: const Text('Bayar'),
                     ),
                     Visibility(
                       visible: salesCashier.isNewRecord,
                       child: ElevatedButton(
-                          onPressed: () => _moveToPending(),
-                          child: const Text('Draft Pending')),
+                        onPressed: () => _openPending(),
+                        child: const Text('Buka Pending'),
+                      ),
+                    ),
+                    Visibility(
+                      visible: salesCashier.isNewRecord,
+                      child: ElevatedButton(
+                        onPressed: () => _moveToPending(),
+                        child: const Text('Draft Pending'),
+                      ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),

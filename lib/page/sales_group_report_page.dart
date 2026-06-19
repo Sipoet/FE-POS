@@ -90,7 +90,8 @@ class _SalesGroupReportPageState extends State<SalesGroupReportPage>
         if (page != null) 'page': page.toString(),
         if (per != null) 'per': per.toString(),
       },
-      type: _reportType ?? 'json',
+      responseType: _reportType == 'json' ? .json : .bytes,
+      acceptHeader: _reportType == 'json' ? .json : .xlsx,
       cancelToken: _cancelToken,
     );
   }
@@ -141,6 +142,7 @@ class _SalesGroupReportPageState extends State<SalesGroupReportPage>
         whitelistColumns,
         fixedLeftColumns: _groupKeys.length,
         tabManager: tabManager,
+        context: context,
       );
       _source.setModels(rawData);
     });
@@ -222,11 +224,11 @@ class _SalesGroupReportPageState extends State<SalesGroupReportPage>
                 ),
                 SizedBox(
                   width: 350,
-                  child: AsyncDropdownMultiple<Brand>(
+                  child: AsyncDropdownMultiple<IposBrand>(
                     label: const Text('Merek :', style: _filterLabelStyle),
                     key: const ValueKey('brandSelect'),
-                    textOnSearch: (Brand brand) => brand.name,
-                    modelClass: BrandClass(),
+                    textOnSearch: (IposBrand brand) => brand.name,
+                    modelClass: IposBrandClass(),
                     attributeKey: 'merek',
                     onSaved: (value) => _brands = value == null
                         ? []
@@ -254,7 +256,7 @@ class _SalesGroupReportPageState extends State<SalesGroupReportPage>
                 ),
                 SizedBox(
                   width: 350,
-                  child: AsyncDropdownMultiple<Supplier>(
+                  child: AsyncDropdownMultiple<IposSupplier>(
                     label: const Text('Supplier :', style: _filterLabelStyle),
                     key: const ValueKey('supplierSelect'),
                     attributeKey: 'nama',
@@ -262,7 +264,7 @@ class _SalesGroupReportPageState extends State<SalesGroupReportPage>
                     textOnSearch: (supplier) =>
                         "${supplier.code} - ${supplier.name}",
                     textOnSelected: (supplier) => supplier.code,
-                    modelClass: SupplierClass(),
+                    modelClass: IposSupplierClass(),
                     onSaved: (value) => _suppliers = value == null
                         ? []
                         : value.map<String>((e) => e.code).toList(),

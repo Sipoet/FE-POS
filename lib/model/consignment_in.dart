@@ -1,6 +1,6 @@
 import 'package:fe_pos/model/consignment_in_order.dart';
-import 'package:fe_pos/model/purchase_item.dart';
-export 'package:fe_pos/model/purchase_item.dart';
+import 'package:fe_pos/model/ipos/purchase_item.dart';
+export 'package:fe_pos/model/ipos/purchase_item.dart';
 import 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
@@ -8,7 +8,7 @@ class ConsignmentIn extends Model {
   String code;
   String? orderCode;
   String userName;
-  List<PurchaseItem> purchaseItems;
+  List<IposPurchaseItem> purchaseItems;
   DateTime datetime;
   DateTime? noteDate;
   String description;
@@ -29,7 +29,7 @@ class ConsignmentIn extends Model {
   String destLocation;
   String supplierCode;
   ConsignmentInOrder? consignmentInOrder;
-  Supplier supplier;
+  IposSupplier supplier;
   ConsignmentIn({
     this.userName = '',
     this.description = '',
@@ -56,11 +56,11 @@ class ConsignmentIn extends Model {
     super.id,
     super.createdAt,
     super.updatedAt,
-    Supplier? supplier,
+    IposSupplier? supplier,
     DateTime? datetime,
-    List<PurchaseItem>? purchaseItems,
-  }) : purchaseItems = purchaseItems ?? <PurchaseItem>[],
-       supplier = supplier ?? Supplier(),
+    List<IposPurchaseItem>? purchaseItems,
+  }) : purchaseItems = purchaseItems ?? <IposPurchaseItem>[],
+       supplier = supplier ?? IposSupplier(),
        datetime = datetime ?? DateTime.now();
 
   @override
@@ -127,7 +127,7 @@ class ConsignmentIn extends Model {
     bankCode = attributes['bank_code'];
     supplierCode = attributes['kodesupel'];
     if (included.isNotEmpty) {
-      purchaseItems = PurchaseItemClass().findRelationsData(
+      purchaseItems = IposPurchaseItemClass().findRelationsData(
         included: included,
         relation: json['relationships']['purchase_items'],
       );
@@ -136,11 +136,11 @@ class ConsignmentIn extends Model {
         relation: json['relationships']['consignment_in_order'],
       );
       supplier =
-          SupplierClass().findRelationData(
+          IposSupplierClass().findRelationData(
             included: included,
             relation: json['relationships']['supplier'],
           ) ??
-          Supplier(code: supplierCode);
+          IposSupplier(code: supplierCode);
     }
   }
 

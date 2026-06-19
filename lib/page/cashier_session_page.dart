@@ -70,7 +70,7 @@ class _CashierSessionPageState extends State<CashierSessionPage>
     final bodyParams = {
       'data': {
         'type': 'cashier_session',
-        'attributes': cashierSession.toJson(),
+        'attributes': cashierSession.asJson(),
       },
     };
     server

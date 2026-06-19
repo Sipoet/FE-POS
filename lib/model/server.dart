@@ -5,6 +5,8 @@ import 'package:dio/io.dart';
 import 'package:dio/dio.dart';
 import 'package:fe_pos/page/loading_page.dart';
 export 'package:dio/dio.dart';
+export 'package:dio/io.dart';
+export 'dart:io';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -90,7 +92,7 @@ class Server extends ChangeNotifier {
     }
   }
 
-  Future upload(
+  Future<Response> upload(
     String path, {
     List<int>? bytes,
     String? filename,
@@ -106,14 +108,16 @@ class Server extends ChangeNotifier {
     return dio.postUri(
       url,
       data: formData,
-      options: generateHeaders('file', 'json'),
+      options: generateHeaders(.multipartForm, .json),
     );
   }
 
-  Future post(
+  Future<Response> post(
     String path, {
-    Map body = const {},
-    String type = 'json',
+    Object? body,
+    HttpContentType contentType = .json,
+    ResponseType responseType = .json,
+    HttpContentType? acceptHeader,
     CancelToken? cancelToken,
   }) async {
     Uri url = generateUrl(path, {});
@@ -121,29 +125,40 @@ class Server extends ChangeNotifier {
       url,
       data: body,
       cancelToken: cancelToken,
-      options: generateHeaders(type, type),
+      options: generateHeaders(
+        contentType,
+        responseType,
+        acceptHeader: acceptHeader,
+      ),
     );
   }
 
-  Future get(
+  Future<Response> get(
     String path, {
     Map<String, dynamic> queryParam = const {},
-    String type = 'json',
-    String? responseType,
+    HttpContentType contentType = .json,
+    ResponseType responseType = .json,
+    HttpContentType? acceptHeader,
     CancelToken? cancelToken,
   }) async {
     Uri url = generateUrl(path, queryParam);
     return dio.getUri(
       url,
       cancelToken: cancelToken,
-      options: generateHeaders(type, responseType ?? type),
+      options: generateHeaders(
+        contentType,
+        responseType,
+        acceptHeader: acceptHeader,
+      ),
     );
   }
 
-  Future put(
+  Future<Response> put(
     String path, {
-    Map body = const {},
-    String type = 'json',
+    Object? body,
+    HttpContentType contentType = .json,
+    ResponseType responseType = .json,
+    HttpContentType? acceptHeader,
     CancelToken? cancelToken,
   }) async {
     Uri url = generateUrl(path, {});
@@ -151,14 +166,18 @@ class Server extends ChangeNotifier {
       url,
       data: body,
       cancelToken: cancelToken,
-      options: generateHeaders(type, type),
+      options: generateHeaders(
+        contentType,
+        responseType,
+        acceptHeader: acceptHeader,
+      ),
     );
   }
 
   Future delete(
     String path, {
     Map body = const {},
-    String type = 'json',
+    HttpContentType contentType = .json,
     CancelToken? cancelToken,
   }) async {
     Uri url = generateUrl(path, {});
@@ -166,14 +185,15 @@ class Server extends ChangeNotifier {
       url,
       data: body,
       cancelToken: cancelToken,
-      options: generateHeaders(type, type),
+      options: generateHeaders(contentType, .json),
     );
   }
 
   Future<Uint8List?> download({
     String? url,
     String? path,
-    required String type,
+    ResponseType responseType = .bytes,
+    required HttpContentType acceptHeader,
     void Function(int, int)? onReceiveProgress,
     void Function(Response)? onSuccess,
   }) {
@@ -186,7 +206,7 @@ class Server extends ChangeNotifier {
           url!,
           onReceiveProgress: onReceiveProgress,
           options: path != null
-              ? generateHeaders('json', type)
+              ? generateHeaders(.json, responseType, acceptHeader: acceptHeader)
               : Options(
                   responseType: ResponseType.bytes,
                   contentType: 'text/plain',
@@ -206,39 +226,33 @@ class Server extends ChangeNotifier {
         });
   }
 
-  final Map<String, ResponseType> _responseTypes = {
-    'json': ResponseType.json,
-    'text': ResponseType.plain,
-    'xlsx': ResponseType.bytes,
-    'pdf': ResponseType.bytes,
-    'file': ResponseType.bytes,
-    'txt': ResponseType.plain,
-  };
-  Options generateHeaders(String requestType, String responseType) {
+  Options generateHeaders(
+    HttpContentType contentType,
+    ResponseType responseType, {
+    HttpContentType? acceptHeader,
+  }) {
     return Options(
       headers: {
         if (jwt.isNotEmpty) 'Authorization': jwt,
-        Headers.acceptHeader: acceptHeader(responseType),
+        if (acceptHeader != null) Headers.acceptHeader: acceptHeader.toString(),
       },
-      contentType: requestType == 'file'
-          ? 'multipart/form-data'
-          : 'application/json',
-      responseType: _responseTypes[responseType] ?? ResponseType.bytes,
+      contentType: contentType.toString(),
+      responseType: responseType,
     );
   }
 
-  String acceptHeader(String responseType) {
-    switch (responseType) {
-      case 'json':
-        return 'application/json';
-      case 'xlsx':
-        return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-      case 'pdf':
-        return 'application/pdf';
-      default:
-        return 'application/json';
-    }
-  }
+  // String acceptHeader(ResponseType responseType) {
+  //   switch (responseType) {
+  //     case .json:
+  //       return 'application/json';
+  //     case .bytes:
+  //       return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  //     case .plain:
+  //       return 'application/pdf';
+  //     default:
+  //       return 'application/json';
+  //   }
+  // }
 
   Uri generateUrl(String path, Map<String, dynamic> queryParams) {
     return Uri(
@@ -247,5 +261,106 @@ class Server extends ChangeNotifier {
       path: "api/$path",
       queryParameters: queryParams,
     );
+  }
+}
+
+enum HttpContentType {
+  json,
+  multipartForm,
+  xlsx,
+  pdf,
+  plain,
+  windowsApp,
+  androidApp,
+  image,
+  jpg,
+  png,
+  bmp,
+  binary;
+
+  @override
+  String toString() {
+    switch (this) {
+      case json:
+        return 'application/json';
+      case multipartForm:
+        return 'multipart/form-data';
+      case xlsx:
+        return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      case pdf:
+        return 'application/pdf';
+      case plain:
+        return 'text/plain';
+      case image:
+        return 'image/*';
+      case jpg:
+        return 'image/jpeg';
+      case png:
+        return 'image/png';
+      case bmp:
+        return 'image/bmp';
+      case androidApp:
+        return 'application/vnd.android.package-archive';
+      case windowsApp:
+        return 'application/vnd.microsoft.portable-executable';
+      case binary:
+        return 'application/octet-stream';
+    }
+  }
+
+  static HttpContentType fromString(String? value) {
+    switch (value) {
+      case 'application/json':
+        return json;
+      case 'multipart/form-data':
+        return multipartForm;
+      case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+        return xlsx;
+      case 'application/pdf':
+        return pdf;
+      case 'text/plain':
+        return plain;
+      case 'image/*':
+        return image;
+      case 'image/jpeg':
+        return jpg;
+      case 'image/png':
+        return png;
+      case 'image/bmp':
+        return bmp;
+      case 'application/vnd.android.package-archive':
+        return androidApp;
+      case 'application/vnd.microsoft.portable-executable':
+        return windowsApp;
+      case 'application/octet-stream':
+        return binary;
+      default:
+        throw 'not on the list';
+    }
+  }
+
+  String? get extName {
+    switch (this) {
+      case json:
+        return 'json';
+      case xlsx:
+        return 'xlsx';
+      case pdf:
+        return 'pdf';
+      case plain:
+        return 'txt';
+      case jpg:
+        return 'jpg';
+      case png:
+        return 'png';
+      case bmp:
+        return 'bmp';
+      case androidApp:
+        return 'apk';
+      case windowsApp:
+        return 'exe';
+      default:
+        return null;
+    }
   }
 }

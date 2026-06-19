@@ -95,7 +95,8 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
       'ipos/purchases/report',
       queryParam: request.toQueryParam()
         ..addEntries([MapEntry('report_type', _reportType)]),
-      type: _reportType ?? 'json',
+      responseType: _reportType == 'json' ? .json : .bytes,
+      acceptHeader: _reportType == 'json' ? .json : .xlsx,
     );
   }
 

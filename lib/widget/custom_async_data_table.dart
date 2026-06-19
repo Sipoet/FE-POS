@@ -25,7 +25,8 @@ typedef OnRowDoubleTapCallback =
 
 class CustomAsyncDataTable<T extends Model> extends StatefulWidget {
   final int fixedLeftColumns;
-  final List<Widget>? actions;
+  final List<MenuItemButton> Function(MenuController menuController)?
+  additionalHeaderActions;
   final Widget? header;
   final bool showCheckboxColumn;
   final bool showSummary;
@@ -44,7 +45,7 @@ class CustomAsyncDataTable<T extends Model> extends StatefulWidget {
   const CustomAsyncDataTable({
     super.key,
     required this.fetchData,
-    this.actions,
+    this.additionalHeaderActions,
     this.onLoaded,
     this.header,
     this.actionColumnWidth,
@@ -89,6 +90,7 @@ class _CustomAsyncDataTableState<T extends Model>
           TableColumn tableColumn = entry.value;
           return decorateColumn(
             tableColumn,
+            context: context,
             tabManager: tabManager,
             showCheckboxColumn: index == 0 ? widget.showCheckboxColumn : false,
             listEnumValues: widget.enums[tableColumn.name],
@@ -443,7 +445,7 @@ class _CustomAsyncDataTableState<T extends Model>
           ),
           SizedBox(
             width: 50,
-            child: SubmenuButton(
+            child: MenuAnchor(
               controller: _menuController,
               menuChildren: [
                 MenuItemButton(
@@ -460,8 +462,14 @@ class _CustomAsyncDataTableState<T extends Model>
                     _menuController.close();
                   },
                 ),
+                ...?widget.additionalHeaderActions?.call(_menuController),
               ],
-              child: const Icon(Icons.more_vert),
+              child: IconButton(
+                onPressed: () => _menuController.isOpen
+                    ? _menuController.close()
+                    : _menuController.open(),
+                icon: const Icon(Icons.more_horiz),
+              ),
             ),
           ),
         ],

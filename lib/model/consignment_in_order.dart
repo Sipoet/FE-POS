@@ -1,6 +1,6 @@
 import 'package:fe_pos/model/consignment_in.dart';
-import 'package:fe_pos/model/purchase_order_item.dart';
-export 'package:fe_pos/model/purchase_order_item.dart';
+import 'package:fe_pos/model/ipos/purchase_order_item.dart';
+export 'package:fe_pos/model/ipos/purchase_order_item.dart';
 import 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
@@ -8,7 +8,7 @@ class ConsignmentInOrder extends Model {
   String code;
   String? orderCode;
   String userName;
-  List<PurchaseOrderItem> purchaseOrderItems;
+  List<IposPurchaseOrderItem> purchaseOrderItems;
   ConsignmentIn? consignmentIn;
   DateTime datetime;
   DateTime deliveredDate;
@@ -29,7 +29,7 @@ class ConsignmentInOrder extends Model {
   String location;
   String destLocation;
   String supplierCode;
-  Supplier supplier;
+  IposSupplier supplier;
   ConsignmentInOrder({
     this.userName = '',
     this.description = '',
@@ -52,16 +52,16 @@ class ConsignmentInOrder extends Model {
     this.bankCode,
     this.consignmentIn,
     this.taxType = '',
-    Supplier? supplier,
+    IposSupplier? supplier,
     super.id,
     super.createdAt,
     super.updatedAt,
     DateTime? datetime,
     DateTime? deliveredDate,
-    List<PurchaseOrderItem>? purchaseOrderItems,
-  }) : purchaseOrderItems = purchaseOrderItems ?? <PurchaseOrderItem>[],
+    List<IposPurchaseOrderItem>? purchaseOrderItems,
+  }) : purchaseOrderItems = purchaseOrderItems ?? <IposPurchaseOrderItem>[],
        datetime = datetime ?? DateTime.now(),
-       supplier = supplier ?? Supplier(),
+       supplier = supplier ?? IposSupplier(),
        deliveredDate = deliveredDate ?? DateTime.now();
 
   @override
@@ -124,7 +124,7 @@ class ConsignmentInOrder extends Model {
     bankCode = attributes['bank_code'];
     supplierCode = attributes['kodesupel'];
     if (included.isNotEmpty) {
-      purchaseOrderItems = PurchaseOrderItemClass().findRelationsData(
+      purchaseOrderItems = IposPurchaseOrderItemClass().findRelationsData(
         included: included,
         relation: json['relationships']['purchase_order_items'],
       );
@@ -133,11 +133,11 @@ class ConsignmentInOrder extends Model {
         relation: json['relationships']['consignment_in'],
       );
       supplier =
-          SupplierClass().findRelationData(
+          IposSupplierClass().findRelationData(
             included: included,
             relation: json['relationships']['supplier'],
           ) ??
-          Supplier(code: supplierCode);
+          IposSupplier(code: supplierCode);
     }
   }
 

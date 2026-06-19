@@ -106,12 +106,12 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
               SizedBox(
                 width: 250,
                 height: 45,
-                child: AsyncDropdown<Brand>(
+                child: AsyncDropdown<IposBrand>(
                   path: '/brands',
                   textOnSelected: (brand) => brand.name,
                   textOnSearch: (brand) =>
                       '${brand.name} - ${brand.description}',
-                  modelClass: BrandClass(),
+                  modelClass: IposBrandClass(),
                   label: const Text('Merek'),
                   onChanged: (brand) => setState(() {
                     brandName = brand?.name;
@@ -121,12 +121,12 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
               SizedBox(
                 width: 250,
                 height: 45,
-                child: AsyncDropdown<Supplier>(
+                child: AsyncDropdown<IposSupplier>(
                   path: '/suppliers',
                   textOnSelected: (supplier) => supplier.name,
                   textOnSearch: (supplier) =>
                       '${supplier.code} - ${supplier.name}',
-                  modelClass: SupplierClass(),
+                  modelClass: IposSupplierClass(),
                   label: const Text('Suppliers'),
                   onChanged: (supplier) => setState(() {
                     supplierCode = supplier?.code;
@@ -202,7 +202,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
       param['filter[supplier_code][eq]'] = supplierCode;
     }
     _server
-        .get('item_reports', queryParam: param, type: 'json')
+        .get('item_reports', queryParam: param)
         .then(
           (response) {
             if (response.statusCode == 200) {
@@ -215,7 +215,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
                       ),
                     )
                     .toList();
-                _source?.setModels(itemReports, tableColumns);
+                _source?.setModels(itemReports);
               });
               _source?.setShowLoading(false);
             }

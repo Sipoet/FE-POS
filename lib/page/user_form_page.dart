@@ -7,6 +7,7 @@ import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/model/user.dart';
+import 'package:flutter/services.dart';
 
 import 'package:provider/provider.dart';
 
@@ -80,8 +81,8 @@ class _UserFormPageState extends State<UserFormPage>
   }
 
   void _submit() async {
-    Map body = {
-      'data': {'type': 'user', 'id': user.id, 'attributes': user.toJson()},
+    Map<String, dynamic> body = {
+      'data': {'type': 'user', 'id': user.id, 'attributes': user.asJson()},
     };
     Future request;
     if (user.id == null) {
@@ -166,6 +167,11 @@ class _UserFormPageState extends State<UserFormPage>
                     onSaved: (newValue) {
                       user.username = newValue.toString();
                     },
+                    inputFormatters: [
+                      FilteringTextInputFormatter.singleLineFormatter,
+                      FilteringTextInputFormatter.allow(RegExp('[a-z0-9]')),
+                    ],
+                    keyboardType: TextInputType.name,
                     readOnly: !user.isNewRecord,
                     controller: usernameController,
                     onChanged: (newValue) {
@@ -260,6 +266,7 @@ class _UserFormPageState extends State<UserFormPage>
                       }
                       return null;
                     },
+                    keyboardType: TextInputType.visiblePassword,
                     onChanged: (newValue) {
                       user.password = newValue.toString();
                     },
@@ -283,6 +290,7 @@ class _UserFormPageState extends State<UserFormPage>
                       }
                       return null;
                     },
+                    keyboardType: TextInputType.visiblePassword,
                     onChanged: (newValue) {
                       user.passwordConfirmation = newValue.toString();
                     },

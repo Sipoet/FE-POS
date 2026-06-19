@@ -6,7 +6,6 @@ export 'package:fe_pos/model/role.dart';
 import 'package:fe_pos/model/payroll.dart';
 export 'package:fe_pos/model/payroll.dart';
 export 'package:fe_pos/tool/custom_type.dart';
-import 'package:fe_pos/model/work_schedule.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 export 'package:fe_pos/model/work_schedule.dart';
 
@@ -191,7 +190,6 @@ class Employee extends Model {
   String? imageCode;
   String code;
   int? shift;
-  List<WorkSchedule> schedules;
   List<EmployeeDayOff> employeeDayOffs;
   EmployeeMaritalStatus maritalStatus;
   String? userCode;
@@ -220,11 +218,9 @@ class Employee extends Model {
     this.maritalStatus = EmployeeMaritalStatus.single,
     super.createdAt,
     super.updatedAt,
-    List<WorkSchedule>? schedules,
     List<EmployeeDayOff>? employeeDayOffs,
     this.status = EmployeeStatus.inactive,
-  }) : schedules = schedules ?? <WorkSchedule>[],
-       startWorkingDate = startWorkingDate ?? Date.today(),
+  }) : startWorkingDate = startWorkingDate ?? Date.today(),
        role = role ?? Role(),
        employeeDayOffs = employeeDayOffs ?? <EmployeeDayOff>[];
 
@@ -252,10 +248,7 @@ class Employee extends Model {
       relation: json['relationships']['employee_day_offs'],
       included: included,
     );
-    schedules = WorkScheduleClass().findRelationsData(
-      relation: json['relationships']['schedules'],
-      included: included,
-    );
+
     id = int.parse(json['id']);
     code = attributes['code']?.trim() ?? '';
     name = attributes['name']?.trim() ?? '';
@@ -320,6 +313,9 @@ class Employee extends Model {
     'created_at': createdAt,
     'updated_at': updatedAt,
     'bank_register_name': bankRegisterName,
+    'employee_day_offs_attributes': employeeDayOffs
+        .map((e) => e.asJson())
+        .toList(),
   };
 
   @override

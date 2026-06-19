@@ -1,4 +1,4 @@
-import 'package:fe_pos/model/account.dart';
+import 'package:fe_pos/model/ipos/account.dart';
 import 'package:fe_pos/model/model.dart';
 
 enum CashTransactionType implements EnumTranslation {
@@ -49,8 +49,8 @@ class CashTransactionReport extends Model {
   String code;
   CashTransactionType transactionType;
   Money paymentAmount;
-  Account paymentAccount;
-  Account detailAccount;
+  IposAccount paymentAccount;
+  IposAccount detailAccount;
 
   CashTransactionReport({
     super.id,
@@ -58,16 +58,17 @@ class CashTransactionReport extends Model {
     this.code = '',
     this.description,
     this.transactionType = CashTransactionType.cashIn,
-    Account? paymentAccount,
-    Account? detailAccount,
+    IposAccount? paymentAccount,
+    IposAccount? detailAccount,
     String? paymentAccountCode,
     String? detailAccountCode,
     DateTime? transactionAt,
     this.paymentAmount = const Money(0),
   }) : transactionAt = transactionAt ?? DateTime.now(),
        paymentAccount =
-           paymentAccount ?? Account(code: paymentAccountCode ?? ''),
-       detailAccount = detailAccount ?? Account(code: detailAccountCode ?? '');
+           paymentAccount ?? IposAccount(code: paymentAccountCode ?? ''),
+       detailAccount =
+           detailAccount ?? IposAccount(code: detailAccountCode ?? '');
   @override
   Map<String, dynamic> toMap() => {
     'transaction_at': transactionAt,
@@ -87,13 +88,13 @@ class CashTransactionReport extends Model {
 
     if (included.isNotEmpty) {
       paymentAccount =
-          AccountClass().findRelationData(
+          IposAccountClass().findRelationData(
             included: included,
             relation: json['relationships']?['payment_account'],
           ) ??
           paymentAccount;
       detailAccount =
-          AccountClass().findRelationData(
+          IposAccountClass().findRelationData(
             included: included,
             relation: json['relationships']?['detail_account'],
           ) ??

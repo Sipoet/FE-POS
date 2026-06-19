@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:fe_pos/model/server.dart';
@@ -33,7 +32,7 @@ mixin AppUpdater<T extends StatefulWidget> on State<T>
           if ([200, 302].contains(response.statusCode)) {
             var doc = loadYaml(response.data);
             latestVersion = doc['version'];
-            if (isOlderVersion()) {
+            if (isOlderVersion() && mounted) {
               _showConfirmDialog(server, platform);
             } else if (isManual) {
               toastification.show(
@@ -70,9 +69,9 @@ mixin AppUpdater<T extends StatefulWidget> on State<T>
     return false;
   }
 
-  void _showConfirmDialog(Server server, TargetPlatform platform) {
+  Future _showConfirmDialog(Server server, TargetPlatform platform) {
     // show the dialog
-    showDialog(
+    return showDialog(
       context: context,
       builder: (BuildContext context) {
         final navigator = Navigator.of(context);
@@ -159,13 +158,12 @@ mixin AppUpdater<T extends StatefulWidget> on State<T>
   ) {
     const fileSaver = FileSaver();
     final path = _downloadPath[platform];
-    final extFile = path.split('.').last;
     DartPluginRegistrant.ensureInitialized();
     return fileSaver.downloadRemote(
       url: path,
       server: server,
       filename: path.split('/').last,
-      extFile: extFile,
+      acceptHeader: platform == .android ? .androidApp : .windowsApp,
       chooseFile: false,
       onReceiveProgress: (actualBytes, int totalBytes) {
         final progress = (actualBytes / totalBytes * 100).floor().toString();

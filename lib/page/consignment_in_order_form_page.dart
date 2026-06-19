@@ -53,7 +53,7 @@ class _ConsignmentInOrderFormPageState extends State<ConsignmentInOrderFormPage>
     flash = Flash();
     setting = context.read<Setting>();
     _server = context.read<Server>();
-    _columns = setting.tableColumn('ipos::PurchaseOrderItem')
+    _columns = setting.tableColumn('ipos::IposPurchaseOrderItem')
       ..removeWhere((line) => line.name == 'notransaksi');
     if (consignmentInOrder.id != null) {
       Future.delayed(Duration.zero, () => fetchConsignmentInOrder());
@@ -752,7 +752,7 @@ class _ConsignmentInOrderFormPageState extends State<ConsignmentInOrderFormPage>
                 ),
                 SizedBox(
                   height: 500,
-                  child: SyncDataTable<PurchaseOrderItem>(
+                  child: SyncDataTable<IposPurchaseOrderItem>(
                     columns: _columns,
                     showSummary: true,
                     onLoaded: (stateManager) => _source = stateManager,

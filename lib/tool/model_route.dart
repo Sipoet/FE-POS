@@ -28,7 +28,7 @@ class ModelRoute {
   static const Map<String, Type> _modelList = {
     'Ipos::Supplier': Supplier,
     'Ipos::Item': Item,
-    'Ipos::Brand': Brand,
+    'Ipos::Brand': IposBrand,
     'Ipos::ItemType': ItemType,
     'Employee': Employee,
     'Payroll': Payroll,
@@ -84,11 +84,17 @@ class ModelRoute {
       key: ObjectKey(model),
       payrollType: model as PayrollType,
     ),
-    'Purchase': (model) =>
-        PurchaseFormPage(key: ObjectKey(model), purchase: model as Purchase),
+    'PurchaseInvoice': (model) => PurchaseInvoiceFormPage(
+      key: ObjectKey(model),
+      purchaseInvoice: model as PurchaseInvoice,
+    ),
     'PurchaseOrder': (model) => PurchaseOrderFormPage(
       key: ObjectKey(model),
       purchaseOrder: model as PurchaseOrder,
+    ),
+    'PurchaseShipment': (model) => PurchaseShipmentFormPage(
+      key: ObjectKey(model),
+      purchaseShipment: model as PurchaseShipment,
     ),
     'PurchaseReturn': (model) => PurchaseReturnFormPage(
       key: ObjectKey(model),
@@ -119,39 +125,21 @@ class ModelRoute {
     return _detailPages[model.runtimeType.toString()]?.call(model);
   }
 
-  ModelClass modelClassOf(String className) {
+  ModelClass? modelClassOf(String className) {
     try {
       return _modelClasses[className]!;
     } catch (e) {
       debugPrint('className: $className not found');
-      rethrow;
+      return null;
     }
   }
 
   static final Map<String, ModelClass> _modelClasses = Map.unmodifiable({
     'Ipos::Item': ItemClass(),
-    'Ipos::Account': AccountClass(),
-    'PayrollType': PayrollTypeClass(),
-    'Ipos::CustomerGroup': CustomerGroupClass(),
-    'Ipos::Supplier': SupplierClass(),
-    'Ipos::Brand': BrandClass(),
-    'Ipos::ItemType': ItemTypeClass(),
-    'Payroll': PayrollClass(),
-    'Payslip': PayslipClass(),
-    'Employee': EmployeeClass(),
-    'EmployeeLeave': EmployeeLeaveClass(),
-    'EmployeeAttendance': EmployeeAttendanceClass(),
-    'Role': RoleClass(),
-    'Discount': DiscountClass(),
-    'Holiday': HolidayClass(),
-    'User': UserClass(),
-    'PaymentProvider': PaymentProviderClass(),
-    'PaymentType': PaymentTypeClass(),
-    'BookEmployeeAttendance': BookEmployeeAttendanceClass(),
-    'BookPayslipLine': BookPayslipLineClass(),
-    'Ipos::Purchase': PurchaseClass(),
-    'Ipos::PurchaseOrder': PurchaseOrderClass(),
-    'Ipos::PurchaseItem': PurchaseItemClass(),
+    'Ipos::Account': IposAccountClass(),
+    'Ipos::Purchase': IposPurchaseHeaderClass(),
+    'Ipos::PurchaseOrder': IposPurchaseOrderClass(),
+    'Ipos::PurchaseItem': IposPurchaseItemClass(),
     'Ipos::PurchaseReturn': PurchaseReturnClass(),
     'Ipos::Sale': SaleClass(),
     'Ipos::SaleItem': SaleItemClass(),
@@ -160,6 +148,45 @@ class ModelRoute {
     'Ipos::ConsignmentIn': ConsignmentInClass(),
     'Ipos::ConsignmentInOrder': ConsignmentInOrderClass(),
     'Ipos::StockLocation': StockLocationClass(),
-    'Ipos::Location': LocationClass(),
+    'Ipos::Location': IposLocationClass(),
+    'Ipos::CustomerGroup': CustomerGroupClass(),
+    'Ipos::Supplier': IposSupplierClass(),
+    'Ipos::Brand': IposBrandClass(),
+    'Ipos::ItemType': ItemTypeClass(),
+    'PayrollType': PayrollTypeClass(),
+    'Payroll': PayrollClass(),
+    'Product': ProductClass(),
+    'Tagging': TaggingClass(),
+    'Supplier': SupplierClass(),
+    'Forwarder': ForwarderClass(),
+    'ProductCategory': ProductCategoryClass(),
+    'Account': AccountClass(),
+    'Location': LocationClass(),
+    'StockKeepingUnit': StockKeepingUnitClass(),
+    'CostDetail': CostDetailClass(),
+    'Payslip': PayslipClass(),
+    'Employee': EmployeeClass(),
+    'EmployeeLeave': EmployeeLeaveClass(),
+    'EmployeeAttendance': EmployeeAttendanceClass(),
+    'Brand': IposBrandClass(),
+    'Tag': TagClass(),
+    'TagKey': TagKeyClass(),
+    'Role': RoleClass(),
+    'Discount': DiscountClass(),
+    'Holiday': HolidayClass(),
+    'PurchaseOrder': PurchaseOrderClass(),
+    'PurchaseOrderDetail': PurchaseOrderDetailClass(),
+    'PurchaseInvoice': PurchaseInvoiceClass(),
+    'PurchaseInvoiceDetail': PurchaseInvoiceDetailClass(),
+    'User': UserClass(),
+    'PaymentProvider': PaymentProviderClass(),
+    'PaymentType': PaymentTypeClass(),
+    'BookEmployeeAttendance': BookEmployeeAttendanceClass(),
+    'BookPayslipLine': BookPayslipLineClass(),
+    'Document': TagClass(),
+    'Company': TagClass(),
+    'PurchaseShipment': TagClass(),
+    'PurchaseShipmentDetail': TagClass(),
+    'UnitOfMeasurement': UnitOfMeasurementClass(),
   });
 }

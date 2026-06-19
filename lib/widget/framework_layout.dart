@@ -1,3 +1,4 @@
+import 'package:fe_pos/page/product_category_page.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
@@ -48,7 +49,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
       //     pageFunct: () => const TestingPage(),
       //     key: 'test'),
       Menu(
-        icon: Icons.payment_sharp,
+        icon: Icons.people,
         isClosed: true,
         label: 'HRD',
         key: 'humanResource',
@@ -60,7 +61,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             isDisabled: !setting.isAuthorize('employees', 'read'),
             key: 'employee',
             pageFunct: () => const EmployeePage(),
-            children: [],
           ),
           Menu(
             icon: Icons.settings,
@@ -132,7 +132,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
         ],
       ),
       Menu(
-        icon: Icons.pages,
+        icon: Icons.stacked_line_chart,
         isClosed: true,
         label: 'Laporan',
         key: 'report',
@@ -322,7 +322,33 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
         ],
       ),
       Menu(
-        icon: Icons.money,
+        icon: Icons.show_chart,
+        label: 'Marketing',
+        key: 'marketing',
+        children: [
+          Menu(
+            icon: Icons.discount,
+            isClosed: true,
+            label: 'Diskon',
+            isDisabled: !setting.isAuthorize('discounts', 'read'),
+            key: 'discount',
+            pageFunct: () => const DiscountPage(),
+          ),
+          Menu(
+            icon: Icons.group,
+            isClosed: true,
+            label: 'Customer Group Discount',
+            isDisabled: !setting.isAuthorize(
+              'customer_group_discounts',
+              'read',
+            ),
+            key: 'customerGroupDiscount',
+            pageFunct: () => const CustomerGroupDiscountPage(),
+          ),
+        ],
+      ),
+      Menu(
+        icon: Icons.currency_exchange,
         label: 'Keuangan',
         key: 'finance',
         children: [
@@ -355,24 +381,34 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
         key: 'purchase',
         children: [
           Menu(
-            icon: Icons.shopping_bag,
+            icon: Icons.shopping_basket,
             label: 'Pesanan Pembelian',
-            isDisabled: !setting.isAuthorize('ipos/purchase_orders', 'read'),
+            isDisabled: !setting.isAuthorize('purchase_orders', 'read'),
             key: 'purchase_order',
             pageFunct: () => const PurchaseOrderPage(),
           ),
           Menu(
-            icon: Icons.shopping_bag,
-            label: 'Pembelian',
-            isDisabled: !setting.isAuthorize('ipos/purchases', 'read'),
-            key: 'purchase',
-            pageFunct: () => const PurchasePage(),
+            icon: Icons.local_shipping,
+            label: 'Pengiriman Pembelian',
+            isDisabled: !setting.isAuthorize('purchase_shipments', 'read'),
+            key: 'purchase_shipment',
+            pageFunct: () => const PurchaseShipmentPage(),
           ),
           Menu(
             icon: Icons.shopping_bag,
-            label: 'Detail Pembelian Item',
+            label: 'Invoice Pembelian',
+            isDisabled: !setting.isAuthorize('purchase_invoices', 'read'),
+            key: 'purchase_invoice',
+            pageFunct: () => const PurchaseInvoicePage(),
+          ),
+          Menu(
+            icon: Icons.shopping_bag,
+            label: 'Detail Invoice Pembelian Produk',
             key: 'purchase',
-            isDisabled: !setting.isAuthorize('ipos/purchase_items', 'read'),
+            isDisabled: !setting.isAuthorize(
+              'purchase_invoice_details',
+              'read',
+            ),
             pageFunct: () => const PurchaseItemPage(),
           ),
           Menu(
@@ -471,29 +507,58 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           Menu(
             icon: Icons.inventory,
             isClosed: true,
+            label: 'Tag Key',
+            isDisabled: !setting.isAuthorize('tag_keys', 'read'),
+            key: 'tagKey',
+            pageFunct: () => const TagKeyPage(),
+          ),
+          Menu(
+            icon: Icons.inventory,
+            isClosed: true,
             label: 'Item',
             isDisabled: !setting.isAuthorize('ipos/items', 'read'),
             key: 'item',
             pageFunct: () => const ItemPage(),
-            children: [],
           ),
           Menu(
             icon: Icons.local_shipping,
             isClosed: true,
             label: 'Supplier',
-            isDisabled: !setting.isAuthorize('ipos/suppliers', 'read'),
+            isDisabled: !setting.isAuthorize('suppliers', 'read'),
             key: 'supplier',
             pageFunct: () => const SupplierPage(),
-            children: [],
+          ),
+          Menu(
+            icon: Icons.local_shipping,
+            isClosed: true,
+            label: 'Logistik/Ekspedisi',
+            isDisabled: !setting.isAuthorize('forwarders', 'read'),
+            key: 'forwarder',
+            pageFunct: () => const ForwarderPage(),
           ),
           Menu(
             icon: Icons.branding_watermark,
             isClosed: true,
             label: 'Merek',
-            isDisabled: !setting.isAuthorize('ipos/brands', 'read'),
+            isDisabled: !setting.isAuthorize('brands', 'read'),
             key: 'brand',
             pageFunct: () => const BrandPage(),
-            children: [],
+          ),
+          Menu(
+            icon: Icons.category,
+            isClosed: true,
+            label: 'Kategori Produk',
+            isDisabled: !setting.isAuthorize('product_categories', 'read'),
+            key: 'productCategory',
+            pageFunct: () => const ProductCategoryPage(),
+          ),
+          Menu(
+            icon: Icons.inventory,
+            isClosed: true,
+            label: 'Produk',
+            isDisabled: !setting.isAuthorize('products', 'read'),
+            key: 'product',
+            pageFunct: () => const ProductPage(),
           ),
           Menu(
             icon: Icons.abc,
@@ -502,27 +567,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             isDisabled: !setting.isAuthorize('ipos/item_types', 'read'),
             key: 'itemType',
             pageFunct: () => const ItemTypePage(),
-            children: [],
-          ),
-          Menu(
-            icon: Icons.discount,
-            isClosed: true,
-            label: 'Diskon',
-            isDisabled: !setting.isAuthorize('discounts', 'read'),
-            key: 'discount',
-            pageFunct: () => const DiscountPage(),
-            children: [],
-          ),
-          Menu(
-            icon: Icons.group,
-            isClosed: true,
-            label: 'Customer Group Discount',
-            isDisabled: !setting.isAuthorize(
-              'customer_group_discounts',
-              'read',
-            ),
-            key: 'customerGroupDiscount',
-            pageFunct: () => const CustomerGroupDiscountPage(),
           ),
           Menu(
             icon: Icons.person,
@@ -531,7 +575,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             isDisabled: !setting.isAuthorize('users', 'read'),
             key: 'user',
             pageFunct: () => const UserPage(),
-            children: [],
           ),
           Menu(
             icon: Icons.group,
@@ -540,7 +583,6 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
             isDisabled: !setting.isAuthorize('roles', 'read'),
             key: 'role',
             pageFunct: () => const RolePage(),
-            children: [],
           ),
         ],
       ),

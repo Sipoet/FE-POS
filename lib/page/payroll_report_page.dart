@@ -68,6 +68,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
                   tableColumns,
                   tabManager: tabManager,
                   showFilter: true,
+                  context: context,
                 );
                 for (final row in json['data']) {
                   final model = PayrollReportClass().fromJson(
@@ -146,7 +147,7 @@ class _PayrollReportPageState extends State<PayrollReportPage>
     };
     return server.get(
       'payrolls/report',
-      responseType: reportType,
+      responseType: reportType == 'json' ? .json : .bytes,
       queryParam: params,
     );
   }

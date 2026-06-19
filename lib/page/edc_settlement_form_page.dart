@@ -165,25 +165,16 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
             textOnSearch: (paymentProvider) => paymentProvider.name,
             selected: edcSettlement.paymentProvider,
             modelClass: PaymentProviderClass(),
-            request:
-                ({
-                  int page = 1,
-                  int limit = 20,
-                  String searchText = '',
-                  required CancelToken cancelToken,
-                }) {
-                  return server.get(
-                    'payment_providers',
-                    queryParam: {
-                      'page[page]': page.toString(),
-                      'page[limit]': limit.toString(),
-                      'search_text': searchText,
-                      'filter[status][eq]': PaymentProviderStatus.active
-                          .toString(),
-                    },
-                    cancelToken: cancelToken,
-                  );
-                },
+            request: (QueryRequest queryRequest) {
+              queryRequest.filters.add(
+                ComparisonFilterData(
+                  key: 'status',
+                  operator: .equals,
+                  value: PaymentProviderStatus.active.toString(),
+                ),
+              );
+              return PaymentProviderClass().finds(server, queryRequest);
+            },
             validator: (value) {
               if (value == null) {
                 return 'harus diisi';
@@ -254,26 +245,15 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
               }
               return null;
             },
-            request:
-                ({
-                  int page = 1,
-                  int limit = 20,
-                  String searchText = '',
-                  required CancelToken cancelToken,
-                }) {
-                  final paymentProviderId = edcSettlement.paymentProviderId
-                      .toString();
-                  return server.get(
-                    'payment_provider_edcs',
-                    queryParam: {
-                      'page[page]': page.toString(),
-                      'page[limit]': limit.toString(),
-                      'search_text': searchText,
-                      'filter[payment_provider_id][eq]': paymentProviderId,
-                    },
-                    cancelToken: cancelToken,
-                  );
-                },
+            request: (QueryRequest queryRequest) {
+              queryRequest.filters.add(
+                ComparisonFilterData(
+                  key: 'payment_provider_id',
+                  value: edcSettlement.paymentProviderId,
+                ),
+              );
+              return PaymentProviderEdcClass().finds(server, queryRequest);
+            },
           ),
         ),
       ),
@@ -354,7 +334,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
       'data': {
         'type': 'cashier_sessions',
         'id': cashierSession.id.toString(),
-        'attributes': cashierSession.toJson(),
+        'attributes': cashierSession.asJson(),
         'relationships': {
           'edc_settlements': {
             'data': cashierSession.edcSettlements
@@ -362,7 +342,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
                   (edcSettlement) => {
                     'id': edcSettlement.id,
                     'type': 'edc_settlement',
-                    'attributes': edcSettlement.toJson(),
+                    'attributes': edcSettlement.asJson(),
                   },
                 )
                 .toList(),

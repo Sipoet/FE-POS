@@ -81,7 +81,7 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
         if (page != null) 'page': page.toString(),
         if (per != null) 'per': per.toString(),
       },
-      type: _reportType ?? 'json',
+      responseType: _reportType == 'json' ? .json : .bytes,
     );
   }
 
@@ -163,11 +163,11 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
               ),
               Container(
                 constraints: const BoxConstraints(maxWidth: 350),
-                child: AsyncDropdownMultiple<Brand>(
+                child: AsyncDropdownMultiple<IposBrand>(
                   label: const Text('Merek :', style: _filterLabelStyle),
                   key: const ValueKey('brandSelect'),
-                  textOnSearch: (Brand brand) => brand.name,
-                  modelClass: BrandClass(),
+                  textOnSearch: (IposBrand brand) => brand.name,
+                  modelClass: IposBrandClass(),
                   attributeKey: 'merek',
                   onChanged: (value) =>
                       _brands = value.map<String>((e) => e.name).toList(),
@@ -192,14 +192,14 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
               ),
               Container(
                 constraints: const BoxConstraints(maxWidth: 350),
-                child: AsyncDropdownMultiple<Supplier>(
+                child: AsyncDropdownMultiple<IposSupplier>(
                   label: const Text('Supplier :', style: _filterLabelStyle),
                   key: const ValueKey('supplierSelect'),
                   attributeKey: 'nama',
                   textOnSearch: (supplier) =>
                       "${supplier.code} - ${supplier.name}",
                   textOnSelected: (supplier) => supplier.code,
-                  modelClass: SupplierClass(),
+                  modelClass: IposSupplierClass(),
                   onChanged: (value) =>
                       _suppliers = value.map<String>((e) => e.code).toList(),
                 ),

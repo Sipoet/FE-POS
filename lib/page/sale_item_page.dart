@@ -103,7 +103,8 @@ class _SaleItemPageState extends State<SaleItemPage>
             'ipos/sale_items',
             queryParam: param,
             cancelToken: cancelToken,
-            type: 'xlsx',
+            acceptHeader: .xlsx,
+            responseType: .bytes,
           )
           .then(
             (response) {

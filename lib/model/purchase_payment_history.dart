@@ -1,7 +1,7 @@
-import 'package:fe_pos/model/account.dart';
+import 'package:fe_pos/model/ipos/account.dart';
 import 'package:fe_pos/model/model.dart';
-import 'package:fe_pos/model/purchase.dart';
-import 'package:fe_pos/model/purchase_order.dart';
+import 'package:fe_pos/model/ipos/purchase_header.dart';
+import 'package:fe_pos/model/ipos/purchase_order.dart';
 
 enum PurchaseType implements EnumTranslation {
   payment,
@@ -57,18 +57,18 @@ class PurchasePaymentHistory extends Model {
   Money discountAmount;
   Money debtTotal;
   Money debtLeft;
-  Account paymentAccount;
-  PurchaseOrder? purchaseOrder;
+  IposAccount paymentAccount;
+  IposPurchaseOrder? purchaseOrder;
 
-  Supplier supplier;
-  Purchase? purchase;
+  IposSupplier supplier;
+  IposPurchaseHeader? purchase;
   PurchasePaymentHistory({
     super.id,
     this.code = '',
-    Supplier? supplier,
+    IposSupplier? supplier,
     String? supplierCode,
     this.description,
-    Account? paymentAccount,
+    IposAccount? paymentAccount,
     String? paymentAccountCode,
     this.purchaseCode,
     this.purchase,
@@ -84,9 +84,9 @@ class PurchasePaymentHistory extends Model {
     DateTime? transactionAt,
   }) : transactionAt = transactionAt ?? DateTime.now(),
        stockArrivedAt = stockArrivedAt ?? DateTime.now(),
-       supplier = supplier ?? Supplier(code: supplierCode ?? ''),
+       supplier = supplier ?? IposSupplier(code: supplierCode ?? ''),
        paymentAccount =
-           paymentAccount ?? Account(code: paymentAccountCode ?? '');
+           paymentAccount ?? IposAccount(code: paymentAccountCode ?? '');
   @override
   Map<String, dynamic> toMap() => {
     'transaction_at': transactionAt,
@@ -121,22 +121,22 @@ class PurchasePaymentHistory extends Model {
 
     if (included.isNotEmpty) {
       supplier =
-          SupplierClass().findRelationData(
+          IposSupplierClass().findRelationData(
             included: included,
             relation: json['relationships']?['supplier'],
           ) ??
-          Supplier(code: attributes['supplier_code'] ?? '');
+          IposSupplier(code: attributes['supplier_code'] ?? '');
       paymentAccount =
-          AccountClass().findRelationData(
+          IposAccountClass().findRelationData(
             included: included,
             relation: json['relationships']?['payment_account'],
           ) ??
-          Account(code: attributes['payment_account_code'] ?? '');
-      purchase = PurchaseClass().findRelationData(
+          IposAccount(code: attributes['payment_account_code'] ?? '');
+      purchase = IposPurchaseHeaderClass().findRelationData(
         included: included.where((data) => data['type'] == 'purchase').toList(),
         relation: json['relationships']?['purchase'],
       );
-      purchaseOrder = PurchaseOrderClass().findRelationData(
+      purchaseOrder = IposPurchaseOrderClass().findRelationData(
         included: included
             .where((data) => data['type'] == 'purchase_order')
             .toList(),

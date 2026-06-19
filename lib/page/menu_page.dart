@@ -26,12 +26,15 @@ export 'login_page.dart';
 // master
 export 'item_page.dart';
 export 'supplier_page.dart';
+export 'forwarder_page.dart';
 export 'brand_page.dart';
 export 'item_type_page.dart';
 export 'discount_page.dart';
 export 'customer_group_discount_page.dart';
 export 'user_page.dart';
 export 'role_page.dart';
+export 'product_page.dart';
+export 'tag_key_page.dart';
 
 // human resource
 export 'payroll_page.dart';
@@ -49,13 +52,15 @@ export 'cashier_session_page.dart';
 export 'payment_method_page.dart';
 export 'sale_page.dart';
 export 'sale_item_page.dart';
+export 'sales_cashier_page.dart';
 export 'check_price_page.dart';
 
 // purchase
-export 'purchase_page.dart';
+export 'purchase_invoice_page.dart';
+export 'purchase_shipment_page.dart';
 export 'purchase_order_page.dart';
 export 'purchase_return_page.dart';
-export 'purchase_item_page.dart';
+export 'purchase_invoice_detail_page.dart';
 export 'consignment_in_order_page.dart';
 export 'consignment_in_page.dart';
 

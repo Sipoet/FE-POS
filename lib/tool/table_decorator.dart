@@ -64,6 +64,7 @@ mixin TrinaTableDecorator<T extends Model>
     required TabManager tabManager,
     bool showCheckboxColumn = false,
     bool isFrozen = false,
+    required BuildContext context,
   }) {
     final columnType = _parseColumnType(
       tableColumn,
@@ -72,8 +73,12 @@ mixin TrinaTableDecorator<T extends Model>
     bool showFooter = tableColumn.isNumeric();
     final format = _formatNumber;
     final renderer = tableColumn.renderBody == null
-        ? (TrinaColumnRendererContext rendererContext) =>
-              defaultRenderBody(rendererContext, tableColumn, tabManager)
+        ? (TrinaColumnRendererContext rendererContext) => defaultRenderBody(
+            rendererContext,
+            tableColumn,
+            tabManager,
+            context,
+          )
         : (TrinaColumnRendererContext rendererContext) =>
               tableColumn.renderBody!(rendererContext.row.modelOf());
 
@@ -200,6 +205,7 @@ mixin TrinaTableDecorator<T extends Model>
     TrinaColumnRendererContext rendererContext,
     TableColumn tableColumn,
     TabManager? tabManager,
+    BuildContext context,
   ) {
     Map model = rendererContext.row.modelOf<T>().asMap();
     var value = model[tableColumn.name];
@@ -216,6 +222,7 @@ mixin TrinaTableDecorator<T extends Model>
       value: tableColumn.type.convert(value),
       column: tableColumn,
       tabManager: tabManager,
+      context: context,
     );
   }
 }
@@ -253,6 +260,7 @@ extension TableStateMananger on TrinaGridStateManager {
     int fixedLeftColumns = 0,
     bool showFilter = false,
     required TabManager tabManager,
+    required BuildContext context,
   }) {
     removeColumns(columns);
     final newColumns = tableColumns.asMap().entries.map<TrinaColumn>((entry) {
@@ -262,6 +270,7 @@ extension TableStateMananger on TrinaGridStateManager {
         tableColumn,
         tabManager: tabManager,
         showFilter: showFilter,
+        context: context,
         isFrozen: index < fixedLeftColumns,
       );
     }).toList();
@@ -275,6 +284,17 @@ extension TableStateMananger on TrinaGridStateManager {
         oldSort: TrinaColumnSort.none,
       ),
     );
+  }
+
+  SortData? get sortData {
+    if (getSortedColumn == null) {
+      return null;
+    } else {
+      return SortData(
+        key: getSortedColumn!.field,
+        isAscending: getSortedColumn!.sort.isAscending,
+      );
+    }
   }
 }
 
@@ -505,12 +525,14 @@ class TableController<T extends Model> extends ChangeNotifier {
     int fixedLeftColumns = 0,
     bool showFilter = false,
     required TabManager tabManager,
+    required BuildContext context,
   }) {
     columns = tableColumns;
     trinaController.setTableColumns(
       columns,
       fixedLeftColumns: fixedLeftColumns,
       showFilter: showFilter,
+      context: context,
       tabManager: tabManager,
     );
     // notifyListeners();

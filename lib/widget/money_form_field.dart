@@ -1,28 +1,31 @@
 import 'package:fe_pos/tool/custom_type.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
-import 'package:fe_pos/tool/thousand_separator_formatter.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:flutter/material.dart';
 
-typedef FormCallback = void Function(Money? value);
-
 class MoneyFormField extends StatefulWidget {
   final Money? initialValue;
-  final FormCallback? onChanged;
-  final FormCallback? onSaved;
-  final FormCallback? onFieldSubmitted;
+  final FormCallback<Money>? onChanged;
+  final FormCallback<Money>? onSaved;
+  final ChangeNotifier? notifier;
+  final FormCallback<Money>? onFieldSubmitted;
   final String? Function(Money? value)? validator;
   final Widget? label;
+  final ValueCallBack<Money>? valueCallback;
   final TextEditingController? controller;
   final bool readOnly;
   final bool? enabled;
   final FocusNode? focusNode;
+  final bool? isDense;
   const MoneyFormField({
     super.key,
     this.initialValue,
     this.onChanged,
     this.label,
     this.validator,
+    this.notifier,
+    this.isDense,
+    this.valueCallback,
     this.focusNode,
     this.onFieldSubmitted,
     this.onSaved,
@@ -36,7 +39,7 @@ class MoneyFormField extends StatefulWidget {
 }
 
 class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
-  TextEditingController? _controller;
+  final _controller = TextEditingController();
   Money? _valueFromInput(String input) {
     input = input.replaceAll(',', '');
     return Money.tryParse(input);
@@ -44,22 +47,36 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
 
   @override
   void initState() {
-    if (widget.controller != null) {
-      _controller = TextEditingController(
-        text: numberFormat(_valueFromInput(widget.controller!.text)?.value),
-      );
-    }
-    widget.controller?.addListener(() {
-      _controller!.text = numberFormat(
-        _valueFromInput(widget.controller!.text)?.value,
-      );
-    });
+    _controller.text =
+        widget.initialValue?.value.format() ?? widget.controller?.text ?? '';
+
+    widget.controller?.addListener(controllerListener);
+    widget.notifier?.addListener(notifierListener);
     super.initState();
+  }
+
+  void controllerListener() {
+    if (mounted) {
+      _controller.text = widget.controller!.text;
+    } else {
+      widget.controller!.removeListener(controllerListener);
+    }
+  }
+
+  void notifierListener() {
+    if (mounted) {
+      setState(() {
+        Money? value = widget.valueCallback?.call();
+        _controller.text = value == null ? '' : numberFormat(value.value);
+      });
+    } else {
+      widget.notifier!.removeListener(notifierListener);
+    }
   }
 
   @override
   void dispose() {
-    _controller?.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -70,12 +87,9 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
 
   @override
   Widget build(BuildContext context) {
-    final value = widget.initialValue == null
-        ? null
-        : numberFormat(widget.initialValue?.value);
     return TextFormField(
       enableSuggestions: false,
-      controller: widget.controller == null ? null : _controller,
+      controller: _controller,
       readOnly: widget.readOnly,
       focusNode: widget.focusNode,
       enabled: widget.enabled,
@@ -104,9 +118,16 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
               return widget.validator!(money);
             }
           : null,
-      inputFormatters: [ThousandSeparatorFormatter()],
+      inputFormatters: [
+        CustomNumberInputFormatter(
+          formatType: .amount,
+          separator: ',',
+          decimalSeparator: '.',
+        ),
+      ],
       decoration: InputDecoration(
         label: widget.label,
+        isDense: widget.isDense,
         contentPadding: const EdgeInsets.all(5),
         prefix: const Text(
           'Rp ',
@@ -114,7 +135,6 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
         ),
         border: const OutlineInputBorder(),
       ),
-      initialValue: value,
     );
   }
 }

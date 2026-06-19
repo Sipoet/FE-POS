@@ -186,11 +186,11 @@ class Discount extends Model {
     blacklistItemCode = attributes['blacklist_item_code'];
     blacklistBrandName = attributes['blacklist_brand_name'];
     discount1 = calculationType == DiscountCalculationType.percentage
-        ? Percentage(attributes['discount1'] ?? 0)
-        : Money(attributes['discount1'] * 100);
-    discount2 = Percentage(attributes['discount2'] ?? 0);
-    discount3 = Percentage(attributes['discount3'] ?? 0);
-    discount4 = Percentage(attributes['discount4'] ?? 0);
+        ? Percentage.parse(attributes['discount1'])
+        : Money.parse(attributes['discount1']);
+    discount2 = Percentage.tryParse(attributes['discount2'] ?? '');
+    discount3 = Percentage.tryParse(attributes['discount3'] ?? '');
+    discount4 = Percentage.tryParse(attributes['discount4'] ?? '');
     week1 = attributes['week1'];
     week2 = attributes['week2'];
     week3 = attributes['week3'];
@@ -243,17 +243,17 @@ class Discount extends Model {
     }
   }
 
-  List<Brand> get brands => discountFilters
+  List<IposBrand> get brands => discountFilters
       .where(
         (element) => element.isExclude == false && element.filterKey == 'brand',
       )
-      .map<Brand>((e) => Brand(id: e.value, name: e.value))
+      .map<IposBrand>((e) => IposBrand(id: e.value, name: e.value))
       .toList();
-  List<Brand> get blacklistBrands => discountFilters
+  List<IposBrand> get blacklistBrands => discountFilters
       .where(
         (element) => element.isExclude == true && element.filterKey == 'brand',
       )
-      .map<Brand>((e) => Brand(id: e.value, name: e.value))
+      .map<IposBrand>((e) => IposBrand(id: e.value, name: e.value))
       .toList();
 
   List<Item> get items => discountFilters
@@ -269,19 +269,19 @@ class Discount extends Model {
       .map<Item>((e) => Item(id: e.value, code: e.value))
       .toList();
 
-  List<Supplier> get suppliers => discountFilters
+  List<IposSupplier> get suppliers => discountFilters
       .where(
         (element) =>
             element.isExclude == false && element.filterKey == 'supplier',
       )
-      .map<Supplier>((e) => Supplier(id: e.value, code: e.value))
+      .map<IposSupplier>((e) => IposSupplier(id: e.value, code: e.value))
       .toList();
-  List<Supplier> get blacklistSuppliers => discountFilters
+  List<IposSupplier> get blacklistSuppliers => discountFilters
       .where(
         (element) =>
             element.isExclude == true && element.filterKey == 'supplier',
       )
-      .map<Supplier>((e) => Supplier(id: e.value, code: e.value))
+      .map<IposSupplier>((e) => IposSupplier(id: e.value, code: e.value))
       .toList();
 
   List<ItemType> get itemTypes => discountFilters
@@ -299,24 +299,28 @@ class Discount extends Model {
       .map<ItemType>((e) => ItemType(id: e.value, name: e.value))
       .toList();
 
-  set brands(List<Brand> newBrands) {
+  set brands(List<IposBrand> newBrands) {
     discountFilters.removeWhere(
       (element) => !element.isExclude && element.filterKey == 'brand',
     );
-    for (final newBrand in newBrands) {
+    for (final newIposBrand in newBrands) {
       discountFilters.add(
-        DiscountFilter(filterKey: 'brand', value: newBrand.id),
+        DiscountFilter(filterKey: 'brand', value: newIposBrand.id),
       );
     }
   }
 
-  set blacklistBrands(List<Brand> newBrands) {
+  set blacklistBrands(List<IposBrand> newBrands) {
     discountFilters.removeWhere(
       (element) => element.isExclude && element.filterKey == 'brand',
     );
-    for (final newBrand in newBrands) {
+    for (final newIposBrand in newBrands) {
       discountFilters.add(
-        DiscountFilter(filterKey: 'brand', isExclude: true, value: newBrand.id),
+        DiscountFilter(
+          filterKey: 'brand',
+          isExclude: true,
+          value: newIposBrand.id,
+        ),
       );
     }
   }
@@ -351,7 +355,7 @@ class Discount extends Model {
     }
   }
 
-  set suppliers(List<Supplier> newSuppliers) {
+  set suppliers(List<IposSupplier> newSuppliers) {
     discountFilters.removeWhere(
       (element) => !element.isExclude && element.filterKey == 'supplier',
     );
@@ -366,7 +370,7 @@ class Discount extends Model {
     }
   }
 
-  set blacklistSuppliers(List<Supplier> newSuppliers) {
+  set blacklistSuppliers(List<IposSupplier> newSuppliers) {
     discountFilters.removeWhere(
       (element) => element.isExclude && element.filterKey == 'supplier',
     );
