@@ -45,7 +45,8 @@ class SalesGroupReport extends Model {
   });
 
   String get supplier => "$supplierCode - $supplierName";
-
+  @override
+  String get path => 'sales_group_by_suppliers';
   @override
   String get modelName => 'sales_group_by_supplier';
 

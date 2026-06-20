@@ -72,6 +72,9 @@ class Supplier extends Model with SaveNDestroyModel {
     }
   }
 
+  @override
+  String get path => 'suppliers';
+
   List<Tag> get tags =>
       taggings.where((e) => e.tag != null).map<Tag>((e) => e.tag!).toList();
 

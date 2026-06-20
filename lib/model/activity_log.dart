@@ -7,22 +7,25 @@ class ActivityLog extends Model {
   String description;
   int itemId;
   String itemType;
-  ActivityLog(
-      {super.id,
-      super.createdAt,
-      required this.itemId,
-      required this.itemType,
-      required this.actor,
-      required this.event,
-      required this.description});
+  ActivityLog({
+    super.id,
+    super.createdAt,
+    required this.itemId,
+    required this.itemType,
+    required this.actor,
+    required this.event,
+    required this.description,
+  });
 
   @override
   Map<String, dynamic> toMap() => {
-        'whodunit': actor,
-        'created_at': createdAt,
-        'event': event,
-        'description': description
-      };
+    'whodunit': actor,
+    'created_at': createdAt,
+    'event': event,
+    'description': description,
+  };
+  @override
+  String get path => 'activity_logs';
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -44,5 +47,10 @@ class ActivityLog extends Model {
 class ActivityLogClass extends ModelClass<ActivityLog> {
   @override
   ActivityLog initModel() => ActivityLog(
-      itemId: 0, itemType: '', actor: '', event: '', description: '');
+    itemId: 0,
+    itemType: '',
+    actor: '',
+    event: '',
+    description: '',
+  );
 }

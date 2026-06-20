@@ -27,16 +27,17 @@ class PayslipLine extends Model {
     this.variable4,
     this.variable5,
   });
-
+  @override
+  String get path => 'payslip_lines';
   @override
   Map<String, dynamic> toMap() => {
-        'group': group,
-        'payroll_type': payrollType,
-        'payroll_type_id': payrollType?.id,
-        'amount': amount,
-        'formula': formula,
-        'description': description,
-      };
+    'group': group,
+    'payroll_type': payrollType,
+    'payroll_type_id': payrollType?.id,
+    'amount': amount,
+    'formula': formula,
+    'description': description,
+  };
 
   @override
   String get modelName => 'payslip_line';

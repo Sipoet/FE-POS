@@ -54,6 +54,9 @@ class Product extends Model with SaveNDestroyModel {
   }) : taggings = taggings ?? [];
 
   @override
+  String get path => 'products';
+
+  @override
   Map<String, dynamic> toMap() => {
     'description': description,
     'product_category_id': productCategory?.id,

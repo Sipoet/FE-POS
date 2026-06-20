@@ -93,6 +93,8 @@ class PurchaseShipment extends Model with SaveNDestroyModel {
         .map((e) => e.asJson())
         .toList(),
   };
+  @override
+  String get path => 'purchase_shipments';
 
   @override
   void setFromJson(

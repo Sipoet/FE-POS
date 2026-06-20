@@ -163,7 +163,8 @@ class PayrollLine extends Model {
     this.variable1,
   }) : formula = formula ?? PayrollFormula.basic,
        group = group ?? PayrollGroup.earning;
-
+  @override
+  String get path => 'payroll_lines';
   @override
   Map<String, dynamic> toMap() => {
     'row': row,

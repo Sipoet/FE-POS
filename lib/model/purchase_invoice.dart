@@ -94,7 +94,8 @@ class PurchaseInvoice extends Model with SaveNDestroyModel {
   }) : purchaseInvoiceDetails =
            purchaseInvoiceDetails ?? <PurchaseInvoiceDetail>[],
        costDetails = costDetails ?? [];
-
+  @override
+  String get path => 'purchase_invoices';
   @override
   Map<String, dynamic> toMap() => {
     'code': code,

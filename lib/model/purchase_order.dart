@@ -85,6 +85,9 @@ class PurchaseOrder extends Model with SaveNDestroyModel {
   String? get supplierName => supplier?.name;
 
   @override
+  String get path => 'purchase_orders';
+
+  @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];

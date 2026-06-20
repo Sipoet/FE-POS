@@ -120,7 +120,8 @@ class Payslip extends Model {
     'late': late,
     'total_day': totalWorkDays,
   };
-
+  @override
+  String get path => 'payslips';
   @override
   String get modelName => 'payslip';
 

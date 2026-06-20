@@ -14,10 +14,10 @@ class Bank extends Model {
   }
 
   @override
-  Map<String, dynamic> toMap() => {
-        'kodebank': code,
-        'namabank': name,
-      };
+  String get path => 'ipos/banks';
+
+  @override
+  Map<String, dynamic> toMap() => {'kodebank': code, 'namabank': name};
 
   @override
   String get modelValue => '$code - $name';

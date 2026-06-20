@@ -11,34 +11,35 @@ class RoleWorkSchedule extends Model {
   Date endActiveAt;
   String groupName;
   bool isFlexible;
-  RoleWorkSchedule(
-      {TimeOfDay? beginWork,
-      TimeOfDay? endWork,
-      Date? beginActiveAt,
-      Date? endActiveAt,
-      this.groupName = '',
-      this.dayOfWeek = 1,
-      this.shift = 1,
-      this.level = 1,
-      this.isFlexible = false,
-      super.id})
-      : beginActiveAt = beginActiveAt ?? Date.today(),
-        endActiveAt = endActiveAt ?? Date.today(),
-        beginWork = beginWork ?? TimeDay.now(),
-        endWork = endWork ?? TimeDay.now();
-
+  RoleWorkSchedule({
+    TimeOfDay? beginWork,
+    TimeOfDay? endWork,
+    Date? beginActiveAt,
+    Date? endActiveAt,
+    this.groupName = '',
+    this.dayOfWeek = 1,
+    this.shift = 1,
+    this.level = 1,
+    this.isFlexible = false,
+    super.id,
+  }) : beginActiveAt = beginActiveAt ?? Date.today(),
+       endActiveAt = endActiveAt ?? Date.today(),
+       beginWork = beginWork ?? TimeDay.now(),
+       endWork = endWork ?? TimeDay.now();
+  @override
+  String get path => 'role_work_schedules';
   @override
   Map<String, dynamic> toMap() => {
-        'begin_work': beginWork.format24Hour(),
-        'end_work': endWork.format24Hour(),
-        'shift': shift,
-        'day_of_week': dayOfWeek,
-        'group_name': groupName,
-        'begin_active_at': beginActiveAt,
-        'end_active_at': endActiveAt,
-        'level': level,
-        'is_flexible': isFlexible,
-      };
+    'begin_work': beginWork.format24Hour(),
+    'end_work': endWork.format24Hour(),
+    'shift': shift,
+    'day_of_week': dayOfWeek,
+    'group_name': groupName,
+    'begin_active_at': beginActiveAt,
+    'end_active_at': endActiveAt,
+    'level': level,
+    'is_flexible': isFlexible,
+  };
 
   @override
   String get modelName => 'role_work_schedule';

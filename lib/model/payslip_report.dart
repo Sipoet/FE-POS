@@ -26,28 +26,29 @@ class PayslipReport extends Model {
   int late;
   String? description;
   int? payslipId;
-  PayslipReport(
-      {required this.startDate,
-      required this.endDate,
-      required this.employeeId,
-      required this.employeeName,
-      this.employeeStartWorkingDate,
-      this.payslipStatus = PayslipStatus.draft,
-      this.employeeStatus = EmployeeStatus.inactive,
-      this.payslipId,
-      this.employee,
-      this.payslip,
-      this.totalDay = 0,
-      this.sickLeave = 0,
-      this.knownAbsence = 0,
-      this.unknownAbsence = 0,
-      this.overtimeHour = 0,
-      this.late = 0,
-      this.nettSalary = const Money(0),
-      this.workDays = 0,
-      this.amountBasedPayrollType = const {},
-      this.description,
-      super.id});
+  PayslipReport({
+    required this.startDate,
+    required this.endDate,
+    required this.employeeId,
+    required this.employeeName,
+    this.employeeStartWorkingDate,
+    this.payslipStatus = PayslipStatus.draft,
+    this.employeeStatus = EmployeeStatus.inactive,
+    this.payslipId,
+    this.employee,
+    this.payslip,
+    this.totalDay = 0,
+    this.sickLeave = 0,
+    this.knownAbsence = 0,
+    this.unknownAbsence = 0,
+    this.overtimeHour = 0,
+    this.late = 0,
+    this.nettSalary = const Money(0),
+    this.workDays = 0,
+    this.amountBasedPayrollType = const {},
+    this.description,
+    super.id,
+  });
 
   @override
   Map<String, dynamic> toMap() {
@@ -81,6 +82,8 @@ class PayslipReport extends Model {
   }
 
   @override
+  String get path => 'payslip_reports';
+  @override
   String get modelName => 'payslip_report';
 
   @override
@@ -108,8 +111,9 @@ class PayslipReport extends Model {
 
     totalDay = attributes['total_day'];
     description = attributes['description'];
-    employeeStartWorkingDate =
-        Date.parse(attributes['employee_start_working_date']);
+    employeeStartWorkingDate = Date.parse(
+      attributes['employee_start_working_date'],
+    );
     amountBasedPayrollType = {};
     nettSalary =
         Money.tryParse(attributes['nett_salary'] ?? '') ?? const Money(0);
@@ -127,8 +131,9 @@ class PayslipReport extends Model {
 class PayslipReportClass extends ModelClass<PayslipReport> {
   @override
   PayslipReport initModel() => PayslipReport(
-      employeeId: 0,
-      employeeName: '',
-      startDate: Date.today(),
-      endDate: Date.today());
+    employeeId: 0,
+    employeeName: '',
+    startDate: Date.today(),
+    endDate: Date.today(),
+  );
 }

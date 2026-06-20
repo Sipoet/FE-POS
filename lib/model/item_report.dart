@@ -73,6 +73,8 @@ class ItemReport extends Model {
        brand = brand ?? IposBrand(id: brandName);
 
   @override
+  String get path => 'item_reports';
+  @override
   String get modelName => 'item_report';
 
   @override

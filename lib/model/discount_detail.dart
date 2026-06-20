@@ -46,7 +46,8 @@ class DiscountDetail extends Model {
   DiscountDetail({this.type = .percentage, this.value = 0});
   @override
   Map<String, dynamic> toMap() => {'type': type, 'discount': value};
-
+  @override
+  String get path => 'discount_details';
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);

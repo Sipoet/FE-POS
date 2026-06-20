@@ -56,7 +56,8 @@ class StockKeepingUnit extends Model with SaveNDestroyModel {
         .map((e) => e.asJson())
         .toList(),
   };
-
+  @override
+  String get path => 'stock_keeping_units';
   @override
   String get modelName => 'stock_keeping_unit';
 

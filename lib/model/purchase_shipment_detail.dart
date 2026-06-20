@@ -21,6 +21,9 @@ class PurchaseShipmentDetail extends Model with SaveNDestroyModel {
   });
 
   @override
+  String get path => 'purchase_shipment_details';
+
+  @override
   Map<String, dynamic> toMap() => {
     'cost_detail': costDetail,
     'cost_detail_id': costDetail?.id,

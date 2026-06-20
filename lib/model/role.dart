@@ -11,25 +11,26 @@ class Role extends Model {
   List<ColumnAuthorize> columnAuthorizes;
   List<AccessAuthorize> accessAuthorizes;
   List<RoleWorkSchedule> roleWorkSchedules;
-  Role(
-      {this.name = '',
-      super.id,
-      super.createdAt,
-      super.updatedAt,
-      List<RoleWorkSchedule>? roleWorkSchedules,
-      List<ColumnAuthorize>? columnAuthorizes,
-      List<AccessAuthorize>? accessAuthorizes})
-      : roleWorkSchedules = roleWorkSchedules ?? <RoleWorkSchedule>[],
-        columnAuthorizes = columnAuthorizes ?? <ColumnAuthorize>[],
-        accessAuthorizes = accessAuthorizes ?? <AccessAuthorize>[];
+  Role({
+    this.name = '',
+    super.id,
+    super.createdAt,
+    super.updatedAt,
+    List<RoleWorkSchedule>? roleWorkSchedules,
+    List<ColumnAuthorize>? columnAuthorizes,
+    List<AccessAuthorize>? accessAuthorizes,
+  }) : roleWorkSchedules = roleWorkSchedules ?? <RoleWorkSchedule>[],
+       columnAuthorizes = columnAuthorizes ?? <ColumnAuthorize>[],
+       accessAuthorizes = accessAuthorizes ?? <AccessAuthorize>[];
 
   @override
   Map<String, dynamic> toMap() => {
-        'name': name,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-      };
-
+    'name': name,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
+  @override
+  String get path => 'roles';
   @override
   String get modelName => 'role';
 

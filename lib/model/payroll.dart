@@ -22,7 +22,8 @@ class Payroll extends Model {
     'paid_time_off': paidTimeOff,
     'description': description,
   };
-
+  @override
+  String get path => 'payrolls';
   @override
   String get modelName => 'payroll';
 

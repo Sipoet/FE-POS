@@ -27,7 +27,8 @@ class EmployeeAttendance extends Model {
        endTime = endTime ?? DateTime.now(),
        employee = employee ?? EmployeeClass().initModel(),
        date = date ?? Date.today();
-
+  @override
+  String get path => 'employee_attendances';
   @override
   Map<String, dynamic> toMap() => {
     'start_time': startTime,

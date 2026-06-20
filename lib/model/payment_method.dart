@@ -84,6 +84,9 @@ class PaymentMethod extends Model {
     super.createdAt,
     super.updatedAt,
   }) : bank = bank ?? Bank();
+
+  @override
+  String get path => 'payment_methods';
   @override
   String get modelName => 'payment_method';
   @override

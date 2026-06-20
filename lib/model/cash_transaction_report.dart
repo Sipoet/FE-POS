@@ -83,6 +83,9 @@ class CashTransactionReport extends Model {
   };
 
   @override
+  String get path => 'cash_transaction_reports';
+
+  @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'];
 

@@ -55,6 +55,9 @@ class Forwarder extends Model with SaveNDestroyModel {
         .toList(),
   };
 
+  @override
+  String get path => 'forwarders';
+
   void setTags(List<Tag> newTags) {
     int index = 0;
     while (newTags.length > index || taggings.length > index) {

@@ -10,6 +10,8 @@ class AccessAuthorize extends Model {
   Map<String, dynamic> toMap() => {'controller': controller, 'action': actions};
 
   @override
+  String get path => 'access_authorizes';
+  @override
   String get modelName => 'access_authorize';
 
   @override

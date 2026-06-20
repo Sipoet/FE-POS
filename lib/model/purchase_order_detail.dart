@@ -39,7 +39,8 @@ class PurchaseOrderDetail extends Model {
     'uom': uom,
     'uom_id': uom?.id,
   };
-
+  @override
+  String get path => 'purchase_order_details';
   String? get productCode => product?.supplierProductCode;
   String get tagDescription => tags.map<String>((e) => e.value).join(' ');
   Percentage? get margin => product == null

@@ -31,7 +31,8 @@ class ItemSalesPeriodReport extends Model {
     this.salesTotal = const Money(0),
     this.isConsignment = false,
   });
-
+  @override
+  String get path => 'item_sales_period_reports';
   @override
   String get modelName => 'item_sales_period_report';
 
@@ -58,20 +59,20 @@ class ItemSalesPeriodReport extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'item_code': itemCode,
-        'item_name': itemName,
-        'item_type_name': itemTypeName,
-        'supplier_code': supplierCode,
-        'brand_name': brandName,
-        'discount_percentage': discountPercentage,
-        'buy_price': buyPrice,
-        'sell_price': sellPrice,
-        'quantity': quantity,
-        'subtotal': subtotal,
-        'discount_total': discountTotal,
-        'sales_total': salesTotal,
-        'is_consignment': isConsignment,
-      };
+    'item_code': itemCode,
+    'item_name': itemName,
+    'item_type_name': itemTypeName,
+    'supplier_code': supplierCode,
+    'brand_name': brandName,
+    'discount_percentage': discountPercentage,
+    'buy_price': buyPrice,
+    'sell_price': sellPrice,
+    'quantity': quantity,
+    'subtotal': subtotal,
+    'discount_total': discountTotal,
+    'sales_total': salesTotal,
+    'is_consignment': isConsignment,
+  };
   @override
   String get modelValue => itemCode;
 }

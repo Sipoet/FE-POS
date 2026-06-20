@@ -80,7 +80,8 @@ class BackgroundJob extends Model {
     'status': status,
     'description': description,
   };
-
+  @override
+  String get path => 'background_jobs';
   @override
   String get modelName => 'background_job';
 

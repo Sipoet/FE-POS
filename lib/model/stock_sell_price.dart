@@ -25,6 +25,9 @@ class StockSellPrice extends Model {
     'sku_id': sku?.id,
   };
 
+  @override
+  String get path => 'stock_sell_prices';
+
   String get priceWithUomText =>
       "${sellPrice?.format()}${maxQuantity == null ? '' : ' max $maxQuantity'} per ${uom?.name}";
   @override

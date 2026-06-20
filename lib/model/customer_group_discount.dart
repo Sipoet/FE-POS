@@ -88,7 +88,8 @@ class CustomerGroupDiscount extends Model {
   }) : startActiveDate = startActiveDate ?? Date.today(),
        endActiveDate = endActiveDate ?? Date.today(),
        customerGroup = customerGroup ?? CustomerGroup();
-
+  @override
+  String get path => 'customer_group_discounts';
   @override
   Map<String, dynamic> toMap() => {
     'discount_percentage': discountPercentage,

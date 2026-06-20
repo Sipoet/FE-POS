@@ -26,17 +26,20 @@ class Customer extends Model {
   });
 
   @override
+  String get path => 'ipos/customers';
+
+  @override
   Map<String, dynamic> toMap() => {
-        'kode': code,
-        'nama': name,
-        'bank': bank,
-        'norek': account,
-        'atasnama': accountRegisterName,
-        'alamat': address,
-        'kontak': contact,
-        'kota': city,
-        'keterangan': description,
-      };
+    'kode': code,
+    'nama': name,
+    'bank': bank,
+    'norek': account,
+    'atasnama': accountRegisterName,
+    'alamat': address,
+    'kontak': contact,
+    'kota': city,
+    'keterangan': description,
+  };
 
   @override
   String get modelName => 'customer';

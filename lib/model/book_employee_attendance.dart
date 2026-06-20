@@ -24,27 +24,29 @@ class BookEmployeeAttendance extends Model {
     Date? endDate,
     this.description,
     Employee? employee,
-  })  : startDate = startDate ?? Date.today(),
-        employee = employee ?? Employee(),
-        endDate = endDate ?? Date.today();
+  }) : startDate = startDate ?? Date.today(),
+       employee = employee ?? Employee(),
+       endDate = endDate ?? Date.today();
 
+  @override
+  String get path => 'book_employee_attendances';
   @override
   String get modelName => 'book_employee_attendance';
 
   @override
   Map<String, dynamic> toMap() => {
-        'employee': employee,
-        'employee_id': employee?.id,
-        'employee_name': employee?.name,
-        'is_late': isLate,
-        'is_flexible': isFlexible,
-        'allow_overtime': allowOvertime,
-        'description': description,
-        'start_date': startDate,
-        'end_date': endDate,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-      };
+    'employee': employee,
+    'employee_id': employee?.id,
+    'employee_name': employee?.name,
+    'is_late': isLate,
+    'is_flexible': isFlexible,
+    'allow_overtime': allowOvertime,
+    'description': description,
+    'start_date': startDate,
+    'end_date': endDate,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -52,7 +54,8 @@ class BookEmployeeAttendance extends Model {
 
     super.setFromJson(json, included: included);
 
-    employee = EmployeeClass().findRelationData(
+    employee =
+        EmployeeClass().findRelationData(
           included: included,
           relation: json['relationships']?['employee'],
         ) ??

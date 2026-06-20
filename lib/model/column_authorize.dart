@@ -19,6 +19,9 @@ class ColumnAuthorize extends Model {
   }
 
   @override
+  String get path => 'column_authorizes';
+
+  @override
   String get modelValue => '$table ${columns.join(',')}';
 
   @override

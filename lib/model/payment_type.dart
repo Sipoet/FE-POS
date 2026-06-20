@@ -5,6 +5,8 @@ class PaymentType extends Model {
   PaymentType({super.id, this.name = ''});
 
   @override
+  String get path => 'payment_types';
+  @override
   String get modelName => 'payment_type';
 
   @override
@@ -16,10 +18,10 @@ class PaymentType extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'name': name,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-      };
+    'name': name,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
 
   @override
   String get modelValue => name;

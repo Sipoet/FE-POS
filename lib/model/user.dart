@@ -75,6 +75,9 @@ class User extends Model {
   }
 
   @override
+  String get path => 'users';
+
+  @override
   String get modelName => 'user';
 
   @override

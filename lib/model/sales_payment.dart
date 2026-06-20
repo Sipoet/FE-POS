@@ -15,11 +15,14 @@ class SalesPayment extends Model {
     super.id,
     super.createdAt,
     super.updatedAt,
-  })  : paymentProvider = paymentProvider ?? PaymentProvider(),
-        paymentType = paymentType ?? PaymentType();
+  }) : paymentProvider = paymentProvider ?? PaymentProvider(),
+       paymentType = paymentType ?? PaymentType();
 
   @override
   Map<String, dynamic> toMap() => {};
+
+  @override
+  String get path => 'sales_payments';
 
   bool get isCash => paymentType.name.toLowerCase().trim() == 'cash';
 
@@ -33,11 +36,14 @@ class SalesPayment extends Model {
 
     amount = Money.parse(attributes['amount']);
     if (included.isNotEmpty) {
-      paymentType = PaymentTypeClass().findRelationData(
-              included: included,
-              relation: json['relationships']['payment_type']) ??
+      paymentType =
+          PaymentTypeClass().findRelationData(
+            included: included,
+            relation: json['relationships']['payment_type'],
+          ) ??
           paymentType;
-      paymentProvider = PaymentProviderClass().findRelationData(
+      paymentProvider =
+          PaymentProviderClass().findRelationData(
             included: included,
             relation: json['relationships']['payment_provider'],
           ) ??

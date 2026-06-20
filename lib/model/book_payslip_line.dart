@@ -24,26 +24,27 @@ class BookPayslipLine extends Model {
     this.description,
     Employee? employee,
     this.amount = const Money(0),
-  })  : payrollType = payrollType ?? PayrollType(),
-        employee = employee ?? Employee(),
-        transactionDate = transactionDate ?? Date.today();
-
+  }) : payrollType = payrollType ?? PayrollType(),
+       employee = employee ?? Employee(),
+       transactionDate = transactionDate ?? Date.today();
+  @override
+  String get path => 'book_payslip_lines';
   @override
   Map<String, dynamic> toMap() => {
-        'group': group,
-        'payroll_type_name': payrollType.name,
-        'payroll_type_id': payrollType.id,
-        'payroll_type': payrollType,
-        'employee': employee,
-        'employee_id': employee.id,
-        'employee_name': employee.name,
-        'amount': amount,
-        'status': status,
-        'description': description,
-        'transaction_date': transactionDate,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-      };
+    'group': group,
+    'payroll_type_name': payrollType.name,
+    'payroll_type_id': payrollType.id,
+    'payroll_type': payrollType,
+    'employee': employee,
+    'employee_id': employee.id,
+    'employee_name': employee.name,
+    'amount': amount,
+    'status': status,
+    'description': description,
+    'transaction_date': transactionDate,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
   @override
   String get modelName => 'book_payslip_line';
   @override
@@ -51,12 +52,14 @@ class BookPayslipLine extends Model {
     var attributes = json['attributes'];
     super.setFromJson(json, included: included);
     group = PayrollGroup.fromString(attributes['group']);
-    payrollType = PayrollTypeClass().findRelationData(
+    payrollType =
+        PayrollTypeClass().findRelationData(
           included: included,
           relation: json['relationships']['payroll_type'],
         ) ??
         payrollType;
-    employee = EmployeeClass().findRelationData(
+    employee =
+        EmployeeClass().findRelationData(
           included: included,
           relation: json['relationships']['employee'],
         ) ??

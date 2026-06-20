@@ -16,6 +16,8 @@ class DiscountRule extends Model {
 
   @override
   String get modelName => 'discount_rule';
+  @override
+  String get path => 'discount_rules';
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {

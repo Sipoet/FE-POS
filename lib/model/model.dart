@@ -35,8 +35,8 @@ abstract class Model with ChangeNotifier {
 
   List<String> get errors => _errors;
 
-  String get path => modelName.toPluralize();
-  String get modelName => runtimeType.toString().toSnakeCase();
+  String get path;
+  String get modelName => path.toSingularize();
 
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     final attributes = json['attributes'] ?? {};

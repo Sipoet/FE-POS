@@ -13,7 +13,8 @@ class UnitOfMeasurement extends Model {
   };
   @override
   String get modelValue => name ?? '';
-
+  @override
+  String get path => 'unit_of_measurements';
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'] ?? {};

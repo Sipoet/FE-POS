@@ -24,6 +24,9 @@ class EmployeeAttendanceReport extends Model {
   });
 
   @override
+  String get path => 'employee_attendance_reports';
+
+  @override
   Map<String, dynamic> toMap() {
     Map<String, dynamic> result = {
       'employee_name': employeeName,

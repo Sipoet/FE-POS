@@ -36,7 +36,8 @@ class PurchaseInvoiceDetail extends Model {
     this.uom,
     this.price = const Money(0),
   }) : taggings = taggings ?? [];
-
+  @override
+  String get path => 'purchase_invoice_details';
   @override
   Map<String, dynamic> toMap() => {
     'barcode': barcode,

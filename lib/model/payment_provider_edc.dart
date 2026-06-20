@@ -3,21 +3,23 @@ import 'package:fe_pos/model/model.dart';
 class PaymentProviderEdc extends Model {
   String terminalId;
   String merchantId;
-  PaymentProviderEdc(
-      {this.terminalId = '',
-      this.merchantId = '',
-      super.id,
-      super.createdAt,
-      super.updatedAt});
+  PaymentProviderEdc({
+    this.terminalId = '',
+    this.merchantId = '',
+    super.id,
+    super.createdAt,
+    super.updatedAt,
+  });
 
   @override
   Map<String, dynamic> toMap() => {
-        'terminal_id': terminalId,
-        'merchant_id': merchantId,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-      };
-
+    'terminal_id': terminalId,
+    'merchant_id': merchantId,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
+  @override
+  String get path => 'payment_provider_edcs';
   @override
   String get modelName => 'payment_provider_edc';
   @override

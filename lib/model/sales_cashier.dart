@@ -40,49 +40,50 @@ class SalesCashier extends Model {
   Money taxAmount;
   Money otherCost;
   Money roundAmount;
-  SalesCashier(
-      {this.code = '',
-      this.description = '',
-      DateTime? transactionDate,
-      this.location = '',
-      this.headerDiscountAmount = const Money(0),
-      this.otherCost = const Money(0),
-      this.taxAmount = const Money(0),
-      this.roundAmount = const Money(0),
-      this.taxPercentage,
-      this.headerDiscountPercentage,
-      this.customer,
-      this.totalItem = 0,
-      this.taxType = SalesTaxType.non,
-      this.salesCashierItems = const <SalesCashierItem>[],
-      this.salesPayments = const <SalesPayment>[],
-      super.id,
-      super.createdAt,
-      super.updatedAt})
-      : transactionDate = transactionDate ?? DateTime.now();
+  SalesCashier({
+    this.code = '',
+    this.description = '',
+    DateTime? transactionDate,
+    this.location = '',
+    this.headerDiscountAmount = const Money(0),
+    this.otherCost = const Money(0),
+    this.taxAmount = const Money(0),
+    this.roundAmount = const Money(0),
+    this.taxPercentage,
+    this.headerDiscountPercentage,
+    this.customer,
+    this.totalItem = 0,
+    this.taxType = SalesTaxType.non,
+    this.salesCashierItems = const <SalesCashierItem>[],
+    this.salesPayments = const <SalesPayment>[],
+    super.id,
+    super.createdAt,
+    super.updatedAt,
+  }) : transactionDate = transactionDate ?? DateTime.now();
 
   @override
   Map<String, dynamic> toMap() => {
-        'code': code,
-        'transaction_date': transactionDate,
-        'description': description,
-        'location': location,
-        // 'totalitem': totalItem,
-        // 'subtotal': subtotal,
-        // 'totalakhir': grandtotal,
-        // 'potnomfaktur': discountAmount,
-        // 'biayalain': otherCost,
-        // 'jmltunai': cashAmount,
-        // 'jmldebit': debitCardAmount,
-        // 'jmlkk': creditCardAmount,
-        // 'jmlemoney': emoneyAmount,
-        // 'payment_type': paymentMethodType,
-        // 'ppn': taxType,
-        // 'pajak': taxAmount,
-        // 'bank_code': bankCode,
-        // 'notransaksi': code,
-      };
-
+    'code': code,
+    'transaction_date': transactionDate,
+    'description': description,
+    'location': location,
+    // 'totalitem': totalItem,
+    // 'subtotal': subtotal,
+    // 'totalakhir': grandtotal,
+    // 'potnomfaktur': discountAmount,
+    // 'biayalain': otherCost,
+    // 'jmltunai': cashAmount,
+    // 'jmldebit': debitCardAmount,
+    // 'jmlkk': creditCardAmount,
+    // 'jmlemoney': emoneyAmount,
+    // 'payment_type': paymentMethodType,
+    // 'ppn': taxType,
+    // 'pajak': taxAmount,
+    // 'bank_code': bankCode,
+    // 'notransaksi': code,
+  };
+  @override
+  String get path => 'sales_cashiers';
   Money get subtotal => salesCashierItems
       .map<Money>((line) => line.total)
       .toList()

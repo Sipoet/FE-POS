@@ -22,6 +22,9 @@ class CostDetail extends Model {
   });
 
   @override
+  String get path => 'cost_details';
+
+  @override
   Map<String, dynamic> toMap() => {
     'amount': amount,
     'source_id': sourceId,

@@ -74,6 +74,9 @@ class WorkSchedule extends Model {
   });
 
   @override
+  String get path => 'work_schedules';
+
+  @override
   Map<String, dynamic> toMap() => {
     'begin_work': beginWork,
     'end_work': endWork,

@@ -31,7 +31,8 @@ class SalesTransactionReport extends Model {
     this.creditDetails = const [],
     super.id,
   });
-
+  @override
+  String get path => 'sales_transaction_reports';
   @override
   String get modelName => 'sales_transaction_report';
 

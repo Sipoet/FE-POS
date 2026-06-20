@@ -159,6 +159,8 @@ class Discount extends Model {
   }) : discountFilters = discountFilters ?? [];
 
   @override
+  String get path => 'discounts';
+  @override
   String get modelName => 'discount';
 
   @override

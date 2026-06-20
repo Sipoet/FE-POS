@@ -15,19 +15,20 @@ class PayrollType extends Model {
     super.createdAt,
     super.updatedAt,
   });
-
+  @override
+  String get path => 'payroll_types';
   @override
   String get modelName => 'payroll_type';
 
   @override
   Map<String, dynamic> toMap() => {
-        'name': name,
-        'initial': initial,
-        'order': order,
-        'is_show_on_payslip_desc': isShowOnPayslipDesc,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-      };
+    'name': name,
+    'initial': initial,
+    'order': order,
+    'is_show_on_payslip_desc': isShowOnPayslipDesc,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {

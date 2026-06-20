@@ -13,6 +13,9 @@ class DiscountFilter extends Model {
   });
 
   @override
+  String get path => 'discount_rules';
+
+  @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];

@@ -80,6 +80,9 @@ class EdcSettlement extends Model {
     'status': status,
   };
   @override
+  String get path => 'edc_settlements';
+
+  @override
   String get modelName => 'edc_settlement';
   dynamic get paymentProviderId => paymentProvider.id;
   dynamic get cashierSessionId => cashierSession?.id;

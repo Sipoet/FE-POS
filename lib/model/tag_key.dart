@@ -52,6 +52,9 @@ class TagKeyGroup extends Model {
     'tag_key': tagKey,
   };
 
+  @override
+  String get path => 'tag_keys';
+
   Model? get source {
     final route = ModelRoute();
     final modelCLass = route.modelClassOf(sourceType);

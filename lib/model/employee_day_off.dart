@@ -72,9 +72,10 @@ class EmployeeDayOff extends Model {
     'active_week': activeWeek,
     'day_of_week': dayOfWeek,
   };
-
   @override
-  String get modelName => 'employee_day_of';
+  String get path => 'employee_day_offs';
+  @override
+  String get modelName => 'employee_day_off';
 
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {

@@ -56,7 +56,8 @@ class IposPurchaseOrderItem extends Model {
   }) : item = item ?? Item();
 
   Money get sellPrice => item.sellPrice;
-
+  @override
+  String get path => 'ipos/purchase_order_items';
   @override
   Map<String, dynamic> toMap() => {
     'kodeitem': itemCode,

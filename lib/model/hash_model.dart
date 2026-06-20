@@ -14,6 +14,9 @@ class HashModel extends Model {
     super.setFromJson(json, included: included);
     data = json;
   }
+
+  @override
+  String get path => 'models';
 }
 
 class HashModelClass extends ModelClass<HashModel> {

@@ -6,13 +6,13 @@ class PayrollReport extends Model {
   String employeeName;
   Date startWorkingDate;
   Map<String, Money> amountBasedPayrollType;
-  PayrollReport(
-      {this.salaryTotal = const Money(0),
-      this.employeeId = 0,
-      Date? startWorkingDate,
-      this.employeeName = '',
-      this.amountBasedPayrollType = const {}})
-      : startWorkingDate = startWorkingDate ?? Date.today();
+  PayrollReport({
+    this.salaryTotal = const Money(0),
+    this.employeeId = 0,
+    Date? startWorkingDate,
+    this.employeeName = '',
+    this.amountBasedPayrollType = const {},
+  }) : startWorkingDate = startWorkingDate ?? Date.today();
   @override
   Map<String, dynamic> toMap() {
     var result = {
@@ -26,6 +26,9 @@ class PayrollReport extends Model {
     }
     return result;
   }
+
+  @override
+  String get path => 'payroll_reports';
 
   @override
   String get modelName => 'payroll_report';

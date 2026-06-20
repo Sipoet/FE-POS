@@ -223,7 +223,8 @@ class Employee extends Model {
   }) : startWorkingDate = startWorkingDate ?? Date.today(),
        role = role ?? Role(),
        employeeDayOffs = employeeDayOffs ?? <EmployeeDayOff>[];
-
+  @override
+  String get path => 'employees';
   @override
   String get modelName => 'employee';
 

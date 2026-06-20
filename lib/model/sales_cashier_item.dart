@@ -14,47 +14,48 @@ class SalesCashierItem extends Model {
   DiscountRule? discountRule;
   int? discountRulePriority;
   Date? expiredDate;
-  SalesCashierItem(
-      {this.itemBarcode = '',
-      this.uom = '',
-      this.quantity = 0,
-      this.price = const Money(0),
-      this.discountAmount = const Money(0),
-      this.discountPercentage,
-      this.expiredDate,
-      this.discountRule,
-      this.discountRulePriority,
-      this.promoCode,
-      Item? item,
-      super.id,
-      super.createdAt,
-      super.updatedAt})
-      : item = item ?? Item();
+  SalesCashierItem({
+    this.itemBarcode = '',
+    this.uom = '',
+    this.quantity = 0,
+    this.price = const Money(0),
+    this.discountAmount = const Money(0),
+    this.discountPercentage,
+    this.expiredDate,
+    this.discountRule,
+    this.discountRulePriority,
+    this.promoCode,
+    Item? item,
+    super.id,
+    super.createdAt,
+    super.updatedAt,
+  }) : item = item ?? Item();
 
   int? get discountRuleId => discountRule?.id;
-
+  @override
+  String get path => 'sales_cashier_items';
   String get itemName => item.name;
   @override
   Map<String, dynamic> toMap() => {
-        'item_barcode': itemBarcode,
-        'item_name': itemName,
-        'description': itemName,
-        'uom': uom,
-        // 'totalitem': totalItem,
-        // 'subtotal': subtotal,
-        // 'totalakhir': grandtotal,
-        // 'potnomfaktur': discountAmount,
-        // 'biayalain': otherCost,
-        // 'jmltunai': cashAmount,
-        // 'jmldebit': debitCardAmount,
-        // 'jmlkk': creditCardAmount,
-        // 'jmlemoney': emoneyAmount,
-        // 'payment_type': paymentMethodType,
-        // 'ppn': taxType,
-        // 'pajak': taxAmount,
-        // 'bank_code': bankCode,
-        // 'notransaksi': code,
-      };
+    'item_barcode': itemBarcode,
+    'item_name': itemName,
+    'description': itemName,
+    'uom': uom,
+    // 'totalitem': totalItem,
+    // 'subtotal': subtotal,
+    // 'totalakhir': grandtotal,
+    // 'potnomfaktur': discountAmount,
+    // 'biayalain': otherCost,
+    // 'jmltunai': cashAmount,
+    // 'jmldebit': debitCardAmount,
+    // 'jmlkk': creditCardAmount,
+    // 'jmlemoney': emoneyAmount,
+    // 'payment_type': paymentMethodType,
+    // 'ppn': taxType,
+    // 'pajak': taxAmount,
+    // 'bank_code': bankCode,
+    // 'notransaksi': code,
+  };
 
   String get brandName => item.brandName ?? '';
   String get itemTypeName => item.itemTypeName;
@@ -68,7 +69,8 @@ class SalesCashierItem extends Model {
 
     itemBarcode = attributes['item_barcode'];
     if (included.isNotEmpty) {
-      item = ItemClass().findRelationData(
+      item =
+          ItemClass().findRelationData(
             included: included,
             relation: json['relationships']['item'],
           ) ??

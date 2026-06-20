@@ -70,6 +70,8 @@ class PaymentProvider extends Model {
     'updated_at': updatedAt,
   };
   @override
+  String get path => 'payment_providers';
+  @override
   String get modelName => 'payment_provider';
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {

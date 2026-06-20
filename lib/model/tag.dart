@@ -19,7 +19,8 @@ class Tag extends Model with SaveNDestroyModel {
   String? get name => tagKey?.name;
 
   int? get tagKeyId => tagKey?.id as int?;
-
+  @override
+  String get path => 'tags';
   Future<TagKey?> getTagKey(server) async {
     if (tagKey?.id == null) {
       return null;
@@ -62,6 +63,9 @@ class Tagging extends Model {
     'tag_id': tag?.id,
     'tag': tag,
   };
+
+  @override
+  String get path => 'taggings';
 
   Model? get source {
     final route = ModelRoute();

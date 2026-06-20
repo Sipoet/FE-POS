@@ -15,6 +15,9 @@ class ProductMeasurement extends Model {
     'product_id': product?.id,
     'conversion': conversion,
   };
+
+  @override
+  String get path => 'product_measurements';
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'] ?? {};

@@ -14,6 +14,8 @@ class Brand extends Model with SaveNDestroyModel {
   Map<String, dynamic> toMap() => {'description': description, 'name': name};
 
   @override
+  String get path => 'brands';
+  @override
   String get modelValue => name;
 
   @override

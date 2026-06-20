@@ -17,6 +17,9 @@ class MonthlyExpenseReport extends Model {
   });
 
   @override
+  String get path => 'monthly_expense_reports';
+
+  @override
   String get modelName => 'monthly_expense_report';
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
@@ -30,11 +33,11 @@ class MonthlyExpenseReport extends Model {
 
   @override
   Map<String, dynamic> toMap() => {
-        'year': year,
-        'month': month,
-        'date_pk': datePk,
-        'total': total,
-      };
+    'year': year,
+    'month': month,
+    'date_pk': datePk,
+    'total': total,
+  };
 
   @override
   String get modelValue => datePk.format(pattern: 'MMMM yyyy');
@@ -45,10 +48,11 @@ class MonthlyExpenseReportClass extends ModelClass<MonthlyExpenseReport> {
   MonthlyExpenseReport initModel() =>
       MonthlyExpenseReport(datePk: Date.today());
 
-  Future<List<MonthlyExpenseReport>?> groupBy(
-      {required Server server,
-      required DateTimeRange range,
-      required String groupPeriod}) {
+  Future<List<MonthlyExpenseReport>?> groupBy({
+    required Server server,
+    required DateTimeRange range,
+    required String groupPeriod,
+  }) {
     Map<String, dynamic> params = {
       'start_date': range.start.toIso8601String(),
       'end_date': range.end.toIso8601String(),
@@ -57,17 +61,24 @@ class MonthlyExpenseReportClass extends ModelClass<MonthlyExpenseReport> {
 
     return server
         .get('monthly_expense_reports/group_by', queryParam: params)
-        .then((response) {
-      if (response.statusCode == 200) {
-        return response.data['data']
-            .map<MonthlyExpenseReport>((json) =>
-                fromJson(json, included: response.data['included'] ?? []))
-            .toList();
-      }
-      return null;
-    }, onError: (error) {
-      debugPrint(error.toString());
-      return null;
-    });
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              return response.data['data']
+                  .map<MonthlyExpenseReport>(
+                    (json) => fromJson(
+                      json,
+                      included: response.data['included'] ?? [],
+                    ),
+                  )
+                  .toList();
+            }
+            return null;
+          },
+          onError: (error) {
+            debugPrint(error.toString());
+            return null;
+          },
+        );
   }
 }

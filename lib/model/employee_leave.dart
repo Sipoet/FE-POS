@@ -92,7 +92,8 @@ class EmployeeLeave extends Model with SaveNDestroyModel {
     'change_shift': changeShift,
     'leave_type': leaveType,
   };
-
+  @override
+  String get path => 'employee_leaves';
   @override
   String get modelName => 'employee_leave';
 

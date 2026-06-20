@@ -26,6 +26,9 @@ class CashierSession extends Model {
     'created_at': createdAt,
     'updated_at': updatedAt,
   };
+
+  @override
+  String get path => 'cashier_sessions';
   @override
   String get modelName => 'cashier_session';
   @override

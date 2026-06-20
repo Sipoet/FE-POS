@@ -27,7 +27,8 @@ class ItemWithDiscount extends Model {
   }) : sellPriceAfterDiscount = sellPriceAfterDiscount ?? const Money(0),
        sellPrice = sellPrice ?? const Money(0),
        stockLocations = stockLocations ?? [];
-
+  @override
+  String get path => 'ipos/items/with_discounts';
   @override
   String get modelName => 'item';
 

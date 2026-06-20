@@ -45,6 +45,9 @@ class Location extends Model {
   }
 
   @override
+  String get path => 'locations';
+
+  @override
   Map<String, dynamic> toMap() => {
     'address': address,
     'name': name,

@@ -92,15 +92,18 @@ class SystemSetting extends Model {
   });
 
   @override
+  String get path => 'system_settings';
+
+  @override
   Map<String, dynamic> toMap() => {
-        'key_name': key,
-        'user': user,
-        'value_type': valueType.toString(),
-        'value': value,
-        'user_id': userId,
-        'created_at': createdAt,
-        'updated_at': updatedAt,
-      };
+    'key_name': key,
+    'user': user,
+    'value_type': valueType.toString(),
+    'value': value,
+    'user_id': userId,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
   @override
   String get modelName => 'system_setting';
 
@@ -123,7 +126,8 @@ class SystemSetting extends Model {
       }
     }
     userId = attributes['user_id'];
-    user = UserClass().findRelationData(
+    user =
+        UserClass().findRelationData(
           relation: json['relationships']?['user'],
           included: included,
         ) ??

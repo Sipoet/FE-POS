@@ -87,7 +87,8 @@ class IposPurchaseHeader extends Model {
   };
 
   String get supplierName => supplier.name;
-
+  @override
+  String get path => 'ipos/purchases';
   @override
   String get modelName => 'purchase';
 
