@@ -5,6 +5,7 @@ import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
 import 'package:fe_pos/tool/setting.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/framework_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -101,7 +102,8 @@ class _LoginPageState extends State<LoginPage>
                   keyboardType: TextInputType.name,
                   inputFormatters: [
                     FilteringTextInputFormatter.singleLineFormatter,
-                    FilteringTextInputFormatter.allow(RegExp('[a-z0-9]')),
+                    UpperCaseTextFormatter(),
+                    FilteringTextInputFormatter.allow(RegExp('[A-Z0-9]')),
                   ],
                   validator: (value) {
                     if (value == null || value.toString().trim().isEmpty) {
