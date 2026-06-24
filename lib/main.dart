@@ -19,7 +19,10 @@ class AllegraPos extends StatelessWidget {
       child: MultiProvider(
         providers: [
           ChangeNotifierProvider<Server>(create: (_) => Server()),
-          ChangeNotifierProvider<Setting>(create: (_) => Setting()),
+          ChangeNotifierProvider<Authorizer>(create: (_) => Authorizer()),
+          ChangeNotifierProvider<DefaultSetting>(
+            create: (_) => DefaultSetting(),
+          ),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -29,7 +32,8 @@ class AllegraPos extends StatelessWidget {
             textTheme: Theme.of(context).textTheme.apply(fontFamily: 'Lato'),
             useMaterial3: true,
             colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color.fromARGB(255, 135, 239, 154)),
+              seedColor: const Color.fromARGB(255, 135, 239, 154),
+            ),
             dividerTheme: const DividerThemeData(
               space: 20,
               color: Colors.grey,
@@ -45,16 +49,13 @@ class AllegraPos extends StatelessWidget {
           ],
           builder: (_, child) => MediaQuery(
             data: MediaQuery.of(context).copyWith(
-              textScaler: MediaQuery.of(context)
-                  .textScaler
-                  .clamp(minScaleFactor: 0.8, maxScaleFactor: 1.2),
+              textScaler: MediaQuery.of(
+                context,
+              ).textScaler.clamp(minScaleFactor: 0.8, maxScaleFactor: 1.2),
             ),
             child: child!,
           ),
-          supportedLocales: const [
-            Locale('en'),
-            Locale('id'),
-          ],
+          supportedLocales: const [Locale('en'), Locale('id')],
           locale: const Locale('id'),
           home: const LoadingPage(),
         ),

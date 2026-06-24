@@ -24,7 +24,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
   List<PurchaseInvoiceDetail> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
-  late final Setting setting;
+  late final Authorizer setting;
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
 
@@ -35,7 +35,7 @@ class _PurchaseItemPageState extends State<PurchaseItemPage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     columns = setting.tableColumn('purchaseInvoiceDetail');
     super.initState();
   }

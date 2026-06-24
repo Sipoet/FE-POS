@@ -19,12 +19,12 @@ class _SalesPaymentPageState extends State<SalesPaymentPage> {
     fontSize: 20,
   );
   SalesCashier get salesCashier => widget.salesCashier;
-  late final Setting setting;
+  late final Authorizer setting;
   late final Server _server;
   List<SalesPayment> get salesPayments => salesCashier.salesPayments;
   @override
   void initState() {
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _server = context.read<Server>();
     super.initState();
   }

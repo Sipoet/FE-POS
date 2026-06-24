@@ -21,13 +21,13 @@ class _ProductCategoryPageState extends State<ProductCategoryPage>
   late final TableController _source;
   late final Server server;
   late Flash flash;
-  late final Setting setting;
+  late final Authorizer setting;
 
   @override
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     super.initState();
     Future.delayed(Duration.zero, refreshTable);
   }

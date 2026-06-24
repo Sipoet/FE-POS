@@ -33,7 +33,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
 
   @override
   void initState() {
-    final setting = context.read<Setting>();
+    final setting = context.read<Authorizer>();
     menuTree = <Menu>[
       Menu(
         icon: Icons.home,

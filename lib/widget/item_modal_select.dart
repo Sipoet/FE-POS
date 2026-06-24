@@ -27,7 +27,7 @@ class _ItemModalSelectState extends State<ItemModalSelect>
   void initState() {
     selectedItems = widget.initialValue;
     _server = context.read<Server>();
-    final setting = context.read<Setting>();
+    final setting = context.read<Authorizer>();
     _columns = setting.tableColumn('itemReport');
 
     super.initState();

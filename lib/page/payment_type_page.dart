@@ -21,7 +21,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final TableController _source;
   late final Server server;
-  late final Setting setting;
+  late final Authorizer setting;
 
   final cancelToken = CancelToken();
   late Flash flash;
@@ -35,7 +35,7 @@ class _PaymentTypePageState extends State<PaymentTypePage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
 
     columns = setting.tableColumn('paymentType');
 

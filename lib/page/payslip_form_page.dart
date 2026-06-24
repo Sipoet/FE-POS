@@ -31,7 +31,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
         TextFormatter,
         DefaultResponse {
   late Flash flash;
-  late final Setting setting;
+  late final Authorizer setting;
   final _formKey = GlobalKey<FormState>();
   Payslip get payslip => widget.payslip;
   final _scrollController = ScrollController();
@@ -40,7 +40,7 @@ class _PayslipFormPageState extends State<PayslipFormPage>
 
   @override
   void initState() {
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     flash = Flash();
     super.initState();
     if (payslip.id != null) {

@@ -24,7 +24,7 @@ class SystemSettingFormPage extends StatefulWidget {
 class _SystemSettingFormPageState extends State<SystemSettingFormPage>
     with LoadingPopup, DefaultResponse {
   SystemSetting get systemSetting => widget.systemSetting;
-  late final Setting _setting;
+  late final Authorizer _setting;
   late final Flash _flash;
   late final Server _server;
   final Map<String, TextEditingController> _controller = {};
@@ -32,7 +32,7 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
   @override
   void initState() {
     _flash = Flash();
-    _setting = context.read<Setting>();
+    _setting = context.read<Authorizer>();
     _server = context.read<Server>();
     systemSetting.toMap().forEach((key, value) {
       _controller[key] = TextEditingController(text: value.toString());

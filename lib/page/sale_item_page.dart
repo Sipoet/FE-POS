@@ -26,7 +26,7 @@ class _SaleItemPageState extends State<SaleItemPage>
   List<SaleItem> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
-  late final Setting setting;
+  late final Authorizer setting;
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
   QueryRequest? queryRequest;
@@ -37,7 +37,7 @@ class _SaleItemPageState extends State<SaleItemPage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     columns = setting.tableColumn('ipos::SaleItem');
 
     super.initState();

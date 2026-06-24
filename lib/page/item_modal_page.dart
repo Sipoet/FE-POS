@@ -29,7 +29,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
   String? supplierCode;
   String? brandName;
   late String searchText;
-  late final Setting _setting;
+  late final Authorizer _setting;
   late final Server _server;
   List<ItemReport> itemReports = [];
   Item? selectedItem;
@@ -47,7 +47,7 @@ class _ItemModalPageState extends State<ItemModalPage> with DefaultResponse {
   @override
   void initState() {
     searchText = widget.barcode ?? '';
-    _setting = context.read<Setting>();
+    _setting = context.read<Authorizer>();
     _server = context.read<Server>();
     final columns = _setting.tableColumn('itemReport');
     tableColumns = _whiteListColumnNames

@@ -36,7 +36,7 @@ class _CustomerGroupDiscountPageState extends State<CustomerGroupDiscountPage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    final setting = context.read<Setting>();
+    final setting = context.read<Authorizer>();
     columns = setting.tableColumn('customerGroupDiscount');
 
     super.initState();

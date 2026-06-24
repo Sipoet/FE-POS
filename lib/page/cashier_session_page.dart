@@ -21,7 +21,7 @@ class _CashierSessionPageState extends State<CashierSessionPage>
   final _menuController = MenuController();
   late final TabManager tabManager;
   late final Server server;
-  late final Setting setting;
+  late final Authorizer setting;
   CashierSession cashierSession = CashierSession();
   bool _isTodayCashierFetched = false;
   @override
@@ -31,7 +31,7 @@ class _CashierSessionPageState extends State<CashierSessionPage>
   void initState() {
     tabManager = context.read<TabManager>();
     server = context.read<Server>();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     super.initState();
     Future.delayed(Duration.zero, _fetchCashierSessionToday);
   }

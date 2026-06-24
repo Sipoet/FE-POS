@@ -34,7 +34,7 @@ class _EmployeeAttendanceReportPageState
   List<Role> _roles = [];
   EmployeeStatus? employeeStatus = .active;
   late final Server _server;
-  late final Setting _setting;
+  late final Authorizer _setting;
   late final Flash flash;
   final _focusNode = FocusNode();
   late final SyncTableController _source;
@@ -45,7 +45,7 @@ class _EmployeeAttendanceReportPageState
   @override
   void initState() {
     _server = context.read<Server>();
-    _setting = context.read<Setting>();
+    _setting = context.read<Authorizer>();
     _columns = [
       TableColumn(
         name: 'employee_name',

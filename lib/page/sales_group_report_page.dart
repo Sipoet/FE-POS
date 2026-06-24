@@ -45,11 +45,11 @@ class _SalesGroupReportPageState extends State<SalesGroupReportPage>
   final _cancelToken = CancelToken();
   final _formState = GlobalKey<FormState>();
   late final List<TableColumn> _tableColumns;
-  late final Setting _setting;
+  late final Authorizer _setting;
   @override
   void initState() {
     server = context.read<Server>();
-    _setting = context.read<Setting>();
+    _setting = context.read<Authorizer>();
     flash = Flash();
     _tableColumns = _setting.tableColumn('salesGroupReport');
     super.initState();

@@ -1,9 +1,11 @@
+import 'package:fe_pos/model/account.dart';
+import 'package:fe_pos/model/unit_of_measurement.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
 
-class Setting extends ChangeNotifier with ColumnTypeFinder {
+class Authorizer extends ChangeNotifier with ColumnTypeFinder {
   Map<String, Map<String, TableColumn>> _tableColumns = {};
   Map<String, List<String>> menus = {};
-  Setting();
+  Authorizer();
 
   void removeSetting() {
     _tableColumns = {};
@@ -48,5 +50,36 @@ class Setting extends ChangeNotifier with ColumnTypeFinder {
 
   bool canShow(String tableName, String columnKey) {
     return _tableColumns[tableName]?[columnKey] != null;
+  }
+}
+
+class DefaultSetting extends ChangeNotifier {
+  UnitOfMeasurement? uom;
+  Account? stockAccount;
+  Account? cogsAccount;
+  Account? sellProfitAccount;
+
+  DefaultSetting({
+    this.uom,
+    this.sellProfitAccount,
+    this.cogsAccount,
+    this.stockAccount,
+  });
+
+  void setDefault(Map<String, dynamic> data) {
+    if (data['uom'] != null) {
+      uom = UnitOfMeasurementClass().fromJson(data['uom']?['data']);
+    }
+    if (data['stock_account'] != null) {
+      stockAccount = AccountClass().fromJson(data['stock_account']?['data']);
+    }
+    if (data['cogs_account'] != null) {
+      cogsAccount = AccountClass().fromJson(data['cogs_account']?['data']);
+    }
+    if (data['sell_profit_account'] != null) {
+      sellProfitAccount = AccountClass().fromJson(
+        data['sell_profit_account']?['data'],
+      );
+    }
   }
 }

@@ -22,7 +22,7 @@ class _EmployeePageState extends State<EmployeePage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late TableController _source;
   late final Server server;
-  late final Setting setting;
+  late final Authorizer setting;
 
   final cancelToken = CancelToken();
   late Flash flash;
@@ -37,7 +37,7 @@ class _EmployeePageState extends State<EmployeePage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     columns = setting.tableColumn('employee');
     super.initState();
   }

@@ -26,7 +26,7 @@ class _SalesCashierPageState extends State<SalesCashierPage>
   final _menuController = MenuController();
   final cancelToken = CancelToken();
   late Flash flash;
-  late final Setting setting;
+  late final Authorizer setting;
   late final List<TableColumn> _columns;
   List<FilterData> _filters = [];
 
@@ -37,7 +37,7 @@ class _SalesCashierPageState extends State<SalesCashierPage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _columns = setting.tableColumn('salesCashier');
 
     super.initState();

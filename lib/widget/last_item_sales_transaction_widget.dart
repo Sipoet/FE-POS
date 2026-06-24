@@ -39,7 +39,7 @@ class _LastItemSalesTransactionWidgetState
   List<SaleItem> saleItems = [];
   late int limit;
   CancelToken cancelToken = CancelToken();
-  late final Setting setting;
+  late final Authorizer setting;
   late AnimationController _controller;
   final _scrollController = ScrollController();
   DateTimeRange _dateRange = DateTimeRange(
@@ -67,7 +67,7 @@ class _LastItemSalesTransactionWidgetState
               _controller.forward();
             }
           });
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _dateRange = widget.controller?.range ?? _dateRange;
     widget.controller?.addListener(setDateAndRefreshReport);
 

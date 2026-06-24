@@ -38,7 +38,7 @@ class _SalesTransactionReportPageState extends State<SalesTransactionReportPage>
     );
     flash = Flash();
     server = context.read<Server>();
-    final setting = context.read<Setting>();
+    final setting = context.read<Authorizer>();
     columns = setting.tableColumn('salesTransactionReport');
     super.initState();
     Future.delayed(Duration.zero, () => _refreshTable(range));

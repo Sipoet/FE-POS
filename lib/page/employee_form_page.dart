@@ -38,7 +38,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
   Employee get employee => widget.employee;
   late final Server _server;
   Uint8List? _imageBytes;
-  late final Setting setting;
+  late final Authorizer setting;
 
   @override
   bool get wantKeepAlive => true;
@@ -46,7 +46,7 @@ class _EmployeeFormPageState extends State<EmployeeFormPage>
   @override
   void initState() {
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _server = context.read<Server>();
     if (employee.imageCode != null) {
       loadImage(employee.imageCode ?? '');

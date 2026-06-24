@@ -32,7 +32,7 @@ class _SaleFormPageState extends State<SaleFormPage>
   final _formKey = GlobalKey<FormState>();
   Sale get sale => widget.sale;
   late final Server _server;
-  late final Setting setting;
+  late final Authorizer setting;
   late final SyncTableController _source;
   late final List<TableColumn> _columns;
   @override
@@ -40,7 +40,7 @@ class _SaleFormPageState extends State<SaleFormPage>
   @override
   void initState() {
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _server = context.read<Server>();
 
     _columns = setting.tableColumn('ipos::SaleItem');

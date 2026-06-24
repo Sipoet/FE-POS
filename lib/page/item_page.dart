@@ -26,13 +26,13 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
   CancelToken cancelToken = CancelToken();
   late Flash flash;
   late final List<TableColumn> columns;
-  late final Setting setting;
+  late final Authorizer setting;
 
   @override
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
 
     columns = setting.tableColumn('ipos::Item');
     super.initState();
@@ -52,16 +52,18 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
   Future<DataTableResponse<Item>> fetchItems(QueryRequest request) {
     request.includeAddAll(['supplier', 'brand', 'item_type']);
 
-    return ItemClass().finds(server, request).then(
-      (value) => DataTableResponse<Item>(
-        models: value.models,
-        totalPage: value.metadata['total_pages'],
-      ),
-      onError: (error) {
-        defaultErrorResponse(error: error);
-        return DataTableResponse.empty();
-      },
-    );
+    return ItemClass()
+        .finds(server, request)
+        .then(
+          (value) => DataTableResponse<Item>(
+            models: value.models,
+            totalPage: value.metadata['total_pages'],
+          ),
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            return DataTableResponse.empty();
+          },
+        );
   }
 
   void refreshTable() {
@@ -75,10 +77,7 @@ class _ItemPageState extends State<ItemPage> with DefaultResponse {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 10, bottom: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [],
-            ),
+            child: Row(mainAxisAlignment: MainAxisAlignment.end, children: []),
           ),
           SizedBox(
             height: bodyScreenHeight,

@@ -38,12 +38,12 @@ class _ItemSalesPeriodReportPageState extends State<ItemSalesPeriodReportPage>
   List _suppliers = [];
   List _brands = [];
   bool? _isConsignment;
-  late final Setting _setting;
+  late final Authorizer _setting;
   @override
   void initState() {
     flash = Flash();
     server = context.read<Server>();
-    _setting = context.read<Setting>();
+    _setting = context.read<Authorizer>();
 
     super.initState();
   }

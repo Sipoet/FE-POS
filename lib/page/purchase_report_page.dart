@@ -31,7 +31,7 @@ class _PurchaseReportPageState extends State<PurchaseReportPage>
   @override
   void initState() {
     server = context.read<Server>();
-    final setting = context.read<Setting>();
+    final setting = context.read<Authorizer>();
     columns = setting.tableColumn('purchaseReport');
     flash = Flash();
     super.initState();

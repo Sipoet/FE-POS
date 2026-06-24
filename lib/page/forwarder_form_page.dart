@@ -23,7 +23,7 @@ class ForwarderFormPage extends StatefulWidget {
 class _ForwarderFormPageState extends State<ForwarderFormPage>
     with DefaultResponse, LoadingPopup {
   late Forwarder forwarder;
-  late final Setting _setting;
+  late final Authorizer _setting;
   late final Server _server;
   late final TabManager _tabManager;
   final _formState = GlobalKey<FormState>();
@@ -32,7 +32,7 @@ class _ForwarderFormPageState extends State<ForwarderFormPage>
   @override
   void initState() {
     forwarder = widget.forwarder;
-    _setting = context.read<Setting>();
+    _setting = context.read<Authorizer>();
     _server = context.read<Server>();
     _tabManager = context.read<TabManager>();
     if (!forwarder.isNewRecord) {

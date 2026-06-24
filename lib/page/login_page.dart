@@ -37,9 +37,11 @@ class _LoginPageState extends State<LoginPage>
   void initState() {
     flash = Flash();
     Server server = context.read<Server>();
-    PackageInfo.fromPlatform().then((packageInfo) => setState(() {
-          version = packageInfo.version;
-        }));
+    PackageInfo.fromPlatform().then(
+      (packageInfo) => setState(() {
+        version = packageInfo.version;
+      }),
+    );
     checkUpdate(server);
     super.initState();
   }
@@ -53,17 +55,18 @@ class _LoginPageState extends State<LoginPage>
         actions: [
           if (!isWeb())
             IconButton(
-                onPressed: () => checkUpdate(server, isManual: true),
-                tooltip: 'Check Update App',
-                icon: Icon(Icons.update)),
+              onPressed: () => checkUpdate(server, isManual: true),
+              tooltip: 'Check Update App',
+              icon: Icon(Icons.update),
+            ),
         ],
       ),
       body: Center(
-          child: Container(
-        alignment: Alignment.topLeft,
-        width: 300,
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-        child: Form(
+        child: Container(
+          alignment: Alignment.topLeft,
+          width: 300,
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+          child: Form(
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -111,16 +114,19 @@ class _LoginPageState extends State<LoginPage>
                 ),
                 TextFormField(
                   decoration: InputDecoration(
-                      icon: Icon(Icons.lock),
-                      labelText: 'Password',
-                      suffix: IconButton(
-                          onPressed: () => setState(() {
-                                _toggleObscurePassword =
-                                    !_toggleObscurePassword;
-                              }),
-                          icon: Icon(_toggleObscurePassword
-                              ? Icons.remove_red_eye
-                              : Icons.remove_red_eye_outlined))),
+                    icon: Icon(Icons.lock),
+                    labelText: 'Password',
+                    suffix: IconButton(
+                      onPressed: () => setState(() {
+                        _toggleObscurePassword = !_toggleObscurePassword;
+                      }),
+                      icon: Icon(
+                        _toggleObscurePassword
+                            ? Icons.remove_red_eye
+                            : Icons.remove_red_eye_outlined,
+                      ),
+                    ),
+                  ),
                   obscureText: _toggleObscurePassword,
                   enableSuggestions: false,
                   onSaved: (newValue) {
@@ -149,7 +155,9 @@ class _LoginPageState extends State<LoginPage>
                   alignment: Alignment.centerLeft,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                        vertical: 15.0, horizontal: 0),
+                      vertical: 15.0,
+                      horizontal: 0,
+                    ),
                     child: ElevatedButton.icon(
                       onPressed: () {
                         // Validate returns true if the form is valid, or false otherwise.
@@ -163,10 +171,12 @@ class _LoginPageState extends State<LoginPage>
                       icon: Icon(Icons.login),
                     ),
                   ),
-                )
+                ),
               ],
-            )),
-      )),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -176,36 +186,38 @@ class _LoginPageState extends State<LoginPage>
     _formKey.currentState?.save();
     try {
       login(
-          server: server,
-          host: _host,
-          username: _username,
-          password: _password,
-          onSuccess: (response) {
-            fetchSetting(server);
-            flash.hide();
-            var body = response.data;
-            flash.showBanner(
-                title: body['message'],
-                messageType: ToastificationType.success);
-          },
-          onFailed: (response) {
-            flash.hide();
-            if (response.statusCode == 308) {
-              flash.show(const Text('status 308'), ToastificationType.warning);
-              return;
-            }
-            String body = '';
-            if (response?.data is Map) {
-              body = response?.data?['error'] ?? '';
-            } else if (response?.data is String) {
-              body = response.data;
-            }
-            flash.showBanner(
-              title: 'Gagal Login',
-              description: body,
-              messageType: ToastificationType.error,
-            );
-          }).whenComplete(hideLoadingPopup);
+        server: server,
+        host: _host,
+        username: _username,
+        password: _password,
+        onSuccess: (response) {
+          fetchSetting(server);
+          flash.hide();
+          var body = response.data;
+          flash.showBanner(
+            title: body['message'],
+            messageType: ToastificationType.success,
+          );
+        },
+        onFailed: (response) {
+          flash.hide();
+          if (response.statusCode == 308) {
+            flash.show(const Text('status 308'), ToastificationType.warning);
+            return;
+          }
+          String body = '';
+          if (response?.data is Map) {
+            body = response?.data?['error'] ?? '';
+          } else if (response?.data is String) {
+            body = response.data;
+          }
+          flash.showBanner(
+            title: 'Gagal Login',
+            description: body,
+            messageType: ToastificationType.error,
+          );
+        },
+      ).whenComplete(hideLoadingPopup);
     } catch (error) {
       flash.showBanner(
         title: 'Gagal Login',
@@ -217,27 +229,49 @@ class _LoginPageState extends State<LoginPage>
   }
 
   void fetchSetting(Server server) async {
-    Setting setting = context.read<Setting>();
-    server.get('settings').then((response) {
-      if (response.statusCode == 200) {
-        setting.setTableColumns(response.data['table_columns']);
-        setting.menus = {};
-        response.data['menus'].forEach((String key, value) {
-          setting.menus[key] = value.map<String>((e) => e.toString()).toList();
+    final Authorizer authorizer = context.read<Authorizer>();
+    final DefaultSetting defaultSetting = context.read<DefaultSetting>();
+    server
+        .get('settings')
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              authorizer.removeSetting();
+              authorizer.setTableColumns(response.data['table_columns']);
+              response.data['menus'].forEach((String key, value) {
+                authorizer.menus[key] = value
+                    .map<String>((e) => e.toString())
+                    .toList();
+              });
+              defaultSetting.setDefault(response.data['default_setting']);
+            } else if (response.statusCode == 409) {
+              flash.showBanner(
+                messageType: .error,
+                title: 'Error',
+                description: response.data['message'],
+              );
+            } else {
+              flash.showBanner(
+                messageType: .error,
+                title: 'Error',
+                description: response.data.toString(),
+              );
+            }
+          },
+          onError: (error) =>
+              flash.show(Text(error.toString()), ToastificationType.error),
+        )
+        .whenComplete(() {
+          _redirectToHomePage();
         });
-      }
-    },
-        onError: (error) => flash.show(
-            Text(error.toString()), ToastificationType.error)).whenComplete(() {
-      _redirectToHomePage();
-    });
   }
 
   void _redirectToHomePage() {
     Navigator.pushReplacement<void, void>(
-        context,
-        MaterialPageRoute<void>(
-          builder: (BuildContext context) => const FrameworkLayout(),
-        ));
+      context,
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const FrameworkLayout(),
+      ),
+    );
   }
 }

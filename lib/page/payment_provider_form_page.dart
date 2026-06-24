@@ -27,7 +27,7 @@ class _PaymentProviderFormPageState extends State<PaymentProviderFormPage>
         LoadingPopup,
         DefaultResponse {
   late Flash flash;
-  late final Setting setting;
+  late final Authorizer setting;
   final _formKey = GlobalKey<FormState>();
   PaymentProvider get paymentProvider => widget.paymentProvider;
   final _focusNode = FocusNode();
@@ -36,7 +36,7 @@ class _PaymentProviderFormPageState extends State<PaymentProviderFormPage>
 
   @override
   void initState() {
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     flash = Flash();
 
     super.initState();

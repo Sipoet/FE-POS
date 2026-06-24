@@ -37,7 +37,7 @@ class _CustomerGroupDiscountFormPageState
   CustomerGroupDiscount get customerGroupDiscount =>
       widget.customerGroupDiscount;
   late final Server _server;
-  late final Setting setting;
+  late final Authorizer setting;
   final _focusNode = FocusNode();
   @override
   bool get wantKeepAlive => true;
@@ -45,7 +45,7 @@ class _CustomerGroupDiscountFormPageState
   @override
   void initState() {
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _server = context.read<Server>();
     super.initState();
     _focusNode.requestFocus();

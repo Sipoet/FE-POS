@@ -31,14 +31,14 @@ class _StockLocationPageState extends State<StockLocationPage>
   final cancelToken = CancelToken();
   late final Flash flash;
   late final List<TableColumn> columns;
-  late final Setting setting;
+  late final Authorizer setting;
   List<FilterData> _filters = [];
 
   @override
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
 
     columns = setting.tableColumn('ipos::ItemStock');
     super.initState();

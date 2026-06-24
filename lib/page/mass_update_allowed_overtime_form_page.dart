@@ -31,13 +31,13 @@ class _MassUpdateAllowedOvertimeFormPageState
   int? _shift;
   late final SyncTableController _source;
   late final Flash flash;
-  late final Setting setting;
+  late final Authorizer setting;
 
   @override
   void initState() {
     _server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     super.initState();
     Future.delayed(Duration.zero, () => _focusNode.requestFocus());
   }

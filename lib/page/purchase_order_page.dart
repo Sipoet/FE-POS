@@ -26,7 +26,7 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
   List<PurchaseOrder> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
-  late final Setting setting;
+  late final Authorizer setting;
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
 
@@ -37,7 +37,7 @@ class _PurchaseOrderPageState extends State<PurchaseOrderPage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     columns = setting.tableColumn('purchaseOrder');
     Future.delayed(Duration.zero, refreshTable);
     super.initState();

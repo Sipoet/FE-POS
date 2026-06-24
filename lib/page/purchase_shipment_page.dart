@@ -24,7 +24,7 @@ class _PurchaseShipmentPageState extends State<PurchaseShipmentPage>
   List<PurchaseShipment> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
-  late final Setting setting;
+  late final Authorizer setting;
   late final TabManager tabManager;
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
@@ -36,7 +36,7 @@ class _PurchaseShipmentPageState extends State<PurchaseShipmentPage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     tabManager = context.read<TabManager>();
     columns = setting.tableColumn('purchaseShipment');
     super.initState();

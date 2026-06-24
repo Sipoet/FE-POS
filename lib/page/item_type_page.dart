@@ -27,7 +27,7 @@ class _ItemTypePageState extends State<ItemTypePage>
   final cancelToken = CancelToken();
   List<CustomTreeNode<ItemType>> tree = [];
   late Flash flash;
-  late final Setting setting;
+  late final Authorizer setting;
   late final TabManager tabManager;
   final _treeController = TreeController();
   String _searchText = '';
@@ -36,7 +36,7 @@ class _ItemTypePageState extends State<ItemTypePage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     tabManager = context.read<TabManager>();
     super.initState();
   }

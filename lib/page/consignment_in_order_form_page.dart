@@ -36,7 +36,7 @@ class _ConsignmentInOrderFormPageState extends State<ConsignmentInOrderFormPage>
   final _formKey = GlobalKey<FormState>();
   ConsignmentInOrder get consignmentInOrder => widget.consignmentInOrder;
   late final Server _server;
-  late final Setting setting;
+  late final Authorizer setting;
   late final SyncTableController _source;
   late final List<TableColumn> _columns;
   double margin = 1;
@@ -51,7 +51,7 @@ class _ConsignmentInOrderFormPageState extends State<ConsignmentInOrderFormPage>
   @override
   void initState() {
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _server = context.read<Server>();
     _columns = setting.tableColumn('ipos::IposPurchaseOrderItem')
       ..removeWhere((line) => line.name == 'notransaksi');

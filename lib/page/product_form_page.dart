@@ -32,7 +32,7 @@ class ProductFormPage extends StatefulWidget {
 class _ProductFormPageState extends State<ProductFormPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse, LoadingPopup {
   late Product product;
-  late final Setting _setting;
+  late final Authorizer _setting;
   late final Server _server;
   late final TabManager _tabManager;
   late final ImageCarouselController controller;
@@ -44,7 +44,7 @@ class _ProductFormPageState extends State<ProductFormPage>
 
   @override
   void initState() {
-    _setting = context.read<Setting>();
+    _setting = context.read<Authorizer>();
     _server = context.read<Server>();
     _tabManager = context.read<TabManager>();
     product = widget.product;

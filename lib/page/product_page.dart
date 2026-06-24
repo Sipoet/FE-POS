@@ -22,6 +22,7 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
   late final TableController _source;
   late final Server server;
   List<Product> products = [];
+  late final DefaultSetting defaultSetting;
   late Flash flash;
   late final List<TableColumn> columns;
   List<FilterData> _filter = [];
@@ -29,10 +30,11 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
   @override
   void initState() {
     server = context.read<Server>();
+    defaultSetting = context.read<DefaultSetting>();
     flash = Flash();
-    final setting = context.read<Setting>();
+    final authorizer = context.read<Authorizer>();
 
-    columns = setting.tableColumn('product');
+    columns = authorizer.tableColumn('product');
     super.initState();
   }
 
@@ -124,7 +126,10 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
                 MenuItemButton(
                   onPressed: () {
                     menuController.close();
-                    openForm(ProductClass().initModel());
+                    final product = ProductClass().initModel();
+                    product.baseUom = defaultSetting.uom;
+                    product.stockAccount = defaultSetting.stockAccount;
+                    openForm(product);
                   },
                   child: Text('Tambah Produk'),
                 ),

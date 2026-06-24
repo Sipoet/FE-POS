@@ -37,7 +37,7 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
   List<Sale> sales = [];
   late int limit;
   CancelToken cancelToken = CancelToken();
-  late final Setting setting;
+  late final Authorizer setting;
   late AnimationController _controller;
   DateTimeRange _dateRange = DateTimeRange(
     start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
@@ -64,7 +64,7 @@ class _LastSalesTransactionWidgetState extends State<LastSalesTransactionWidget>
               _controller.forward();
             }
           });
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _dateRange = widget.controller?.range ?? _dateRange;
     widget.controller?.addListener(setDateAndRefreshReport);
 

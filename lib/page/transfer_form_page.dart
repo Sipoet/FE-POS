@@ -32,7 +32,7 @@ class _TransferFormPageState extends State<TransferFormPage>
   final _formKey = GlobalKey<FormState>();
   Transfer get transfer => widget.transfer;
   late final Server _server;
-  late final Setting setting;
+  late final Authorizer setting;
   late final SyncTableController _source;
   late final List<TableColumn> _columns;
   @override
@@ -40,7 +40,7 @@ class _TransferFormPageState extends State<TransferFormPage>
   @override
   void initState() {
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _server = context.read<Server>();
     _columns = setting.tableColumn('ipos::TransferItem');
 

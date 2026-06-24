@@ -35,7 +35,7 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
 
   final _formKey = GlobalKey<FormState>();
   late final Server _server;
-  late final Setting setting;
+  late final Authorizer setting;
   late SalesCashier salesCashier;
   final barcodeController = TextEditingController();
   final quantityController = TextEditingController(text: '1');
@@ -46,7 +46,7 @@ class _SalesCashierFormPageState extends State<SalesCashierFormPage>
   void initState() {
     salesCashier = widget.salesCashier;
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _server = context.read<Server>();
 
     if (salesCashier.id != null) {

@@ -30,7 +30,7 @@ class _HomePageState extends State<HomePage>
   );
   bool _isCustom = false;
   late List<Widget> _panels;
-  late final Setting setting;
+  late final Authorizer setting;
   final pickerController = DateRangeEditingController(
     DateTimeRange(start: DateTime.now(), end: DateTime.now()),
   );
@@ -39,7 +39,7 @@ class _HomePageState extends State<HomePage>
 
   @override
   void initState() {
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     final server = context.read<Server>();
     checkUpdate(server);
     // if (setting.isAuthorize('ipos/sales', 'transactionReport')) {

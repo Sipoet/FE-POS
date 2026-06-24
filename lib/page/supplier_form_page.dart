@@ -24,7 +24,7 @@ class SupplierFormPage extends StatefulWidget {
 class _SupplierFormPageState extends State<SupplierFormPage>
     with DefaultResponse, LoadingPopup {
   late Supplier supplier;
-  late final Setting _setting;
+  late final Authorizer _setting;
   late final Server _server;
   late final TabManager _tabManager;
   final _formState = GlobalKey<FormState>();
@@ -33,7 +33,7 @@ class _SupplierFormPageState extends State<SupplierFormPage>
   @override
   void initState() {
     supplier = widget.supplier;
-    _setting = context.read<Setting>();
+    _setting = context.read<Authorizer>();
     _server = context.read<Server>();
     _tabManager = context.read<TabManager>();
     if (!supplier.isNewRecord) {

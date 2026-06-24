@@ -20,14 +20,14 @@ class ItemTypeFormPage extends StatefulWidget {
 class _ItemTypeFormPageState extends State<ItemTypeFormPage>
     with DefaultResponse, LoadingPopup {
   ItemType get itemType => widget.itemType;
-  late final Setting _setting;
+  late final Authorizer _setting;
   late final Server _server;
   final _formState = GlobalKey<FormState>();
   late final TabManager _tabManager;
   // late final Flash _flash;
   @override
   void initState() {
-    _setting = context.read<Setting>();
+    _setting = context.read<Authorizer>();
     _server = context.read<Server>();
     _tabManager = context.read<TabManager>();
     // _flash = context.read<Flash>();

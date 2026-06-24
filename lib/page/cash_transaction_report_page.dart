@@ -26,7 +26,7 @@ class _CashTransactionReportPageState extends State<CashTransactionReportPage>
   @override
   void initState() {
     _server = context.read<Server>();
-    final setting = context.read<Setting>();
+    final setting = context.read<Authorizer>();
     columns = setting.tableColumn('cashTransactionReport');
     super.initState();
   }

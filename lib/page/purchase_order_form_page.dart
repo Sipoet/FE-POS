@@ -45,7 +45,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
   final _formState = GlobalKey<FormState>();
   late PurchaseOrder purchaseOrder;
   late final Server _server;
-  late final Setting setting;
+  late final Authorizer setting;
   late final TabManager tabManager;
   final ValueNotifier<bool> modelToggleNotifier = ValueNotifier(false);
   bool _showForm = true;
@@ -61,7 +61,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
   @override
   void initState() {
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _server = context.read<Server>();
     tabManager = context.read<TabManager>();
     purchaseOrder = widget.purchaseOrder;

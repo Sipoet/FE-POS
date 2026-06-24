@@ -28,7 +28,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
   List<EmployeeAttendance> employeeAttendances = [];
   final cancelToken = CancelToken();
   late Flash flash;
-  late final Setting setting;
+  late final Authorizer setting;
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
 
@@ -39,7 +39,7 @@ class _EmployeeAttendancePageState extends State<EmployeeAttendancePage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     columns = setting.tableColumn('employeeAttendance');
 
     super.initState();

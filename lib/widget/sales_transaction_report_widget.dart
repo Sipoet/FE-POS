@@ -25,7 +25,7 @@ class _SalesTransactionReportWidgetState
         TextFormatter {
   late SalesTransactionReport salesTransactionReport;
   CancelToken cancelToken = CancelToken();
-  late final Setting setting;
+  late final Authorizer setting;
   late AnimationController _controller;
   DateTimeRange _dateRange = DateTimeRange(
     start: DateTime.now().copyWith(hour: 0, minute: 0, second: 0),
@@ -49,7 +49,7 @@ class _SalesTransactionReportWidgetState
               _controller.forward();
             }
           });
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _dateRange = widget.controller?.range ?? _dateRange;
     widget.controller?.addListener(setDateAndRefreshReport);
 

@@ -30,7 +30,7 @@ class _SystemSettingPageState extends State<SystemSettingPage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    final setting = context.read<Setting>();
+    final setting = context.read<Authorizer>();
 
     columns = setting.tableColumn('setting');
     super.initState();

@@ -43,7 +43,7 @@ class _ItemSalesTransactionReportWidgetState
         DefaultResponse,
         PlatformChecker {
   List results = [];
-  late final Setting setting;
+  late final Authorizer setting;
   late AnimationController _controller;
   final _scrollController = ScrollController();
   late final TabManager tabManager;
@@ -73,7 +73,7 @@ class _ItemSalesTransactionReportWidgetState
             }
           });
     limit = widget.limit;
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _dateRange = widget.controller?.range ?? _dateRange;
     widget.controller?.addListener(() {
       if (mounted) {

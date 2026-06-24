@@ -34,7 +34,7 @@ class _BookEmployeeAttendanceFormPageState
   BookEmployeeAttendance get bookEmployeeAttendance =>
       widget.bookEmployeeAttendance;
   late final Server _server;
-  late final Setting setting;
+  late final Authorizer setting;
   List<Employee> _employees = [];
   final List<BookEmployeeAttendance> _bookEmployeeAttendances = [];
   final _focusNode = FocusNode();
@@ -44,7 +44,7 @@ class _BookEmployeeAttendanceFormPageState
   @override
   void initState() {
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _server = context.read<Server>();
     super.initState();
     _focusNode.requestFocus();

@@ -35,7 +35,7 @@ class _ItemReportPageState extends State<ItemReportPage>
   @override
   void initState() {
     server = context.read<Server>();
-    final setting = context.read<Setting>();
+    final setting = context.read<Authorizer>();
     _tabManager = context.read<TabManager>();
     columns = setting.tableColumn('itemReport');
     flash = Flash();

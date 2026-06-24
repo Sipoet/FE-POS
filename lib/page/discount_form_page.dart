@@ -79,7 +79,7 @@ class _DiscountFormPageState extends State<DiscountFormPage>
   @override
   void initState() {
     _tabController = TabController(length: 3, vsync: this);
-    final setting = context.read<Setting>();
+    final setting = context.read<Authorizer>();
     setting.tableColumn('itemReport').forEach((TableColumn tableColumn) {
       if (_whitelistColumns.contains(tableColumn.name)) {
         _columns.add(tableColumn);

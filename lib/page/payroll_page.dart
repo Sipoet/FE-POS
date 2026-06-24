@@ -21,7 +21,7 @@ class _PayrollPageState extends State<PayrollPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final TableController _source;
   late final Server server;
-  late final Setting setting;
+  late final Authorizer setting;
   final cancelToken = CancelToken();
   late Flash flash;
   List<FilterData> _filters = [];
@@ -34,7 +34,7 @@ class _PayrollPageState extends State<PayrollPage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     columns = setting.tableColumn('payroll');
 
     super.initState();

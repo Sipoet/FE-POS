@@ -35,7 +35,7 @@ class _BookPayslipLinePageState extends State<BookPayslipLinePage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    final setting = context.read<Setting>();
+    final setting = context.read<Authorizer>();
     columns = setting.tableColumn('bookPayslipLine');
     super.initState();
   }

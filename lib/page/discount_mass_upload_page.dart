@@ -19,13 +19,13 @@ class _DiscountMassUploadPageState extends State<DiscountMassUploadPage>
     with AutomaticKeepAliveClientMixin {
   List<Discount> _discounts = <Discount>[];
   late Server _server;
-  late Setting _setting;
+  late final Authorizer _setting;
   late final DiscountMassUploadDatatableSource _source;
   List<bool> selected = [];
   @override
   void initState() {
     _server = context.read<Server>();
-    _setting = context.read<Setting>();
+    _setting = context.read<Authorizer>();
     _source = DiscountMassUploadDatatableSource(setting: _setting);
     super.initState();
   }
@@ -259,7 +259,7 @@ class DiscountMassUploadDatatableSource extends DataTableSource
   List<Discount> rows = [];
   List selected = [];
   List status = [];
-  final Setting setting;
+  final Authorizer setting;
 
   DiscountMassUploadDatatableSource({required this.setting});
 

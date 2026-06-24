@@ -22,7 +22,7 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
     with AutomaticKeepAliveClientMixin, DefaultResponse {
   late final TableController _source;
   late final Server server;
-  late final Setting setting;
+  late final Authorizer setting;
 
   final cancelToken = CancelToken();
   late Flash flash;
@@ -36,7 +36,7 @@ class _PaymentProviderPageState extends State<PaymentProviderPage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     columns = setting.tableColumn('paymentProvider');
     super.initState();
     Future.delayed(Duration.zero, refreshTable);

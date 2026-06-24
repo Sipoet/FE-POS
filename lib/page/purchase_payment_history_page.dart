@@ -26,7 +26,7 @@ class _PurchasePaymentHistoryPageState extends State<PurchasePaymentHistoryPage>
   @override
   void initState() {
     _server = context.read<Server>();
-    final setting = context.read<Setting>();
+    final setting = context.read<Authorizer>();
     columns = setting.tableColumn('purchasePaymentHistory');
     super.initState();
   }

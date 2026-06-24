@@ -32,7 +32,7 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
   final _formKey = GlobalKey<FormState>();
   PurchaseReturn get purchaseReturn => widget.purchaseReturn;
   late final Server _server;
-  late final Setting setting;
+  late final Authorizer setting;
   late final SyncTableController _source;
   late final List<TableColumn> _columns;
   @override
@@ -40,7 +40,7 @@ class _PurchaseReturnFormPageState extends State<PurchaseReturnFormPage>
   @override
   void initState() {
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _server = context.read<Server>();
     _columns = setting.tableColumn('ipos::PurchaseReturnItem');
     if (purchaseReturn.id != null) {

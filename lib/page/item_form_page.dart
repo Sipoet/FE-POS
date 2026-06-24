@@ -21,7 +21,7 @@ class ItemFormPage extends StatefulWidget {
 class _ItemFormPageState extends State<ItemFormPage>
     with LoadingPopup, DefaultResponse {
   Item get item => widget.item;
-  late final Setting _setting;
+  late final Authorizer _setting;
   late final Flash _flash;
   late final Server _server;
   final Map<String, TextEditingController> _controller = {};
@@ -29,7 +29,7 @@ class _ItemFormPageState extends State<ItemFormPage>
   @override
   void initState() {
     _flash = Flash();
-    _setting = context.read<Setting>();
+    _setting = context.read<Authorizer>();
     _server = context.read<Server>();
     item.toMap().forEach((key, value) {
       _controller[key] = TextEditingController(text: value.toString());

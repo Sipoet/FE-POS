@@ -45,7 +45,7 @@ class _AuthorizerFormFieldState extends State<AuthorizerFormField> {
 
   @override
   Widget build(BuildContext context) {
-    final setting = context.read<Setting>();
+    final setting = context.read<Authorizer>();
     return Visibility(
       visible: setting.canShow(widget.tableName, widget.columnName),
       replacement: widget.readModeWidget ?? const SizedBox.shrink(),

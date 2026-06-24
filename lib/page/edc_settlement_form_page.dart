@@ -25,7 +25,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
         AutomaticKeepAliveClientMixin,
         TextFormatter {
   late final Server server;
-  late final Setting setting;
+  late final Authorizer setting;
   late Flash flash;
   List<EdcSettlement> edcSettlements = [];
   bool _displaySummary = false;
@@ -44,7 +44,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
   void initState() {
     flash = Flash();
     server = context.read<Server>();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     super.initState();
     _focusNode.requestFocus();
     Future.delayed(Duration.zero, fetchEdcSettlement);

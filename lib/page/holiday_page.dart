@@ -36,7 +36,7 @@ class _HolidayPageState extends State<HolidayPage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    final setting = context.read<Setting>();
+    final setting = context.read<Authorizer>();
     columns = setting.tableColumn('holiday');
     super.initState();
     Future.delayed(Duration.zero, refreshTable);

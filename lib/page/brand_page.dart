@@ -24,13 +24,13 @@ class _BrandPageState extends State<BrandPage> with DefaultResponse {
   List<Brand> brands = [];
   final cancelToken = CancelToken();
   late Flash flash;
-  late final Setting setting;
+  late final Authorizer setting;
 
   @override
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
 
     super.initState();
     Future.delayed(Duration.zero, refreshTable);

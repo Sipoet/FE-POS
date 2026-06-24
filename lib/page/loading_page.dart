@@ -1,4 +1,5 @@
 import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:flutter/material.dart';
 import 'package:fe_pos/page/login_page.dart';
@@ -19,7 +20,9 @@ class LoadingPage extends StatefulWidget {
 
 class _LoadingPageState extends State<LoadingPage>
     with DefaultResponse, SessionState {
-  late Setting setting;
+  late final Authorizer authorizer;
+  late final DefaultSetting defaultSetting;
+  final flash = Flash();
   @override
   void initState() {
     checkPermission().then((_) {
@@ -29,31 +32,50 @@ class _LoadingPageState extends State<LoadingPage>
   }
 
   void fetchSetting(Server server) async {
-    setting = context.read<Setting>();
+    authorizer = context.read<Authorizer>();
+    defaultSetting = context.read<DefaultSetting>();
     final navigator = Navigator.of(context);
-    server.get('settings').then((response) {
-      // try {
-      if (response.statusCode == 200) {
-        setting.setTableColumns(response.data['table_columns']);
+    server
+        .get('settings')
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              authorizer.setTableColumns(response.data['table_columns']);
 
-        response.data['menus'].forEach((String key, value) {
-          setting.menus[key] = value.map<String>((e) => e.toString()).toList();
+              response.data['menus'].forEach((String key, value) {
+                authorizer.menus[key] = value
+                    .map<String>((e) => e.toString())
+                    .toList();
+              });
+
+              defaultSetting.setDefault(response.data['default_setting']);
+            } else if (response.statusCode == 409) {
+              flash.showBanner(
+                messageType: .error,
+                title: 'Error',
+                description: response.data['message'],
+              );
+            } else {
+              flash.showBanner(
+                messageType: .error,
+                title: 'Error',
+                description: response.data.toString(),
+              );
+            }
+          },
+          onError: (error) {
+            flash.showBanner(
+              messageType: .error,
+              title: 'Error',
+              description: error.toString(),
+            );
+          },
+        )
+        .whenComplete(() {
+          navigator.pushReplacement(
+            MaterialPageRoute(builder: (context) => const FrameworkLayout()),
+          );
         });
-      }
-      // } catch (error) {
-      //   AlertDialog(
-      //     title: const Text('Error'),
-      //     content: Text(error.toString()),
-      //     actions: [
-      //       ElevatedButton(
-      //           onPressed: () => navigator.pop(), child: const Text('close'))
-      //     ],
-      //   );
-      // }
-    }).whenComplete(() {
-      navigator.pushReplacement(
-          MaterialPageRoute(builder: (context) => const FrameworkLayout()));
-    });
   }
 
   Future<void> checkPermission() async {
@@ -83,8 +105,9 @@ class _LoadingPageState extends State<LoadingPage>
         content: Text(error.toString()),
         actions: [
           ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('close'))
+            onPressed: () => Navigator.pop(context),
+            child: const Text('close'),
+          ),
         ],
       );
     }
@@ -108,10 +131,7 @@ class _LoadingPageState extends State<LoadingPage>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              Text(
-                'Loading',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
+              Text('Loading', style: Theme.of(context).textTheme.titleLarge),
               SizedBox(
                 width: 70,
                 height: 70,
@@ -139,7 +159,8 @@ class _LoadingPageState extends State<LoadingPage>
             fetchSetting(server);
           } else {
             navigator.pushReplacement(
-                MaterialPageRoute(builder: (context) => const LoginPage()));
+              MaterialPageRoute(builder: (context) => const LoginPage()),
+            );
           }
         } catch (error) {
           AlertDialog(
@@ -147,8 +168,9 @@ class _LoadingPageState extends State<LoadingPage>
             content: Text(error.toString()),
             actions: [
               ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('close'))
+                onPressed: () => Navigator.pop(context),
+                child: const Text('close'),
+              ),
             ],
           );
         }
@@ -159,8 +181,9 @@ class _LoadingPageState extends State<LoadingPage>
         content: Text(error.toString()),
         actions: [
           ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('close'))
+            onPressed: () => Navigator.pop(context),
+            child: const Text('close'),
+          ),
         ],
       );
     }

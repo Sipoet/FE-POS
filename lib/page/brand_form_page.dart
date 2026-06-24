@@ -21,7 +21,7 @@ class _BrandFormPageState extends State<BrandFormPage>
     with DefaultResponse, LoadingPopup {
   late Brand brand;
   final _formState = GlobalKey<FormState>();
-  late final Setting _setting;
+  late final Authorizer _setting;
   late final Server _server;
   late final TabManager _tabManager;
   final flash = Flash();
@@ -30,7 +30,7 @@ class _BrandFormPageState extends State<BrandFormPage>
   void initState() {
     brand = widget.brand;
     _tabManager = context.read<TabManager>();
-    _setting = context.read<Setting>();
+    _setting = context.read<Authorizer>();
     _server = context.read<Server>();
     super.initState();
     if (brand.rawData.isEmpty) {

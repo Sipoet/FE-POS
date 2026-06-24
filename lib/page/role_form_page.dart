@@ -35,7 +35,7 @@ class _RoleFormPageState extends State<RoleFormPage>
   final focusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
   late final Server server;
-  late final Setting setting;
+  late final Authorizer setting;
   List<GroupWorkSchedule> groupWorkSchedules = [];
   Role get role => widget.role;
   Map<String, Map<String, bool>> currentAction = {};
@@ -52,7 +52,7 @@ class _RoleFormPageState extends State<RoleFormPage>
   void initState() {
     flash = Flash();
     server = context.read<Server>();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     Future.delayed(Duration.zero, fetchControllers);
     super.initState();
     if (role.id != null) {

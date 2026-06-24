@@ -34,7 +34,7 @@ class _PayrollTypePageState extends State<PayrollTypePage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    final setting = context.read<Setting>();
+    final setting = context.read<Authorizer>();
 
     columns = setting.tableColumn('payrollType');
 

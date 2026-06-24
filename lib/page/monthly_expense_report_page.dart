@@ -25,7 +25,7 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
     fontWeight: FontWeight.bold,
   );
   late final Server server;
-  late final Setting setting;
+  late final Authorizer setting;
   late Flash flash;
   GroupPeriodMonthlyExpenseReport _groupPeriod =
       GroupPeriodMonthlyExpenseReport.monthly;
@@ -45,7 +45,7 @@ class _MonthlyExpenseReportPageState extends State<MonthlyExpenseReportPage>
   void initState() {
     flash = Flash();
     server = context.read<Server>();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     super.initState();
   }
 

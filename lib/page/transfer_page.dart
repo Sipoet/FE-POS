@@ -25,7 +25,7 @@ class _TransferPageState extends State<TransferPage>
   List<Transfer> items = [];
   final cancelToken = CancelToken();
   late Flash flash;
-  late final Setting setting;
+  late final Authorizer setting;
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
 
@@ -36,7 +36,7 @@ class _TransferPageState extends State<TransferPage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
 
     columns = setting.tableColumn('ipos::Transfer');
 

@@ -32,7 +32,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
         TextFormatter,
         PlatformChecker {
   late final Server server;
-  late final Setting setting;
+  late final Authorizer setting;
   late Flash flash;
   String _groupPeriod = 'daily';
   String _generatedGroupPeriod = 'daily';
@@ -91,7 +91,7 @@ class _SalesTransactionGraphPageState extends State<SalesTransactionGraphPage>
   void initState() {
     flash = Flash();
     server = context.read<Server>();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     tabManager = context.read<TabManager>();
     super.initState();
     Future.delayed(Duration.zero, () => _refreshGraph());

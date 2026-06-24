@@ -25,7 +25,7 @@ class _UserPageState extends State<UserPage>
   final cancelToken = CancelToken();
   late Flash flash;
   final _menuController = MenuController();
-  late final Setting setting;
+  late final Authorizer setting;
   List<FilterData> _filters = [];
   List<TableColumn> columns = [];
 
@@ -36,7 +36,7 @@ class _UserPageState extends State<UserPage>
   void initState() {
     server = context.read<Server>();
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     columns = setting.tableColumn('user');
     super.initState();
     Future.delayed(Duration.zero, refreshTable);

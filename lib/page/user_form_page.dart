@@ -27,7 +27,7 @@ class _UserFormPageState extends State<UserFormPage>
         DefaultResponse,
         LoadingPopup {
   late Flash flash;
-  late final Setting setting;
+  late final Authorizer setting;
   final _formKey = GlobalKey<FormState>();
   User get user => widget.user;
   late final Server _server;
@@ -39,7 +39,7 @@ class _UserFormPageState extends State<UserFormPage>
   @override
   void initState() {
     flash = Flash();
-    setting = context.read<Setting>();
+    setting = context.read<Authorizer>();
     _server = context.read<Server>();
     if (user.username.isNotEmpty) {
       Future.delayed(Duration.zero, _fetchUser);
