@@ -1,5 +1,6 @@
+import 'package:collection/collection.dart';
 import 'package:fe_pos/model/product_measurement.dart';
-import 'package:fe_pos/model/stock_keeping_unit.dart';
+import 'package:fe_pos/model/item_variant.dart';
 import 'package:fe_pos/model/tag_key.dart';
 import 'package:fe_pos/model/unit_of_measurement.dart';
 import 'package:fe_pos/tool/default_response.dart';
@@ -11,7 +12,7 @@ import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/image_carousel.dart';
 import 'package:fe_pos/widget/image_form_field.dart';
 import 'package:fe_pos/widget/money_form_field.dart';
-import 'package:fe_pos/widget/stock_sell_price_form_dialog.dart';
+import 'package:fe_pos/widget/product_sell_price_form_dialog.dart';
 import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/table_form.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
@@ -88,7 +89,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                 )
                 .toList();
           });
-          refreshSku();
+          refreshItemVariant();
         })
         .whenComplete(() {
           setState(() {
@@ -98,19 +99,20 @@ class _ProductFormPageState extends State<ProductFormPage>
         });
   }
 
-  void refreshSku() {
-    if (!_setting.isAuthorize('stock_keeping_units', 'read')) {
+  void refreshItemVariant() {
+    if (!_setting.isAuthorize('item_variants', 'read')) {
       return;
     }
     final queryRequest = QueryRequest(
-      include: ['supplier', 'stock_sell_prices', 'stock_sell_prices.uom'],
-      filters: [ComparisonFilterData(key: 'product', value: product.id)],
+      include: ['image', 'product_sell_prices', 'tags', 'taggings'],
     );
-    StockKeepingUnitClass().finds(_server, queryRequest).then(((result) {
-      setState(() {
-        product.stockKeepingUnits = result.models;
-      });
-    }));
+    ItemVariantClass().finds(_server, queryRequest, parentId: product.id).then(
+      ((result) {
+        setState(() {
+          product.itemVariants = result.models;
+        });
+      }),
+    );
   }
 
   void _saveRecord() {
@@ -121,13 +123,26 @@ class _ProductFormPageState extends State<ProductFormPage>
 
     product.setTags(productTags.map((e) => e.tag!).toList());
 
-    product.save(_server, contentType: .multipartForm).then((result) {
-      if (result) {
-        setState(() {
-          product.images;
+    product.save(_server, contentType: .multipartForm).then((isSuccess) {
+      if (isSuccess) {
+        final variantSaveProcess = product.itemVariants.map((itemVariant) {
+          itemVariant.parentId = product.id;
+          if (itemVariant.isDestroyed) {
+            return itemVariant.destroy(_server);
+          } else {
+            return itemVariant.save(_server, contentType: .multipartForm);
+          }
+        }).toList();
+        Future.wait(variantSaveProcess).then((result) {
+          if (!result.contains(false)) {
+            setState(() {
+              product.images;
+            });
+            flash.show(Text('Sukses Simpan'), .success);
+            _tabManager.changeTabHeader(widget, 'Edit Produk ${product.id}');
+            refreshItemVariant();
+          }
         });
-        flash.show(Text('Sukses Simpan'), .success);
-        _tabManager.changeTabHeader(widget, 'Edit Produk ${product.id}');
       } else {
         flash.showBanner(
           messageType: .error,
@@ -223,9 +238,10 @@ class _ProductFormPageState extends State<ProductFormPage>
                   child: VerticalBodyScroll(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: .min,
                       children: [
                         Wrap(
-                          alignment: WrapAlignment.start,
+                          alignment: .start,
                           runSpacing: 10,
                           spacing: 10,
                           children: [
@@ -243,7 +259,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                             SizedBox(
                               width: 200,
                               height: 200,
-                              child: ImageFormField(
+                              child: MultipleImageFormField(
                                 maxFiles: 5,
                                 onChanged: (images) {
                                   setState(() {
@@ -261,6 +277,8 @@ class _ProductFormPageState extends State<ProductFormPage>
                                     product.supplierProductCode = value,
                                 keyboardType: TextInputType.text,
                                 decoration: InputDecoration(
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.always,
                                   label: Text(
                                     "${_setting.columnName('product', 'supplier_product_code')}*",
                                     style: DefaultResponse.labelStyle,
@@ -371,6 +389,8 @@ class _ProductFormPageState extends State<ProductFormPage>
                                   ),
                                 ],
                                 decoration: InputDecoration(
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.always,
                                   label: Text(
                                     _setting.columnName('product', 'barcode'),
                                     style: DefaultResponse.labelStyle,
@@ -395,15 +415,27 @@ class _ProductFormPageState extends State<ProductFormPage>
                             ),
                             if (_setting.canShow('product', 'sell_price'))
                               SizedBox(
-                                width: 250,
-                                child: MoneyFormField(
-                                  label: Text(
-                                    'Harga Jual',
-                                    style: DefaultResponse.labelStyle,
-                                  ),
-                                  onChanged: (value) => product.sellPrice =
-                                      value ?? const Money(0),
-                                  initialValue: product.sellPrice,
+                                width: 300,
+                                child: Row(
+                                  children: [
+                                    Flexible(
+                                      child: MoneyFormField(
+                                        label: Text(
+                                          'Harga Jual',
+                                          style: DefaultResponse.labelStyle,
+                                        ),
+                                        onChanged: (value) =>
+                                            product.sellPrice =
+                                                value ?? const Money(0),
+                                        initialValue: product.sellPrice,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () =>
+                                          showProductSellPriceDialog(product),
+                                      icon: Icon(Icons.list_alt_sharp),
+                                    ),
+                                  ],
                                 ),
                               ),
                             SizedBox(
@@ -465,6 +497,8 @@ class _ProductFormPageState extends State<ProductFormPage>
                                 minLines: 3,
                                 maxLines: 5,
                                 decoration: InputDecoration(
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.always,
                                   label: Text(
                                     _setting.columnName(
                                       'product',
@@ -493,7 +527,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                               headerBuilder: (context, isExpanded) => Padding(
                                 padding: const EdgeInsets.only(left: 10.0),
                                 child: Text(
-                                  'Detail Produk',
+                                  'Detail/Tag Produk',
                                   style: DefaultResponse.labelStyle,
                                 ),
                               ),
@@ -673,7 +707,9 @@ class _ProductFormPageState extends State<ProductFormPage>
                                                       value;
                                                 },
                                                 decoration: InputDecoration(
-                                                  isDense: true,
+                                                  floatingLabelBehavior:
+                                                      FloatingLabelBehavior
+                                                          .always,
                                                   border: OutlineInputBorder(),
                                                 ),
                                               ),
@@ -796,210 +832,219 @@ class _ProductFormPageState extends State<ProductFormPage>
                                 rows: product.productMeasurements,
                               ),
                             ),
-                            if (_setting.isAuthorize(
-                              'stock_keeping_units',
-                              'read',
-                            ))
-                              ExpansionPanel(
-                                isExpanded: panelPool[2] == true,
-                                canTapOnHeader: true,
-                                headerBuilder: (context, isExpanded) => Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Text(
-                                    'SKU / Varian',
-                                    style: DefaultResponse.labelStyle,
-                                  ),
+                            ExpansionPanel(
+                              isExpanded: panelPool[2] == true,
+                              canTapOnHeader: true,
+                              headerBuilder: (context, isExpanded) => Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        'Variasi',
+                                        style: DefaultResponse.labelStyle,
+                                      ),
+                                    ),
+                                    if (!product.isNewRecord)
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 15,
+                                        ),
+                                        child: IconButton(
+                                          onPressed: refreshItemVariant,
+                                          icon: Icon(Icons.refresh),
+                                        ),
+                                      ),
+                                  ],
                                 ),
-                                body: TableForm<StockKeepingUnit>(
-                                  columns: [
-                                    TableFormColumn(
-                                      title: 'Barcode',
-                                      headerBuilder: (context) => Text(
-                                        'Barcode',
-                                        style: DefaultResponse.labelStyle,
-                                      ),
-                                      rowBuilder: (context, stockKeepingUnit) =>
-                                          SelectableText(
-                                            stockKeepingUnit.barcode,
-                                          ),
+                              ),
+                              body: TableForm<ItemVariant>(
+                                columns: [
+                                  TableFormColumn(
+                                    title: 'Tag',
+                                    headerBuilder: (context) => Text(
+                                      'Tag',
+                                      style: DefaultResponse.labelStyle,
                                     ),
-                                    TableFormColumn(
-                                      title: 'Kode Unik',
-                                      headerBuilder: (context) => Text(
-                                        'Kode Unik',
-                                        style: DefaultResponse.labelStyle,
-                                      ),
-                                      rowBuilder: (context, stockKeepingUnit) =>
-                                          SelectableText(
-                                            stockKeepingUnit.uniqCode,
-                                          ),
+                                    rowBuilder: (context, itemVariant) =>
+                                        AsyncDropdownMultiple<Tag>(
+                                          selecteds: itemVariant.tags,
+                                          validator: (models) {
+                                            if (models == null ||
+                                                models.isEmpty) {
+                                              return 'harus diisi';
+                                            }
+                                            return null;
+                                          },
+                                          textOnSearch: (model) =>
+                                              '${model.tagKey?.name}: ${model.value}',
+                                          textOnSelected: (model) =>
+                                              model.value,
+                                          modelClass: TagClass(),
+                                          onChanged: (models) =>
+                                              itemVariant.setTags(models),
+                                        ),
+                                  ),
+                                  TableFormColumn(
+                                    title: 'Barcode',
+                                    headerBuilder: (context) => Text(
+                                      'Barcode',
+                                      style: DefaultResponse.labelStyle,
                                     ),
+                                    rowBuilder: (context, itemVariant) =>
+                                        TextFormField(
+                                          keyboardType: TextInputType.text,
+                                          onChanged: (value) =>
+                                              itemVariant.barcode = value,
+                                          initialValue: itemVariant.barcode,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .singleLineFormatter,
+                                            UpperCaseTextFormatter(),
+                                            FilteringTextInputFormatter.allow(
+                                              RegExp('[0-9A-Z]'),
+                                            ),
+                                          ],
+                                          decoration: InputDecoration(
+                                            floatingLabelBehavior:
+                                                FloatingLabelBehavior.always,
+                                            hintText: 'Auto',
+                                            helperText:
+                                                'hanya boleh diisi huruf dan angka',
+                                            border: OutlineInputBorder(),
+                                          ),
+                                        ),
+                                  ),
+                                  if (_setting.canShow('product', 'sell_price'))
                                     TableFormColumn(
-                                      title: 'Jumlah',
+                                      title: 'Harga Jual',
                                       isNumeric: true,
                                       headerBuilder: (context) => Text(
-                                        'Jumlah',
+                                        'Harga Jual',
                                         style: DefaultResponse.labelStyle,
                                         textAlign: .right,
                                       ),
-                                      rowBuilder: (context, stockKeepingUnit) =>
-                                          SelectableText(
-                                            stockKeepingUnit.quantity
-                                                    ?.format() ??
-                                                '',
-                                            textAlign: .right,
-                                          ),
-                                    ),
-                                    if (_setting.canShow(
-                                      'stockKeepingUnit',
-                                      'cogs',
-                                    ))
-                                      TableFormColumn(
-                                        title: 'Avg HPP',
-                                        isNumeric: true,
-                                        headerBuilder: (context) => Text(
-                                          'Avg HPP',
-                                          style: DefaultResponse.labelStyle,
-                                          textAlign: .right,
-                                        ),
-                                        rowBuilder:
-                                            (context, stockKeepingUnit) =>
-                                                SelectableText(
-                                                  stockKeepingUnit.cogs
-                                                          ?.format() ??
-                                                      '',
-                                                  textAlign: .right,
-                                                ),
-                                      ),
-                                    if (_setting.canShow(
-                                      'stockKeepingUnit',
-                                      'sell_price',
-                                    ))
-                                      TableFormColumn(
-                                        title: 'Harga Jual',
-                                        isNumeric: true,
-                                        headerBuilder: (context) => Text(
-                                          'Harga Jual',
-                                          style: DefaultResponse.labelStyle,
-                                          textAlign: .right,
-                                        ),
-                                        rowBuilder:
-                                            (
-                                              context,
-                                              stockKeepingUnit,
-                                            ) => Column(
-                                              spacing: 10,
-                                              children: [
-                                                Text(
-                                                  stockKeepingUnit
-                                                      .stockSellPrices
-                                                      .map<String>(
-                                                        (
-                                                          stockSellPrice,
-                                                        ) => stockSellPrice
-                                                            .priceWithUomText,
-                                                      )
-                                                      .join('\n'),
-                                                  overflow: .ellipsis,
-                                                  textAlign: .right,
-                                                  maxLines: 2,
-                                                ),
-                                                ElevatedButton.icon(
-                                                  onPressed: () =>
-                                                      showStockSellPriceDialog(
-                                                        stockKeepingUnit,
-                                                      ),
-                                                  icon: Icon(Icons.edit),
-                                                  label: Text('ubah'),
-                                                ),
-                                              ],
-                                            ),
-                                      ),
-                                    TableFormColumn(
-                                      title: 'Supplier',
-                                      isNumeric: true,
-                                      headerBuilder: (context) => Text(
-                                        'Supplier',
-                                        style: DefaultResponse.labelStyle,
-                                      ),
-                                      rowBuilder: (context, stockKeepingUnit) =>
-                                          TextButton(
-                                            onPressed:
-                                                stockKeepingUnit.supplier ==
-                                                    null
-                                                ? null
-                                                : () {},
-                                            child: Text(
-                                              stockKeepingUnit.supplier?.name ??
-                                                  '',
+
+                                      rowBuilder: (context, itemVariant) => Row(
+                                        children: [
+                                          Flexible(
+                                            child: MoneyFormField(
+                                              onChanged: (value) =>
+                                                  itemVariant.sellPrice =
+                                                      value ?? const Money(0),
+                                              initialValue:
+                                                  itemVariant.sellPrice,
                                             ),
                                           ),
-                                    ),
-                                    TableFormColumn(
-                                      title: 'Tanggal Expired',
-                                      isNumeric: true,
-                                      headerBuilder: (context) => Text(
-                                        'Tanggal Expired',
-                                        style: DefaultResponse.labelStyle,
-                                      ),
-                                      rowBuilder: (context, stockKeepingUnit) =>
-                                          Text(
-                                            stockKeepingUnit.expiredDate
-                                                    ?.format() ??
-                                                '',
+                                          IconButton(
+                                            onPressed: () =>
+                                                showProductSellPriceDialog(
+                                                  itemVariant,
+                                                ),
+                                            icon: Icon(Icons.list_alt_sharp),
                                           ),
-                                    ),
-                                    TableFormColumn(
-                                      title: 'Tanggal Produksi',
-                                      isNumeric: true,
-                                      headerBuilder: (context) => Text(
-                                        'Tanggal Produksi',
-                                        style: DefaultResponse.labelStyle,
+                                        ],
                                       ),
-                                      rowBuilder: (context, stockKeepingUnit) =>
-                                          Text(
-                                            stockKeepingUnit.prodDate
-                                                    ?.format() ??
-                                                '',
-                                          ),
                                     ),
-                                    TableFormColumn(
-                                      title: 'Tanggal Beli',
-                                      isNumeric: true,
-                                      headerBuilder: (context) => Text(
-                                        'Tanggal Beli',
-                                        style: DefaultResponse.labelStyle,
+
+                                  TableFormColumn(
+                                    title: 'Gambar',
+                                    isNumeric: true,
+                                    headerBuilder: (context) => Text(
+                                      'Gambar',
+                                      style: DefaultResponse.labelStyle,
+                                    ),
+                                    rowBuilder: (context, itemVariant) =>
+                                        ImageFormField(
+                                          width: 100,
+                                          height: 100,
+                                          initialValue: itemVariant.image,
+                                          onChanged: (image) {
+                                            setState(() {
+                                              itemVariant.image = image;
+                                            });
+                                          },
+                                        ),
+                                  ),
+                                ],
+                                rows: product.itemVariants
+                                    .whereNot((e) => e.isDestroyed)
+                                    .toList(),
+                                actionColumn: TableFormColumn(
+                                  desktopWidth: FixedColumnWidth(200),
+                                  headerBuilder: (context) => Row(
+                                    mainAxisAlignment: .spaceEvenly,
+                                    children: [
+                                      IconButton(
+                                        onPressed: _addVariant,
+                                        icon: Icon(Icons.add),
                                       ),
-                                      rowBuilder: (context, stockKeepingUnit) =>
-                                          Text(
-                                            stockKeepingUnit.purchaseDate
-                                                    ?.format() ??
-                                                '',
-                                          ),
-                                    ),
-                                    TableFormColumn(
-                                      title: 'Kode Produksi',
-                                      isNumeric: true,
-                                      headerBuilder: (context) => Text(
-                                        'Kode Produksi',
-                                        style: DefaultResponse.labelStyle,
+                                      IconButton(
+                                        onPressed: _showgenerateVariantDialog,
+                                        icon: Icon(Icons.copy),
                                       ),
-                                      rowBuilder: (context, stockKeepingUnit) =>
-                                          Text(stockKeepingUnit.batchCode),
-                                    ),
-                                  ],
-                                  rows: product.stockKeepingUnits,
-                                  actionColumn: TableFormColumn(
-                                    desktopWidth: FixedColumnWidth(60),
-                                    headerBuilder: (context) => IconButton(
-                                      onPressed: refreshSku,
-                                      icon: Icon(Icons.refresh),
-                                    ),
-                                    rowBuilder: (context, model) =>
-                                        const SizedBox(),
+                                      IconButton(
+                                        onPressed: () async {
+                                          if (await showConfirmDialog2(
+                                            message:
+                                                'Apakah yakin hapus semua varian?',
+                                          )) {
+                                            setState(() {
+                                              product.itemVariants.removeAll();
+                                              product.itemVariants;
+                                            });
+                                          }
+                                        },
+                                        icon: Icon(Icons.delete),
+                                      ),
+                                    ],
+                                  ),
+                                  rowBuilder: (context, itemVariant) => Row(
+                                    mainAxisAlignment: .spaceEvenly,
+                                    children: [
+                                      IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            final int index =
+                                                product.itemVariants.indexOf(
+                                                  itemVariant,
+                                                ) +
+                                                1;
+                                            product.itemVariants.insert(
+                                              index,
+                                              ItemVariant(
+                                                description:
+                                                    itemVariant.description,
+                                                barcode: itemVariant.barcode,
+                                                taggings: itemVariant.taggings,
+                                                image: itemVariant.image,
+                                                sellPrice:
+                                                    itemVariant.sellPrice,
+                                              ),
+                                            );
+                                          });
+                                        },
+                                        icon: Icon(Icons.copy),
+                                      ),
+                                      IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            if (itemVariant.isNewRecord) {
+                                              product.itemVariants.remove(
+                                                itemVariant,
+                                              );
+                                            } else {
+                                              itemVariant.flagDestroy();
+                                            }
+                                          });
+                                        },
+                                        icon: Icon(Icons.delete),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
+                            ),
                           ],
                         ),
                       ],
@@ -1047,6 +1092,146 @@ class _ProductFormPageState extends State<ProductFormPage>
     );
   }
 
+  void _addVariant() {
+    setState(() {
+      product.itemVariants.add(ItemVariant(sellPrice: product.sellPrice));
+    });
+  }
+
+  void _showgenerateVariantDialog() {
+    Map<int, List<Tag>> data = {};
+    List<TagKey> tagKeys = [TagKey()];
+    final formState = GlobalKey<FormState>();
+    showDialog(
+      context: context,
+      builder: (context) {
+        final navigator = Navigator.of(context);
+        final size = MediaQuery.sizeOf(context);
+        return StatefulBuilder(
+          builder: (context, setStateDialog) => Form(
+            key: formState,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: AlertDialog(
+                  title: Row(
+                    mainAxisAlignment: .spaceBetween,
+                    children: [
+                      Flexible(child: Text('Varian Generator')),
+                      IconButton(
+                        onPressed: () => navigator.pop(),
+                        icon: Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                  content: SizedBox(
+                    height: size.height,
+                    width: size.width,
+                    child: TableForm<TagKey>(
+                      columns: [
+                        TableFormColumn(
+                          headerBuilder: (context) => Text('Kategori'),
+                          title: 'Kategori',
+                          rowBuilder: (context, model) => AsyncDropdown<TagKey>(
+                            textOnSearch: (tagKey) => tagKey.name,
+                            modelClass: TagKeyClass(),
+                            onChanged: (tagKey) => setStateDialog(() {
+                              model.id = tagKey?.id;
+                              model.name = tagKey?.name ?? model.name;
+                              model.group = tagKey?.group;
+                            }),
+                          ),
+                        ),
+                        TableFormColumn(
+                          headerBuilder: (context) => Text('Opsi'),
+                          title: 'Opsi',
+                          rowBuilder: (context, model) =>
+                              AsyncDropdownMultiple<Tag>(
+                                textOnSearch: (model) => model.value,
+                                modelClass: TagClass(),
+                                request: (queryRequest) {
+                                  queryRequest.filters = [
+                                    ComparisonFilterData(
+                                      key: 'tag_key',
+                                      value: model.id,
+                                    ),
+                                  ];
+                                  return TagClass().finds(
+                                    _server,
+                                    queryRequest,
+                                  );
+                                },
+                                onChanged: (models) =>
+                                    data[tagKeys.indexOf(model)] = models,
+                              ),
+                        ),
+                      ],
+                      rows: tagKeys,
+                      actionColumn: TableFormColumn(
+                        rowBuilder: (context, model) => IconButton(
+                          onPressed: () => setStateDialog(() {
+                            final index = tagKeys.indexOf(model);
+                            tagKeys.removeAt(index);
+                            data.remove(index);
+                          }),
+                          icon: Icon(Icons.delete),
+                        ),
+                        headerBuilder: (context) => IconButton(
+                          onPressed: () => setStateDialog(() {
+                            tagKeys.add(TagKey());
+                          }),
+                          icon: Icon(Icons.add),
+                        ),
+                      ),
+                    ),
+                  ),
+                  actions: [
+                    ElevatedButton(
+                      onPressed: () {
+                        if (formState.currentState?.validate() == true) {
+                          setState(() {
+                            _generateVariant(
+                              root: data.values.toList(),
+                              index: 0,
+                              values: [],
+                            );
+                          });
+                          navigator.pop();
+                        }
+                      },
+                      child: Text('Generate'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _generateVariant({
+    required int index,
+    required List<List<Tag>> root,
+    required List<Tag> values,
+  }) {
+    if (root.length <= index) {
+      final itemVariant = ItemVariant(
+        description: product.description,
+        sellPrice: product.sellPrice,
+      );
+      itemVariant.setTags(values);
+      product.itemVariants.add(itemVariant);
+      return;
+    }
+    for (final tag in root[index]) {
+      final newValues = values.toList();
+      newValues.add(tag);
+      _generateVariant(index: index + 1, root: root, values: newValues);
+    }
+  }
+
   void _createTag(ProductTag productTag) {
     if (productTag.newTagValue?.isEmpty == true) {
       return;
@@ -1066,16 +1251,16 @@ class _ProductFormPageState extends State<ProductFormPage>
     });
   }
 
-  void showStockSellPriceDialog(StockKeepingUnit stockKeepingUnit) {
+  void showProductSellPriceDialog(Product product) {
     showDialog(
       context: context,
       builder: (context) {
         final navigator = Navigator.of(context);
-        return StockSellPriceFormDialog(
+        return ProductSellPriceFormDialog(
           tabManager: _tabManager,
           navigator: navigator,
           productMeasurements: product.productMeasurements,
-          stockKeepingUnit: stockKeepingUnit,
+          product: product,
         );
       },
     );

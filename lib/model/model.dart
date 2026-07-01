@@ -254,39 +254,38 @@ abstract class ModelClass<T extends Model> {
     final param = queryRequest.toQueryParam();
     return server
         .get(path, queryParam: param, cancelToken: queryRequest.cancelToken)
-        .then(
-          (response) {
-            if (response.statusCode != 200) {
-              throw 'error: ${response.data.toString()}';
-            }
-            final data = response.data;
-            return QueryResponse(
-              metadata: data['meta'],
-              models: data['data']
-                  .map<T>(
-                    (json) => fromJson(json, included: data['included'] ?? []),
-                  )
-                  .toList(),
-            );
-          },
-          onError: (error) {
-            if (error is DioException) {
-              switch (error.type) {
-                case DioExceptionType.badResponse:
-                case DioExceptionType.connectionError:
-                case DioExceptionType.sendTimeout:
-                  throw 'Gagal Koneksi Server. Periksa Koneksi internet anda';
-                case DioExceptionType.connectionTimeout:
-                case DioExceptionType.receiveTimeout:
-                  throw 'Server Sibuk. Cobalah lagi beberapa saat';
-                default:
-                  throw 'koneksi error';
-              }
-            }
-            debugPrint(error.toString());
-            return QueryResponse();
-          },
-        );
+        .then(responseToStatusCode, onError: responseToError);
+  }
+
+  QueryResponse<T> responseToStatusCode(response) {
+    if (response.statusCode != 200) {
+      throw 'error: ${response.data.toString()}';
+    }
+    final data = response.data;
+    return QueryResponse(
+      metadata: data['meta'],
+      models: data['data']
+          .map<T>((json) => fromJson(json, included: data['included'] ?? []))
+          .toList(),
+    );
+  }
+
+  QueryResponse<T> responseToError(error) {
+    if (error is DioException) {
+      switch (error.type) {
+        case DioExceptionType.badResponse:
+        case DioExceptionType.connectionError:
+        case DioExceptionType.sendTimeout:
+          throw 'Gagal Koneksi Server. Periksa Koneksi internet anda';
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.receiveTimeout:
+          throw 'Server Sibuk. Cobalah lagi beberapa saat';
+        default:
+          throw 'koneksi error';
+      }
+    }
+    debugPrint(error.toString());
+    return QueryResponse();
   }
 }
 
@@ -323,6 +322,8 @@ mixin SaveNDestroyModel on Model {
         formData.files.add(
           MapEntry(formKey, MultipartFile.fromFileSync(object.path)),
         );
+      } else if (object is MultipartFile) {
+        formData.files.add(MapEntry(formKey, object));
       } else if (object is ImageModel) {
         final value = object.asMapData();
         if (value is MultipartFile) {
@@ -395,7 +396,7 @@ mixin SaveNDestroyModel on Model {
         );
         body.fields.add(MapEntry('data[type]', modelName));
       }
-      request = server.post(path, body: body, contentType: contentType);
+      request = server.post(createPath, body: body, contentType: contentType);
     } else {
       if (contentType == .json) {
         body = {
@@ -411,7 +412,7 @@ mixin SaveNDestroyModel on Model {
         body.fields.add(MapEntry('data[type]', modelName));
         body.fields.add(MapEntry('data[id]', id.toString()));
       }
-      request = server.put("$path/$id", body: body, contentType: contentType);
+      request = server.put(updatePath, body: body, contentType: contentType);
     }
     return request.then(
       (response) {
@@ -437,9 +438,13 @@ mixin SaveNDestroyModel on Model {
     );
   }
 
+  String get createPath => path;
+  String get updatePath => "$path/$id";
+  String get deletePath => "$path/$id";
+
   Future<bool> destroy(Server server) async {
     return server
-        .delete("$path/$id")
+        .delete(deletePath)
         .then(
           (response) {
             if (response.statusCode == 200) {

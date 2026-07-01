@@ -49,7 +49,11 @@ class _ImageCarouselState extends State<ImageCarousel> {
             color: Colors.grey.shade300,
             borderRadius: .all(.circular(10)),
             image: DecorationImage(
-              image: controller.activeImage,
+              image: ResizeImage(
+                controller.activeImage,
+                width: widget.width.toInt(),
+                height: widget.height.toInt(),
+              ),
               fit: .contain,
             ),
           ),

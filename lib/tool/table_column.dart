@@ -249,7 +249,20 @@ class ImageTableColumnType extends TableColumnType<ImageModel> {
         ? const SizedBox()
         : InkWell(
             onTap: () => _openImageViewer(context, value),
-            child: SizedBox(width: 60, child: Image(image: value)),
+            child: SizedBox(
+              width: 60,
+              child: Image(
+                image: ResizeImage(
+                  value,
+                  width: 60,
+                  height:
+                      ((value.size?.height ?? 1) *
+                              60 /
+                              (value.size?.width ?? 1))
+                          .toInt(),
+                ),
+              ),
+            ),
           );
   }
 

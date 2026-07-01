@@ -128,6 +128,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                     labelText: 'Margin',
                     labelStyle: TextFormatter.labelStyle,
                     border: OutlineInputBorder(),
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
                   ),
                   initialValue: margin.toString(),
                   onChanged: (value) =>
@@ -164,6 +165,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                       labelText: 'Mark batasan',
                       labelStyle: TextFormatter.labelStyle,
                       border: OutlineInputBorder(),
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
                     ),
                     initialValue: markSeparator.toString(),
                     onChanged: (value) =>
@@ -178,6 +180,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                       labelText: 'Mark Atas',
                       labelStyle: TextFormatter.labelStyle,
                       border: OutlineInputBorder(),
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
                     ),
                     initialValue: markUpper.toString(),
                     onChanged: (value) =>
@@ -192,6 +195,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                       labelText: 'Mark Bawah',
                       labelStyle: TextFormatter.labelStyle,
                       border: OutlineInputBorder(),
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
                     ),
                     initialValue: markLower.toString(),
                     onChanged: (value) =>
@@ -358,6 +362,8 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                         'purchaseOrder',
                                         'code',
                                       ),
+                                      floatingLabelBehavior:
+                                          FloatingLabelBehavior.always,
                                       labelStyle: TextFormatter.labelStyle,
                                       border: const OutlineInputBorder(),
                                       hintText: 'Auto',
@@ -997,6 +1003,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
             decoration: InputDecoration(
               labelText: setting.columnName('purchaseOrder', 'description'),
               labelStyle: TextFormatter.labelStyle,
+              floatingLabelBehavior: FloatingLabelBehavior.always,
               border: const OutlineInputBorder(),
             ),
             keyboardType: .multiline,
@@ -1019,6 +1026,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
             decoration: InputDecoration(
               labelText: setting.columnName('purchaseOrder', 'discount_total'),
               labelStyle: TextFormatter.labelStyle,
+              floatingLabelBehavior: FloatingLabelBehavior.always,
               border: const OutlineInputBorder(),
             ),
             readOnly: true,
@@ -1040,6 +1048,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
             decoration: InputDecoration(
               labelText: setting.columnName('purchaseOrder', 'product_total'),
               labelStyle: TextFormatter.labelStyle,
+              floatingLabelBehavior: FloatingLabelBehavior.always,
               border: const OutlineInputBorder(),
             ),
             readOnly: true,
@@ -1058,6 +1067,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
             decoration: InputDecoration(
               labelText: setting.columnName('purchaseOrder', 'subtotal'),
               labelStyle: TextFormatter.labelStyle,
+              floatingLabelBehavior: FloatingLabelBehavior.always,
               border: const OutlineInputBorder(),
             ),
             readOnly: true,
@@ -1100,6 +1110,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                       'purchaseOrder',
                       'discount_amount',
                     ),
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
                     labelStyle: TextFormatter.labelStyle,
                     border: const OutlineInputBorder(),
                   ),
@@ -1180,6 +1191,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                       'purchaseOrder',
                       'cost_total',
                     ),
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
                     labelStyle: TextFormatter.labelStyle,
                     border: const OutlineInputBorder(),
                   ),
@@ -1202,6 +1214,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
             decoration: InputDecoration(
               labelText: setting.columnName('purchaseOrder', 'grandtotal'),
               labelStyle: TextFormatter.labelStyle,
+              floatingLabelBehavior: FloatingLabelBehavior.always,
               border: const OutlineInputBorder(),
             ),
             readOnly: true,

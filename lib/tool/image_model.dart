@@ -11,6 +11,7 @@ class ImageModel extends ImageProvider<Uri> {
   String? filename;
   int? id;
   bool _flagDestroyed = false;
+  ui.Size? size;
   Dio dio =
       Dio(
           BaseOptions(
@@ -125,6 +126,7 @@ class ImageModel extends ImageProvider<Uri> {
     final StreamController<ImageChunkEvent> chunkEvents =
         StreamController<ImageChunkEvent>();
     if (bytes != null) {
+      _setSizeFromBytes(bytes!);
       return MultiFrameImageStreamCompleter(
         codec: ui.ImmutableBuffer.fromUint8List(bytes!).then(decode),
         chunkEvents: chunkEvents.stream,
@@ -149,7 +151,10 @@ class ImageModel extends ImageProvider<Uri> {
             return Future<Uint8List>.error(e, stack);
           })
           .whenComplete(chunkEvents.close)
-          .then<ui.ImmutableBuffer>(ui.ImmutableBuffer.fromUint8List)
+          .then<ui.ImmutableBuffer>((bytes) {
+            _setSizeFromBytes(bytes);
+            return ui.ImmutableBuffer.fromUint8List(bytes);
+          })
           .then<ui.Codec>(decode),
       chunkEvents: chunkEvents.stream,
       scale: 1.0,
@@ -163,6 +168,15 @@ class ImageModel extends ImageProvider<Uri> {
 
   @override
   String toString() => '${objectRuntimeType(this, 'ImageModel')}("$id")';
+
+  void _setSizeFromBytes(Uint8List bytes) async {
+    ui.decodeImageFromList(bytes, (decodedImage) {
+      size = ui.Size(
+        decodedImage.width.toDouble(),
+        decodedImage.height.toDouble(),
+      );
+    });
+  }
 }
 
 class ImageModelClass {

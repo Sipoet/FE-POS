@@ -16,6 +16,7 @@ class DoubleType with TextFormatter implements NumType<double> {
   @override
   InputDecoration decorateInput({Widget? label, String? hintText}) =>
       InputDecoration(
+        floatingLabelBehavior: FloatingLabelBehavior.always,
         contentPadding: const EdgeInsets.all(5),
         label: label,
         hintText: hintText,
@@ -31,6 +32,7 @@ class IntegerType with TextFormatter implements NumType<int> {
   @override
   InputDecoration decorateInput({Widget? label, String? hintText}) =>
       InputDecoration(
+        floatingLabelBehavior: FloatingLabelBehavior.always,
         contentPadding: const EdgeInsets.all(5),
         label: label,
         hintText: hintText,
@@ -47,6 +49,7 @@ class MoneyType with TextFormatter implements NumType<Money> {
   InputDecoration decorateInput({Widget? label, String? hintText}) =>
       InputDecoration(
         label: label,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
         contentPadding: const EdgeInsets.all(5),
         prefix: const Text(
           'Rp ',
@@ -66,6 +69,7 @@ class PercentageType with TextFormatter implements NumType<Percentage> {
   InputDecoration decorateInput({Widget? label, String? hintText}) =>
       InputDecoration(
         label: label,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
         contentPadding: const EdgeInsets.all(5),
         suffixIcon: const Icon(Icons.percent),
         border: const OutlineInputBorder(),

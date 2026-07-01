@@ -3,7 +3,8 @@ import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/product_category.dart';
 import 'package:fe_pos/model/product_measurement.dart';
 import 'package:fe_pos/model/stock_keeping_unit.dart';
-
+import 'package:fe_pos/model/product_sell_price.dart';
+import 'package:fe_pos/model/item_variant.dart';
 import 'package:fe_pos/model/tag.dart';
 import 'package:fe_pos/model/supplier.dart';
 import 'package:fe_pos/model/brand.dart';
@@ -14,6 +15,7 @@ export 'package:fe_pos/tool/image_model.dart';
 export 'package:fe_pos/model/brand.dart';
 export 'package:fe_pos/model/supplier.dart';
 export 'package:fe_pos/model/tag.dart';
+
 export 'package:fe_pos/model/product_category.dart';
 
 class Product extends Model with SaveNDestroyModel {
@@ -31,6 +33,8 @@ class Product extends Model with SaveNDestroyModel {
   List<Tagging> taggings = [];
   List<ProductMeasurement> productMeasurements = [];
   List<StockKeepingUnit> stockKeepingUnits = [];
+  List<ProductSellPrice> productSellPrices = [];
+  List<ItemVariant> itemVariants = [];
   List<ImageModel> images = [];
   ImageModel? defaultImage;
 
@@ -83,6 +87,12 @@ class Product extends Model with SaveNDestroyModel {
         .map((e) => e.asJson())
         .toList(),
     'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
+    'product_sell_prices_attributes': productSellPrices
+        .map((e) => e.asJson())
+        .toList(),
+    // 'product_variants_attributes': itemVariants
+    //     .map((e) => e.asJson())
+    //     .toList(),
   };
 
   List<ImageModel> get markedDestroyedImages =>
@@ -116,7 +126,7 @@ class Product extends Model with SaveNDestroyModel {
     description = attributes['description'] ?? '';
     barcode = attributes['barcode'] ?? '';
     supplierProductCode = attributes['supplier_product_code'];
-    barcodeUsingBatch = attributes['barcode_using_batch'];
+    barcodeUsingBatch = attributes['barcode_using_batch'] ?? false;
     brand = BrandClass().findRelationData(
       relation: json['relationships']?['brand'],
       included: included,
@@ -150,6 +160,10 @@ class Product extends Model with SaveNDestroyModel {
     );
     productMeasurements = ProductMeasurementClass().findRelationsData(
       relation: json['relationships']?['product_measurements'],
+      included: included,
+    );
+    productSellPrices = ProductSellPriceClass().findRelationsData(
+      relation: json['relationships']?['product_sell_prices'],
       included: included,
     );
     stockKeepingUnits = StockKeepingUnitClass().findRelationsData(

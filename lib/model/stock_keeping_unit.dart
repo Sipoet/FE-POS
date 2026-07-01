@@ -1,7 +1,6 @@
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/product.dart';
 import 'package:fe_pos/model/unit_of_measurement.dart';
-import 'package:fe_pos/model/stock_sell_price.dart';
 
 class StockKeepingUnit extends Model with SaveNDestroyModel {
   String barcode;
@@ -15,7 +14,6 @@ class StockKeepingUnit extends Model with SaveNDestroyModel {
   Product? product;
   double? quantity;
   Money? cogs;
-  List<StockSellPrice> stockSellPrices = [];
   // Money? sellPrice;
 
   StockKeepingUnit({
@@ -31,10 +29,8 @@ class StockKeepingUnit extends Model with SaveNDestroyModel {
     this.product,
     this.quantity,
     this.cogs,
-    List<StockSellPrice>? stockSellPrices,
-    // this.sellPrice,
     this.batchCode = '',
-  }) : stockSellPrices = stockSellPrices ?? [];
+  });
 
   @override
   Map<String, dynamic> toMap() => {
@@ -52,9 +48,6 @@ class StockKeepingUnit extends Model with SaveNDestroyModel {
     'expired_date': expiredDate,
     'quantity': quantity,
     'cogs': cogs,
-    'stock_sell_prices_attributes': stockSellPrices
-        .map((e) => e.asJson())
-        .toList(),
   };
   @override
   String get path => 'stock_keeping_units';
@@ -84,10 +77,6 @@ class StockKeepingUnit extends Model with SaveNDestroyModel {
     );
     supplier = SupplierClass().findRelationData(
       relation: json['relationships']?['supplier'],
-      included: included,
-    );
-    stockSellPrices = StockSellPriceClass().findRelationsData(
-      relation: json['relationships']?['stock_sell_prices'],
       included: included,
     );
     // sellPrice = Money.tryParse(attributes['sell_price'] ?? '');

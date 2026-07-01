@@ -1,17 +1,17 @@
 import 'package:fe_pos/model/model.dart';
-import 'package:fe_pos/model/stock_keeping_unit.dart';
+import 'package:fe_pos/model/product.dart';
 import 'package:fe_pos/model/unit_of_measurement.dart';
 
-class StockSellPrice extends Model {
+class ProductSellPrice extends Model {
   UnitOfMeasurement? uom;
   Money? sellPrice;
-  StockKeepingUnit? sku;
+  Product? product;
   double? maxQuantity;
-  StockSellPrice({
+  ProductSellPrice({
     this.sellPrice,
     this.uom,
     this.maxQuantity,
-    this.sku,
+    this.product,
     super.id,
   });
 
@@ -21,8 +21,8 @@ class StockSellPrice extends Model {
     'uom_id': uom?.id,
     'sell_price': sellPrice,
     'max_quantity': maxQuantity,
-    'sku': sku,
-    'sku_id': sku?.id,
+    'product': product,
+    'product_id': product?.id,
   };
 
   @override
@@ -40,15 +40,15 @@ class StockSellPrice extends Model {
       relation: json['relationships']?['uom'],
       included: included,
     );
-    sku = StockKeepingUnitClass().findRelationData(
-      relation: json['relationships']?['sku'],
+    product = ProductClass().findRelationData(
+      relation: json['relationships']?['product'],
       isRootIncluded: false,
       included: included,
     );
   }
 }
 
-class StockSellPriceClass extends ModelClass<StockSellPrice> {
+class ProductSellPriceClass extends ModelClass<ProductSellPrice> {
   @override
-  StockSellPrice initModel() => StockSellPrice();
+  ProductSellPrice initModel() => ProductSellPrice();
 }

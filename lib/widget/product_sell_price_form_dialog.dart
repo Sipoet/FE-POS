@@ -1,6 +1,6 @@
 import 'package:fe_pos/model/product_measurement.dart';
-import 'package:fe_pos/model/stock_keeping_unit.dart';
-import 'package:fe_pos/model/stock_sell_price.dart';
+import 'package:fe_pos/model/product.dart';
+import 'package:fe_pos/model/product_sell_price.dart';
 import 'package:fe_pos/model/unit_of_measurement.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/model_route.dart';
@@ -13,31 +13,31 @@ import 'package:fe_pos/widget/table_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class StockSellPriceFormDialog extends StatefulWidget {
+class ProductSellPriceFormDialog extends StatefulWidget {
   final TabManager tabManager;
   final List<ProductMeasurement> productMeasurements;
 
   final NavigatorState navigator;
-  final StockKeepingUnit stockKeepingUnit;
-  const StockSellPriceFormDialog({
+  final Product product;
+  const ProductSellPriceFormDialog({
     super.key,
     required this.tabManager,
     required this.navigator,
-    required this.stockKeepingUnit,
+    required this.product,
     required this.productMeasurements,
   });
 
   @override
-  State<StockSellPriceFormDialog> createState() =>
-      _StockSellPriceFormDialogState();
+  State<ProductSellPriceFormDialog> createState() =>
+      _ProductSellPriceFormDialogState();
 }
 
-class _StockSellPriceFormDialogState extends State<StockSellPriceFormDialog>
+class _ProductSellPriceFormDialogState extends State<ProductSellPriceFormDialog>
     with TextFormatter {
   final scrollController = ScrollController();
   final _formKey = GlobalKey<FormState>();
-  List<StockSellPrice> get stockSellPrices =>
-      widget.stockKeepingUnit.stockSellPrices;
+  List<ProductSellPrice> get stockSellPrices =>
+      widget.product.productSellPrices;
   NavigatorState get navigator => widget.navigator;
   TabManager get tabManager => widget.tabManager;
   late final Server _server;
@@ -61,7 +61,7 @@ class _StockSellPriceFormDialogState extends State<StockSellPriceFormDialog>
           children: [
             Flexible(
               child: Text(
-                'SKU ${widget.stockKeepingUnit.uniqCode} untuk barcode ${widget.stockKeepingUnit.barcode}',
+                'Produk ${widget.product.supplierProductCode} untuk barcode ${widget.product.barcode}',
               ),
             ),
             IconButton(onPressed: closeDialog, icon: Icon(Icons.close)),
@@ -77,7 +77,7 @@ class _StockSellPriceFormDialogState extends State<StockSellPriceFormDialog>
             controller: scrollController,
             child: SingleChildScrollView(
               controller: scrollController,
-              child: TableForm<StockSellPrice>(
+              child: TableForm<ProductSellPrice>(
                 columns: [
                   TableFormColumn(
                     title: 'Satuan',
@@ -168,7 +168,7 @@ class _StockSellPriceFormDialogState extends State<StockSellPriceFormDialog>
                 actionColumn: TableFormColumn(
                   headerBuilder: (context) => IconButton(
                     onPressed: () => setState(() {
-                      stockSellPrices.add(StockSellPriceClass().initModel());
+                      stockSellPrices.add(ProductSellPriceClass().initModel());
                     }),
                     icon: Icon(Icons.add),
                   ),
@@ -222,15 +222,15 @@ class _StockSellPriceFormDialogState extends State<StockSellPriceFormDialog>
   }
 
   void _saveRecords() {
-    widget.stockKeepingUnit
-        .save(_server, only: ['stock_sell_prices_attributes'])
-        .then((isSuccess) {
-          final flash = Flash();
-          if (isSuccess) {
-            flash.show(Text('Sukses simpan Harga Jual'), .success);
-          } else {
-            flash.show(Text('Gagal simpan Harga Jual'), .error);
-          }
-        });
+    widget.product.save(_server, only: ['stock_sell_prices_attributes']).then((
+      isSuccess,
+    ) {
+      final flash = Flash();
+      if (isSuccess) {
+        flash.show(Text('Sukses simpan Harga Jual'), .success);
+      } else {
+        flash.show(Text('Gagal simpan Harga Jual'), .error);
+      }
+    });
   }
 }

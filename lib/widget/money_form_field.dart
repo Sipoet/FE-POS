@@ -123,6 +123,7 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
       decoration: InputDecoration(
         label: widget.label,
         isDense: widget.isDense,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
         contentPadding: const EdgeInsets.all(5),
         prefix: const Text(
           'Rp ',

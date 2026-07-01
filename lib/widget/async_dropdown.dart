@@ -290,6 +290,7 @@ class _AsyncDropdownMultipleState<T extends Model>
             ),
       decoratorProps: DropDownDecoratorProps(
         decoration: InputDecoration(
+          floatingLabelBehavior: FloatingLabelBehavior.always,
           label: widget.label,
           isDense: widget.isDense,
           border: const OutlineInputBorder(),
@@ -509,6 +510,7 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
             ),
       decoratorProps: DropDownDecoratorProps(
         decoration: InputDecoration(
+          floatingLabelBehavior: FloatingLabelBehavior.always,
           label: widget.label,
           isDense: widget.isDense,
           border: const OutlineInputBorder(),
