@@ -66,6 +66,8 @@ class ProductCategory extends Model with SaveNDestroyModel {
 
   @override
   String get modelValue => name;
+  @override
+  String get valueDescription => description;
 }
 
 class ProductCategoryClass extends ModelClass<ProductCategory> {

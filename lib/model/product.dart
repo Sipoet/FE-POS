@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/product_category.dart';
 import 'package:fe_pos/model/product_measurement.dart';
@@ -10,6 +9,7 @@ import 'package:fe_pos/model/supplier.dart';
 import 'package:fe_pos/model/brand.dart';
 import 'package:fe_pos/model/unit_of_measurement.dart';
 import 'package:fe_pos/tool/image_model.dart';
+import 'package:flutter/material.dart';
 export 'package:fe_pos/tool/image_model.dart';
 
 export 'package:fe_pos/model/brand.dart';
@@ -18,7 +18,7 @@ export 'package:fe_pos/model/tag.dart';
 
 export 'package:fe_pos/model/product_category.dart';
 
-class Product extends Model with SaveNDestroyModel {
+class Product extends Model with SaveNDestroyModel, Tagable {
   String description;
   String? supplierProductCode;
   String? brandName;
@@ -30,7 +30,7 @@ class Product extends Model with SaveNDestroyModel {
   Supplier? supplier;
   Money sellPrice;
   Account? stockAccount;
-  List<Tagging> taggings = [];
+  StatusSellPrice statusSellPrice;
   List<ProductMeasurement> productMeasurements = [];
   List<StockKeepingUnit> stockKeepingUnits = [];
   List<ProductSellPrice> productSellPrices = [];
@@ -48,14 +48,17 @@ class Product extends Model with SaveNDestroyModel {
     this.baseUom,
     this.stockAccount,
     this.defaultImage,
+    this.statusSellPrice = .notChanged,
     this.barcodeUsingBatch = false,
-    List<Tagging>? taggings,
     this.brand,
     this.sellPrice = const Money(0),
     this.supplier,
+    List<Tagging>? taggings,
     super.createdAt,
     super.updatedAt,
-  }) : taggings = taggings ?? [];
+  }) {
+    initTaggings(taggings);
+  }
 
   @override
   String get path => 'products';
@@ -98,27 +101,6 @@ class Product extends Model with SaveNDestroyModel {
   List<ImageModel> get markedDestroyedImages =>
       images.where((image) => image.isDestroyed).toList();
 
-  List<Tag> get tags =>
-      taggings.where((e) => e.tag != null).map<Tag>((e) => e.tag!).toList();
-
-  String get tagDescription => tags.map<String>((e) => e.value).join(' ');
-
-  void setTags(List<Tag> newTags) {
-    int index = 0;
-    while (newTags.length > index || taggings.length > index) {
-      final tagging = taggings.elementAtOrNull(index);
-      final tag = newTags.elementAtOrNull(index);
-      if (tagging == null) {
-        taggings.add(Tagging(tag: tag));
-      } else if (tag == null) {
-        tagging.flagDestroy();
-      } else {
-        tagging.tag = tag;
-      }
-      index++;
-    }
-  }
-
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'] ?? {};
@@ -132,7 +114,7 @@ class Product extends Model with SaveNDestroyModel {
       included: included,
     );
     sellPrice =
-        Money.tryParse(attributes['sell_price'] ?? '0') ?? const Money(0);
+        Money.tryParse(attributes['sell_price'].toString()) ?? const Money(0);
     brandName = brand?.name ?? attributes['brand_name'];
     productCategory = ProductCategoryClass().findRelationData(
       relation: json['relationships']?['product_category'],
@@ -150,10 +132,7 @@ class Product extends Model with SaveNDestroyModel {
       relation: json['relationships']?['base_uom'],
       included: included,
     );
-    taggings = TaggingClass().findRelationsData(
-      relation: json['relationships']?['taggings'],
-      included: included,
-    );
+    setTaggingsFromJson(json, included: included);
     images = ImageModelClass().findRelationsData(
       relation: json['relationships']?['images'],
       included: included,
@@ -179,10 +158,38 @@ class Product extends Model with SaveNDestroyModel {
   }
 
   @override
-  String get modelValue => description;
+  String get modelValue => "$barcode $supplierProductCode";
+  @override
+  String get valueDescription => description;
 }
 
 class ProductClass extends ModelClass<Product> {
   @override
   Product initModel() => Product();
+}
+
+enum StatusSellPrice {
+  notChanged,
+  cancel,
+  onProgress,
+  failed,
+  success;
+
+  Widget? get icon {
+    switch (this) {
+      case notChanged:
+        return null;
+      case cancel:
+        return Icon(
+          Icons.remove_circle_outline_sharp,
+          color: Colors.yellow.shade500,
+        );
+      case onProgress:
+        return CircularProgressIndicator();
+      case failed:
+        return Icon(Icons.close_rounded, color: Colors.red);
+      case success:
+        return Icon(Icons.done_rounded, color: Colors.green.shade900);
+    }
+  }
 }

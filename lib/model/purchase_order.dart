@@ -4,6 +4,7 @@ import 'package:fe_pos/model/location.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/purchase_order_detail.dart';
 import 'package:fe_pos/model/supplier.dart';
+import 'package:fe_pos/model/tag.dart';
 import 'package:fe_pos/tool/purchase_calculator.dart';
 export 'package:fe_pos/model/supplier.dart';
 export 'package:fe_pos/model/purchase_order_detail.dart';
@@ -11,7 +12,7 @@ export 'package:fe_pos/model/discount_detail.dart';
 export 'package:fe_pos/model/location.dart';
 export 'package:fe_pos/model/cost_detail.dart';
 
-class PurchaseOrder extends Model with SaveNDestroyModel {
+class PurchaseOrder extends Model with SaveNDestroyModel, Tagable {
   String code;
   Supplier? supplier;
   Location? location;
@@ -22,7 +23,7 @@ class PurchaseOrder extends Model with SaveNDestroyModel {
   String? description;
   Money subtotal;
   Money grandtotal;
-  String productTotal;
+  double? productTotal;
   Money discountTotal;
   Money costTotal;
   TaxType taxType;
@@ -48,7 +49,7 @@ class PurchaseOrder extends Model with SaveNDestroyModel {
     this.grandtotal = const Money(0),
     this.discountTotal = const Money(0),
     this.costTotal = const Money(0),
-    this.productTotal = '',
+    this.productTotal,
     List<PurchaseOrderDetail>? purchaseOrderDetails,
     List<CostDetail>? costDetails,
   }) : purchaseOrderDetails = purchaseOrderDetails ?? [],
@@ -76,6 +77,7 @@ class PurchaseOrder extends Model with SaveNDestroyModel {
     'tax_amount': taxAmount,
     'tax_type': taxType,
     'tax_value': taxValue,
+    'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
     'cost_details_attributes': costDetails.map((e) => e.asJson()).toList(),
     'purchase_order_details_attributes': purchaseOrderDetails
         .map((e) => e.asJson())
@@ -109,11 +111,12 @@ class PurchaseOrder extends Model with SaveNDestroyModel {
         included: included,
         relation: json['relationships']['cost_details'],
       );
+      setTaggingsFromJson(json, included: included);
     }
     code = attributes['code'] ?? '';
     transactionDate = Date.tryParse(attributes['transaction_date'] ?? '');
     description = attributes['description'];
-    // productTotal = attributes['product_total'];
+    productTotal = double.tryParse(attributes['product_total'].toString());
     subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
     grandtotal = Money.tryParse(attributes['grandtotal']) ?? const Money(0);
     discountAmount =

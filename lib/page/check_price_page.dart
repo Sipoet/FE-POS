@@ -4,6 +4,7 @@ import 'package:fe_pos/model/server.dart';
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/platform_checker.dart';
+import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/sync_data_table.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +32,7 @@ class _CheckPricePageState extends State<CheckPricePage>
   @override
   void initState() {
     _server = context.read<Server>();
+    final authorizer = context.read<Authorizer>();
     _columns = [
       TableColumn(
         clientWidth: 120,
@@ -93,14 +95,25 @@ class _CheckPricePageState extends State<CheckPricePage>
         name: 'discount_desc',
         humanizeName: 'Promo Diskon',
       ),
+      if (authorizer.canShow('discounts', 'code'))
+        TableColumn(
+          clientWidth: 200,
+          name: 'discount_code',
+          humanizeName: 'Kode Diskon',
+        ),
       TableColumn(
         clientWidth: 160,
         type: MoneyTableColumnType(),
         name: 'discount_amount',
         humanizeName: 'Jumlah Diskon',
       ),
-
       TableColumn(clientWidth: 90, name: 'uom', humanizeName: 'Satuan'),
+      // TableColumn(
+      //   clientWidth: 200,
+      //   name: 'image',
+      //   humanizeName: 'Gambar',
+      //   type: .image,
+      // ),
     ];
     super.initState();
   }

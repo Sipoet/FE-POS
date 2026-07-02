@@ -558,8 +558,12 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                 'Invoice Pembelian',
                                 style: TextFormatter.tableLabelStyle,
                               ),
-                              rowBuilder: (context, purchaseShipmentDetail) =>
-                                  AsyncDropdown<PurchaseInvoice>(
+                              rowBuilder:
+                                  (
+                                    context,
+                                    purchaseShipmentDetail,
+                                    index,
+                                  ) => AsyncDropdown<PurchaseInvoice>(
                                     textOnSearch:
                                         setting.canShow('supplier', 'name')
                                         ? ((purchaseInvoice) =>
@@ -603,8 +607,12 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                   'Jumlah karung/box',
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseShipmentDetail) =>
-                                    NumberFormField<int>(
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseShipmentDetail,
+                                      index,
+                                    ) => NumberFormField<int>(
                                       initialValue:
                                           purchaseShipmentDetail.sackQuantity,
                                       onChanged: (value) => setState(() {
@@ -623,8 +631,12 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                   'Biaya',
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseShipmentDetail) =>
-                                    MoneyFormField(
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseShipmentDetail,
+                                      index,
+                                    ) => MoneyFormField(
                                       initialValue:
                                           purchaseShipmentDetail.shippingCost,
                                       onChanged: (value) {
@@ -648,8 +660,12 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                                   'Deskripsi',
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseShipmentDetail) =>
-                                    AuthorizerFormField(
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseShipmentDetail,
+                                      index,
+                                    ) => AuthorizerFormField(
                                       columnName: 'description',
                                       tableName: 'purchaseShipmentDetail',
                                       notifier: modelToggleNotifier,
@@ -685,19 +701,21 @@ class _PurchaseShipmentFormPageState extends State<PurchaseShipmentFormPage>
                           ],
                           actionColumn: TableFormColumn<PurchaseShipmentDetail>(
                             desktopWidth: FixedColumnWidth(60),
-                            rowBuilder: (context, purchaseInvoiceDetail) =>
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      purchaseShipment.purchaseShipmentDetails
-                                          .remove(purchaseInvoiceDetail);
-                                      recalculatePurchaseShipment();
-                                      modelToggleNotifier.value =
-                                          !modelToggleNotifier.value;
-                                    });
-                                  },
-                                  icon: Icon(Icons.delete),
-                                ),
+                            rowBuilder:
+                                (context, purchaseInvoiceDetail, index) =>
+                                    IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          purchaseShipment
+                                              .purchaseShipmentDetails
+                                              .remove(purchaseInvoiceDetail);
+                                          recalculatePurchaseShipment();
+                                          modelToggleNotifier.value =
+                                              !modelToggleNotifier.value;
+                                        });
+                                      },
+                                      icon: Icon(Icons.delete),
+                                    ),
                             headerBuilder: (context) => IconButton(
                               onPressed: () async {
                                 if (await showConfirmDialog2()) {

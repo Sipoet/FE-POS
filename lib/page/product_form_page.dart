@@ -12,6 +12,7 @@ import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/image_carousel.dart';
 import 'package:fe_pos/widget/image_form_field.dart';
 import 'package:fe_pos/widget/money_form_field.dart';
+import 'package:fe_pos/widget/authorizer_form_field.dart';
 import 'package:fe_pos/widget/product_sell_price_form_dialog.dart';
 import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/table_form.dart';
@@ -37,6 +38,7 @@ class _ProductFormPageState extends State<ProductFormPage>
   late final Server _server;
   late final TabManager _tabManager;
   late final ImageCarouselController controller;
+  final ValueNotifier<bool> modelToggleNotifier = ValueNotifier(false);
   final _formState = GlobalKey<FormState>();
   final flash = Flash();
   bool _showForm = true;
@@ -125,6 +127,7 @@ class _ProductFormPageState extends State<ProductFormPage>
 
     product.save(_server, contentType: .multipartForm).then((isSuccess) {
       if (isSuccess) {
+        modelToggleNotifier.toggle();
         final variantSaveProcess = product.itemVariants.map((itemVariant) {
           itemVariant.parentId = product.id;
           if (itemVariant.isDestroyed) {
@@ -194,10 +197,12 @@ class _ProductFormPageState extends State<ProductFormPage>
     setState(() {
       _showForm = false;
     });
-
+    final defaultSetting = context.read<DefaultSetting>();
     Future.delayed(Durations.short1, () {
       setState(() {
         product = ProductClass().initModel();
+        product.baseUom = defaultSetting.uom;
+        product.stockAccount = defaultSetting.stockAccount;
         controller.clearImages();
         _showForm = true;
       });
@@ -312,15 +317,13 @@ class _ProductFormPageState extends State<ProductFormPage>
                                   }
                                   return null;
                                 },
+                                allowClear: false,
                                 textOnSearch: (model) => model.name ?? '',
                               ),
                             ),
                             SizedBox(
                               width: 250,
                               child: AsyncDropdown<ProductCategory>(
-                                textOnSearch: (model) =>
-                                    "${model.name} -  ${model.description}",
-                                textOnSelected: (model) => model.name,
                                 validator: (model) {
                                   if (model == null) {
                                     return 'harus diisi';
@@ -338,6 +341,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                                     queryRequest,
                                   );
                                 },
+                                isShowItemDescription: true,
                                 allowClear: false,
                                 label: Text(
                                   "${_setting.columnName('product', 'product_category')}*",
@@ -376,30 +380,36 @@ class _ProductFormPageState extends State<ProductFormPage>
                             ),
                             SizedBox(
                               width: 250,
-                              child: TextFormField(
-                                keyboardType: TextInputType.text,
-                                onChanged: (value) => product.barcode = value,
-                                initialValue: product.barcode,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter
-                                      .singleLineFormatter,
-                                  UpperCaseTextFormatter(),
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp('[0-9A-Z]'),
+                              child: AuthorizerFormField(
+                                columnName: 'barcode',
+                                tableName: 'product',
+                                notifier: modelToggleNotifier,
+                                valueCallback: () => product.barcode,
+                                childBuilder: (controller) => TextFormField(
+                                  keyboardType: TextInputType.text,
+                                  onChanged: (value) => product.barcode = value,
+                                  controller: controller,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter
+                                        .singleLineFormatter,
+                                    UpperCaseTextFormatter(),
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp('[0-9A-Z]'),
+                                    ),
+                                  ],
+                                  decoration: InputDecoration(
+                                    floatingLabelBehavior:
+                                        FloatingLabelBehavior.always,
+                                    label: Text(
+                                      _setting.columnName('product', 'barcode'),
+                                      style: DefaultResponse.labelStyle,
+                                    ),
+                                    hintText: 'Auto',
+                                    helperText:
+                                        'hanya boleh diisi huruf dan angka',
+                                    isDense: true,
+                                    border: OutlineInputBorder(),
                                   ),
-                                ],
-                                decoration: InputDecoration(
-                                  floatingLabelBehavior:
-                                      FloatingLabelBehavior.always,
-                                  label: Text(
-                                    _setting.columnName('product', 'barcode'),
-                                    style: DefaultResponse.labelStyle,
-                                  ),
-                                  hintText: 'Auto',
-                                  helperText:
-                                      'hanya boleh diisi huruf dan angka',
-                                  isDense: true,
-                                  border: OutlineInputBorder(),
                                 ),
                               ),
                             ),
@@ -525,7 +535,10 @@ class _ProductFormPageState extends State<ProductFormPage>
                               canTapOnHeader: true,
                               isExpanded: panelPool[0] == true,
                               headerBuilder: (context, isExpanded) => Padding(
-                                padding: const EdgeInsets.only(left: 10.0),
+                                padding: const EdgeInsets.only(
+                                  left: 10.0,
+                                  top: 15,
+                                ),
                                 child: Text(
                                   'Detail/Tag Produk',
                                   style: DefaultResponse.labelStyle,
@@ -537,15 +550,16 @@ class _ProductFormPageState extends State<ProductFormPage>
                                   rows: productTags,
                                   actionColumn: TableFormColumn(
                                     desktopWidth: FixedColumnWidth(130),
-                                    rowBuilder: (context, productTag) => Align(
-                                      alignment: .topRight,
-                                      child: IconButton(
-                                        onPressed: () => setState(() {
-                                          productTags.remove(productTag);
-                                        }),
-                                        icon: Icon(Icons.delete),
-                                      ),
-                                    ),
+                                    rowBuilder: (context, productTag, index) =>
+                                        Align(
+                                          alignment: .topRight,
+                                          child: IconButton(
+                                            onPressed: () => setState(() {
+                                              productTags.remove(productTag);
+                                            }),
+                                            icon: Icon(Icons.delete),
+                                          ),
+                                        ),
                                     headerBuilder: (context) => Row(
                                       mainAxisAlignment: .spaceBetween,
                                       children: [
@@ -576,7 +590,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                                         'Kategori',
                                         style: DefaultResponse.labelStyle,
                                       ),
-                                      rowBuilder: (context, productTag) {
+                                      rowBuilder: (context, productTag, index) {
                                         return AsyncDropdown<TagKey>(
                                           validator: (model) {
                                             if (model == null) {
@@ -617,117 +631,129 @@ class _ProductFormPageState extends State<ProductFormPage>
                                         'Value',
                                         style: DefaultResponse.labelStyle,
                                       ),
-                                      rowBuilder: (context, productTag) => Visibility(
-                                        visible: productTag.isNewTag,
-                                        replacement: Row(
-                                          spacing: 20,
-                                          children: [
-                                            Expanded(
-                                              child: AsyncDropdown<Tag>(
-                                                selected: productTag.tag,
-                                                allowClear: false,
-                                                validator: (model) {
-                                                  if (model == null) {
-                                                    return 'harus diisi';
-                                                  }
-                                                  return null;
-                                                },
-                                                textOnSearch: (model) =>
-                                                    model.value,
-                                                modelClass: TagClass(),
-                                                request: (queryRequest) {
-                                                  queryRequest.filters.add(
-                                                    ComparisonFilterData(
-                                                      key: 'tag_key',
-                                                      value:
-                                                          productTag.tagKeyId,
-                                                    ),
-                                                  );
-                                                  return TagClass().finds(
-                                                    _server,
-                                                    queryRequest,
-                                                  );
-                                                },
-                                                isDense: true,
-                                                onChanged: (tag) =>
-                                                    setState(() {
-                                                      productTag.tag = tag;
-                                                      if (tag != null &&
-                                                          productTag.tagKeyId !=
-                                                              tag.tagKeyId) {
-                                                        productTag.tagKey =
-                                                            tag.tagKey;
+                                      rowBuilder:
+                                          (
+                                            context,
+                                            productTag,
+                                            index,
+                                          ) => Visibility(
+                                            visible: productTag.isNewTag,
+                                            replacement: Row(
+                                              spacing: 20,
+                                              children: [
+                                                Expanded(
+                                                  child: AsyncDropdown<Tag>(
+                                                    selected: productTag.tag,
+                                                    allowClear: false,
+                                                    validator: (model) {
+                                                      if (model == null) {
+                                                        return 'harus diisi';
                                                       }
-                                                    }),
-                                              ),
-                                            ),
-                                            Visibility(
-                                              visible:
-                                                  productTag.tagKey != null,
-                                              child: ElevatedButton(
-                                                onPressed: () => setState(() {
-                                                  productTag.isNewTag =
-                                                      !productTag.isNewTag;
-                                                }),
-                                                child: Text('Tag baru'),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Row(
-                                          spacing: 20,
-                                          children: [
-                                            Expanded(
-                                              child: TextFormField(
-                                                inputFormatters: [
-                                                  FilteringTextInputFormatter
-                                                      .singleLineFormatter,
-                                                  FilteringTextInputFormatter.allow(
-                                                    RegExp(r'[A-Za-z0-9\s]'),
+                                                      return null;
+                                                    },
+                                                    textOnSearch: (model) =>
+                                                        model.value,
+                                                    modelClass: TagClass(),
+                                                    request: (queryRequest) {
+                                                      queryRequest.filters.add(
+                                                        ComparisonFilterData(
+                                                          key: 'tag_key',
+                                                          value: productTag
+                                                              .tagKeyId,
+                                                        ),
+                                                      );
+                                                      return TagClass().finds(
+                                                        _server,
+                                                        queryRequest,
+                                                      );
+                                                    },
+                                                    isDense: true,
+                                                    onChanged: (tag) => setState(
+                                                      () {
+                                                        productTag.tag = tag;
+                                                        if (tag != null &&
+                                                            productTag
+                                                                    .tagKeyId !=
+                                                                tag.tagKeyId) {
+                                                          productTag.tagKey =
+                                                              tag.tagKey;
+                                                        }
+                                                      },
+                                                    ),
                                                   ),
-                                                ],
-                                                validator: (value) {
-                                                  if (value == null ||
-                                                      value.isEmpty) {
-                                                    return 'harus diisi';
-                                                  }
-                                                  return null;
-                                                },
-                                                forceErrorText:
-                                                    productTag
-                                                            .tag
-                                                            ?.errors
-                                                            .isEmpty ==
-                                                        true
-                                                    ? null
-                                                    : productTag.tag?.errors
-                                                          .join(','),
-                                                onChanged: (value) {
-                                                  productTag.newTagValue =
-                                                      value;
-                                                },
-                                                decoration: InputDecoration(
-                                                  floatingLabelBehavior:
-                                                      FloatingLabelBehavior
-                                                          .always,
-                                                  border: OutlineInputBorder(),
                                                 ),
-                                              ),
+                                                Visibility(
+                                                  visible:
+                                                      productTag.tagKey != null,
+                                                  child: ElevatedButton(
+                                                    onPressed: () =>
+                                                        setState(() {
+                                                          productTag.isNewTag =
+                                                              !productTag
+                                                                  .isNewTag;
+                                                        }),
+                                                    child: Text('Tag baru'),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                            IconButton(
-                                              onPressed: () =>
-                                                  _createTag(productTag),
-                                              icon: Icon(Icons.check),
+                                            child: Row(
+                                              spacing: 20,
+                                              children: [
+                                                Expanded(
+                                                  child: TextFormField(
+                                                    inputFormatters: [
+                                                      FilteringTextInputFormatter
+                                                          .singleLineFormatter,
+                                                      FilteringTextInputFormatter.allow(
+                                                        RegExp(
+                                                          r'[A-Za-z0-9\s]',
+                                                        ),
+                                                      ),
+                                                    ],
+                                                    validator: (value) {
+                                                      if (value == null ||
+                                                          value.isEmpty) {
+                                                        return 'harus diisi';
+                                                      }
+                                                      return null;
+                                                    },
+                                                    forceErrorText:
+                                                        productTag
+                                                                .tag
+                                                                ?.errors
+                                                                .isEmpty ==
+                                                            true
+                                                        ? null
+                                                        : productTag.tag?.errors
+                                                              .join(','),
+                                                    onChanged: (value) {
+                                                      productTag.newTagValue =
+                                                          value;
+                                                    },
+                                                    decoration: InputDecoration(
+                                                      floatingLabelBehavior:
+                                                          FloatingLabelBehavior
+                                                              .always,
+                                                      border:
+                                                          OutlineInputBorder(),
+                                                    ),
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  onPressed: () =>
+                                                      _createTag(productTag),
+                                                  icon: Icon(Icons.check),
+                                                ),
+                                                IconButton(
+                                                  onPressed: () => setState(() {
+                                                    productTag.isNewTag = false;
+                                                  }),
+                                                  icon: Icon(Icons.cancel),
+                                                ),
+                                              ],
                                             ),
-                                            IconButton(
-                                              onPressed: () => setState(() {
-                                                productTag.isNewTag = false;
-                                              }),
-                                              icon: Icon(Icons.cancel),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                          ),
                                     ),
                                   ],
                                 ),
@@ -737,7 +763,10 @@ class _ProductFormPageState extends State<ProductFormPage>
                               isExpanded: panelPool[1] == true,
                               canTapOnHeader: true,
                               headerBuilder: (context, isExpanded) => Padding(
-                                padding: const .all(10),
+                                padding: const EdgeInsets.only(
+                                  left: 10.0,
+                                  top: 15,
+                                ),
                                 child: Text(
                                   'Produk Satuan',
                                   style: DefaultResponse.labelStyle,
@@ -751,8 +780,12 @@ class _ProductFormPageState extends State<ProductFormPage>
                                       'Satuan',
                                       style: DefaultResponse.labelStyle,
                                     ),
-                                    rowBuilder: (context, productMeasurement) =>
-                                        AsyncDropdown<UnitOfMeasurement>(
+                                    rowBuilder:
+                                        (
+                                          context,
+                                          productMeasurement,
+                                          index,
+                                        ) => AsyncDropdown<UnitOfMeasurement>(
                                           selected: productMeasurement.uom,
                                           textOnSearch: (uom) => uom.name ?? '',
                                           modelClass: UnitOfMeasurementClass(),
@@ -767,8 +800,12 @@ class _ProductFormPageState extends State<ProductFormPage>
                                       'Konversi',
                                       style: DefaultResponse.labelStyle,
                                     ),
-                                    rowBuilder: (context, productMeasurement) =>
-                                        NumberFormField<double>(
+                                    rowBuilder:
+                                        (
+                                          context,
+                                          productMeasurement,
+                                          index,
+                                        ) => NumberFormField<double>(
                                           initialValue:
                                               productMeasurement.conversion,
                                           validator: (value) {
@@ -816,18 +853,18 @@ class _ProductFormPageState extends State<ProductFormPage>
                                       ),
                                     ],
                                   ),
-                                  rowBuilder: (context, productMeasurement) =>
-                                      Align(
-                                        alignment: .topRight,
-                                        child: IconButton(
-                                          onPressed: () => setState(() {
-                                            product.productMeasurements.remove(
-                                              productMeasurement,
-                                            );
-                                          }),
-                                          icon: Icon(Icons.delete),
-                                        ),
-                                      ),
+                                  rowBuilder:
+                                      (context, productMeasurement, index) =>
+                                          Align(
+                                            alignment: .topRight,
+                                            child: IconButton(
+                                              onPressed: () => setState(() {
+                                                product.productMeasurements
+                                                    .remove(productMeasurement);
+                                              }),
+                                              icon: Icon(Icons.delete),
+                                            ),
+                                          ),
                                 ),
                                 rows: product.productMeasurements,
                               ),
@@ -866,7 +903,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                                       'Tag',
                                       style: DefaultResponse.labelStyle,
                                     ),
-                                    rowBuilder: (context, itemVariant) =>
+                                    rowBuilder: (context, itemVariant, index) =>
                                         AsyncDropdownMultiple<Tag>(
                                           selecteds: itemVariant.tags,
                                           validator: (models) {
@@ -891,7 +928,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                                       'Barcode',
                                       style: DefaultResponse.labelStyle,
                                     ),
-                                    rowBuilder: (context, itemVariant) =>
+                                    rowBuilder: (context, itemVariant, index) =>
                                         TextFormField(
                                           keyboardType: TextInputType.text,
                                           onChanged: (value) =>
@@ -925,26 +962,30 @@ class _ProductFormPageState extends State<ProductFormPage>
                                         textAlign: .right,
                                       ),
 
-                                      rowBuilder: (context, itemVariant) => Row(
-                                        children: [
-                                          Flexible(
-                                            child: MoneyFormField(
-                                              onChanged: (value) =>
-                                                  itemVariant.sellPrice =
-                                                      value ?? const Money(0),
-                                              initialValue:
-                                                  itemVariant.sellPrice,
-                                            ),
-                                          ),
-                                          IconButton(
-                                            onPressed: () =>
-                                                showProductSellPriceDialog(
-                                                  itemVariant,
+                                      rowBuilder:
+                                          (context, itemVariant, index) => Row(
+                                            children: [
+                                              Flexible(
+                                                child: MoneyFormField(
+                                                  onChanged: (value) =>
+                                                      itemVariant.sellPrice =
+                                                          value ??
+                                                          const Money(0),
+                                                  initialValue:
+                                                      itemVariant.sellPrice,
                                                 ),
-                                            icon: Icon(Icons.list_alt_sharp),
+                                              ),
+                                              IconButton(
+                                                onPressed: () =>
+                                                    showProductSellPriceDialog(
+                                                      itemVariant,
+                                                    ),
+                                                icon: Icon(
+                                                  Icons.list_alt_sharp,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
                                     ),
 
                                   TableFormColumn(
@@ -954,7 +995,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                                       'Gambar',
                                       style: DefaultResponse.labelStyle,
                                     ),
-                                    rowBuilder: (context, itemVariant) =>
+                                    rowBuilder: (context, itemVariant, index) =>
                                         ImageFormField(
                                           width: 100,
                                           height: 100,
@@ -999,49 +1040,51 @@ class _ProductFormPageState extends State<ProductFormPage>
                                       ),
                                     ],
                                   ),
-                                  rowBuilder: (context, itemVariant) => Row(
-                                    mainAxisAlignment: .spaceEvenly,
-                                    children: [
-                                      IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            final int index =
-                                                product.itemVariants.indexOf(
-                                                  itemVariant,
-                                                ) +
-                                                1;
-                                            product.itemVariants.insert(
-                                              index,
-                                              ItemVariant(
-                                                description:
-                                                    itemVariant.description,
-                                                barcode: itemVariant.barcode,
-                                                taggings: itemVariant.taggings,
-                                                image: itemVariant.image,
-                                                sellPrice:
-                                                    itemVariant.sellPrice,
-                                              ),
-                                            );
-                                          });
-                                        },
-                                        icon: Icon(Icons.copy),
+                                  rowBuilder: (context, itemVariant, index) =>
+                                      Row(
+                                        mainAxisAlignment: .spaceEvenly,
+                                        children: [
+                                          IconButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                final int index =
+                                                    product.itemVariants
+                                                        .indexOf(itemVariant) +
+                                                    1;
+                                                product.itemVariants.insert(
+                                                  index,
+                                                  ItemVariant(
+                                                    description:
+                                                        itemVariant.description,
+                                                    barcode:
+                                                        itemVariant.barcode,
+                                                    taggings:
+                                                        itemVariant.taggings,
+                                                    image: itemVariant.image,
+                                                    sellPrice:
+                                                        itemVariant.sellPrice,
+                                                  ),
+                                                );
+                                              });
+                                            },
+                                            icon: Icon(Icons.copy),
+                                          ),
+                                          IconButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                if (itemVariant.isNewRecord) {
+                                                  product.itemVariants.remove(
+                                                    itemVariant,
+                                                  );
+                                                } else {
+                                                  itemVariant.flagDestroy();
+                                                }
+                                              });
+                                            },
+                                            icon: Icon(Icons.delete),
+                                          ),
+                                        ],
                                       ),
-                                      IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            if (itemVariant.isNewRecord) {
-                                              product.itemVariants.remove(
-                                                itemVariant,
-                                              );
-                                            } else {
-                                              itemVariant.flagDestroy();
-                                            }
-                                          });
-                                        },
-                                        icon: Icon(Icons.delete),
-                                      ),
-                                    ],
-                                  ),
                                 ),
                               ),
                             ),
@@ -1132,20 +1175,21 @@ class _ProductFormPageState extends State<ProductFormPage>
                         TableFormColumn(
                           headerBuilder: (context) => Text('Kategori'),
                           title: 'Kategori',
-                          rowBuilder: (context, model) => AsyncDropdown<TagKey>(
-                            textOnSearch: (tagKey) => tagKey.name,
-                            modelClass: TagKeyClass(),
-                            onChanged: (tagKey) => setStateDialog(() {
-                              model.id = tagKey?.id;
-                              model.name = tagKey?.name ?? model.name;
-                              model.group = tagKey?.group;
-                            }),
-                          ),
+                          rowBuilder: (context, model, index) =>
+                              AsyncDropdown<TagKey>(
+                                textOnSearch: (tagKey) => tagKey.name,
+                                modelClass: TagKeyClass(),
+                                onChanged: (tagKey) => setStateDialog(() {
+                                  model.id = tagKey?.id;
+                                  model.name = tagKey?.name ?? model.name;
+                                  model.group = tagKey?.group;
+                                }),
+                              ),
                         ),
                         TableFormColumn(
                           headerBuilder: (context) => Text('Opsi'),
                           title: 'Opsi',
-                          rowBuilder: (context, model) =>
+                          rowBuilder: (context, model, index) =>
                               AsyncDropdownMultiple<Tag>(
                                 textOnSearch: (model) => model.value,
                                 modelClass: TagClass(),
@@ -1168,7 +1212,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                       ],
                       rows: tagKeys,
                       actionColumn: TableFormColumn(
-                        rowBuilder: (context, model) => IconButton(
+                        rowBuilder: (context, model, index) => IconButton(
                           onPressed: () => setStateDialog(() {
                             final index = tagKeys.indexOf(model);
                             tagKeys.removeAt(index);

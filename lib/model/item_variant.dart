@@ -6,13 +6,14 @@ import 'package:fe_pos/model/product_sell_price.dart';
 class ItemVariant extends Product with SaveNDestroyModel {
   ImageModel? image;
   int? parentId;
+  Product? parent;
   ItemVariant({
     super.id,
     super.description = '',
     super.barcode = '',
-    super.taggings,
     this.image,
-    this.parentId,
+    this.parent,
+    super.taggings,
     super.sellPrice,
     super.createdAt,
     super.updatedAt,
@@ -44,6 +45,7 @@ class ItemVariant extends Product with SaveNDestroyModel {
     description = attributes['description'] ?? '';
     barcode = attributes['barcode'] ?? '';
     parentId = int.tryParse(attributes['parent_id'].toString());
+
     supplierProductCode = attributes['supplier_product_code'];
     sellPrice =
         Money.tryParse(attributes['sell_price'] ?? '0') ?? const Money(0);
@@ -58,6 +60,10 @@ class ItemVariant extends Product with SaveNDestroyModel {
     );
     productSellPrices = ProductSellPriceClass().findRelationsData(
       relation: json['relationships']?['product_sell_prices'],
+      included: included,
+    );
+    parent = ProductClass().findRelationData(
+      relation: json['relationships']?['parent'],
       included: included,
     );
   }

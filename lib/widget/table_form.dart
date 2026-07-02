@@ -111,14 +111,14 @@ class _DesktopTableFormState<T> extends State<DesktopTableForm<T>> {
                       )
                       .toList(),
                 ),
-                ...widget.rows.map(
-                  (row) => TableRow(
+                ...widget.rows.mapIndexed(
+                  (index, row) => TableRow(
                     key: ObjectKey(row),
                     children: columns
                         .map<Widget>(
                           (column) => Padding(
                             padding: .all(widget.columnSpacing),
-                            child: column.rowBuilder(context, row),
+                            child: column.rowBuilder(context, row, index),
                           ),
                         )
                         .toList(),
@@ -176,7 +176,7 @@ class _MobileTableFormState<T> extends State<MobileTableForm<T>> {
                               'Baris ${index + 1}',
                               style: TextFormatter.labelStyle,
                             ),
-                            widget.cardAction!.call(context, row),
+                            widget.cardAction!.call(context, row, index),
                           ],
                         ),
                       ),
@@ -186,7 +186,7 @@ class _MobileTableFormState<T> extends State<MobileTableForm<T>> {
                 ...widget.columns.map<Widget>(
                   (column) => ListTile(
                     title: Text(column.title, style: TextFormatter.labelStyle),
-                    subtitle: column.rowBuilder(context, row),
+                    subtitle: column.rowBuilder(context, row, index),
                   ),
                 ),
               ],
@@ -198,7 +198,8 @@ class _MobileTableFormState<T> extends State<MobileTableForm<T>> {
   }
 }
 
-typedef RenderBy<T> = Widget Function(BuildContext context, T object);
+typedef RenderBy<T> =
+    Widget Function(BuildContext context, T object, int index);
 typedef RenderHeader = Widget Function(BuildContext context);
 
 class TableFormColumn<T> {

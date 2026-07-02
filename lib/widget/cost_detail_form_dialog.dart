@@ -84,7 +84,8 @@ class _CostDetailFormDialogState extends State<CostDetailFormDialog>
                       textAlign: .right,
                       style: TextFormatter.titleStyle,
                     ),
-                    rowBuilder: (context, object) => object.sourceCostId == null
+                    rowBuilder: (context, object, index) =>
+                        object.sourceCostId == null
                         ? SizedBox()
                         : TextButton(
                             onPressed: () {
@@ -114,7 +115,7 @@ class _CostDetailFormDialogState extends State<CostDetailFormDialog>
                       textAlign: .right,
                       style: TextFormatter.titleStyle,
                     ),
-                    rowBuilder: (context, object) => TextFormField(
+                    rowBuilder: (context, object, index) => TextFormField(
                       initialValue: object.description,
                       keyboardType: .multiline,
                       decoration: InputDecoration(border: OutlineInputBorder()),
@@ -130,7 +131,7 @@ class _CostDetailFormDialogState extends State<CostDetailFormDialog>
                       textAlign: .right,
                       style: TextFormatter.titleStyle,
                     ),
-                    rowBuilder: (context, object) => MoneyFormField(
+                    rowBuilder: (context, object, index) => MoneyFormField(
                       initialValue: object.amount,
                       validator: (value) {
                         if (value == null) {
@@ -158,7 +159,7 @@ class _CostDetailFormDialogState extends State<CostDetailFormDialog>
                       ),
                     ],
                   ),
-                  rowBuilder: (context, object) => Visibility(
+                  rowBuilder: (context, object, index) => Visibility(
                     visible: object.sourceCost == null,
                     child: IconButton(
                       onPressed: () => setState(() {

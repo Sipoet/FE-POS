@@ -48,8 +48,10 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
   @override
   void initState() {
     _controller.text =
-        widget.initialValue?.value.format() ?? widget.controller?.text ?? '';
-
+        widget.initialValue?.value.format() ??
+        widget.controller?.text ??
+        widget.valueCallback?.call()?.value.format() ??
+        '';
     widget.controller?.addListener(controllerListener);
     widget.notifier?.addListener(notifierListener);
     super.initState();
@@ -67,7 +69,7 @@ class _MoneyFormFieldState extends State<MoneyFormField> with TextFormatter {
     if (mounted) {
       setState(() {
         Money? value = widget.valueCallback?.call();
-        _controller.text = value == null ? '' : numberFormat(value.value);
+        _controller.text = value == null ? '' : value.value.format();
       });
     } else {
       widget.notifier!.removeListener(notifierListener);

@@ -98,3 +98,37 @@ class TaggingClass extends ModelClass<Tagging> {
   @override
   Tagging initModel() => Tagging();
 }
+
+mixin Tagable {
+  List<Tagging> taggings = [];
+  void initTaggings(List<Tagging>? newTaggings) => taggings = newTaggings ?? [];
+  List<Tag> get tags =>
+      taggings.where((e) => e.tag != null).map<Tag>((e) => e.tag!).toList();
+
+  String get tagDescription => tags.map<String>((e) => e.value).join(' ');
+
+  void setTags(List<Tag> newTags) {
+    int index = 0;
+    while (newTags.length > index || taggings.length > index) {
+      final tagging = taggings.elementAtOrNull(index);
+      final tag = newTags.elementAtOrNull(index);
+      if (tagging == null) {
+        taggings.add(Tagging(tag: tag));
+      } else if (tag == null) {
+        tagging.flagDestroy();
+      } else {
+        tagging.tag = tag;
+      }
+      index++;
+    }
+  }
+
+  void setTaggingsFromJson(
+    Map<String, dynamic> json, {
+    List included = const [],
+  }) {
+    if (included.isEmpty) {
+      return;
+    }
+  }
+}

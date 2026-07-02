@@ -1,4 +1,5 @@
 import 'package:fe_pos/model/discount_detail.dart';
+import 'package:fe_pos/model/item_variant.dart';
 import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/product.dart';
 import 'package:fe_pos/model/unit_of_measurement.dart';
@@ -6,17 +7,21 @@ import 'package:fe_pos/model/unit_of_measurement.dart';
 class PurchaseOrderDetail extends Model {
   Product? product;
   double quantity;
+  String? barcode;
   Money price;
   Money subtotal;
   Money discountAmount;
   List<DiscountDetail>? discountDetails;
   Money total;
+  int? rowNumber;
   UnitOfMeasurement? uom;
   List<Tagging> taggings = [];
   PurchaseOrderDetail({
     this.discountDetails,
     this.quantity = 0,
     this.product,
+    this.barcode,
+    this.rowNumber,
     List<Tagging>? taggings,
     this.subtotal = const Money(0),
     this.discountAmount = const Money(0),
@@ -35,27 +40,42 @@ class PurchaseOrderDetail extends Model {
     'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
     'subtotal': subtotal,
     'price': price,
+    'row_number': rowNumber,
     'total': total,
+    'barcode': barcode,
     'uom': uom,
     'uom_id': uom?.id,
   };
   @override
   String get path => 'purchase_order_details';
   String? get productCode => product?.supplierProductCode;
-  String get tagDescription => tags.map<String>((e) => e.value).join(' ');
   Percentage? get margin => product == null
       ? null
-      : Percentage((product!.sellPrice.value / price.value) - 1);
+      : Percentage(
+          price.value == 0 ? 0 : (product!.sellPrice.value / price.value) - 1,
+        );
+
+  ItemVariant? get itemVariant =>
+      product is ItemVariant ? (product as ItemVariant) : null;
+
   @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     super.setFromJson(json, included: included);
     var attributes = json['attributes'];
 
     if (included.isNotEmpty) {
-      product = ProductClass().findRelationData(
-        included: included,
-        relation: json['relationships']['product'],
-      );
+      final relation = json['relationships']?['product'];
+      if (relation?['data']?['type'] == 'item_variant') {
+        product = ItemVariantClass().findRelationData(
+          included: included,
+          relation: relation,
+        );
+      } else if (relation?['data']?['type'] == 'product') {
+        product = ProductClass().findRelationData(
+          included: included,
+          relation: relation,
+        );
+      }
       taggings = TaggingClass().findRelationsData(
         included: included,
         relation: json['relationships']?['taggings'],
@@ -65,6 +85,7 @@ class PurchaseOrderDetail extends Model {
         included: included,
       );
     }
+    rowNumber = attributes['row_number'];
     quantity = double.tryParse(attributes['quantity'] ?? '0') ?? 0;
     final klass = DiscountDetailClass();
     discountDetails = (attributes['discount_detail'] as List)
@@ -77,26 +98,8 @@ class PurchaseOrderDetail extends Model {
     subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
     total = Money.tryParse(attributes['total']) ?? const Money(0);
     price = Money.tryParse(attributes['price']) ?? const Money(0);
+    barcode = attributes['barcode'];
   }
-
-  void setTags(List<Tag> newTags) {
-    int index = 0;
-    while (newTags.length > index || taggings.length > index) {
-      final tagging = taggings.elementAtOrNull(index);
-      final tag = newTags.elementAtOrNull(index);
-      if (tagging == null) {
-        taggings.add(Tagging(tag: tag));
-      } else if (tag == null) {
-        tagging.flagDestroy();
-      } else {
-        tagging.tag = tag;
-      }
-      index++;
-    }
-  }
-
-  List<Tag> get tags =>
-      taggings.where((e) => e.tag != null).map<Tag>((e) => e.tag!).toList();
 }
 
 class PurchaseOrderDetailClass extends ModelClass<PurchaseOrderDetail> {

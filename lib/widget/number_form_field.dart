@@ -147,7 +147,7 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
     widget.controller?.addListener(controllerListener);
     _controller.text =
         widget.controller?.text ??
-        (widget.initialValue == null ? '' : numberFormat(widget.initialValue));
+        numberFormat(widget.initialValue ?? widget.valueCallback?.call() ?? '');
     widget.notifier?.addListener(notifierListener);
     super.initState();
   }
@@ -224,7 +224,11 @@ class _NumberFormFieldState<T> extends State<NumberFormField<T>>
             }
           : null,
       inputFormatters: [
-        CustomNumberInputFormatter(formatType: .amount, separator: ','),
+        CustomNumberInputFormatter(
+          formatType: .amount,
+          separator: ',',
+          decimalSeparator: '.',
+        ),
       ],
       decoration: decoration,
     );

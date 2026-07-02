@@ -342,7 +342,7 @@ class AsyncDropdown<T extends Model> extends StatefulWidget {
     super.key,
     this.path,
     this.allowClear = true,
-    this.delayedSearch = const Duration(milliseconds: 500),
+    this.delayedSearch = const Duration(seconds: 1),
     this.width,
     this.onChanged,
     this.request,
@@ -354,11 +354,13 @@ class AsyncDropdown<T extends Model> extends StatefulWidget {
     this.focusNode,
     this.selectedDisplayLimit = 6,
     this.recordLimit = 10,
-    required this.textOnSearch,
+    this.textOnSearch,
     this.textOnSelected,
     this.compareValue,
     this.notifier,
+    this.isShowItemDescription = false,
     this.valueFallback,
+    this.searchItemDescription,
     required this.modelClass,
     this.selected,
   });
@@ -371,6 +373,7 @@ class AsyncDropdown<T extends Model> extends StatefulWidget {
   final T? selected;
   final bool allowClear;
   final bool? isDense;
+  final bool isShowItemDescription;
   final ChangeNotifier? notifier;
   final ValueCallBack<T>? valueFallback;
   final FocusNode? focusNode;
@@ -378,8 +381,9 @@ class AsyncDropdown<T extends Model> extends StatefulWidget {
   final void Function(T? model)? onChanged;
   final void Function(T? model)? onSaved;
   final String? Function(T? model)? validator;
-  final DropdownText<T> textOnSearch;
+  final DropdownText<T>? textOnSearch;
   final DropdownText<T>? textOnSelected;
+  final DropdownText<T>? searchItemDescription;
   final ModelClass<T> modelClass;
   final Widget? label;
   final bool Function(T, T)? compareValue;
@@ -400,9 +404,10 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
   CancelToken _cancelToken = CancelToken();
   late final FocusNode _focusNode;
   T? initialSelected;
-
+  late DropdownText<T> textOnSearch;
   @override
   void initState() {
+    textOnSearch = widget.textOnSearch ?? (T value) => value.modelValue;
     server = context.read<Server>();
     initialSelected = widget.selected ?? widget.valueFallback?.call();
     _focusNode = widget.focusNode ?? FocusNode();
@@ -450,7 +455,7 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
 
   bool compareResult(T a, T b) {
     if (widget.compareValue == null) {
-      return widget.textOnSearch(a) == widget.textOnSearch(b);
+      return textOnSearch(a) == textOnSearch(b);
     } else {
       return widget.compareValue!(a, b);
     }
@@ -458,7 +463,8 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
 
   @override
   Widget build(BuildContext context) {
-    final textFormat = widget.textOnSelected ?? widget.textOnSearch;
+    final textFormat =
+        widget.textOnSelected ?? widget.textOnSearch ?? textOnSearch;
     return DropdownSearch<T>(
       key: ValueKey(initialSelected),
       items: getData,
@@ -466,16 +472,8 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
       onSaved: widget.onSaved,
       validator: widget.validator,
       compareFn: compareResult,
-      itemAsString: widget.textOnSearch,
+      itemAsString: textOnSearch,
       selectedItem: initialSelected,
-      onBeforePopupOpening: (selItems) {
-        return Future.delayed(Durations.long4, () {
-          if (_focusNode.canRequestFocus) {
-            _focusNode.requestFocus();
-          }
-          return true;
-        });
-      },
       suffixProps: DropdownSuffixProps(
         clearButtonProps: ClearButtonProps(isVisible: widget.allowClear),
       ),
@@ -489,7 +487,11 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
           ? PopupProps.dialog(
               searchDelay: widget.delayedSearch,
               searchFieldProps: TextFieldProps(focusNode: _focusNode),
-              onItemsLoaded: (selectedItems) => _focusNode.requestFocus(),
+              onItemsLoaded: (selectedItems) => Future.delayed(
+                Durations.short1,
+                () => _focusNode.requestFocus(),
+              ),
+              itemBuilder: widget.isShowItemDescription ? itemBuilder : null,
               showSearchBox: true,
               showSelectedItems: true,
               disableFilter: true,
@@ -500,10 +502,14 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
           : PopupProps.menu(
               searchDelay: widget.delayedSearch,
               searchFieldProps: TextFieldProps(focusNode: _focusNode),
-              onItemsLoaded: (selectedItems) => _focusNode.requestFocus(),
+              onItemsLoaded: (selectedItems) =>
+                  Future.delayed(Durations.short1, () {
+                    _focusNode.requestFocus();
+                  }),
               showSearchBox: true,
               showSelectedItems: true,
               disableFilter: true,
+              itemBuilder: widget.isShowItemDescription ? itemBuilder : null,
               infiniteScrollProps: InfiniteScrollProps(
                 loadProps: LoadProps(skip: 0, take: widget.recordLimit),
               ),
@@ -517,6 +523,36 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
         ),
       ),
     );
+  }
+
+  Widget itemBuilder(
+    BuildContext context,
+    T item,
+    bool isDisabled,
+    bool isSelected,
+  ) => ListTile(
+    title: Text(
+      textOnSearch(item),
+      style: TextStyle(
+        color: textColor(isSelected, isDisabled),
+        fontWeight: .w500,
+      ),
+    ),
+    subtitle: Text(
+      widget.searchItemDescription?.call(item) ?? item.valueDescription ?? '',
+      style: TextStyle(
+        color: textColor(isSelected, isDisabled),
+        fontStyle: .italic,
+        fontSize: 12,
+      ),
+    ),
+  );
+
+  Color textColor(bool isSelected, bool isDisabled) {
+    if (isDisabled) {
+      return Colors.grey.shade700;
+    }
+    return isSelected ? Colors.green.shade700 : Colors.black;
   }
 
   Future<List<T>> getData(String filter, LoadProps? prop) {

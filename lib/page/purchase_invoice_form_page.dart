@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:fe_pos/model/item_variant.dart';
 import 'package:fe_pos/model/purchase_invoice.dart';
 import 'package:fe_pos/model/purchase_order.dart';
 import 'package:fe_pos/model/unit_of_measurement.dart';
@@ -80,39 +81,31 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
     setState(() {
       _showForm = false;
     });
-    purchaseInvoice
-        .refresh(
-          _server,
-          include: [
-            'supplier',
-            'location',
-            'cost_details',
-            'purchase_order',
-            'purchase_invoice_details',
-            'purchase_invoice_details.uom',
-            'purchase_invoice_details.taggings',
-            'purchase_invoice_details.tags',
-            'purchase_invoice_details.product',
-          ],
-        )
-        .then(
-          (isSuccess) {
-            if (isSuccess) {
-              setState(() {
-                recalculateProductTotal();
-              });
-            }
-          },
-          onError: (error) {
-            defaultErrorResponse(error: error);
-          },
-        )
-        .whenComplete(() {
-          hideLoadingPopup();
-          setState(() {
-            _showForm = true;
-          });
-        });
+    Future.wait([
+      refreshPurchaseInvoiceDetail(),
+      purchaseInvoice
+          .refresh(
+            _server,
+            include: ['supplier', 'location', 'cost_details', 'purchase_order'],
+          )
+          .then(
+            (isSuccess) {
+              if (isSuccess) {
+                setState(() {
+                  recalculateProductTotal();
+                });
+              }
+            },
+            onError: (error) {
+              defaultErrorResponse(error: error);
+            },
+          ),
+    ]).whenComplete(() {
+      hideLoadingPopup();
+      setState(() {
+        _showForm = true;
+      });
+    });
   }
 
   void openUpdatePriceForm() {
@@ -230,12 +223,14 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
   void recalculatePurchaseInvoice() {
     List<PurchaseDetailCalculatorResult> detailResults = [];
     final purchaseCalculator = PurchaseCalculator();
-    for (var purchaseInvoiceDetail in purchaseInvoice.purchaseInvoiceDetails) {
+    for (final (index, purchaseInvoiceDetail)
+        in purchaseInvoice.purchaseInvoiceDetails.indexed) {
       final detailResult = purchaseCalculator.detailCalculate(
         quantity: purchaseInvoiceDetail.quantity,
         price: purchaseInvoiceDetail.price,
         discountDetails: purchaseInvoiceDetail.discountDetails,
       );
+      purchaseInvoiceDetail.rowNumber = index + 1;
       purchaseInvoiceDetail.subtotal = detailResult.subtotal;
       purchaseInvoiceDetail.discountAmount = detailResult.discountAmount;
       purchaseInvoiceDetail.total = detailResult.total;
@@ -259,14 +254,16 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
 
   void recalculateProductTotal() {
     List<String> productTotal = [];
+    double total = 0;
     for (final entries
         in purchaseInvoice.purchaseInvoiceDetails
             .groupListsBy((e) => e.uom?.name)
             .entries) {
       double value = entries.value.map<double>((e) => e.quantity).sum;
+      total += value;
       productTotal.add('${value.format()} ${entries.key}');
     }
-    purchaseInvoice.productTotal = productTotal.join(', ');
+    purchaseInvoice.productTotal = total;
   }
 
   Future<bool> updatePrice() async {
@@ -325,9 +322,11 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
           final newPurchaseInvoiceDetail = PurchaseInvoiceDetail(
             product: purchaseOrderDetail.product,
             price: purchaseOrderDetail.price,
+            rowNumber: purchaseOrderDetail.rowNumber,
             quantity: purchaseOrderDetail.quantity,
             uom: purchaseOrderDetail.uom,
             total: purchaseOrderDetail.total,
+            purchaseOrderDetail: purchaseOrderDetail,
             subtotal: purchaseOrderDetail.subtotal,
             barcode: purchaseOrderDetail.product?.barcodeUsingBatch == true
                 ? null
@@ -504,80 +503,6 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                             Visibility(
                               visible: setting.canShow(
                                 'purchaseInvoice',
-                                'purchase_order',
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 7,
-                                  vertical: 5,
-                                ),
-                                child: SizedBox(
-                                  width: width,
-                                  child: AsyncDropdown<PurchaseOrder>(
-                                    label: Text(
-                                      setting.columnName(
-                                        'purchaseInvoice',
-                                        'purchase_order',
-                                      ),
-                                      style: TextFormatter.labelStyle,
-                                    ),
-                                    allowClear: true,
-                                    modelClass: PurchaseOrderClass(),
-                                    request: (queryRequest) {
-                                      queryRequest.sorts = [
-                                        SortData(
-                                          key: 'transaction_date',
-                                          isAscending: false,
-                                        ),
-                                      ];
-                                      return PurchaseOrderClass().finds(
-                                        _server,
-                                        queryRequest,
-                                      );
-                                    },
-                                    textOnSelected: (purchaseOrder) =>
-                                        purchaseOrder.code,
-                                    textOnSearch: (purchaseOrder) =>
-                                        '${purchaseOrder.code} - ${purchaseOrder.transactionDate?.format()}',
-                                    onChanged: (purchaseOrder) {
-                                      purchaseInvoice.purchaseOrder =
-                                          purchaseOrder;
-                                      if (purchaseOrder == null) {
-                                        return;
-                                      }
-                                      purchaseOrder
-                                          .refresh(
-                                            _server,
-                                            include: [
-                                              'supplier',
-                                              'location',
-                                              'cost_details',
-                                              'purchase_order_details',
-                                              'purchase_order_details.taggings',
-                                              'purchase_order_details.tags',
-                                              'purchase_order_details.uom',
-                                              'purchase_order_details.product',
-                                            ],
-                                          )
-                                          .then((isSuccess) {
-                                            if (isSuccess) {
-                                              setState(() {
-                                                copyDataFromPurchaseOrder(
-                                                  purchaseOrder,
-                                                );
-                                              });
-                                              refreshSummary();
-                                            }
-                                          });
-                                    },
-                                    selected: purchaseInvoice.purchaseOrder,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Visibility(
-                              visible: setting.canShow(
-                                'purchaseInvoice',
                                 'supplier',
                               ),
                               child: Padding(
@@ -588,6 +513,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 child: SizedBox(
                                   width: width,
                                   child: AsyncDropdown<Supplier>(
+                                    allowClear: false,
                                     label: Text(
                                       setting.columnName(
                                         'purchaseInvoice',
@@ -615,6 +541,88 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                             Visibility(
                               visible: setting.canShow(
                                 'purchaseInvoice',
+                                'purchase_order',
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 5,
+                                ),
+                                child: SizedBox(
+                                  width: width,
+                                  child: AsyncDropdown<PurchaseOrder>(
+                                    label: Text(
+                                      setting.columnName(
+                                        'purchaseInvoice',
+                                        'purchase_order',
+                                      ),
+                                      style: TextFormatter.labelStyle,
+                                    ),
+                                    allowClear: true,
+                                    modelClass: PurchaseOrderClass(),
+                                    request: (queryRequest) {
+                                      queryRequest.sorts = [
+                                        SortData(
+                                          key: 'transaction_date',
+                                          isAscending: false,
+                                        ),
+                                      ];
+                                      queryRequest.filters = [
+                                        ComparisonFilterData(
+                                          key: 'supplier',
+                                          value: purchaseInvoice.supplier?.id,
+                                        ),
+                                      ];
+                                      return PurchaseOrderClass().finds(
+                                        _server,
+                                        queryRequest,
+                                      );
+                                    },
+                                    textOnSelected: (purchaseOrder) =>
+                                        purchaseOrder.code,
+                                    textOnSearch: (purchaseOrder) =>
+                                        '${purchaseOrder.code} - ${purchaseOrder.transactionDate?.format()}',
+                                    onChanged: (purchaseOrder) {
+                                      purchaseInvoice.purchaseOrder =
+                                          purchaseOrder;
+                                      if (purchaseOrder == null) {
+                                        return;
+                                      }
+                                      purchaseOrder
+                                          .refresh(
+                                            _server,
+                                            include: [
+                                              'supplier',
+                                              'location',
+                                              'cost_details',
+                                              'taggings',
+                                              'tags',
+                                              'purchase_order_details',
+                                              'purchase_order_details.uom',
+                                              'purchase_order_details.product',
+                                              'purchase_order_details.product_parent',
+                                            ],
+                                          )
+                                          .then((isSuccess) {
+                                            if (isSuccess) {
+                                              setState(() {
+                                                copyDataFromPurchaseOrder(
+                                                  purchaseOrder,
+                                                );
+                                                recalculatePurchaseInvoice();
+                                              });
+                                              refreshSummary();
+                                            }
+                                          });
+                                    },
+                                    selected: purchaseInvoice.purchaseOrder,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Visibility(
+                              visible: setting.canShow(
+                                'purchaseInvoice',
                                 'location',
                               ),
                               child: Padding(
@@ -625,6 +633,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 child: SizedBox(
                                   width: width,
                                   child: AsyncDropdown<Location>(
+                                    allowClear: false,
                                     label: Text(
                                       setting.columnName(
                                         'purchaseInvoice',
@@ -749,50 +758,92 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              "Item Detail",
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(
-                              width: 50,
-                              child: MenuAnchor(
-                                menuChildren: [
-                                  MenuItemButton(
-                                    child: const Text('Tambah Detail'),
-                                    onPressed: () {
-                                      setState(() {
-                                        purchaseInvoice.purchaseInvoiceDetails
-                                            .add(PurchaseInvoiceDetail());
-                                      });
-                                      menuController.close();
-                                    },
+                            Row(
+                              children: [
+                                const Text(
+                                  "Item Detail",
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  if (!purchaseInvoice.isNewRecord)
-                                    MenuItemButton(
-                                      child: const Text('Ganti Harga Jual'),
-                                      onPressed: () {
-                                        openUpdatePriceForm();
-                                        menuController.close();
-                                      },
-                                    ),
-                                ],
-                                controller: menuController,
-                                child: IconButton(
-                                  onPressed: () => menuController.isOpen
-                                      ? menuController.close()
-                                      : menuController.open(),
-                                  icon: Icon(Icons.table_rows_rounded),
                                 ),
-                              ),
+                                Visibility(
+                                  visible: !purchaseInvoice.isNewRecord,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 15.0,
+                                      top: 5,
+                                    ),
+                                    child: IconButton(
+                                      onPressed: refreshPurchaseInvoiceDetail,
+                                      icon: Icon(Icons.refresh),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  purchaseInvoice.purchaseInvoiceDetails.add(
+                                    PurchaseInvoiceDetail(),
+                                  );
+                                });
+                              },
+                              icon: Icon(Icons.add),
+                            ),
+
+                            // SizedBox(
+                            //   width: 50,
+                            //   child: MenuAnchor(
+                            //     menuChildren: [
+                            //       MenuItemButton(
+                            //         child: const Text('Tambah Detail'),
+                            //         onPressed: () {
+                            //           setState(() {
+                            //             purchaseInvoice.purchaseInvoiceDetails
+                            //                 .add(PurchaseInvoiceDetail());
+                            //           });
+                            //           menuController.close();
+                            //         },
+                            //       ),
+                            //       if (!purchaseInvoice.isNewRecord)
+                            //         MenuItemButton(
+                            //           child: const Text('Ganti Harga Jual'),
+                            //           onPressed: () {
+                            //             openUpdatePriceForm();
+                            //             menuController.close();
+                            //           },
+                            //         ),
+                            //     ],
+                            //     controller: menuController,
+                            //     child: IconButton(
+                            //       onPressed: () => menuController.isOpen
+                            //           ? menuController.close()
+                            //           : menuController.open(),
+                            //       icon: Icon(Icons.table_rows_rounded),
+                            //     ),
+                            //   ),
+                            // ),
                           ],
                         ),
                         const SizedBox(height: 10),
                         TableForm<PurchaseInvoiceDetail>(
                           columns: [
+                            TableFormColumn(
+                              title: '#',
+                              isNumeric: true,
+                              desktopWidth: FixedColumnWidth(40),
+                              headerBuilder: (context) => Text(
+                                '#',
+                                style: TextFormatter.tableLabelStyle,
+                                textAlign: .right,
+                              ),
+                              rowBuilder: (context, object, index) => Text(
+                                (index + 1).toString(),
+                                textAlign: .right,
+                              ),
+                            ),
                             if (setting.canShow(
                               'purchaseInvoiceDetail',
                               'product',
@@ -805,17 +856,25 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                   'Produk',
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseInvoiceDetail) =>
-                                    AsyncDropdown<Product>(
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseInvoiceDetail,
+                                      index,
+                                    ) => AsyncDropdown<Product>(
                                       textOnSearch: (model) =>
-                                          "${model.barcode}-${model.description}",
+                                          "${model.barcode}-${model.supplierProductCode}",
                                       modelClass: ProductClass(),
+                                      isShowItemDescription: true,
                                       request: (queryRequest) {
                                         queryRequest.include = ['base_uom'];
                                         queryRequest.filters = [
                                           ComparisonFilterData(
                                             key: 'supplier',
-                                            value: purchaseInvoice.supplier?.id,
+                                            value: [
+                                              purchaseInvoice.supplier?.id,
+                                              'null',
+                                            ],
                                           ),
                                         ];
                                         return ProductClass().finds(
@@ -823,7 +882,13 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                           queryRequest,
                                         );
                                       },
-                                      selected: purchaseInvoiceDetail.product,
+                                      selected:
+                                          purchaseInvoiceDetail.product
+                                              is ItemVariant
+                                          ? (purchaseInvoiceDetail.product
+                                                    as ItemVariant)
+                                                .parent
+                                          : purchaseInvoiceDetail.product,
                                       onChanged: (product) {
                                         setState(() {
                                           purchaseInvoiceDetail.product =
@@ -845,22 +910,48 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               'tags',
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
-                                name: 'tags',
+                                name: 'Varian',
                                 title: 'Varian',
-                                desktopWidth: FlexColumnWidth(1.5),
                                 headerBuilder: (context) => Text(
                                   'Varian',
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseInvoiceDetail) =>
-                                    AsyncDropdownMultiple<Tag>(
-                                      textOnSearch: (tag) => tag.modelValue,
-                                      textOnSelected: (tag) => tag.modelValue,
-                                      modelClass: TagClass(),
-                                      // isDense: true,
-                                      selecteds: purchaseInvoiceDetail.tags,
-                                      onChanged: (tags) =>
-                                          purchaseInvoiceDetail.setTags(tags),
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseInvoiceDetail,
+                                      index,
+                                    ) => AsyncDropdown<ItemVariant>(
+                                      textOnSearch: (itemVariant) =>
+                                          "${itemVariant.barcode} - ${itemVariant.supplierProductCode} - ${itemVariant.description}",
+                                      textOnSelected: (itemVariant) =>
+                                          itemVariant.supplierProductCode ??
+                                          itemVariant.barcode,
+                                      modelClass: ItemVariantClass(),
+                                      request: (queryRequest) {
+                                        int? parentId;
+                                        if (purchaseInvoiceDetail.product
+                                            is ItemVariant) {
+                                          parentId =
+                                              (purchaseInvoiceDetail.product
+                                                      as ItemVariant)
+                                                  .parentId;
+                                        } else if (purchaseInvoiceDetail.product
+                                            is Product) {
+                                          parentId =
+                                              purchaseInvoiceDetail.product?.id;
+                                        }
+                                        return ItemVariantClass().finds(
+                                          _server,
+                                          queryRequest,
+                                          parentId: parentId,
+                                        );
+                                      },
+                                      onChanged: (product) =>
+                                          purchaseInvoiceDetail.product =
+                                              product,
+                                      selected:
+                                          purchaseInvoiceDetail.itemVariant,
                                     ),
                               ),
                             if (setting.canShow(
@@ -875,8 +966,12 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseInvoiceDetail) =>
-                                    AuthorizerFormField(
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseInvoiceDetail,
+                                      index,
+                                    ) => AuthorizerFormField(
                                       columnName: 'barcode',
                                       tableName: 'purchaseInvoiceDetail',
                                       notifier: modelToggleNotifier,
@@ -913,24 +1008,24 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               'quantity',
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
-                                name: 'quantity',
                                 title: 'Jumlah',
-                                desktopWidth: FixedColumnWidth(90),
+                                desktopWidth: FixedColumnWidth(100),
                                 isNumeric: true,
                                 headerBuilder: (context) => Text(
                                   'Jumlah',
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseInvoiceDetail) =>
-                                    NumberFormField<double>(
-                                      initialValue:
-                                          purchaseInvoiceDetail.quantity,
-                                      // isDense: true,
-                                      onChanged: (value) =>
-                                          purchaseInvoiceDetail.quantity =
-                                              value ?? 0,
-                                    ),
+                                rowBuilder:
+                                    (context, purchaseInvoiceDetail, index) =>
+                                        NumberFormField<double>(
+                                          initialValue:
+                                              purchaseInvoiceDetail.quantity,
+                                          // isDense: true,
+                                          onChanged: (value) =>
+                                              purchaseInvoiceDetail.quantity =
+                                                  value ?? 0,
+                                        ),
                               ),
                             if (setting.canShow('purchaseInvoiceDetail', 'uom'))
                               TableFormColumn<PurchaseInvoiceDetail>(
@@ -942,8 +1037,12 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseInvoiceDetail) =>
-                                    AsyncDropdown<UnitOfMeasurement>(
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseInvoiceDetail,
+                                      index,
+                                    ) => AsyncDropdown<UnitOfMeasurement>(
                                       width: 200,
                                       valueFallback: () =>
                                           purchaseInvoiceDetail.uom,
@@ -959,6 +1058,66 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               ),
                             if (setting.canShow(
                               'purchaseInvoiceDetail',
+                              'note_quantity',
+                            ))
+                              TableFormColumn<PurchaseInvoiceDetail>(
+                                title: 'Jumlah di Nota',
+                                desktopWidth: FixedColumnWidth(120),
+                                isNumeric: true,
+                                headerBuilder: (context) => Text(
+                                  'Jumlah di Nota',
+                                  textAlign: .right,
+                                  style: TextFormatter.tableLabelStyle,
+                                ),
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseInvoiceDetail,
+                                      index,
+                                    ) => NumberFormField<double>(
+                                      initialValue:
+                                          purchaseInvoiceDetail.noteQuantity,
+                                      // isDense: true,
+                                      onChanged: (value) =>
+                                          purchaseInvoiceDetail.noteQuantity =
+                                              value,
+                                    ),
+                              ),
+                            if (setting.canShow(
+                              'purchaseOrderDetail',
+                              'quantity',
+                            ))
+                              TableFormColumn<PurchaseInvoiceDetail>(
+                                title: 'Pesan',
+                                desktopWidth: FixedColumnWidth(100),
+                                isNumeric: true,
+                                headerBuilder: (context) => Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        'Pesan',
+                                        textAlign: .right,
+                                        style: TextFormatter.tableLabelStyle,
+                                      ),
+                                    ),
+                                    if (purchaseInvoice.purchaseOrder != null)
+                                      IconButton(
+                                        onPressed: refreshOrderQuantity,
+                                        icon: Icon(Icons.refresh),
+                                      ),
+                                  ],
+                                ),
+                                rowBuilder:
+                                    (context, purchaseInvoiceDetail, index) =>
+                                        Text(
+                                          purchaseInvoiceDetail
+                                                  .orderQuantityBasedDetailUom
+                                                  ?.format() ??
+                                              '',
+                                        ),
+                              ),
+                            if (setting.canShow(
+                              'purchaseInvoiceDetail',
                               'price',
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
@@ -970,14 +1129,16 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseInvoiceDetail) =>
-                                    MoneyFormField(
-                                      initialValue: purchaseInvoiceDetail.price,
-                                      // isDense: true,
-                                      onChanged: (value) =>
-                                          purchaseInvoiceDetail.price =
-                                              value ?? const Money(0),
-                                    ),
+                                rowBuilder:
+                                    (context, purchaseInvoiceDetail, index) =>
+                                        MoneyFormField(
+                                          initialValue:
+                                              purchaseInvoiceDetail.price,
+                                          // isDense: true,
+                                          onChanged: (value) =>
+                                              purchaseInvoiceDetail.price =
+                                                  value ?? const Money(0),
+                                        ),
                               ),
                             if (setting.canShow('product', 'sell_price'))
                               TableFormColumn<PurchaseInvoiceDetail>(
@@ -989,11 +1150,63 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseInvoiceDetail) =>
-                                    Text(
-                                      purchaseInvoiceDetail.product?.sellPrice
-                                              .format() ??
-                                          '',
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseInvoiceDetail,
+                                      index,
+                                    ) => Row(
+                                      children: [
+                                        Flexible(
+                                          child: MoneyFormField(
+                                            notifier: modelToggleNotifier,
+                                            readOnly:
+                                                purchaseInvoiceDetail.product ==
+                                                null,
+                                            validator: (value) {
+                                              if (purchaseInvoiceDetail
+                                                      .product ==
+                                                  null) {
+                                                return null;
+                                              }
+                                              if (value == null) {
+                                                return 'tidak boleh kosong';
+                                              }
+                                              if (value < 0) {
+                                                return 'tidak boleh negatif';
+                                              }
+                                              return null;
+                                            },
+                                            valueCallback: () =>
+                                                purchaseInvoiceDetail
+                                                    .product
+                                                    ?.sellPrice,
+                                            onChanged: (value) {
+                                              final product =
+                                                  purchaseInvoiceDetail.product;
+                                              if (product == null ||
+                                                  value == null) {
+                                                return;
+                                              }
+                                              updateProductSellPrice(
+                                                product,
+                                                value,
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: SizedBox(
+                                            width: 25,
+                                            height: 25,
+                                            child: purchaseInvoiceDetail
+                                                .product
+                                                ?.statusSellPrice
+                                                .icon,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                               ),
                             if (setting.canShow(
@@ -1009,11 +1222,13 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseInvoiceDetail) =>
-                                    Text(
-                                      purchaseInvoiceDetail.margin?.format() ??
-                                          '',
-                                    ),
+                                rowBuilder:
+                                    (context, purchaseInvoiceDetail, index) =>
+                                        Text(
+                                          purchaseInvoiceDetail.margin
+                                                  ?.format() ??
+                                              '',
+                                        ),
                               ),
                             if (setting.canShow(
                               'purchaseInvoiceDetail',
@@ -1028,15 +1243,17 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseInvoiceDetail) =>
-                                    Container(
-                                      height: 50,
-                                      alignment: .centerRight,
-                                      child: SelectableText(
-                                        purchaseInvoiceDetail.subtotal.format(),
-                                        textAlign: .right,
-                                      ),
-                                    ),
+                                rowBuilder:
+                                    (context, purchaseInvoiceDetail, index) =>
+                                        Container(
+                                          height: 50,
+                                          alignment: .centerRight,
+                                          child: SelectableText(
+                                            purchaseInvoiceDetail.subtotal
+                                                .format(),
+                                            textAlign: .right,
+                                          ),
+                                        ),
                               ),
                             if (setting.canShow(
                               'purchaseInvoiceDetail',
@@ -1051,55 +1268,54 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                   style: TextFormatter.tableLabelStyle,
                                 ),
                                 isNumeric: true,
-                                rowBuilder: (context, purchaseInvoiceDetail) => SizedBox(
-                                  height: 50,
-                                  child: Row(
-                                    spacing: 15,
-                                    mainAxisAlignment: .spaceBetween,
-                                    crossAxisAlignment: .center,
-                                    children: [
-                                      ElevatedButton(
-                                        onPressed: () =>
-                                            _openDiscountDetail(
-                                              purchaseInvoiceDetail
-                                                  .discountDetails,
-                                              description: [
-                                                Text(
-                                                  'Produk: ${purchaseInvoiceDetail.product?.description} ${purchaseInvoiceDetail.product?.tagDescription}',
-                                                  style: const TextStyle(
-                                                    fontSize: 18,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  'Tag: ${purchaseInvoiceDetail.tagDescription}',
-                                                  style: const TextStyle(
-                                                    fontSize: 18,
-                                                  ),
-                                                ),
-                                              ],
-                                            ).then((discountDetails) {
-                                              if (discountDetails == null ||
-                                                  !mounted) {
-                                                return;
-                                              }
-                                              setState(() {
-                                                purchaseInvoiceDetail
-                                                        .discountDetails =
-                                                    discountDetails;
-                                                recalculatePurchaseInvoice();
-                                              });
-                                              refreshSummary();
-                                            }),
-                                        child: Text('Detail'),
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseInvoiceDetail,
+                                      index,
+                                    ) => SizedBox(
+                                      height: 50,
+                                      child: Row(
+                                        spacing: 15,
+                                        mainAxisAlignment: .spaceBetween,
+                                        crossAxisAlignment: .center,
+                                        children: [
+                                          ElevatedButton(
+                                            onPressed: () =>
+                                                _openDiscountDetail(
+                                                  purchaseInvoiceDetail
+                                                      .discountDetails,
+                                                  description: [
+                                                    Text(
+                                                      'Produk:  ${purchaseInvoiceDetail.barcode} ${purchaseInvoiceDetail.product?.tagDescription}',
+                                                      style: const TextStyle(
+                                                        fontSize: 18,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ).then((discountDetails) {
+                                                  if (discountDetails == null ||
+                                                      !mounted) {
+                                                    return;
+                                                  }
+                                                  setState(() {
+                                                    purchaseInvoiceDetail
+                                                            .discountDetails =
+                                                        discountDetails;
+                                                    recalculatePurchaseInvoice();
+                                                  });
+                                                  refreshSummary();
+                                                }),
+                                            child: Text('Detail'),
+                                          ),
+                                          Text(
+                                            purchaseInvoiceDetail.discountAmount
+                                                .format(),
+                                            textAlign: .right,
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        purchaseInvoiceDetail.discountAmount
-                                            .format(),
-                                        textAlign: .right,
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                    ),
                               ),
                             if (setting.canShow(
                               'purchaseInvoiceDetail',
@@ -1113,31 +1329,34 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                   style: TextFormatter.tableLabelStyle,
                                 ),
                                 isNumeric: true,
-                                rowBuilder: (context, purchaseInvoiceDetail) =>
-                                    Container(
-                                      height: 50,
-                                      alignment: .centerEnd,
-                                      child: Text(
-                                        purchaseInvoiceDetail.total.format(),
-                                        textAlign: .right,
-                                      ),
-                                    ),
+                                rowBuilder:
+                                    (context, purchaseInvoiceDetail, index) =>
+                                        Container(
+                                          height: 50,
+                                          alignment: .centerEnd,
+                                          child: Text(
+                                            purchaseInvoiceDetail.total
+                                                .format(),
+                                            textAlign: .right,
+                                          ),
+                                        ),
                               ),
                           ],
                           actionColumn: TableFormColumn<PurchaseInvoiceDetail>(
                             desktopWidth: FixedColumnWidth(60),
-                            rowBuilder: (context, purchaseInvoiceDetail) =>
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      purchaseInvoice.purchaseInvoiceDetails
-                                          .remove(purchaseInvoiceDetail);
-                                      recalculatePurchaseInvoice();
-                                    });
-                                    refreshSummary();
-                                  },
-                                  icon: Icon(Icons.delete),
-                                ),
+                            rowBuilder:
+                                (context, purchaseInvoiceDetail, index) =>
+                                    IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          purchaseInvoice.purchaseInvoiceDetails
+                                              .remove(purchaseInvoiceDetail);
+                                          recalculatePurchaseInvoice();
+                                        });
+                                        refreshSummary();
+                                      },
+                                      icon: Icon(Icons.delete),
+                                    ),
                             headerBuilder: (context) => IconButton(
                               onPressed: () async {
                                 if (await showConfirmDialog2()) {
@@ -1226,6 +1445,63 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
     );
   }
 
+  Future refreshPurchaseInvoiceDetail() {
+    return PurchaseInvoiceDetailClass()
+        .finds(
+          _server,
+          QueryRequest(
+            page: 1,
+            filters: [
+              ComparisonFilterData(
+                key: 'purchase_invoice',
+                value: purchaseInvoice.id,
+              ),
+            ],
+            sorts: [SortData(key: 'row_number', isAscending: true)],
+            include: [
+              'uom',
+              'product',
+              'product_parent',
+              'order_uom',
+              'purchase_order_detail',
+            ],
+          ),
+        )
+        .then((queryResponse) {
+          setState(() {
+            purchaseInvoice.purchaseInvoiceDetails = queryResponse.models;
+            recalculateProductTotal();
+          });
+        });
+  }
+
+  void updateProductSellPrice(Product product, Money value) {
+    product.sellPrice = value;
+    setState(() {
+      product.statusSellPrice = .onProgress;
+    });
+    product
+        .save(_server, only: ['sell_price'])
+        .then(
+          (isSuccess) {
+            if (isSuccess) {
+              setState(() {
+                product.statusSellPrice = .success;
+              });
+            } else {
+              setState(() {
+                product.statusSellPrice = .failed;
+              });
+            }
+          },
+          onError: (error) {
+            setState(() {
+              product.statusSellPrice = .failed;
+            });
+          },
+        );
+  }
+
   void _saveRecord() {
     if (_formState.currentState?.validate() != true) {
       return;
@@ -1280,6 +1556,74 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
         });
       },
     );
+  }
+
+  void refreshOrderQuantity() {
+    for (final purchaseInvoiceDetail
+        in purchaseInvoice.purchaseInvoiceDetails) {
+      if (purchaseInvoiceDetail.purchaseOrderDetail == null) {
+        continue;
+      }
+      fetchOrderQuantity(purchaseInvoiceDetail);
+    }
+  }
+
+  void fetchOrderQuantity(PurchaseInvoiceDetail purchaseInvoiceDetail) {
+    if (purchaseInvoiceDetail.product == null ||
+        purchaseInvoiceDetail.orderQuantity == null ||
+        purchaseInvoiceDetail.orderUom == null ||
+        purchaseInvoiceDetail.uom == null) {
+      setState(() {
+        purchaseInvoiceDetail.orderQuantityBasedDetailUom = null;
+      });
+    }
+    if (purchaseInvoiceDetail.uom?.id == purchaseInvoiceDetail.orderUom?.id) {
+      setState(() {
+        purchaseInvoiceDetail.orderQuantityBasedDetailUom =
+            purchaseInvoiceDetail.orderQuantity;
+      });
+    }
+    convertQuantityUom(
+      fromUom: purchaseInvoiceDetail.orderUom!,
+      toUom: purchaseInvoiceDetail.uom!,
+      quantity: purchaseInvoiceDetail.orderQuantity!,
+      product: purchaseInvoiceDetail.product!,
+    ).then(
+      (value) => setState(() {
+        purchaseInvoiceDetail.orderQuantityBasedDetailUom = value;
+      }),
+    );
+  }
+
+  Future<double> convertQuantityUom({
+    required UnitOfMeasurement fromUom,
+    required UnitOfMeasurement toUom,
+    required double quantity,
+    required Product product,
+  }) {
+    return _server
+        .get(
+          'unit_of_measurements/convert',
+          queryParam: {
+            'from_uom_id': fromUom.id,
+            'to_uom_id': toUom.id,
+            'product_id': product.id,
+            'quantity': quantity,
+          },
+        )
+        .then(
+          (response) {
+            if (response.statusCode == 200) {
+              return double.parse(response.data?['data']?['value']);
+            } else {
+              throw 'gagal hitung jumlah';
+            }
+          },
+          onError: (error) {
+            defaultErrorResponse(error: error);
+            throw error;
+          },
+        );
   }
 
   void _duplicateRecord() {

@@ -293,7 +293,7 @@ class _ForwarderFormPageState extends State<ForwarderFormPage>
                               desktopWidth: FixedColumnWidth(200),
                               headerBuilder: (context) =>
                                   Text('Nama', style: TextFormatter.labelStyle),
-                              rowBuilder: (context, contactNumber) =>
+                              rowBuilder: (context, contactNumber, index) =>
                                   TextFormField(
                                     initialValue: contactNumber.name,
                                     decoration: InputDecoration(
@@ -309,7 +309,7 @@ class _ForwarderFormPageState extends State<ForwarderFormPage>
                                 'Platform',
                                 style: TextFormatter.labelStyle,
                               ),
-                              rowBuilder: (context, contactNumber) =>
+                              rowBuilder: (context, contactNumber, index) =>
                                   EnumDropdown<ContactPlatform>(
                                     width: 200,
                                     initialSelection: contactNumber.platform,
@@ -326,7 +326,7 @@ class _ForwarderFormPageState extends State<ForwarderFormPage>
                                 'Value',
                                 style: TextFormatter.labelStyle,
                               ),
-                              rowBuilder: (context, contactNumber) =>
+                              rowBuilder: (context, contactNumber, index) =>
                                   Visibility(
                                     replacement: TextFormField(
                                       initialValue: contactNumber.value,
@@ -377,7 +377,7 @@ class _ForwarderFormPageState extends State<ForwarderFormPage>
                               },
                               icon: Icon(Icons.delete),
                             ),
-                            rowBuilder: (context, object) => IconButton(
+                            rowBuilder: (context, object, index) => IconButton(
                               onPressed: () {
                                 setState(() {
                                   if (object.isNewRecord) {

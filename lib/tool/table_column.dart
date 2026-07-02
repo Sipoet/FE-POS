@@ -162,6 +162,7 @@ abstract class TableColumnType<T> {
   static TableColumnType get text => TextTableColumnType();
   static TableColumnType get contact => ContactTableColumnType();
   static TableColumnType get time => TimeTableColumnType();
+  static TableColumnType get image => ImageTableColumnType();
   static TableColumnType model(ModelClass modelClass) =>
       ModelTableColumnType(modelClass: modelClass);
   static TableColumnType enums(List<DropdownMenuEntry<String>> enumList) =>

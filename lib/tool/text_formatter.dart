@@ -22,6 +22,14 @@ mixin TextFormatter {
     return DateFormat('dd/MM/y', 'id_ID').format(date);
   }
 
+  String dateTimeFormat(DateTime date) {
+    return DateFormat('dd/MM/y HH:mm', 'id_ID').format(date);
+  }
+
+  String dateTimeLocalFormat(DateTime date) {
+    return DateFormat('dd/MM/y HH:mm', 'id_ID').format(date.toLocal());
+  }
+
   String moneyFormat(dynamic value, {int decimalDigits = 1}) {
     if (value is Money) {
       return NumberFormat.currency(
@@ -35,14 +43,6 @@ mixin TextFormatter {
       symbol: "Rp",
       decimalDigits: decimalDigits,
     ).format(value);
-  }
-
-  String dateTimeFormat(DateTime date) {
-    return DateFormat('dd/MM/y HH:mm', 'id_ID').format(date);
-  }
-
-  String dateTimeLocalFormat(DateTime date) {
-    return DateFormat('dd/MM/y HH:mm', 'id_ID').format(date.toLocal());
   }
 
   String numberFormat(number) {

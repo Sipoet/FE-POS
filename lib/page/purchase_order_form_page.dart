@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:fe_pos/model/item_variant.dart';
 import 'package:fe_pos/model/product.dart';
 import 'package:fe_pos/model/purchase_order.dart';
 import 'package:fe_pos/model/unit_of_measurement.dart';
@@ -73,39 +74,59 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
 
   void fetchPurchaseOrder() {
     showLoadingPopup();
+
     setState(() {
       _showForm = false;
     });
-    purchaseOrder
-        .refresh(
+    Future.wait([
+      refreshPurchaseOrderDetail(),
+      purchaseOrder
+          .refresh(
+            _server,
+            include: [
+              'supplier',
+              'location',
+              'cost_details',
+              'taggings',
+              'tags',
+            ],
+          )
+          .then(
+            (isSuccess) {
+              if (isSuccess) {}
+            },
+            onError: (error) {
+              defaultErrorResponse(error: error);
+            },
+          ),
+    ]).whenComplete(() {
+      recalculateProductTotal();
+      hideLoadingPopup();
+      setState(() {
+        _showForm = true;
+      });
+    });
+  }
+
+  Future refreshPurchaseOrderDetail() {
+    return PurchaseOrderDetailClass()
+        .finds(
           _server,
-          include: [
-            'supplier',
-            'location',
-            'cost_details',
-            'purchase_order_details',
-            'purchase_order_details.uom',
-            'purchase_order_details.taggings',
-            'purchase_order_details.tags',
-            'purchase_order_details.product',
-          ],
+          QueryRequest(
+            page: 1,
+            filters: [
+              ComparisonFilterData(
+                key: 'purchase_order',
+                value: purchaseOrder.id,
+              ),
+            ],
+            sorts: [SortData(key: 'row_number', isAscending: true)],
+            include: ['uom', 'product', 'product_parent'],
+          ),
         )
-        .then(
-          (isSuccess) {
-            if (isSuccess) {
-              setState(() {
-                recalculateProductTotal();
-              });
-            }
-          },
-          onError: (error) {
-            defaultErrorResponse(error: error);
-          },
-        )
-        .whenComplete(() {
-          hideLoadingPopup();
+        .then((queryResponse) {
           setState(() {
-            _showForm = true;
+            purchaseOrder.purchaseOrderDetails = queryResponse.models;
           });
         });
   }
@@ -229,12 +250,14 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
   void recalculatePurchaseOrder() {
     List<PurchaseDetailCalculatorResult> detailResults = [];
     final purchaseCalculator = PurchaseCalculator();
-    for (var purchaseOrderDetail in purchaseOrder.purchaseOrderDetails) {
+    for (final (index, purchaseOrderDetail)
+        in purchaseOrder.purchaseOrderDetails.indexed) {
       final detailResult = purchaseCalculator.detailCalculate(
         quantity: purchaseOrderDetail.quantity,
         price: purchaseOrderDetail.price,
         discountDetails: purchaseOrderDetail.discountDetails,
       );
+      purchaseOrderDetail.rowNumber = index + 1;
       purchaseOrderDetail.subtotal = detailResult.subtotal;
       purchaseOrderDetail.discountAmount = detailResult.discountAmount;
       purchaseOrderDetail.total = detailResult.total;
@@ -258,14 +281,16 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
 
   void recalculateProductTotal() {
     List<String> productTotal = [];
+    double total = 0;
     for (final entries
         in purchaseOrder.purchaseOrderDetails
             .groupListsBy((e) => e.uom?.name)
             .entries) {
       double value = entries.value.map<double>((e) => e.quantity).sum;
+      total += value;
       productTotal.add('${value.format()} ${entries.key}');
     }
-    purchaseOrder.productTotal = productTotal.join(', ');
+    purchaseOrder.productTotal = total;
   }
 
   Future<bool> updatePrice() async {
@@ -388,6 +413,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                 child: SizedBox(
                                   width: width,
                                   child: AsyncDropdown<Supplier>(
+                                    allowClear: false,
                                     label: Text(
                                       setting.columnName(
                                         'purchaseOrder',
@@ -425,6 +451,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                 child: SizedBox(
                                   width: width,
                                   child: AsyncDropdown<Location>(
+                                    allowClear: false,
                                     label: Text(
                                       setting.columnName(
                                         'purchaseOrder',
@@ -487,56 +514,87 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              "Item Detail",
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(
-                              width: 50,
-                              child: MenuAnchor(
-                                menuChildren: [
-                                  MenuItemButton(
-                                    child: const Text('Tambah Detail'),
-                                    onPressed: () {
-                                      setState(() {
-                                        purchaseOrder.purchaseOrderDetails.add(
-                                          PurchaseOrderDetail(),
-                                        );
-                                      });
-                                      menuController.close();
-                                    },
+                            Row(
+                              children: [
+                                const Text(
+                                  "Detail",
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  if (!purchaseOrder.isNewRecord)
-                                    MenuItemButton(
-                                      child: const Text('Ganti Harga Jual'),
-                                      onPressed: () {
-                                        openUpdatePriceForm();
-                                        menuController.close();
-                                      },
-                                    ),
-                                ],
-                                controller: menuController,
-
-                                child: IconButton(
-                                  onPressed: () {
-                                    if (menuController.isOpen) {
-                                      menuController.close();
-                                    } else {
-                                      menuController.open();
-                                    }
-                                  },
-                                  icon: Icon(Icons.table_rows_rounded),
                                 ),
-                              ),
+                                Visibility(
+                                  visible: !purchaseOrder.isNewRecord,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 15.0,
+                                      top: 5,
+                                    ),
+                                    child: IconButton(
+                                      onPressed: refreshPurchaseOrderDetail,
+                                      icon: Icon(Icons.refresh),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
+
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  purchaseOrder.purchaseOrderDetails.add(
+                                    PurchaseOrderDetail(),
+                                  );
+                                });
+                              },
+                              icon: Icon(Icons.add),
+                            ),
+                            // SizedBox(
+                            //   width: 50,
+                            //   child: MenuAnchor(
+                            //     menuChildren: [
+                            //       if (!purchaseOrder.isNewRecord)
+                            //         MenuItemButton(
+                            //           child: const Text('Ganti Harga Jual'),
+                            //           onPressed: () {
+                            //             openUpdatePriceForm();
+                            //             menuController.close();
+                            //           },
+                            //         ),
+                            //     ],
+                            //     controller: menuController,
+
+                            //     child: IconButton(
+                            //       onPressed: () {
+                            //         if (menuController.isOpen) {
+                            //           menuController.close();
+                            //         } else {
+                            //           menuController.open();
+                            //         }
+                            //       },
+                            //       icon: Icon(Icons.table_rows_rounded),
+                            //     ),
+                            //   ),
+                            // ),
                           ],
                         ),
                         const SizedBox(height: 10),
                         TableForm<PurchaseOrderDetail>(
                           columns: [
+                            TableFormColumn(
+                              title: '#',
+                              isNumeric: true,
+                              desktopWidth: FixedColumnWidth(40),
+                              headerBuilder: (context) => Text(
+                                '#',
+                                style: TextFormatter.tableLabelStyle,
+                                textAlign: .right,
+                              ),
+                              rowBuilder: (context, object, index) => Text(
+                                (index + 1).toString(),
+                                textAlign: .right,
+                              ),
+                            ),
                             if (setting.canShow(
                               'purchaseOrderDetail',
                               'product',
@@ -549,17 +607,26 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                   'Produk',
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseOrderDetail) =>
-                                    AsyncDropdown<Product>(
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseOrderDetail,
+                                      index,
+                                    ) => AsyncDropdown<Product>(
+                                      allowClear: false,
                                       textOnSearch: (model) =>
-                                          "${model.barcode}-${model.description}",
+                                          "${model.barcode}-${model.supplierProductCode}",
+                                      isShowItemDescription: true,
                                       modelClass: ProductClass(),
                                       request: (queryRequest) {
                                         queryRequest.include = ['base_uom'];
                                         queryRequest.filters = [
                                           ComparisonFilterData(
                                             key: 'supplier',
-                                            value: purchaseOrder.supplier?.id,
+                                            value: [
+                                              purchaseOrder.supplier?.id,
+                                              'null',
+                                            ],
                                           ),
                                         ];
                                         return ProductClass().finds(
@@ -567,7 +634,13 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                           queryRequest,
                                         );
                                       },
-                                      selected: purchaseOrderDetail.product,
+                                      selected:
+                                          purchaseOrderDetail.product
+                                              is ItemVariant
+                                          ? (purchaseOrderDetail.product
+                                                    as ItemVariant)
+                                                .parent
+                                          : purchaseOrderDetail.product,
                                       onChanged: (product) => setState(() {
                                         purchaseOrderDetail.product = product;
                                         purchaseOrderDetail.uom =
@@ -576,24 +649,50 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                       }),
                                     ),
                               ),
-                            if (setting.canShow('purchaseOrderDetail', 'tags'))
+                            if (setting.canShow(
+                              'purchaseOrderDetail',
+                              'product',
+                            ))
                               TableFormColumn<PurchaseOrderDetail>(
-                                name: 'tags',
-                                title: 'Tag',
-                                desktopWidth: FlexColumnWidth(1.5),
+                                title: 'Varian',
                                 headerBuilder: (context) => Text(
-                                  'Tag',
+                                  'Varian',
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseOrderDetail) =>
-                                    AsyncDropdownMultiple<Tag>(
-                                      textOnSearch: (tag) => tag.modelValue,
-                                      textOnSelected: (tag) => tag.modelValue,
-                                      modelClass: TagClass(),
-                                      // isDense: true,
-                                      selecteds: purchaseOrderDetail.tags,
-                                      onChanged: (tags) =>
-                                          purchaseOrderDetail.setTags(tags),
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseOrderDetail,
+                                      index,
+                                    ) => AsyncDropdown<ItemVariant>(
+                                      textOnSearch: (itemVariant) =>
+                                          "${itemVariant.barcode} - ${itemVariant.supplierProductCode} - ${itemVariant.description}",
+                                      textOnSelected: (itemVariant) =>
+                                          itemVariant.supplierProductCode ??
+                                          itemVariant.barcode,
+                                      modelClass: ItemVariantClass(),
+                                      request: (queryRequest) {
+                                        int? parentId;
+                                        if (purchaseOrderDetail.product
+                                            is ItemVariant) {
+                                          parentId =
+                                              (purchaseOrderDetail.product
+                                                      as ItemVariant)
+                                                  .parentId;
+                                        } else if (purchaseOrderDetail.product
+                                            is Product) {
+                                          parentId =
+                                              purchaseOrderDetail.product?.id;
+                                        }
+                                        return ItemVariantClass().finds(
+                                          _server,
+                                          queryRequest,
+                                          parentId: parentId,
+                                        );
+                                      },
+                                      onChanged: (product) =>
+                                          purchaseOrderDetail.product = product,
+                                      selected: purchaseOrderDetail.itemVariant,
                                     ),
                               ),
                             if (setting.canShow(
@@ -610,15 +709,16 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseOrderDetail) =>
-                                    NumberFormField<double>(
-                                      initialValue:
-                                          purchaseOrderDetail.quantity,
-                                      // isDense: true,
-                                      onChanged: (value) =>
-                                          purchaseOrderDetail.quantity =
-                                              value ?? 0,
-                                    ),
+                                rowBuilder:
+                                    (context, purchaseOrderDetail, index) =>
+                                        NumberFormField<double>(
+                                          initialValue:
+                                              purchaseOrderDetail.quantity,
+                                          // isDense: true,
+                                          onChanged: (value) =>
+                                              purchaseOrderDetail.quantity =
+                                                  value ?? 0,
+                                        ),
                               ),
                             if (setting.canShow('purchaseOrderDetail', 'uom'))
                               TableFormColumn<PurchaseOrderDetail>(
@@ -630,8 +730,12 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseOrderDetail) =>
-                                    AsyncDropdown<UnitOfMeasurement>(
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseOrderDetail,
+                                      index,
+                                    ) => AsyncDropdown<UnitOfMeasurement>(
                                       width: 200,
                                       valueFallback: () =>
                                           purchaseOrderDetail.uom,
@@ -656,14 +760,16 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseOrderDetail) =>
-                                    MoneyFormField(
-                                      initialValue: purchaseOrderDetail.price,
-                                      // isDense: true,
-                                      onChanged: (value) =>
-                                          purchaseOrderDetail.price =
-                                              value ?? const Money(0),
-                                    ),
+                                rowBuilder:
+                                    (context, purchaseOrderDetail, index) =>
+                                        MoneyFormField(
+                                          initialValue:
+                                              purchaseOrderDetail.price,
+                                          // isDense: true,
+                                          onChanged: (value) =>
+                                              purchaseOrderDetail.price =
+                                                  value ?? const Money(0),
+                                        ),
                               ),
                             if (setting.canShow('product', 'sell_price'))
                               TableFormColumn<PurchaseOrderDetail>(
@@ -671,15 +777,66 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                 title: 'Harga Jual',
                                 isNumeric: true,
                                 headerBuilder: (context) => Text(
-                                  'Harga Jual',
+                                  'Harga Jual per Satuan utama',
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseOrderDetail) =>
-                                    Text(
-                                      purchaseOrderDetail.product?.sellPrice
-                                              .format() ??
-                                          '',
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseOrderDetail,
+                                      index,
+                                    ) => Row(
+                                      children: [
+                                        Flexible(
+                                          child: MoneyFormField(
+                                            notifier: modelToggleNotifier,
+                                            readOnly:
+                                                purchaseOrderDetail.product ==
+                                                null,
+                                            validator: (value) {
+                                              if (purchaseOrderDetail.product ==
+                                                  null) {
+                                                return null;
+                                              }
+                                              if (value == null) {
+                                                return 'tidak boleh kosong';
+                                              }
+                                              if (value < 0) {
+                                                return 'tidak boleh negatif';
+                                              }
+                                              return null;
+                                            },
+                                            valueCallback: () =>
+                                                purchaseOrderDetail
+                                                    .product
+                                                    ?.sellPrice,
+                                            onChanged: (value) {
+                                              final product =
+                                                  purchaseOrderDetail.product;
+                                              if (product == null ||
+                                                  value == null) {
+                                                return;
+                                              }
+                                              updateProductSellPrice(
+                                                product,
+                                                value,
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: SizedBox(
+                                            width: 25,
+                                            height: 25,
+                                            child: purchaseOrderDetail
+                                                .product
+                                                ?.statusSellPrice
+                                                .icon,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                               ),
                             if (setting.canShow(
@@ -695,11 +852,13 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseOrderDetail) =>
-                                    Text(
-                                      purchaseOrderDetail.margin?.format() ??
-                                          '',
-                                    ),
+                                rowBuilder:
+                                    (context, purchaseOrderDetail, index) =>
+                                        Text(
+                                          purchaseOrderDetail.margin
+                                                  ?.format() ??
+                                              '',
+                                        ),
                               ),
                             if (setting.canShow(
                               'purchaseOrderDetail',
@@ -714,15 +873,17 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                rowBuilder: (context, purchaseOrderDetail) =>
-                                    Container(
-                                      height: 50,
-                                      alignment: .centerRight,
-                                      child: SelectableText(
-                                        purchaseOrderDetail.subtotal.format(),
-                                        textAlign: .right,
-                                      ),
-                                    ),
+                                rowBuilder:
+                                    (context, purchaseOrderDetail, index) =>
+                                        Container(
+                                          height: 50,
+                                          alignment: .centerRight,
+                                          child: SelectableText(
+                                            purchaseOrderDetail.subtotal
+                                                .format(),
+                                            textAlign: .right,
+                                          ),
+                                        ),
                               ),
                             if (setting.canShow(
                               'purchaseOrderDetail',
@@ -737,55 +898,54 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                   style: TextFormatter.tableLabelStyle,
                                 ),
                                 isNumeric: true,
-                                rowBuilder: (context, purchaseOrderDetail) => SizedBox(
-                                  height: 50,
-                                  child: Row(
-                                    spacing: 15,
-                                    mainAxisAlignment: .spaceBetween,
-                                    crossAxisAlignment: .center,
-                                    children: [
-                                      ElevatedButton(
-                                        onPressed: () =>
-                                            _openDiscountDetail(
-                                              purchaseOrderDetail
-                                                  .discountDetails,
-                                              description: [
-                                                Text(
-                                                  'Produk: ${purchaseOrderDetail.product?.description} ${purchaseOrderDetail.product?.tagDescription}',
-                                                  style: const TextStyle(
-                                                    fontSize: 18,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  'Tag: ${purchaseOrderDetail.tagDescription}',
-                                                  style: const TextStyle(
-                                                    fontSize: 18,
-                                                  ),
-                                                ),
-                                              ],
-                                            ).then((discountDetails) {
-                                              if (discountDetails == null ||
-                                                  !mounted) {
-                                                return;
-                                              }
-                                              setState(() {
-                                                purchaseOrderDetail
-                                                        .discountDetails =
-                                                    discountDetails;
-                                                recalculatePurchaseOrder();
-                                              });
-                                              refreshSummary();
-                                            }),
-                                        child: Text('Detail'),
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseOrderDetail,
+                                      index,
+                                    ) => SizedBox(
+                                      height: 50,
+                                      child: Row(
+                                        spacing: 15,
+                                        mainAxisAlignment: .spaceBetween,
+                                        crossAxisAlignment: .center,
+                                        children: [
+                                          ElevatedButton(
+                                            onPressed: () =>
+                                                _openDiscountDetail(
+                                                  purchaseOrderDetail
+                                                      .discountDetails,
+                                                  description: [
+                                                    Text(
+                                                      'Produk: ${purchaseOrderDetail.product?.description} ${purchaseOrderDetail.product?.tagDescription}',
+                                                      style: const TextStyle(
+                                                        fontSize: 18,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ).then((discountDetails) {
+                                                  if (discountDetails == null ||
+                                                      !mounted) {
+                                                    return;
+                                                  }
+                                                  setState(() {
+                                                    purchaseOrderDetail
+                                                            .discountDetails =
+                                                        discountDetails;
+                                                    recalculatePurchaseOrder();
+                                                  });
+                                                  refreshSummary();
+                                                }),
+                                            child: Text('Detail'),
+                                          ),
+                                          Text(
+                                            purchaseOrderDetail.discountAmount
+                                                .format(),
+                                            textAlign: .right,
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        purchaseOrderDetail.discountAmount
-                                            .format(),
-                                        textAlign: .right,
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                    ),
                               ),
                             if (setting.canShow('purchaseOrderDetail', 'total'))
                               TableFormColumn<PurchaseOrderDetail>(
@@ -796,20 +956,21 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                   style: TextFormatter.tableLabelStyle,
                                 ),
                                 isNumeric: true,
-                                rowBuilder: (context, purchaseOrderDetail) =>
-                                    Container(
-                                      height: 50,
-                                      alignment: .centerEnd,
-                                      child: Text(
-                                        purchaseOrderDetail.total.format(),
-                                        textAlign: .right,
-                                      ),
-                                    ),
+                                rowBuilder:
+                                    (context, purchaseOrderDetail, index) =>
+                                        Container(
+                                          height: 50,
+                                          alignment: .centerEnd,
+                                          child: Text(
+                                            purchaseOrderDetail.total.format(),
+                                            textAlign: .right,
+                                          ),
+                                        ),
                               ),
                           ],
                           actionColumn: TableFormColumn<PurchaseOrderDetail>(
                             desktopWidth: FixedColumnWidth(60),
-                            rowBuilder: (context, purchaseOrderDetail) =>
+                            rowBuilder: (context, purchaseOrderDetail, index) =>
                                 IconButton(
                                   onPressed: () {
                                     setState(() {
@@ -897,6 +1058,33 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
         ),
       ),
     );
+  }
+
+  void updateProductSellPrice(Product product, Money value) {
+    product.sellPrice = value;
+    setState(() {
+      product.statusSellPrice = .onProgress;
+    });
+    product
+        .save(_server, only: ['sell_price'])
+        .then(
+          (isSuccess) {
+            if (isSuccess) {
+              setState(() {
+                product.statusSellPrice = .success;
+              });
+            } else {
+              setState(() {
+                product.statusSellPrice = .failed;
+              });
+            }
+          },
+          onError: (error) {
+            setState(() {
+              product.statusSellPrice = .failed;
+            });
+          },
+        );
   }
 
   void _saveRecord() {

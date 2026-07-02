@@ -44,7 +44,7 @@ enum PurchaseInvoiceStatus implements EnumTranslation {
   }
 }
 
-class PurchaseInvoice extends Model with SaveNDestroyModel {
+class PurchaseInvoice extends Model with SaveNDestroyModel, Tagable {
   String code;
   Supplier? supplier;
   Location? location;
@@ -57,7 +57,7 @@ class PurchaseInvoice extends Model with SaveNDestroyModel {
   String? description;
   Money subtotal;
   Money grandtotal;
-  String productTotal;
+  double? productTotal;
   Money discountTotal;
   Money costTotal;
   TaxType taxType;
@@ -88,12 +88,16 @@ class PurchaseInvoice extends Model with SaveNDestroyModel {
     this.grandtotal = const Money(0),
     this.discountTotal = const Money(0),
     this.costTotal = const Money(0),
-    this.productTotal = '',
+    this.productTotal,
+    List<Tagging>? taggings,
     List<PurchaseInvoiceDetail>? purchaseInvoiceDetails,
     List<CostDetail>? costDetails,
-  }) : purchaseInvoiceDetails =
-           purchaseInvoiceDetails ?? <PurchaseInvoiceDetail>[],
-       costDetails = costDetails ?? [];
+  }) {
+    this.purchaseInvoiceDetails =
+        purchaseInvoiceDetails ?? <PurchaseInvoiceDetail>[];
+    this.costDetails = costDetails ?? [];
+    initTaggings(taggings);
+  }
   @override
   String get path => 'purchase_invoices';
   @override
@@ -123,6 +127,7 @@ class PurchaseInvoice extends Model with SaveNDestroyModel {
     'tax_amount': taxAmount,
     'tax_type': taxType,
     'tax_value': taxValue,
+    'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
     'cost_details_attributes': costDetails.map((e) => e.asJson()).toList(),
     'purchase_invoice_details_attributes': purchaseInvoiceDetails
         .map((e) => e.asJson())
@@ -168,7 +173,7 @@ class PurchaseInvoice extends Model with SaveNDestroyModel {
     barcodedAt = Date.tryParse(attributes['barcoded_at'] ?? '');
     openedAt = Date.tryParse(attributes['opened_at'] ?? '');
     description = attributes['description'];
-    // productTotal = attributes['product_total'];
+    productTotal = double.tryParse(attributes['product_total'].toString());
     subtotal = Money.tryParse(attributes['subtotal']) ?? const Money(0);
     grandtotal = Money.tryParse(attributes['grandtotal']) ?? const Money(0);
     discountAmount =

@@ -86,7 +86,7 @@ class _DiscountDetailFormDialogState extends State<DiscountDetailFormDialog>
                           textAlign: .right,
                           style: TextFormatter.titleStyle,
                         ),
-                        rowBuilder: (context, object) =>
+                        rowBuilder: (context, object, index) =>
                             DropdownMenu<DiscountDetailType>(
                               width: 150,
                               onSelected: (value) => setState(() {
@@ -111,7 +111,7 @@ class _DiscountDetailFormDialogState extends State<DiscountDetailFormDialog>
                           textAlign: .right,
                           style: TextFormatter.titleStyle,
                         ),
-                        rowBuilder: (context, object) {
+                        rowBuilder: (context, object, index) {
                           if (object.type == .percentage) {
                             return PercentageFormField(
                               initialValue: Percentage(object.value),
@@ -155,7 +155,7 @@ class _DiscountDetailFormDialogState extends State<DiscountDetailFormDialog>
                           ),
                         ],
                       ),
-                      rowBuilder: (context, object) => IconButton(
+                      rowBuilder: (context, object, index) => IconButton(
                         onPressed: () => setState(() {
                           discountDetails.remove(object);
                         }),

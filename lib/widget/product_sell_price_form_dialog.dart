@@ -83,7 +83,7 @@ class _ProductSellPriceFormDialogState extends State<ProductSellPriceFormDialog>
                     title: 'Satuan',
                     headerBuilder: (context) =>
                         Text('Satuan', style: TextFormatter.tableLabelStyle),
-                    rowBuilder: (context, stockSellPrice) =>
+                    rowBuilder: (context, stockSellPrice, index) =>
                         AsyncDropdown<UnitOfMeasurement>(
                           textOnSearch: (model) => model.name ?? '',
                           modelClass: UnitOfMeasurementClass(),
@@ -129,19 +129,21 @@ class _ProductSellPriceFormDialogState extends State<ProductSellPriceFormDialog>
                         ),
                       ],
                     ),
-                    rowBuilder: (context, stockSellPrice) => NumberFormField(
-                      initialValue: stockSellPrice.maxQuantity,
-                      onChanged: (value) => stockSellPrice.maxQuantity = value,
-                      validator: (value) {
-                        if (value == null) {
-                          return 'harus diisi';
-                        }
-                        if (value <= 0) {
-                          return 'tidak boleh negatif dan 0';
-                        }
-                        return null;
-                      },
-                    ),
+                    rowBuilder: (context, stockSellPrice, index) =>
+                        NumberFormField(
+                          initialValue: stockSellPrice.maxQuantity,
+                          onChanged: (value) =>
+                              stockSellPrice.maxQuantity = value,
+                          validator: (value) {
+                            if (value == null) {
+                              return 'harus diisi';
+                            }
+                            if (value <= 0) {
+                              return 'tidak boleh negatif dan 0';
+                            }
+                            return null;
+                          },
+                        ),
                   ),
                   TableFormColumn(
                     title: 'Harga Jual',
@@ -150,19 +152,21 @@ class _ProductSellPriceFormDialogState extends State<ProductSellPriceFormDialog>
                       'Harga Jual',
                       style: TextFormatter.tableLabelStyle,
                     ),
-                    rowBuilder: (context, stockSellPrice) => MoneyFormField(
-                      initialValue: stockSellPrice.sellPrice,
-                      onChanged: (value) => stockSellPrice.sellPrice = value,
-                      validator: (value) {
-                        if (value == null) {
-                          return 'harus diisi';
-                        }
-                        if (value <= 0) {
-                          return 'tidak boleh negatif dan 0';
-                        }
-                        return null;
-                      },
-                    ),
+                    rowBuilder: (context, stockSellPrice, index) =>
+                        MoneyFormField(
+                          initialValue: stockSellPrice.sellPrice,
+                          onChanged: (value) =>
+                              stockSellPrice.sellPrice = value,
+                          validator: (value) {
+                            if (value == null) {
+                              return 'harus diisi';
+                            }
+                            if (value <= 0) {
+                              return 'tidak boleh negatif dan 0';
+                            }
+                            return null;
+                          },
+                        ),
                   ),
                 ],
                 actionColumn: TableFormColumn(
@@ -172,7 +176,7 @@ class _ProductSellPriceFormDialogState extends State<ProductSellPriceFormDialog>
                     }),
                     icon: Icon(Icons.add),
                   ),
-                  rowBuilder: (context, model) => IconButton(
+                  rowBuilder: (context, model, index) => IconButton(
                     onPressed: () {
                       setState(() {
                         if (model.isNewRecord) {
