@@ -62,6 +62,8 @@ class PurchaseInvoiceDetail extends Model {
     'supplier': supplier,
     'row_number': rowNumber,
     'note_quantity': noteQuantity,
+    'purchase_order_detail': purchaseOrderDetail,
+    'purchase_order_detail_id': purchaseOrderDetail?.id,
     'product_category': product?.productCategory,
     'brand': product?.brand,
     'discount_detail': discountDetails?.map((e) => e.asJson()).toList(),

@@ -863,7 +863,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                       index,
                                     ) => AsyncDropdown<Product>(
                                       textOnSearch: (model) =>
-                                          "${model.barcode}-${model.supplierProductCode}",
+                                          "${model.barcode}-${model.supplierProductCode ?? model.description ?? model.tagDescription}",
                                       modelClass: ProductClass(),
                                       isShowItemDescription: true,
                                       request: (queryRequest) {
@@ -1109,11 +1109,18 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 ),
                                 rowBuilder:
                                     (context, purchaseInvoiceDetail, index) =>
-                                        Text(
-                                          purchaseInvoiceDetail
-                                                  .orderQuantityBasedDetailUom
-                                                  ?.format() ??
-                                              '',
+                                        Padding(
+                                          padding: const EdgeInsets.all(15.0),
+                                          child: Text(
+                                            purchaseInvoiceDetail
+                                                    .orderQuantityBasedDetailUom
+                                                    ?.format() ??
+                                                '',
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                            ),
+                                            textAlign: .right,
+                                          ),
                                         ),
                               ),
                             if (setting.canShow(

@@ -15,6 +15,7 @@ class PurchaseOrderDetail extends Model {
   Money total;
   int? rowNumber;
   UnitOfMeasurement? uom;
+  double? receivedQuantity;
   List<Tagging> taggings = [];
   PurchaseOrderDetail({
     this.discountDetails,
@@ -22,6 +23,7 @@ class PurchaseOrderDetail extends Model {
     this.product,
     this.barcode,
     this.rowNumber,
+    this.receivedQuantity,
     List<Tagging>? taggings,
     this.subtotal = const Money(0),
     this.discountAmount = const Money(0),
@@ -45,6 +47,7 @@ class PurchaseOrderDetail extends Model {
     'barcode': barcode,
     'uom': uom,
     'uom_id': uom?.id,
+    'received_quantity': receivedQuantity,
   };
   @override
   String get path => 'purchase_order_details';
@@ -86,7 +89,10 @@ class PurchaseOrderDetail extends Model {
       );
     }
     rowNumber = attributes['row_number'];
-    quantity = double.tryParse(attributes['quantity'] ?? '0') ?? 0;
+    quantity = double.tryParse(attributes['quantity'].toString()) ?? 0;
+    receivedQuantity = double.tryParse(
+      attributes['received_quantity'].toString(),
+    );
     final klass = DiscountDetailClass();
     discountDetails = (attributes['discount_detail'] as List)
         .map<DiscountDetail>(

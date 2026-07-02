@@ -69,7 +69,7 @@ class ItemVariant extends Product with SaveNDestroyModel {
   }
 
   @override
-  String get modelValue => description;
+  String get modelValue => description ?? tagDescription;
 }
 
 class ItemVariantClass extends ModelClass<ItemVariant> {

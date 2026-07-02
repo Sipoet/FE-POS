@@ -19,7 +19,7 @@ export 'package:fe_pos/model/tag.dart';
 export 'package:fe_pos/model/product_category.dart';
 
 class Product extends Model with SaveNDestroyModel, Tagable {
-  String description;
+  String? description;
   String? supplierProductCode;
   String? brandName;
   UnitOfMeasurement? baseUom;
@@ -40,7 +40,7 @@ class Product extends Model with SaveNDestroyModel, Tagable {
 
   Product({
     super.id,
-    this.description = '',
+    this.description,
     this.supplierProductCode,
     this.barcode = '',
     this.productCategory,
@@ -105,7 +105,7 @@ class Product extends Model with SaveNDestroyModel, Tagable {
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'] ?? {};
     super.setFromJson(json, included: included);
-    description = attributes['description'] ?? '';
+    description = attributes['description'];
     barcode = attributes['barcode'] ?? '';
     supplierProductCode = attributes['supplier_product_code'];
     barcodeUsingBatch = attributes['barcode_using_batch'] ?? false;
@@ -160,7 +160,8 @@ class Product extends Model with SaveNDestroyModel, Tagable {
   @override
   String get modelValue => "$barcode $supplierProductCode";
   @override
-  String get valueDescription => description;
+  String get valueDescription =>
+      description ?? supplierProductCode ?? tagDescription;
 }
 
 class ProductClass extends ModelClass<Product> {

@@ -722,7 +722,6 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               ),
                             if (setting.canShow('purchaseOrderDetail', 'uom'))
                               TableFormColumn<PurchaseOrderDetail>(
-                                name: 'uom',
                                 title: 'Satuan',
                                 desktopWidth: FixedColumnWidth(170),
                                 headerBuilder: (context) => Text(
@@ -749,6 +748,27 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                           '/products/${purchaseOrderDetail.product?.id}/unit_of_measurements',
                                       textOnSearch: (model) => model.name ?? '',
                                     ),
+                              ),
+                            if (setting.canShow(
+                              'purchaseInvoiceDetail',
+                              'quantity',
+                            ))
+                              TableFormColumn<PurchaseOrderDetail>(
+                                title: 'Diterima',
+                                desktopWidth: FixedColumnWidth(90),
+                                isNumeric: true,
+                                headerBuilder: (context) => Text(
+                                  'Diterima',
+                                  textAlign: .right,
+                                  style: TextFormatter.tableLabelStyle,
+                                ),
+                                rowBuilder:
+                                    (context, purchaseOrderDetail, index) =>
+                                        Text(
+                                          purchaseOrderDetail.receivedQuantity
+                                                  ?.format() ??
+                                              '',
+                                        ),
                               ),
                             if (setting.canShow('purchaseOrderDetail', 'price'))
                               TableFormColumn<PurchaseOrderDetail>(
