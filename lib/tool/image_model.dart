@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ImageModel extends ImageProvider<Uri> {
   String? secureUrl;
   String? signedId;
-  HttpContentType? contentType;
+  XFile? file;
+  String? mimeType;
   String? filename;
   int? id;
   bool _flagDestroyed = false;
@@ -34,14 +36,25 @@ class ImageModel extends ImageProvider<Uri> {
             return client;
           },
         );
-  Uint8List? bytes;
+
+  HttpContentType? get contentType {
+    try {
+      return HttpContentType.fromString(mimeType);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  int? fileSize;
+
   ImageModel({
     this.id,
     this.signedId,
     this.secureUrl,
-    this.bytes,
+    this.fileSize,
+    this.file,
+    this.mimeType,
     this.filename,
-    this.contentType,
   }) : assert(
          !(id != null && secureUrl == null),
          'secureUrl must filled if id not null',
@@ -60,8 +73,17 @@ class ImageModel extends ImageProvider<Uri> {
         },
       );
       return Future<Uri>.syncValue(result);
+    } else if (file != null) {
+      return Future<Uri>.sync(() {
+        return file!.readAsBytes().then((bytes) {
+          return Uri.dataFromBytes(
+            bytes.toList(),
+            mimeType: mimeType ?? "application/octet-stream",
+          );
+        });
+      });
     } else {
-      return Future<Uri>.syncValue(Uri.dataFromBytes(bytes!.toList()));
+      throw 'image not found';
     }
   }
 
@@ -69,7 +91,7 @@ class ImageModel extends ImageProvider<Uri> {
     var attributes = json['attributes'] ?? {};
     secureUrl = attributes['secure_url'];
     signedId = attributes['signed_id'];
-    contentType = HttpContentType.fromString(attributes['content_type']);
+    mimeType = attributes['content_type'];
     id = int.tryParse(json['id'] ?? '');
   }
 
@@ -87,15 +109,13 @@ class ImageModel extends ImageProvider<Uri> {
 
   dynamic asMapData() {
     if (id == null) {
-      if (bytes == null) {
+      if (file == null) {
         return null;
       }
-      return MultipartFile.fromBytes(
-        bytes!,
+      return MultipartFile.fromFileSync(
+        file!.path,
         filename: filename,
-        contentType: contentType == null
-            ? null
-            : .parse(contentType.toString()),
+        contentType: mimeType == null ? null : .parse(mimeType!),
       );
     } else {
       return {'id': id, '_destroy': _flagDestroyed, 'type': 'image'};
@@ -125,10 +145,10 @@ class ImageModel extends ImageProvider<Uri> {
   ImageStreamCompleter loadImage(Uri key, ImageDecoderCallback decode) {
     final StreamController<ImageChunkEvent> chunkEvents =
         StreamController<ImageChunkEvent>();
-    if (bytes != null) {
-      _setSizeFromBytes(bytes!);
+    if (file != null) {
+      file?.readAsBytes().then(_setSizeFromBytes);
       return MultiFrameImageStreamCompleter(
-        codec: ui.ImmutableBuffer.fromUint8List(bytes!).then(decode),
+        codec: ui.ImmutableBuffer.fromFilePath(file!.path).then(decode),
         chunkEvents: chunkEvents.stream,
         scale: 1.0,
         debugLabel: '"key"',

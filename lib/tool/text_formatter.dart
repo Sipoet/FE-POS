@@ -9,6 +9,10 @@ mixin TextFormatter {
   }
 
   static const labelStyle = TextStyle(fontSize: 14, fontWeight: .bold);
+  static TextStyle errorStyle = TextStyle(
+    fontSize: 14,
+    color: Colors.red.shade400,
+  );
 
   static const tableLabelStyle = TextStyle(
     fontSize: 16,

@@ -261,18 +261,27 @@ class _ProductFormPageState extends State<ProductFormPage>
                                 }
                               }),
                             ),
-                            SizedBox(
+                            MultipleImageFormField(
                               width: 200,
                               height: 200,
-                              child: MultipleImageFormField(
-                                maxFiles: 5,
-                                onChanged: (images) {
-                                  setState(() {
-                                    controller.addImages(images);
-                                    product.images.addAll(images);
-                                  });
-                                },
-                              ),
+                              validator: (List<ImageModel>? images) {
+                                if (images != null && images.length > 5) {
+                                  return 'maksimal 5 gambar';
+                                }
+                                for (final ImageModel image in images ?? []) {
+                                  if (image.fileSize != null &&
+                                      image.fileSize! > 500_000) {
+                                    return 'maksimal per gambar 500 KB';
+                                  }
+                                }
+                                return null;
+                              },
+                              onChanged: (images) {
+                                setState(() {
+                                  controller.addImages(images);
+                                  product.images.addAll(images);
+                                });
+                              },
                             ),
                             SizedBox(
                               width: 250,
@@ -991,15 +1000,26 @@ class _ProductFormPageState extends State<ProductFormPage>
                                   TableFormColumn(
                                     title: 'Gambar',
                                     isNumeric: true,
+                                    desktopWidth: const FixedColumnWidth(130),
                                     headerBuilder: (context) => Text(
                                       'Gambar',
                                       style: DefaultResponse.labelStyle,
                                     ),
                                     rowBuilder: (context, itemVariant, index) =>
                                         ImageFormField(
-                                          width: 100,
-                                          height: 100,
+                                          width: 120,
+                                          height: 120,
                                           initialValue: itemVariant.image,
+                                          validator: (ImageModel? image) {
+                                            if (image == null) {
+                                              return null;
+                                            }
+                                            if (image.fileSize != null &&
+                                                image.fileSize! > 500_000) {
+                                              return 'maksimal per gambar 500 KB';
+                                            }
+                                            return null;
+                                          },
                                           onChanged: (image) {
                                             setState(() {
                                               itemVariant.image = image;

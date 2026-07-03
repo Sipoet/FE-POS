@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  file_selector_windows
   flutter_secure_storage_windows
   irondash_engine_context
   permission_handler_windows

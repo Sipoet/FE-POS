@@ -70,6 +70,7 @@ dependencies:
   super_drag_and_drop: ^0.9.1
   uuid: ^4.5.3
   big_decimal: ^0.7.0
+  image_picker: ^1.2.3
 dev_dependencies:
   flutter_test:
     sdk: flutter
