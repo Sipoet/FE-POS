@@ -764,10 +764,17 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                 ),
                                 rowBuilder:
                                     (context, purchaseOrderDetail, index) =>
-                                        Text(
-                                          purchaseOrderDetail.receivedQuantity
-                                                  ?.format() ??
-                                              '',
+                                        Padding(
+                                          padding: const EdgeInsets.all(15.0),
+                                          child: Text(
+                                            purchaseOrderDetail.receivedQuantity
+                                                    ?.format() ??
+                                                '',
+                                            textAlign: .right,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                            ),
+                                          ),
                                         ),
                               ),
                             if (setting.canShow('purchaseOrderDetail', 'price'))
