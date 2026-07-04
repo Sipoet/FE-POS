@@ -56,6 +56,7 @@ class AsyncDropdownMultiple<T extends Model> extends StatefulWidget {
     this.attributeKey,
     this.validator,
     this.onSaved,
+    this.readOnly,
     this.focusNode,
     this.selectedDisplayLimit = 6,
     this.recordLimit = 10,
@@ -76,6 +77,7 @@ class AsyncDropdownMultiple<T extends Model> extends StatefulWidget {
   final int recordLimit;
   final double? width;
   final bool? isDense;
+  final bool? readOnly;
   final List<T>? selecteds;
   final int selectedDisplayLimit;
   final FocusNode? focusNode;
@@ -178,6 +180,9 @@ class _AsyncDropdownMultipleState<T extends Model>
       itemAsString: widget.textOnSearch,
       selectedItems: controller.value,
       onBeforePopupOpening: (selItems) {
+        if (widget.readOnly == true) {
+          return Future.value(false);
+        }
         return Future.delayed(Durations.long1, () {
           if (_focusNode.canRequestFocus) {
             _focusNode.requestFocus();
@@ -351,6 +356,7 @@ class AsyncDropdown<T extends Model> extends StatefulWidget {
     this.validator,
     this.onSaved,
     this.isDense,
+    this.readOnly,
     this.focusNode,
     this.selectedDisplayLimit = 6,
     this.recordLimit = 10,
@@ -373,6 +379,7 @@ class AsyncDropdown<T extends Model> extends StatefulWidget {
   final T? selected;
   final bool allowClear;
   final bool? isDense;
+  final bool? readOnly;
   final bool isShowItemDescription;
   final ChangeNotifier? notifier;
   final ValueCallBack<T>? valueFallback;
@@ -482,6 +489,12 @@ class _AsyncDropdownState<T extends Model> extends State<AsyncDropdown<T>>
           return const SizedBox();
         }
         return SelectableText(textFormat(selectedItem));
+      },
+      onBeforePopupOpening: (item) {
+        if (widget.readOnly == true) {
+          return Future.value(false);
+        }
+        return Future.value(true);
       },
       popupProps: isMobile()
           ? PopupProps.dialog(
