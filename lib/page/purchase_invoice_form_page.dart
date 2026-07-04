@@ -845,8 +845,6 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                         ),
                         const SizedBox(height: 10),
                         TableForm<PurchaseInvoiceDetail>(
-                          showSearch: true,
-                          notifier: modelToggleNotifier,
                           columns: [
                             TableFormColumn(
                               title: '#',
