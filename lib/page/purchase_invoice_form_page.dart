@@ -801,7 +801,11 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               onPressed: () {
                                 setState(() {
                                   purchaseInvoice.purchaseInvoiceDetails.add(
-                                    PurchaseInvoiceDetail(),
+                                    PurchaseInvoiceDetail(
+                                      rowNumber: purchaseInvoice
+                                          .purchaseInvoiceDetails
+                                          .length,
+                                    ),
                                   );
                                   modelToggleNotifier.toggle();
                                 });
@@ -845,6 +849,15 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                         ),
                         const SizedBox(height: 10),
                         TableForm<PurchaseInvoiceDetail>(
+                          isRowReorderable: true,
+                          columnSpacing: 5,
+                          onRowReorder: (rows, fromIndex, toIndex) {
+                            setState(() {
+                              for (final (index, detail) in rows.indexed) {
+                                detail.rowNumber = index + 1;
+                              }
+                            });
+                          },
                           columns: [
                             TableFormColumn(
                               title: '#',
@@ -856,7 +869,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 textAlign: .right,
                               ),
                               rowBuilder: (context, object, index) => Text(
-                                (index + 1).toString(),
+                                object.rowNumber.toString(),
                                 textAlign: .right,
                               ),
                             ),
@@ -865,9 +878,9 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               'product',
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
-                                name: 'product',
+                                isColumnResizeable: true,
                                 title: 'Produk',
-                                desktopWidth: FlexColumnWidth(1.5),
+                                // desktopWidth: FlexColumnWidth(1.5),
                                 headerBuilder: (context) => Text(
                                   'Produk',
                                   style: TextFormatter.tableLabelStyle,
@@ -927,7 +940,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               'tags',
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
-                                name: 'Varian',
+                                isColumnResizeable: true,
                                 title: 'Varian',
                                 headerBuilder: (context) => Text(
                                   'Varian',
@@ -977,6 +990,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               'barcode',
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
+                                isColumnResizeable: true,
                                 title: 'Barcode',
                                 isNumeric: true,
                                 headerBuilder: (context) => Text(
@@ -1027,6 +1041,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               'quantity',
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
+                                isColumnResizeable: true,
                                 title: 'Jumlah',
                                 desktopWidth: FixedColumnWidth(100),
                                 isNumeric: true,
@@ -1049,6 +1064,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               ),
                             if (setting.canShow('purchaseInvoiceDetail', 'uom'))
                               TableFormColumn<PurchaseInvoiceDetail>(
+                                isColumnResizeable: true,
                                 name: 'uom',
                                 title: 'Satuan',
                                 desktopWidth: FixedColumnWidth(170),
@@ -1082,6 +1098,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               'note_quantity',
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
+                                isColumnResizeable: true,
                                 title: 'Jumlah di Nota',
                                 desktopWidth: FixedColumnWidth(120),
                                 isNumeric: true,
@@ -1110,6 +1127,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               'quantity',
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
+                                isColumnResizeable: true,
                                 title: 'Pesan',
                                 desktopWidth: FixedColumnWidth(100),
                                 isNumeric: true,
@@ -1145,7 +1163,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               'price',
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
-                                name: 'price',
+                                isColumnResizeable: true,
                                 title: 'Harga per Satuan',
                                 isNumeric: true,
                                 headerBuilder: (context) => Text(
@@ -1167,7 +1185,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               ),
                             if (setting.canShow('product', 'sell_price'))
                               TableFormColumn<PurchaseInvoiceDetail>(
-                                name: 'sell_price',
+                                isColumnResizeable: true,
                                 title: 'Harga Jual',
                                 isNumeric: true,
                                 headerBuilder: (context) => Text(
@@ -1240,7 +1258,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               'margin',
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
-                                name: 'margin',
+                                isColumnResizeable: true,
                                 title: 'Margin%',
                                 isNumeric: true,
                                 headerBuilder: (context) => Text(
@@ -1261,7 +1279,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               'subtotal',
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
-                                name: 'subtotal',
+                                isColumnResizeable: true,
                                 title: 'Subtotal',
                                 isNumeric: true,
                                 headerBuilder: (context) => Text(
@@ -1287,6 +1305,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
                                 title: 'Diskon',
+                                isColumnResizeable: true,
                                 desktopWidth: FixedColumnWidth(250),
                                 headerBuilder: (context) => Text(
                                   'Diskon',
@@ -1349,6 +1368,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
                                 title: 'Total',
+                                isColumnResizeable: true,
                                 headerBuilder: (context) => Text(
                                   'Total',
                                   textAlign: .right,

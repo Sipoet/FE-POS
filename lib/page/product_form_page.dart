@@ -311,6 +311,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                             SizedBox(
                               width: 250,
                               child: AsyncDropdown<UnitOfMeasurement>(
+                                readOnly: !product.isNewRecord,
                                 selected: product.baseUom,
                                 onChanged: (value) => product.baseUom = value,
 
@@ -1000,15 +1001,15 @@ class _ProductFormPageState extends State<ProductFormPage>
                                   TableFormColumn(
                                     title: 'Gambar',
                                     isNumeric: true,
-                                    desktopWidth: const FixedColumnWidth(130),
+                                    desktopWidth: const FixedColumnWidth(150),
                                     headerBuilder: (context) => Text(
                                       'Gambar',
                                       style: DefaultResponse.labelStyle,
                                     ),
                                     rowBuilder: (context, itemVariant, index) =>
                                         ImageFormField(
-                                          width: 120,
-                                          height: 120,
+                                          width: 100,
+                                          height: 100,
                                           initialValue: itemVariant.image,
                                           validator: (ImageModel? image) {
                                             if (image == null) {

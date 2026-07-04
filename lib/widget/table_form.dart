@@ -1,16 +1,23 @@
 import 'package:collection/collection.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class TableForm<T> extends StatelessWidget {
   final List<T> rows;
   final List<TableFormColumn<T>> columns;
   final double? columnSpacing;
+  final bool? showSearch;
+  final bool? isRowReorderable;
   final TableFormColumn<T>? actionColumn;
+  final Function(List<T> rows, int fromIndex, int toIndex)? onRowReorder;
   const TableForm({
     super.key,
     required this.columns,
     required this.rows,
+    this.showSearch,
+    this.onRowReorder,
+    this.isRowReorderable,
     this.actionColumn,
     this.columnSpacing,
   });
@@ -23,7 +30,9 @@ class TableForm<T> extends StatelessWidget {
         if (size.width > 600) {
           return DesktopTableForm<T>(
             rows: rows,
+            isRowReorderable: isRowReorderable ?? false,
             columns: columns,
+            onRowReorder: onRowReorder,
             actionColumn: actionColumn,
             columnSpacing: columnSpacing ?? 5,
           );
@@ -46,12 +55,16 @@ class DesktopTableForm<T> extends StatefulWidget {
   final List<TableFormColumn<T>> columns;
   final double columnSpacing;
   final TableFormColumn<T>? actionColumn;
+  final bool isRowReorderable;
+  final Function(List<T> rows, int fromIndex, int toIndex)? onRowReorder;
   const DesktopTableForm({
     super.key,
     required this.columnSpacing,
     required this.columns,
     required this.rows,
+    this.isRowReorderable = false,
     this.actionColumn,
+    this.onRowReorder,
   });
 
   @override
@@ -62,63 +75,164 @@ class _DesktopTableFormState<T> extends State<DesktopTableForm<T>> {
   final _scrollController = ScrollController();
   bool sortAscending = true;
   int? sortColumnIndex;
-  List<TableFormColumn<T>> get columns {
+  List<TableFormColumn<T>> columns = [];
+
+  @override
+  void initState() {
     if (widget.actionColumn != null) {
-      return widget.columns + [widget.actionColumn!];
+      columns = widget.columns + [widget.actionColumn!];
     }
-    return widget.columns;
+    columns = widget.columns;
+    super.initState();
+  }
+
+  void moveRows(int fromIndex, int toIndex) {
+    final data = widget.rows[fromIndex];
+    setState(() {
+      widget.rows.removeAt(fromIndex);
+      widget.rows.insert(toIndex, data);
+      widget.onRowReorder?.call(widget.rows, fromIndex, toIndex);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final minWidth = columns.length * 200.0;
+    double minWidth = columns.map<double>((e) => e.width).sum;
+    if (widget.isRowReorderable) {
+      minWidth += 35;
+    }
     final padding = MediaQuery.of(context).padding;
     final maxWidth = <double>[
       minWidth,
       MediaQuery.sizeOf(context).width - padding.left - padding.right - 60,
     ].max;
-    return Scrollbar(
-      thumbVisibility: true,
-      trackVisibility: true,
-      thickness: 8,
-      controller: _scrollController,
-      child: SingleChildScrollView(
+    final double height = 70;
+    return ConstrainedBox(
+      constraints: BoxConstraints(minWidth: minWidth, maxWidth: maxWidth),
+      child: Scrollbar(
+        thumbVisibility: true,
+        trackVisibility: true,
+        thickness: 8,
         controller: _scrollController,
-        scrollDirection: .horizontal,
-        child: Container(
-          constraints: BoxConstraints(minWidth: minWidth, maxWidth: maxWidth),
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 20),
-            child: Table(
-              columnWidths: columns
-                  .map<TableColumnWidth>(
-                    (column) => column.desktopWidth ?? FlexColumnWidth(),
-                  )
-                  .toList()
-                  .asMap(),
-
-              border: TableBorder.symmetric(
-                inside: BorderSide(color: Colors.grey.shade400),
-              ),
+        child: SingleChildScrollView(
+          scrollDirection: .horizontal,
+          controller: _scrollController,
+          child: SizedBox(
+            width: minWidth,
+            height: (widget.rows.length + 1) * 51,
+            child: Column(
               children: [
-                TableRow(
-                  children: columns
-                      .map<Widget>(
-                        (column) => Padding(
-                          padding: .all(widget.columnSpacing),
-                          child: column.headerBuilder(context),
-                        ),
-                      )
-                      .toList(),
-                ),
-                ...widget.rows.mapIndexed(
-                  (index, row) => TableRow(
-                    key: ObjectKey(row),
-                    children: columns
-                        .map<Widget>(
-                          (column) => Padding(
+                Row(
+                  children: [
+                    if (widget.isRowReorderable)
+                      Container(
+                        width: 35,
+                        height: height,
+                        decoration: BoxDecoration(border: Border.all()),
+                      ),
+                    ...columns.map<Widget>(
+                      (column) => Stack(
+                        children: [
+                          Container(
+                            width: column.width,
+                            height: height,
+                            decoration: BoxDecoration(border: Border.all()),
                             padding: .all(widget.columnSpacing),
-                            child: column.rowBuilder(context, row, index),
+                            child: column.headerBuilder(context),
+                          ),
+                          if (column.isColumnResizeable == true)
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onHorizontalDragUpdate: (detail) {
+                                  final beforeWidth = column.width;
+                                  setState(() {
+                                    column.width +=
+                                        (detail.localPosition.dx -
+                                        column.beforePosition);
+                                    if (column.width < column.minWidth) {
+                                      column.width = column.minWidth;
+                                    }
+                                    if (column.maxWidth != null &&
+                                        column.width > column.maxWidth!) {
+                                      column.width = column.maxWidth!;
+                                    }
+                                    if (column.width != beforeWidth) {
+                                      column.beforePosition =
+                                          detail.localPosition.dx;
+                                    }
+                                  });
+                                },
+                                onHorizontalDragEnd: (detail) {
+                                  debugPrint("end:${detail.localPosition.dx}");
+                                  column.beforePosition = 0;
+                                },
+                                child: MouseRegion(
+                                  cursor: SystemMouseCursors.resizeColumn,
+                                  child: Icon(
+                                    PhosphorIconsRegular.splitHorizontal,
+                                    size: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Flexible(
+                  child: ReorderableListView(
+                    buildDefaultDragHandles: false,
+                    onReorder: moveRows,
+                    // scrollController: _scrollController,
+                    children: widget.rows
+                        .mapIndexed(
+                          (index, row) => Container(
+                            key: ObjectKey(row),
+                            padding: .all(0),
+                            decoration: BoxDecoration(
+                              color: index % 2 == 0
+                                  ? Colors.grey.shade100
+                                  : Colors.white,
+                            ),
+                            child: Row(
+                              children: [
+                                if (widget.isRowReorderable)
+                                  Container(
+                                    width: 35,
+                                    height: height,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(),
+                                    ),
+                                    child: ReorderableDragStartListener(
+                                      index: index,
+                                      child: MouseRegion(
+                                        cursor: SystemMouseCursors.move,
+                                        child: Icon(Icons.drag_indicator),
+                                      ),
+                                    ),
+                                  ),
+                                ...columns.map<Widget>(
+                                  (column) => Container(
+                                    width: column.width,
+                                    height: height,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(),
+                                    ),
+                                    child: Padding(
+                                      padding: .all(widget.columnSpacing),
+                                      child: column.rowBuilder(
+                                        context,
+                                        row,
+                                        index,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         )
                         .toList(),
@@ -130,6 +244,120 @@ class _DesktopTableFormState<T> extends State<DesktopTableForm<T>> {
         ),
       ),
     );
+
+    // return Scrollbar(
+    //   thumbVisibility: true,
+    //   trackVisibility: true,
+    //   thickness: 8,
+    //   controller: _scrollController,
+    //   child: SingleChildScrollView(
+    //     controller: _scrollController,
+    //     scrollDirection: .horizontal,
+    //     child: Container(
+    //       constraints: BoxConstraints(minWidth: minWidth, maxWidth: maxWidth),
+    //       child: Padding(
+    //         padding: const EdgeInsets.only(bottom: 20),
+    //         child: Table(
+    //           columnWidths: columns
+    //               .map<TableColumnWidth>(
+    //                 (column) => FixedColumnWidth(column.width),
+    //               )
+    //               .toList()
+    //               .asMap(),
+
+    //           border: TableBorder.symmetric(
+    //             inside: BorderSide(color: Colors.grey.shade400),
+    //           ),
+    //           children: [
+    //             TableRow(
+    //               children: [
+    //                 if (widget.isRowReorderable) SizedBox.shrink(),
+    //                 ...columns.map<Widget>(
+    //                   (column) => Padding(
+    //                     padding: .all(widget.columnSpacing),
+    //                     child: Stack(
+    //                       children: [
+    //                         column.headerBuilder(context),
+    //                         if (column.isColumnResizeable == true)
+    //                           Positioned(
+    //                             top: 0,
+    //                             right: 0,
+    //                             child: GestureDetector(
+    //                               onHorizontalDragUpdate: (detail) {
+    //                                 final beforeWidth = column.width;
+    //                                 setState(() {
+    //                                   column.width +=
+    //                                       (detail.localPosition.dx -
+    //                                       column.beforePosition);
+    //                                   if (column.width < column.minWidth) {
+    //                                     column.width = column.minWidth;
+    //                                   }
+    //                                   if (column.maxWidth != null &&
+    //                                       column.width > column.maxWidth!) {
+    //                                     column.width = column.maxWidth!;
+    //                                   }
+    //                                   if (column.width != beforeWidth) {
+    //                                     column.beforePosition =
+    //                                         detail.localPosition.dx;
+    //                                   }
+    //                                 });
+    //                               },
+    //                               onHorizontalDragEnd: (detail) {
+    //                                 debugPrint(
+    //                                   "end:${detail.localPosition.dx}",
+    //                                 );
+    //                                 column.beforePosition = 0;
+    //                               },
+    //                               child: MouseRegion(
+    //                                 cursor: SystemMouseCursors.resizeColumn,
+    //                                 child: Icon(
+    //                                   PhosphorIconsRegular.splitHorizontal,
+    //                                   size: 15,
+    //                                 ),
+    //                               ),
+    //                             ),
+    //                           ),
+    //                       ],
+    //                     ),
+    //                   ),
+    //                 ),
+    //               ],
+    //             ),
+    //             ...widget.rows.mapIndexed(
+    //               (index, row) => TableRow(
+    //                 decoration: BoxDecoration(
+    //                   color: index % 2 == 0
+    //                       ? Colors.grey.shade100
+    //                       : Colors.white,
+    //                 ),
+    //                 key: ObjectKey(row),
+    //                 children: [
+    //                   if (widget.isRowReorderable)
+    //                     Draggable<int>(
+    //                       data: index,
+    //                       feedback: Row(children: [Icon(Icons.drag_indicator)]),
+    //                       child: DragTarget(
+    //                         builder: (context, accepted, rejected) =>
+    //                             Icon(Icons.drag_indicator),
+    //                       ),
+    //                     ),
+    //                   ...columns
+    //                       .map<Widget>(
+    //                         (column) => Padding(
+    //                           padding: .all(widget.columnSpacing),
+    //                           child: column.rowBuilder(context, row, index),
+    //                         ),
+    //                       )
+    //                       .toList(),
+    //                 ],
+    //               ),
+    //             ),
+    //           ],
+    //         ),
+    //       ),
+    //     ),
+    //   ),
+    // );
   }
 }
 
@@ -206,8 +434,14 @@ class TableFormColumn<T> {
   String? name;
   String title;
   bool isNumeric;
+  double width;
+  double minWidth;
+  double? maxWidth;
+  final bool? isColumnResizeable;
+  final bool? isColumnReorderable;
+  double beforePosition = 0;
   void Function(int, bool)? onSort;
-  TableColumnWidth? desktopWidth;
+  FixedColumnWidth? desktopWidth;
   RenderHeader headerBuilder;
   RenderBy<T> rowBuilder;
 
@@ -216,10 +450,16 @@ class TableFormColumn<T> {
     this.title = '',
     this.onSort,
     this.isNumeric = false,
+    this.isColumnResizeable,
+    this.isColumnReorderable,
     this.desktopWidth,
+    double? width,
+    this.minWidth = 50,
+    this.maxWidth,
     required this.rowBuilder,
     RenderHeader? headerBuilder,
-  }) : headerBuilder = headerBuilder ?? defaultHeaderBuilder;
+  }) : headerBuilder = headerBuilder ?? defaultHeaderBuilder,
+       width = desktopWidth?.value ?? 200;
 
   static RenderHeader defaultHeaderBuilder = (context) => const SizedBox();
 }

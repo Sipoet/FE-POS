@@ -543,7 +543,11 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               onPressed: () {
                                 setState(() {
                                   purchaseOrder.purchaseOrderDetails.add(
-                                    PurchaseOrderDetail(),
+                                    PurchaseOrderDetail(
+                                      rowNumber: purchaseOrder
+                                          .purchaseOrderDetails
+                                          .length,
+                                    ),
                                   );
                                 });
                               },
@@ -580,6 +584,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                         ),
                         const SizedBox(height: 10),
                         TableForm<PurchaseOrderDetail>(
+                          isRowReorderable: true,
                           columns: [
                             TableFormColumn(
                               title: '#',
@@ -591,7 +596,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                 textAlign: .right,
                               ),
                               rowBuilder: (context, object, index) => Text(
-                                (index + 1).toString(),
+                                object.rowNumber.toString(),
                                 textAlign: .right,
                               ),
                             ),
@@ -600,9 +605,9 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               'product',
                             ))
                               TableFormColumn<PurchaseOrderDetail>(
-                                name: 'product',
+                                isColumnResizeable: true,
                                 title: 'Produk',
-                                desktopWidth: FlexColumnWidth(1.5),
+                                // desktopWidth: FlexColumnWidth(1.5),
                                 headerBuilder: (context) => Text(
                                   'Produk',
                                   style: TextFormatter.tableLabelStyle,
@@ -655,6 +660,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                             ))
                               TableFormColumn<PurchaseOrderDetail>(
                                 title: 'Varian',
+                                isColumnResizeable: true,
                                 headerBuilder: (context) => Text(
                                   'Varian',
                                   style: TextFormatter.tableLabelStyle,
@@ -700,7 +706,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               'quantity',
                             ))
                               TableFormColumn<PurchaseOrderDetail>(
-                                name: 'quantity',
+                                isColumnResizeable: true,
                                 title: 'Jumlah',
                                 desktopWidth: FixedColumnWidth(90),
                                 isNumeric: true,
@@ -723,6 +729,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                             if (setting.canShow('purchaseOrderDetail', 'uom'))
                               TableFormColumn<PurchaseOrderDetail>(
                                 title: 'Satuan',
+                                isColumnResizeable: true,
                                 desktopWidth: FixedColumnWidth(170),
                                 headerBuilder: (context) => Text(
                                   'Satuan',
@@ -755,6 +762,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                             ))
                               TableFormColumn<PurchaseOrderDetail>(
                                 title: 'Diterima',
+                                isColumnResizeable: true,
                                 desktopWidth: FixedColumnWidth(90),
                                 isNumeric: true,
                                 headerBuilder: (context) => Text(
@@ -779,7 +787,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               ),
                             if (setting.canShow('purchaseOrderDetail', 'price'))
                               TableFormColumn<PurchaseOrderDetail>(
-                                name: 'price',
+                                isColumnResizeable: true,
                                 title: 'Harga per Satuan',
                                 isNumeric: true,
                                 headerBuilder: (context) => Text(
@@ -800,8 +808,8 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               ),
                             if (setting.canShow('product', 'sell_price'))
                               TableFormColumn<PurchaseOrderDetail>(
-                                name: 'sell_price',
-                                title: 'Harga Jual',
+                                isColumnResizeable: true,
+                                title: 'Harga Jual per Satuan Utama',
                                 isNumeric: true,
                                 headerBuilder: (context) => Text(
                                   'Harga Jual per Satuan utama',
@@ -871,7 +879,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               'margin',
                             ))
                               TableFormColumn<PurchaseOrderDetail>(
-                                name: 'margin',
+                                isColumnResizeable: true,
                                 title: 'Margin%',
                                 isNumeric: true,
                                 headerBuilder: (context) => Text(
@@ -892,7 +900,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               'subtotal',
                             ))
                               TableFormColumn<PurchaseOrderDetail>(
-                                name: 'subtotal',
+                                isColumnResizeable: true,
                                 title: 'Subtotal',
                                 isNumeric: true,
                                 headerBuilder: (context) => Text(
@@ -917,6 +925,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               'discount_amount',
                             ))
                               TableFormColumn<PurchaseOrderDetail>(
+                                isColumnResizeable: true,
                                 title: 'Diskon',
                                 desktopWidth: FixedColumnWidth(250),
                                 headerBuilder: (context) => Text(
@@ -976,6 +985,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                               ),
                             if (setting.canShow('purchaseOrderDetail', 'total'))
                               TableFormColumn<PurchaseOrderDetail>(
+                                isColumnResizeable: true,
                                 title: 'Total',
                                 headerBuilder: (context) => Text(
                                   'Total',
