@@ -76,6 +76,14 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
     super.initState();
   }
 
+  bool get isReadOnly {
+    if (purchaseInvoice.isNewRecord) {
+      return false;
+    } else {
+      return purchaseInvoice.status != .draft;
+    }
+  }
+
   void fetchPurchaseInvoice() {
     showLoadingPopup();
     setState(() {
@@ -484,6 +492,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 child: SizedBox(
                                   width: width,
                                   child: TextFormField(
+                                    readOnly: isReadOnly,
                                     decoration: InputDecoration(
                                       labelText: setting.columnName(
                                         'purchaseInvoice',
@@ -513,6 +522,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 child: SizedBox(
                                   width: width,
                                   child: AsyncDropdown<Supplier>(
+                                    readOnly: isReadOnly,
                                     allowClear: false,
                                     label: Text(
                                       setting.columnName(
@@ -551,6 +561,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 child: SizedBox(
                                   width: width,
                                   child: AsyncDropdown<PurchaseOrder>(
+                                    readOnly: isReadOnly,
                                     label: Text(
                                       setting.columnName(
                                         'purchaseInvoice',
@@ -633,6 +644,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 child: SizedBox(
                                   width: width,
                                   child: AsyncDropdown<Location>(
+                                    readOnly: isReadOnly,
                                     allowClear: false,
                                     label: Text(
                                       setting.columnName(
@@ -669,6 +681,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 child: SizedBox(
                                   width: width,
                                   child: DateFormField<Date>(
+                                    readOnly: isReadOnly,
                                     label: Text(
                                       setting.columnName(
                                         'purchaseInvoice',
@@ -703,6 +716,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 child: SizedBox(
                                   width: width,
                                   child: DateFormField<DateTime>(
+                                    readOnly: isReadOnly,
                                     label: Text(
                                       setting.columnName(
                                         'purchaseInvoice',
@@ -730,6 +744,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 child: SizedBox(
                                   width: width,
                                   child: DateFormField<DateTime>(
+                                    readOnly: isReadOnly,
                                     label: Text(
                                       setting.columnName(
                                         'purchaseInvoice',
@@ -788,6 +803,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                   purchaseInvoice.purchaseInvoiceDetails.add(
                                     PurchaseInvoiceDetail(),
                                   );
+                                  modelToggleNotifier.toggle();
                                 });
                               },
                               icon: Icon(Icons.add),
@@ -829,6 +845,8 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                         ),
                         const SizedBox(height: 10),
                         TableForm<PurchaseInvoiceDetail>(
+                          showSearch: true,
+                          notifier: modelToggleNotifier,
                           columns: [
                             TableFormColumn(
                               title: '#',
@@ -862,6 +880,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                       purchaseInvoiceDetail,
                                       index,
                                     ) => AsyncDropdown<Product>(
+                                      readOnly: isReadOnly,
                                       textOnSearch: (model) =>
                                           "${model.barcode}-${model.supplierProductCode ?? model.description ?? model.tagDescription}",
                                       modelClass: ProductClass(),
@@ -922,6 +941,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                       purchaseInvoiceDetail,
                                       index,
                                     ) => AsyncDropdown<ItemVariant>(
+                                      readOnly: isReadOnly,
                                       textOnSearch: (itemVariant) =>
                                           "${itemVariant.barcode} - ${itemVariant.supplierProductCode} - ${itemVariant.description}",
                                       textOnSelected: (itemVariant) =>
@@ -980,6 +1000,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                       childBuilder: (controller) =>
                                           TextFormField(
                                             controller: controller,
+                                            readOnly: isReadOnly,
                                             textCapitalization: .characters,
                                             inputFormatters: [
                                               FilteringTextInputFormatter
@@ -1019,6 +1040,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 rowBuilder:
                                     (context, purchaseInvoiceDetail, index) =>
                                         NumberFormField<double>(
+                                          readOnly: isReadOnly,
                                           initialValue:
                                               purchaseInvoiceDetail.quantity,
                                           // isDense: true,
@@ -1043,6 +1065,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                       purchaseInvoiceDetail,
                                       index,
                                     ) => AsyncDropdown<UnitOfMeasurement>(
+                                      readOnly: isReadOnly,
                                       width: 200,
                                       valueFallback: () =>
                                           purchaseInvoiceDetail.uom,
@@ -1075,6 +1098,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                       purchaseInvoiceDetail,
                                       index,
                                     ) => NumberFormField<double>(
+                                      readOnly: isReadOnly,
                                       initialValue:
                                           purchaseInvoiceDetail.noteQuantity,
                                       // isDense: true,
@@ -1109,18 +1133,13 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 ),
                                 rowBuilder:
                                     (context, purchaseInvoiceDetail, index) =>
-                                        Padding(
-                                          padding: const EdgeInsets.all(15.0),
-                                          child: Text(
-                                            purchaseInvoiceDetail
-                                                    .orderQuantityBasedDetailUom
-                                                    ?.format() ??
-                                                '',
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                            ),
-                                            textAlign: .right,
-                                          ),
+                                        SelectableText(
+                                          purchaseInvoiceDetail
+                                                  .orderQuantityBasedDetailUom
+                                                  ?.format() ??
+                                              '',
+                                          style: const TextStyle(fontSize: 16),
+                                          textAlign: .right,
                                         ),
                               ),
                             if (setting.canShow(
@@ -1139,6 +1158,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 rowBuilder:
                                     (context, purchaseInvoiceDetail, index) =>
                                         MoneyFormField(
+                                          readOnly: isReadOnly,
                                           initialValue:
                                               purchaseInvoiceDetail.price,
                                           // isDense: true,
@@ -1169,7 +1189,8 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                             notifier: modelToggleNotifier,
                                             readOnly:
                                                 purchaseInvoiceDetail.product ==
-                                                null,
+                                                    null ||
+                                                isReadOnly,
                                             validator: (value) {
                                               if (purchaseInvoiceDetail
                                                       .product ==
@@ -1231,7 +1252,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 ),
                                 rowBuilder:
                                     (context, purchaseInvoiceDetail, index) =>
-                                        Text(
+                                        SelectableText(
                                           purchaseInvoiceDetail.margin
                                                   ?.format() ??
                                               '',
@@ -1353,16 +1374,20 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                             desktopWidth: FixedColumnWidth(60),
                             rowBuilder:
                                 (context, purchaseInvoiceDetail, index) =>
-                                    IconButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          purchaseInvoice.purchaseInvoiceDetails
-                                              .remove(purchaseInvoiceDetail);
-                                          recalculatePurchaseInvoice();
-                                        });
-                                        refreshSummary();
-                                      },
-                                      icon: Icon(Icons.delete),
+                                    Flexible(
+                                      child: IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            purchaseInvoice
+                                                .purchaseInvoiceDetails
+                                                .remove(purchaseInvoiceDetail);
+                                            recalculatePurchaseInvoice();
+                                            modelToggleNotifier.toggle();
+                                          });
+                                          refreshSummary();
+                                        },
+                                        icon: Icon(Icons.delete),
+                                      ),
                                     ),
                             headerBuilder: (context) => IconButton(
                               onPressed: () async {
