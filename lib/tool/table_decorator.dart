@@ -339,6 +339,16 @@ class TrinaColumnTypeModelSelect implements TrinaColumnType {
   });
 
   @override
+  Widget buildCell(
+    TrinaGridStateManager stateManager,
+    TrinaCell cell,
+    TrinaColumn column,
+    TrinaRow<dynamic> row,
+  ) {
+    return Text(cell.value.toString());
+  }
+
+  @override
   bool isValid(dynamic value) => value is Model;
 
   @override
@@ -382,6 +392,21 @@ class TrinaColumnTypePercentage2 implements TrinaColumnType {
     return _compareWithNull(a, b, () {
       return a.compareTo(b);
     });
+  }
+
+  @override
+  Widget buildCell(
+    TrinaGridStateManager stateManager,
+    TrinaCell cell,
+    TrinaColumn column,
+    TrinaRow<dynamic> row,
+  ) {
+    final value = cell.value;
+    if (value is Percentage) {
+      return Text(value.format());
+    } else {
+      return Text(value.toString());
+    }
   }
 
   @override
