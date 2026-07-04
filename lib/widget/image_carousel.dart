@@ -41,20 +41,23 @@ class _ImageCarouselState extends State<ImageCarousel> {
     }
     return Stack(
       children: [
-        Container(
-          width: widget.width,
-          height: widget.height,
-          decoration: BoxDecoration(
-            border: .all(),
-            color: Colors.grey.shade300,
-            borderRadius: .all(.circular(10)),
-            image: DecorationImage(
-              image: ResizeImage(
-                controller.activeImage,
-                width: widget.width.toInt(),
-                height: widget.height.toInt(),
+        GestureDetector(
+          onTap: () => _viewImage(controller.activeImage),
+          child: Container(
+            width: widget.width,
+            height: widget.height,
+            decoration: BoxDecoration(
+              border: .all(),
+              color: Colors.grey.shade300,
+              borderRadius: .all(.circular(10)),
+              image: DecorationImage(
+                image: ResizeImage(
+                  controller.activeImage,
+                  width: widget.width.toInt(),
+                  height: widget.height.toInt(),
+                ),
+                fit: .contain,
               ),
-              fit: .contain,
             ),
           ),
         ),
@@ -75,6 +78,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: .circular(15),
+                  border: Border.all(color: Colors.black),
                 ),
                 child: Icon(Icons.delete),
               ),
@@ -92,7 +96,14 @@ class _ImageCarouselState extends State<ImageCarousel> {
                 onPressed: () => setState(() {
                   controller.prevSlide();
                 }),
-                icon: Icon(Icons.chevron_left_sharp),
+                icon: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: .circular(15),
+                    border: Border.all(color: Colors.black),
+                  ),
+                  child: Icon(Icons.chevron_left_sharp),
+                ),
               ),
               ...controller.images
                   .sublist(controller.leftIndex, controller.rightIndex + 1)
@@ -127,12 +138,44 @@ class _ImageCarouselState extends State<ImageCarousel> {
                 onPressed: () => setState(() {
                   controller.nextSlide();
                 }),
-                icon: Icon(Icons.chevron_right_sharp),
+                icon: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: .circular(15),
+                    border: Border.all(color: Colors.black),
+                  ),
+                  child: Icon(Icons.chevron_right_sharp),
+                ),
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  void _viewImage(ImageModel selectedImage) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final navigator = Navigator.of(context);
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Stack(
+            children: [
+              Image(image: selectedImage),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton.filled(
+                  onPressed: () => navigator.pop(),
+                  icon: Icon(Icons.close),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

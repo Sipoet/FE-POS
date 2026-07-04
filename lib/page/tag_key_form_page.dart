@@ -238,7 +238,7 @@ class _TagKeyFormPageState extends State<TagKeyFormPage>
                                 key: ObjectKey(tag),
                                 spacing: 15,
                                 children: [
-                                  Expanded(
+                                  Flexible(
                                     child: TextFormField(
                                       focusNode:
                                           _focusNodes[tagKey.tags.length -
@@ -257,6 +257,18 @@ class _TagKeyFormPageState extends State<TagKeyFormPage>
                                       },
                                       onChanged: (value) => setState(() {
                                         tag.value = value;
+                                      }),
+                                    ),
+                                  ),
+                                  Flexible(
+                                    child: TextFormField(
+                                      initialValue: tag.shortCode,
+                                      decoration: InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        hintText: 'Kode',
+                                      ),
+                                      onChanged: (value) => setState(() {
+                                        tag.shortCode = value;
                                       }),
                                     ),
                                   ),

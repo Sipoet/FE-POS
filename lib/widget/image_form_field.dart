@@ -156,7 +156,7 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
                     Positioned(
                       right: 0,
                       top: 0,
-                      child: IconButton.filled(
+                      child: IconButton(
                         onPressed: () async {
                           final picker = ImagePicker();
                           XFile? file = await picker.pickImage(source: .camera);
@@ -174,7 +174,14 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
                             );
                           imageChanged(state, newImages);
                         },
-                        icon: Icon(Icons.camera_alt_rounded),
+                        icon: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: .circular(15),
+                            border: Border.all(color: Colors.black),
+                          ),
+                          child: Icon(Icons.camera_alt_rounded),
+                        ),
                       ),
                     ),
                 ],
@@ -252,189 +259,215 @@ class _ImageFormFieldState extends State<ImageFormField> with PlatformChecker {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: widget.width,
-      height: widget.height,
-      child: FormField<ImageModel>(
-        validator: widget.validator,
-        initialValue: image,
-        builder: (state) => Visibility(
-          visible: image == null,
-          replacement: Stack(
-            children: [
-              GestureDetector(
-                onTap: () => _pickFile(state, .gallery),
-                child: Container(
-                  width: widget.width,
-                  height: widget.height,
-                  decoration: BoxDecoration(
-                    border: .all(),
-                    color: Colors.grey.shade300,
-                    borderRadius: .all(.circular(10)),
-                    image: DecorationImage(
-                      image: ResizeImage(
-                        image ?? ImageModel(),
-                        width: widget.width.toInt(),
-                        height: widget.height.toInt(),
-                      ),
-                      fit: .contain,
+    return FormField<ImageModel>(
+      validator: widget.validator,
+      initialValue: image,
+      builder: (state) => Visibility(
+        visible: image == null,
+        replacement: Stack(
+          children: [
+            GestureDetector(
+              onTap: () => _viewImage(image!),
+              child: Container(
+                width: widget.width,
+                height: widget.height,
+                decoration: BoxDecoration(
+                  border: .all(),
+                  color: Colors.grey.shade300,
+                  borderRadius: .all(.circular(10)),
+                  image: DecorationImage(
+                    image: ResizeImage(
+                      image ?? ImageModel(),
+                      width: widget.width.toInt(),
+                      height: widget.height.toInt(),
                     ),
+                    fit: .contain,
                   ),
                 ),
               ),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: IconButton.filled(
-                  onPressed: () => setState(() {
-                    image = null;
-                    imageChanged(state, image);
-                  }),
-                  icon: Icon(Icons.delete),
+            ),
+            Positioned(
+              right: 0,
+              top: 0,
+              child: IconButton(
+                onPressed: () => setState(() {
+                  image = null;
+                  imageChanged(state, image);
+                }),
+                icon: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: .circular(15),
+                    border: Border.all(color: Colors.black),
+                  ),
+                  child: Icon(Icons.delete),
                 ),
               ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: .start,
-            mainAxisSize: .min,
-            spacing: 5,
-            children: [
-              DropRegion(
-                formats: [Formats.jpeg, Formats.png, Formats.bmp],
-                onDropOver: (event) {
-                  if (event.session.allowedOperations.contains(
-                    DropOperation.copy,
-                  )) {
-                    return DropOperation.copy;
-                  } else {
-                    return DropOperation.none;
-                  }
-                },
-                onPerformDrop: (event) {
-                  if (event.session.items.length > 1) {
-                    setState(() {});
-                  }
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: .start,
+          mainAxisSize: .min,
+          spacing: 5,
+          children: [
+            DropRegion(
+              formats: [Formats.jpeg, Formats.png, Formats.bmp],
+              onDropOver: (event) {
+                if (event.session.allowedOperations.contains(
+                  DropOperation.copy,
+                )) {
+                  return DropOperation.copy;
+                } else {
+                  return DropOperation.none;
+                }
+              },
+              onPerformDrop: (event) {
+                if (event.session.items.length > 1) {
+                  setState(() {});
+                }
 
-                  for (final item in event.session.items) {
-                    final reader = item.dataReader!;
-                    if (reader.canProvide(Formats.jpeg)) {
-                      reader.getFile(
-                        Formats.jpeg,
-                        (file) async {
-                          final XFile xfile = XFile.fromData(
-                            await file.readAll(),
-                          );
-                          image = ImageModel(
-                            file: xfile,
-                            fileSize: await xfile.length(),
-                            mimeType: 'image/jpeg',
-                            filename: file.fileName,
-                          );
-                        },
-                        onError: (error) {
-                          flash.show(
-                            Text('Error reading value $error'),
-                            .error,
-                          );
-                        },
-                      );
-                    } else if (reader.canProvide(Formats.png)) {
-                      reader.getFile(
-                        Formats.png,
-                        (file) async {
-                          final XFile xfile = XFile.fromData(
-                            await file.readAll(),
-                          );
-                          image = ImageModel(
-                            file: xfile,
-                            fileSize: await xfile.length(),
-                            mimeType: 'image/png',
-                            filename: file.fileName,
-                          );
-                        },
-                        onError: (error) {
-                          flash.show(
-                            Text('Error reading value $error'),
-                            .error,
-                          );
-                        },
-                      );
-                    } else if (reader.canProvide(Formats.bmp)) {
-                      reader.getFile(
-                        Formats.bmp,
-                        (file) async {
-                          final XFile xfile = XFile.fromData(
-                            await file.readAll(),
-                          );
-                          image = ImageModel(
-                            file: xfile,
-                            fileSize: await xfile.length(),
-                            mimeType: 'image/bmp',
-                            filename: file.fileName,
-                          );
-                        },
-                        onError: (error) {
-                          flash.show(
-                            Text('Error reading value $error'),
-                            .error,
-                          );
-                        },
-                      );
-                    } else {
-                      flash.show(Text('not supported images/file'), .error);
-                    }
+                for (final item in event.session.items) {
+                  final reader = item.dataReader!;
+                  if (reader.canProvide(Formats.jpeg)) {
+                    reader.getFile(
+                      Formats.jpeg,
+                      (file) async {
+                        final XFile xfile = XFile.fromData(
+                          await file.readAll(),
+                        );
+                        image = ImageModel(
+                          file: xfile,
+                          fileSize: await xfile.length(),
+                          mimeType: 'image/jpeg',
+                          filename: file.fileName,
+                        );
+                      },
+                      onError: (error) {
+                        flash.show(Text('Error reading value $error'), .error);
+                      },
+                    );
+                  } else if (reader.canProvide(Formats.png)) {
+                    reader.getFile(
+                      Formats.png,
+                      (file) async {
+                        final XFile xfile = XFile.fromData(
+                          await file.readAll(),
+                        );
+                        image = ImageModel(
+                          file: xfile,
+                          fileSize: await xfile.length(),
+                          mimeType: 'image/png',
+                          filename: file.fileName,
+                        );
+                      },
+                      onError: (error) {
+                        flash.show(Text('Error reading value $error'), .error);
+                      },
+                    );
+                  } else if (reader.canProvide(Formats.bmp)) {
+                    reader.getFile(
+                      Formats.bmp,
+                      (file) async {
+                        final XFile xfile = XFile.fromData(
+                          await file.readAll(),
+                        );
+                        image = ImageModel(
+                          file: xfile,
+                          fileSize: await xfile.length(),
+                          mimeType: 'image/bmp',
+                          filename: file.fileName,
+                        );
+                      },
+                      onError: (error) {
+                        flash.show(Text('Error reading value $error'), .error);
+                      },
+                    );
+                  } else {
+                    flash.show(Text('not supported images/file'), .error);
                   }
-                  return Future.value();
-                },
-                child: Stack(
-                  children: [
-                    GestureDetector(
-                      onTap: () => _pickFile(state, .gallery),
-                      child: Container(
-                        width: widget.width,
-                        height: state.hasError
-                            ? widget.height - 50
-                            : widget.height,
-                        color: Colors.grey.shade200,
-                        child: Placeholder(
-                          strokeWidth: 1,
-                          color: Colors.black45,
-                          child: Center(
-                            child: Text(
-                              'Letakkan atau Pilih Gambar',
-                              style: DefaultResponse.labelStyle,
-                              textAlign: .center,
-                            ),
+                }
+                return Future.value();
+              },
+              child: Stack(
+                children: [
+                  GestureDetector(
+                    onTap: () => _pickFile(state, .gallery),
+                    child: Container(
+                      width: widget.width,
+                      height: state.hasError
+                          ? widget.height - 50
+                          : widget.height,
+                      color: Colors.grey.shade200,
+                      child: Placeholder(
+                        strokeWidth: 1,
+                        color: Colors.black45,
+                        child: Center(
+                          child: Text(
+                            'Letakkan atau Pilih Gambar',
+                            style: DefaultResponse.labelStyle,
+                            textAlign: .center,
                           ),
                         ),
                       ),
                     ),
-                    if (isAndroid() || isWeb() || isIOS())
-                      Positioned(
-                        top: 0,
-                        right: 0,
-                        child: IconButton.filled(
-                          iconSize: 30,
-                          onPressed: () => _pickFile(state, .camera),
-                          icon: Icon(Icons.camera_alt_rounded),
+                  ),
+                  if (isAndroid() || isWeb() || isIOS())
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: IconButton(
+                        iconSize: 30,
+                        onPressed: () => _pickFile(state, .camera),
+                        icon: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: .circular(15),
+                            border: Border.all(color: Colors.black),
+                          ),
+                          child: Icon(Icons.camera_alt_rounded),
                         ),
                       ),
-                  ],
-                ),
-
-                onDropEnded: (event) {
-                  setState(() {
-                    imageChanged(state, image);
-                  });
-                },
+                    ),
+                ],
               ),
-              if (state.hasError)
-                Text(state.errorText!, style: TextFormatter.errorStyle),
-            ],
-          ),
+
+              onDropEnded: (event) {
+                setState(() {
+                  imageChanged(state, image);
+                });
+              },
+            ),
+            if (state.hasError)
+              Text(state.errorText!, style: TextFormatter.errorStyle),
+          ],
         ),
       ),
+    );
+  }
+
+  void _viewImage(ImageModel selectedImage) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final navigator = Navigator.of(context);
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Stack(
+            children: [
+              Image(image: selectedImage),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton.filled(
+                  onPressed: () => navigator.pop(),
+                  icon: Icon(Icons.close),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

@@ -6,6 +6,7 @@ import 'package:fe_pos/tool/model_route.dart';
 
 class Tag extends Model with SaveNDestroyModel {
   String value;
+  String? shortCode;
   TagKey? tagKey;
   Tag({this.value = '', super.id, this.tagKey});
 
@@ -13,6 +14,7 @@ class Tag extends Model with SaveNDestroyModel {
   Map<String, dynamic> toMap() => {
     'name': name,
     'value': value,
+    'short_code': shortCode,
     'tag_key_id': tagKey?.id,
     'tagKey': tagKey,
   };
@@ -34,6 +36,7 @@ class Tag extends Model with SaveNDestroyModel {
     var attributes = json['attributes'];
     id = json['id'];
     value = attributes['value'];
+    shortCode = attributes['short_code'];
     tagKey =
         TagKeyClass().findRelationData(
           relation: json['relationships']?['tag_key'],
