@@ -147,10 +147,14 @@ class ImageModel extends ImageProvider<Uri> {
         StreamController<ImageChunkEvent>();
     if (file != null) {
       return MultiFrameImageStreamCompleter(
-        codec: file!.readAsBytes().then((bytes) {
-          _setSizeFromBytes(bytes);
-          return ui.ImmutableBuffer.fromUint8List(bytes).then(decode);
-        }),
+        codec: file!
+            .readAsBytes()
+            .then((bytes) {
+              _setSizeFromBytes(bytes);
+              return ui.ImmutableBuffer.fromUint8List(bytes);
+            })
+            .whenComplete(chunkEvents.close)
+            .then(decode),
         chunkEvents: chunkEvents.stream,
         scale: 1.0,
         debugLabel: '"key"',
