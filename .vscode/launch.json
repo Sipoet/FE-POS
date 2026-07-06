@@ -22,14 +22,19 @@
       "flutterMode": "release"
     },
     {
-      "name": "build_tool",
-      "cwd": "build\\irondash_engine_context\\build\\build_tool",
+      "name": "Flutter Web (No Security)",
       "request": "launch",
-      "type": "dart"
+      "type": "dart",
+      "flutterMode": "debug",
+      "args": [
+        "--web-browser-flag",
+        "--disable-web-security"
+      ],
+      "deviceId": "chrome"
     },
     {
       "name": "build_tool",
-      "cwd": "build\\super_native_extensions\\build\\build_tool",
+      "cwd": "build\\irondash_engine_context\\build\\build_tool",
       "request": "launch",
       "type": "dart"
     }

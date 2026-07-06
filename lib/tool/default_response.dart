@@ -32,24 +32,20 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
     switch (error.type) {
       case DioExceptionType.badResponse:
         if (response?.statusCode == 401) {
-          Navigator.pop(context);
+          Navigator.of(context).popUntil((route) => route.isFirst);
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const LoadingPage()),
           );
         } else if (response?.statusCode == 500) {
-          Flash flash = Flash();
           flash.showBanner(
             title: 'Gagal',
             description: 'Terjadi kesalahan server. hubungi IT support',
             messageType: ToastificationType.error,
           );
-          log(response.data.toString(), time: DateTime.now());
         }
         break;
       case DioExceptionType.connectionError:
-      case DioExceptionType.connectionTimeout:
-      case DioExceptionType.sendTimeout:
         flash.showBanner(
           title: 'koneksi terputus',
           description:
@@ -57,6 +53,20 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
           messageType: ToastificationType.error,
         );
         break;
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.sendTimeout:
+        flash.showBanner(
+          title: 'Server sedang sibuk',
+          description: 'cobalah beberapa saat lagi',
+          messageType: ToastificationType.error,
+        );
+        break;
+      default:
+        flash.showBanner(
+          title: 'Gagal',
+          description: 'Terjadi kesalahan server. hubungi IT support',
+          messageType: ToastificationType.error,
+        );
     }
     log(error.toString(), time: DateTime.now());
     if (valueWhenError == null) {

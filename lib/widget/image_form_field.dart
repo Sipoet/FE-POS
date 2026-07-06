@@ -176,11 +176,14 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
                         },
                         icon: DecoratedBox(
                           decoration: BoxDecoration(
+                            shape: .circle,
                             color: Colors.white,
-                            borderRadius: .circular(15),
                             border: Border.all(color: Colors.black),
                           ),
-                          child: Icon(Icons.camera_alt_rounded),
+                          child: Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: Icon(Icons.camera_alt_rounded),
+                          ),
                         ),
                       ),
                     ),
@@ -422,10 +425,13 @@ class _ImageFormFieldState extends State<ImageFormField> with PlatformChecker {
                         icon: DecoratedBox(
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: .circular(15),
+                            shape: .circle,
                             border: Border.all(color: Colors.black),
                           ),
-                          child: Icon(Icons.camera_alt_rounded),
+                          child: Padding(
+                            padding: const EdgeInsets.all(5),
+                            child: Icon(Icons.camera_alt_rounded),
+                          ),
                         ),
                       ),
                     ),
