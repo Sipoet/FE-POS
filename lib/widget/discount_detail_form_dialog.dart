@@ -77,7 +77,7 @@ class _DiscountDetailFormDialogState extends State<DiscountDetailFormDialog>
                 children: [
                   ...widget.descriptions,
                   TableForm<DiscountDetail>(
-                    columnSpacing: 10,
+                    columnSpacing: .all(10),
                     columns: [
                       TableFormColumn<DiscountDetail>(
                         title: 'Tipe',

@@ -101,9 +101,11 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
           ),
     ]).whenComplete(() {
       recalculateProductTotal();
-      hideLoadingPopup();
-      setState(() {
-        _showForm = true;
+      Future.delayed(Durations.medium1, () {
+        hideLoadingPopup();
+        setState(() {
+          _showForm = true;
+        });
       });
     });
   }

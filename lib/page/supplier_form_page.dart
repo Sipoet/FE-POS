@@ -347,7 +347,7 @@ class _SupplierFormPageState extends State<SupplierFormPage>
                         ),
                         TableForm<ContactNumber>(
                           rows: supplier.contactNumbers,
-                          columnSpacing: tablePadding,
+                          columnSpacing: .all(tablePadding),
                           columns: [
                             TableFormColumn(
                               title: 'Nama',

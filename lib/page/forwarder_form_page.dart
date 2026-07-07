@@ -286,7 +286,7 @@ class _ForwarderFormPageState extends State<ForwarderFormPage>
                         ),
                         TableForm<ContactNumber>(
                           rows: forwarder.contactNumbers,
-                          columnSpacing: tablePadding,
+                          columnSpacing: .all(tablePadding),
                           columns: [
                             TableFormColumn(
                               title: 'Nama',

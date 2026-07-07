@@ -120,25 +120,6 @@ class ImageModel extends ImageProvider<Uri> {
     } else {
       return {'id': id, '_destroy': _flagDestroyed, 'type': 'image'};
     }
-    // if (secureUrl != null) {
-    //   final uri = Uri.parse(secureUrl!);
-
-    //   String ext = contentType?.extName ?? secureUrl!.split('.').last;
-    //   final tempFile = await TempFile.create(ext);
-    //   final response = await dio.downloadUri(uri, tempFile.path);
-    //   if (response.statusCode == 200) {
-    //     bytes = response.data;
-    //     return MultipartFile.fromBytes(
-    //       response.data,
-    //       filename: filename,
-    //       contentType: contentType == null
-    //           ? null
-    //           : .parse(contentType.toString()),
-    //     );
-    //   }
-    //   return Future.error(Exception('failed download image'));
-    // }
-    // return Future.error(Exception('at least secureUrl or bytes filled'));
   }
 
   @override

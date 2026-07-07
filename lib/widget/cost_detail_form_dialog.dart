@@ -75,7 +75,7 @@ class _CostDetailFormDialogState extends State<CostDetailFormDialog>
             child: SingleChildScrollView(
               controller: scrollController,
               child: TableForm<CostDetail>(
-                columnSpacing: 10,
+                columnSpacing: .all(10),
                 columns: [
                   TableFormColumn<CostDetail>(
                     name: 'source_cost',

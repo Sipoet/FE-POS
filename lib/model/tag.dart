@@ -41,6 +41,7 @@ class Tag extends Model with SaveNDestroyModel {
         TagKeyClass().findRelationData(
           relation: json['relationships']?['tag_key'],
           included: included,
+          isRootIncluded: false,
         ) ??
         TagKey(id: attributes['tag_key_id'], name: attributes['name'] ?? '');
   }

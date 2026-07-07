@@ -109,10 +109,19 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
             },
           ),
     ]).whenComplete(() {
-      hideLoadingPopup();
-      setState(() {
-        _showForm = true;
-      });
+      if (purchaseInvoice.purchaseInvoiceDetails.isEmpty) {
+        Future.delayed(Durations.medium1, () {
+          hideLoadingPopup();
+          setState(() {
+            _showForm = true;
+          });
+        });
+      } else {
+        hideLoadingPopup();
+        setState(() {
+          _showForm = true;
+        });
+      }
     });
   }
 
@@ -850,7 +859,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                         const SizedBox(height: 10),
                         TableForm<PurchaseInvoiceDetail>(
                           isRowReorderable: true,
-                          columnSpacing: 5,
+                          // columnSpacing: 5,
                           onRowReorder: (rows, fromIndex, toIndex) {
                             setState(() {
                               for (final (index, detail) in rows.indexed) {
@@ -1289,14 +1298,10 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 ),
                                 rowBuilder:
                                     (context, purchaseInvoiceDetail, index) =>
-                                        Container(
-                                          height: 50,
-                                          alignment: .centerRight,
-                                          child: SelectableText(
-                                            purchaseInvoiceDetail.subtotal
-                                                .format(),
-                                            textAlign: .right,
-                                          ),
+                                        SelectableText(
+                                          purchaseInvoiceDetail.subtotal
+                                              .format(),
+                                          textAlign: .right,
                                         ),
                               ),
                             if (setting.canShow(
@@ -1318,48 +1323,45 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                       context,
                                       purchaseInvoiceDetail,
                                       index,
-                                    ) => SizedBox(
-                                      height: 50,
-                                      child: Row(
-                                        spacing: 15,
-                                        mainAxisAlignment: .spaceBetween,
-                                        crossAxisAlignment: .center,
-                                        children: [
-                                          ElevatedButton(
-                                            onPressed: () =>
-                                                _openDiscountDetail(
-                                                  purchaseInvoiceDetail
-                                                      .discountDetails,
-                                                  description: [
-                                                    Text(
-                                                      'Produk:  ${purchaseInvoiceDetail.barcode} ${purchaseInvoiceDetail.product?.tagDescription}',
-                                                      style: const TextStyle(
-                                                        fontSize: 18,
-                                                      ),
+                                    ) => Row(
+                                      spacing: 15,
+                                      mainAxisAlignment: .spaceBetween,
+                                      crossAxisAlignment: .center,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () =>
+                                              _openDiscountDetail(
+                                                purchaseInvoiceDetail
+                                                    .discountDetails,
+                                                description: [
+                                                  Text(
+                                                    'Produk:  ${purchaseInvoiceDetail.barcode} ${purchaseInvoiceDetail.product?.tagDescription}',
+                                                    style: const TextStyle(
+                                                      fontSize: 18,
                                                     ),
-                                                  ],
-                                                ).then((discountDetails) {
-                                                  if (discountDetails == null ||
-                                                      !mounted) {
-                                                    return;
-                                                  }
-                                                  setState(() {
-                                                    purchaseInvoiceDetail
-                                                            .discountDetails =
-                                                        discountDetails;
-                                                    recalculatePurchaseInvoice();
-                                                  });
-                                                  refreshSummary();
-                                                }),
-                                            child: Text('Detail'),
-                                          ),
-                                          Text(
-                                            purchaseInvoiceDetail.discountAmount
-                                                .format(),
-                                            textAlign: .right,
-                                          ),
-                                        ],
-                                      ),
+                                                  ),
+                                                ],
+                                              ).then((discountDetails) {
+                                                if (discountDetails == null ||
+                                                    !mounted) {
+                                                  return;
+                                                }
+                                                setState(() {
+                                                  purchaseInvoiceDetail
+                                                          .discountDetails =
+                                                      discountDetails;
+                                                  recalculatePurchaseInvoice();
+                                                });
+                                                refreshSummary();
+                                              }),
+                                          child: Text('Detail'),
+                                        ),
+                                        Text(
+                                          purchaseInvoiceDetail.discountAmount
+                                              .format(),
+                                          textAlign: .right,
+                                        ),
+                                      ],
                                     ),
                               ),
                             if (setting.canShow(
@@ -1377,14 +1379,9 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 isNumeric: true,
                                 rowBuilder:
                                     (context, purchaseInvoiceDetail, index) =>
-                                        Container(
-                                          height: 50,
-                                          alignment: .centerEnd,
-                                          child: Text(
-                                            purchaseInvoiceDetail.total
-                                                .format(),
-                                            textAlign: .right,
-                                          ),
+                                        Text(
+                                          purchaseInvoiceDetail.total.format(),
+                                          textAlign: .right,
                                         ),
                               ),
                           ],
@@ -1392,20 +1389,17 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                             desktopWidth: FixedColumnWidth(60),
                             rowBuilder:
                                 (context, purchaseInvoiceDetail, index) =>
-                                    Flexible(
-                                      child: IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            purchaseInvoice
-                                                .purchaseInvoiceDetails
-                                                .remove(purchaseInvoiceDetail);
-                                            recalculatePurchaseInvoice();
-                                            modelToggleNotifier.toggle();
-                                          });
-                                          refreshSummary();
-                                        },
-                                        icon: Icon(Icons.delete),
-                                      ),
+                                    IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          purchaseInvoice.purchaseInvoiceDetails
+                                              .remove(purchaseInvoiceDetail);
+                                          recalculatePurchaseInvoice();
+                                          modelToggleNotifier.toggle();
+                                        });
+                                        refreshSummary();
+                                      },
+                                      icon: Icon(Icons.delete),
                                     ),
                             headerBuilder: (context) => IconButton(
                               onPressed: () async {

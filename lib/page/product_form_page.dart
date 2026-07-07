@@ -59,6 +59,13 @@ class _ProductFormPageState extends State<ProductFormPage>
   }
 
   @override
+  void dispose() {
+    modelToggleNotifier.dispose();
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
   bool get wantKeepAlive => true;
 
   void fetchProduct() {
@@ -264,6 +271,8 @@ class _ProductFormPageState extends State<ProductFormPage>
                             MultipleImageFormField(
                               width: 200,
                               height: 200,
+                              notifier: controller,
+                              valueCallback: () => controller.images,
                               validator: (List<ImageModel>? images) {
                                 if (images != null && images.length > 5) {
                                   return 'maksimal 5 gambar';
@@ -277,9 +286,9 @@ class _ProductFormPageState extends State<ProductFormPage>
                                 return null;
                               },
                               onChanged: (images) {
+                                controller.notify();
                                 setState(() {
-                                  controller.addImages(images);
-                                  product.images.addAll(images);
+                                  product.images = images;
                                 });
                               },
                             ),
@@ -906,6 +915,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                                 ),
                               ),
                               body: TableForm<ItemVariant>(
+                                desktopRowHeight: 100,
                                 columns: [
                                   TableFormColumn(
                                     title: 'Tag',
@@ -913,6 +923,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                                       'Tag',
                                       style: DefaultResponse.labelStyle,
                                     ),
+                                    isColumnResizeable: true,
                                     rowBuilder: (context, itemVariant, index) =>
                                         AsyncDropdownMultiple<Tag>(
                                           selecteds: itemVariant.tags,
@@ -928,12 +939,20 @@ class _ProductFormPageState extends State<ProductFormPage>
                                           textOnSelected: (model) =>
                                               model.value,
                                           modelClass: TagClass(),
+                                          request: (queryRequest) {
+                                            queryRequest.include = ['tag_key'];
+                                            return TagClass().finds(
+                                              _server,
+                                              queryRequest,
+                                            );
+                                          },
                                           onChanged: (models) =>
                                               itemVariant.setTags(models),
                                         ),
                                   ),
                                   TableFormColumn(
                                     title: 'Barcode',
+                                    isColumnResizeable: true,
                                     headerBuilder: (context) => Text(
                                       'Barcode',
                                       style: DefaultResponse.labelStyle,
@@ -965,6 +984,7 @@ class _ProductFormPageState extends State<ProductFormPage>
                                   if (_setting.canShow('product', 'sell_price'))
                                     TableFormColumn(
                                       title: 'Harga Jual',
+                                      isColumnResizeable: true,
                                       isNumeric: true,
                                       headerBuilder: (context) => Text(
                                         'Harga Jual',
@@ -1000,16 +1020,16 @@ class _ProductFormPageState extends State<ProductFormPage>
 
                                   TableFormColumn(
                                     title: 'Gambar',
-                                    isNumeric: true,
-                                    desktopWidth: const FixedColumnWidth(150),
+                                    isColumnResizeable: true,
+                                    desktopWidth: const FixedColumnWidth(90),
                                     headerBuilder: (context) => Text(
                                       'Gambar',
                                       style: DefaultResponse.labelStyle,
                                     ),
                                     rowBuilder: (context, itemVariant, index) =>
                                         ImageFormField(
-                                          width: 100,
-                                          height: 100,
+                                          width: 80,
+                                          height: 80,
                                           initialValue: itemVariant.image,
                                           validator: (ImageModel? image) {
                                             if (image == null) {

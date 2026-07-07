@@ -579,7 +579,7 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
           Menu(
             icon: Icons.group,
             isClosed: true,
-            label: 'Role',
+            label: 'Jabatan',
             isDisabled: !setting.isAuthorize('roles', 'read'),
             key: 'role',
             pageFunct: () => const RolePage(),

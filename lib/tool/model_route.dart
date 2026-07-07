@@ -156,6 +156,7 @@ class ModelRoute {
     'PayrollType': PayrollTypeClass(),
     'Payroll': PayrollClass(),
     'Product': ProductClass(),
+    'Item': ProductClass(),
     'Tagging': TaggingClass(),
     'Supplier': SupplierClass(),
     'Forwarder': ForwarderClass(),
