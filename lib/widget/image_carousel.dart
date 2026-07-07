@@ -26,12 +26,23 @@ class _ImageCarouselState extends State<ImageCarousel> {
 
   @override
   void initState() {
-    controller.addListener(() {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    controller.addListener(refreshImages);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller.removeListener(refreshImages);
+    super.dispose();
+  }
+
+  void refreshImages() {
+    if (mounted) {
+      debugPrint('images: ${controller.images.length}');
+      setState(() {
+        controller.recalculateSlideLocation();
+      });
+    }
   }
 
   @override
@@ -77,10 +88,13 @@ class _ImageCarouselState extends State<ImageCarousel> {
               icon: DecoratedBox(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: .circular(15),
+                  shape: .circle,
                   border: Border.all(color: Colors.black),
                 ),
-                child: Icon(Icons.delete),
+                child: Padding(
+                  padding: const EdgeInsets.all(3.0),
+                  child: Icon(Icons.delete),
+                ),
               ),
             ),
           ),
@@ -200,6 +214,10 @@ class ImageCarouselController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void notify() {
+    notifyListeners();
+  }
+
   void nextSlide() {
     if (activeIndex == images.length - 1) {
       return;
@@ -222,8 +240,10 @@ class ImageCarouselController extends ChangeNotifier {
   }
 
   void setImages(List<ImageModel> imageModels) {
+    debugPrint('before ctrl images: ${images.length} on ${imageModels.length}');
     images.clear();
     images.addAll(imageModels);
+    debugPrint('ctrl images: ${images.length} on ${imageModels.length}');
     recalculateSlideLocation();
     notifyListeners();
   }

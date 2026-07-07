@@ -6,18 +6,21 @@ import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:super_drag_and_drop/super_drag_and_drop.dart';
+import 'package:fe_pos/tool/custom_type.dart';
 
 class MultipleImageFormField extends StatefulWidget {
   final String? Function(List<ImageModel>? models)? validator;
   final void Function(List<ImageModel>)? onChanged;
-  final List<ImageModel>? initialValue;
   final double width;
   final double height;
+  final ChangeNotifier? notifier;
+  final ValueCallBack<List<ImageModel>>? valueCallback;
   const MultipleImageFormField({
     super.key,
     this.validator,
     this.onChanged,
-    this.initialValue,
+    this.notifier,
+    this.valueCallback,
     required this.width,
     required this.height,
   });
@@ -33,8 +36,22 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
   @override
   void initState() {
     flash = Flash();
-    images = widget.initialValue ?? [];
+    images = widget.valueCallback?.call() ?? [];
+    widget.notifier?.addListener(refreshValue);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    widget.notifier?.removeListener(refreshValue);
+    super.dispose();
+  }
+
+  void refreshValue() {
+    setState(() {
+      // images = widget.valueCallback?.call() ?? images;
+    });
+    debugPrint('form images: ${images.length}');
   }
 
   Future<ImageModel> readImage(file, String mimeType) async {
@@ -51,6 +68,7 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
       filename: file.fileName,
     );
     images.add(image);
+    loadedImageLength++;
     return image;
   }
 
@@ -77,8 +95,8 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
                 }
               },
               onPerformDrop: (event) {
-                images = [];
                 tryCheck = 0;
+                loadedImageLength = 0;
                 for (final item in event.session.items) {
                   final reader = item.dataReader!;
 
@@ -146,16 +164,15 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
                           if (file == null) {
                             return;
                           }
-                          final newImages = (state.value ?? [])
-                            ..add(
-                              ImageModel(
-                                file: file,
-                                fileSize: await file.length(),
-                                filename: file.name,
-                                mimeType: file.mimeType,
-                              ),
-                            );
-                          imageChanged(state, newImages);
+                          images.add(
+                            ImageModel(
+                              file: file,
+                              fileSize: await file.length(),
+                              filename: file.name,
+                              mimeType: file.mimeType,
+                            ),
+                          );
+                          imageChanged(state);
                         },
                         icon: DecoratedBox(
                           decoration: BoxDecoration(
@@ -175,7 +192,7 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
 
               onDropEnded: (event) {
                 setState(() {
-                  imageChanged(state, images);
+                  imageChanged(state);
                 });
               },
             ),
@@ -188,8 +205,9 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
   }
 
   int tryCheck = 0;
+  int loadedImageLength = 0;
   Future onDropEnded(PerformDropEvent event, FormFieldState state) {
-    if (images.length != event.session.items.length && tryCheck <= 10) {
+    if (loadedImageLength != event.session.items.length && tryCheck <= 10) {
       return Future.delayed(Duration(microseconds: 200), () {
         return onDropEnded(event, state);
       });
@@ -198,7 +216,7 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
     }
   }
 
-  void imageChanged(FormFieldState state, List<ImageModel> images) {
+  void imageChanged(FormFieldState state) {
     state.didChange(images);
     if (state.validate()) {
       widget.onChanged?.call(images);
@@ -221,8 +239,9 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
         );
       }).toList(),
     );
+    images.addAll(newImages);
     setState(() {
-      imageChanged(state, newImages);
+      imageChanged(state);
     });
   }
 }
@@ -300,7 +319,7 @@ class _ImageFormFieldState extends State<ImageFormField> with PlatformChecker {
                     border: Border.all(color: Colors.black),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(5.0),
+                    padding: const EdgeInsets.all(3.0),
                     child: Icon(Icons.delete),
                   ),
                 ),
