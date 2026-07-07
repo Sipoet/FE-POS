@@ -37,6 +37,23 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
     super.initState();
   }
 
+  Future<ImageModel> readImage(file, String mimeType) async {
+    final XFile xfile = XFile.fromData(
+      await file.readAll(),
+      name: file.fileName,
+      length: file.fileSize,
+    );
+    final filesize = file.fileSize ?? await xfile.length();
+    final image = ImageModel(
+      file: xfile,
+      fileSize: filesize,
+      mimeType: mimeType,
+      filename: file.fileName,
+    );
+    images.add(image);
+    return image;
+  }
+
   @override
   Widget build(BuildContext context) {
     return FormField<List<ImageModel>>(
@@ -61,24 +78,14 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
               },
               onPerformDrop: (event) {
                 images = [];
+                tryCheck = 0;
                 for (final item in event.session.items) {
                   final reader = item.dataReader!;
+
                   if (reader.canProvide(Formats.jpeg)) {
                     reader.getFile(
                       Formats.jpeg,
-                      (file) async {
-                        final XFile xfile = XFile.fromData(
-                          await file.readAll(),
-                        );
-                        images.add(
-                          ImageModel(
-                            file: xfile,
-                            fileSize: await xfile.length(),
-                            mimeType: 'image/jpeg',
-                            filename: file.fileName,
-                          ),
-                        );
-                      },
+                      (file) => readImage(file, 'image/jpeg'),
                       onError: (error) {
                         flash.show(Text('Error reading value $error'), .error);
                       },
@@ -86,19 +93,7 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
                   } else if (reader.canProvide(Formats.png)) {
                     reader.getFile(
                       Formats.png,
-                      (file) async {
-                        final XFile xfile = XFile.fromData(
-                          await file.readAll(),
-                        );
-                        images.add(
-                          ImageModel(
-                            file: xfile,
-                            fileSize: await xfile.length(),
-                            mimeType: 'image/png',
-                            filename: file.fileName,
-                          ),
-                        );
-                      },
+                      (file) => readImage(file, 'image/png'),
                       onError: (error) {
                         flash.show(Text('Error reading value $error'), .error);
                       },
@@ -106,19 +101,7 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
                   } else if (reader.canProvide(Formats.bmp)) {
                     reader.getFile(
                       Formats.bmp,
-                      (file) async {
-                        final XFile xfile = XFile.fromData(
-                          await file.readAll(),
-                        );
-                        images.add(
-                          ImageModel(
-                            file: xfile,
-                            fileSize: await xfile.length(),
-                            mimeType: 'image/bmp',
-                            filename: file.fileName,
-                          ),
-                        );
-                      },
+                      (file) => readImage(file, 'image/bmp'),
                       onError: (error) {
                         flash.show(Text('Error reading value $error'), .error);
                       },
@@ -127,7 +110,7 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
                     flash.show(Text('not supported images/file'), .error);
                   }
                 }
-                return Future.value();
+                return Future(() => onDropEnded(event, state));
               },
               child: Stack(
                 children: [
@@ -191,7 +174,9 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
               ),
 
               onDropEnded: (event) {
-                imageChanged(state, images);
+                setState(() {
+                  imageChanged(state, images);
+                });
               },
             ),
             if (state.hasError)
@@ -200,6 +185,17 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
         );
       },
     );
+  }
+
+  int tryCheck = 0;
+  Future onDropEnded(PerformDropEvent event, FormFieldState state) {
+    if (images.length != event.session.items.length && tryCheck <= 10) {
+      return Future.delayed(Duration(microseconds: 200), () {
+        return onDropEnded(event, state);
+      });
+    } else {
+      return Future.value();
+    }
   }
 
   void imageChanged(FormFieldState state, List<ImageModel> images) {
@@ -303,7 +299,10 @@ class _ImageFormFieldState extends State<ImageFormField> with PlatformChecker {
                     borderRadius: .circular(15),
                     border: Border.all(color: Colors.black),
                   ),
-                  child: Icon(Icons.delete),
+                  child: Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Icon(Icons.delete),
+                  ),
                 ),
               ),
             ),
