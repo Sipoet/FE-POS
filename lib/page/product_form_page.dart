@@ -303,18 +303,15 @@ class _ProductFormPageState extends State<ProductFormPage>
                                   floatingLabelBehavior:
                                       FloatingLabelBehavior.always,
                                   label: Text(
-                                    "${_setting.columnName('product', 'supplier_product_code')}*",
+                                    _setting.columnName(
+                                      'product',
+                                      'supplier_product_code',
+                                    ),
                                     style: DefaultResponse.labelStyle,
                                   ),
                                   isDense: true,
                                   border: OutlineInputBorder(),
                                 ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'harus diisi';
-                                  }
-                                  return null;
-                                },
                               ),
                             ),
                             SizedBox(
