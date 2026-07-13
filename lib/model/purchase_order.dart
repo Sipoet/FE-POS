@@ -5,6 +5,7 @@ import 'package:fe_pos/model/model.dart';
 import 'package:fe_pos/model/purchase_order_detail.dart';
 import 'package:fe_pos/model/supplier.dart';
 import 'package:fe_pos/model/tag.dart';
+import 'package:fe_pos/tool/file_attachment.dart';
 import 'package:fe_pos/tool/purchase_calculator.dart';
 export 'package:fe_pos/model/supplier.dart';
 export 'package:fe_pos/model/purchase_order_detail.dart';
@@ -29,6 +30,7 @@ class PurchaseOrder extends Model with SaveNDestroyModel, Tagable {
   TaxType taxType;
   Money taxAmount;
   Percentage? taxValue;
+  List<FileAttachment>? documents;
 
   List<PurchaseOrderDetail> purchaseOrderDetails = [];
   PurchaseOrder({
@@ -43,6 +45,7 @@ class PurchaseOrder extends Model with SaveNDestroyModel, Tagable {
     super.id,
     super.createdAt,
     super.updatedAt,
+    this.documents,
     this.discountAmount = const Money(0),
     this.taxAmount = const Money(0),
     this.subtotal = const Money(0),
@@ -77,6 +80,7 @@ class PurchaseOrder extends Model with SaveNDestroyModel, Tagable {
     'tax_amount': taxAmount,
     'tax_type': taxType,
     'tax_value': taxValue,
+    'documents': documents,
     'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
     'cost_details_attributes': costDetails.map((e) => e.asJson()).toList(),
     'purchase_order_details_attributes': purchaseOrderDetails
@@ -110,6 +114,10 @@ class PurchaseOrder extends Model with SaveNDestroyModel, Tagable {
       costDetails = CostDetailClass().findRelationsData(
         included: included,
         relation: json['relationships']['cost_details'],
+      );
+      documents = FileAttachmentClass().findRelationsData(
+        included: included,
+        relation: json['relationships']['documents'],
       );
       setTaggingsFromJson(json, included: included);
     }

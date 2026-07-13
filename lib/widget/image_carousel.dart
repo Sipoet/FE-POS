@@ -52,24 +52,35 @@ class _ImageCarouselState extends State<ImageCarousel> {
     }
     return Stack(
       children: [
-        GestureDetector(
-          onTap: () => _viewImage(controller.activeImage),
-          child: Container(
-            width: widget.width,
-            height: widget.height,
-            decoration: BoxDecoration(
-              border: .all(),
-              color: Colors.grey.shade300,
-              borderRadius: .all(.circular(10)),
-              image: DecorationImage(
-                image: ResizeImage(
-                  controller.activeImage,
-                  width: widget.width.toInt(),
-                  height: widget.height.toInt(),
-                ),
-                fit: .contain,
-              ),
-            ),
+        SizedBox(
+          width: widget.width,
+          height: widget.height,
+          child: CarouselView(
+            scrollDirection: Axis.horizontal,
+            itemExtent: double.infinity,
+            onTap: (activeIndex) => _viewImage(controller.images[activeIndex]),
+            controller: controller.carouselController,
+            children: controller.images
+                .map(
+                  (image) => Container(
+                    width: widget.width,
+                    height: widget.height,
+                    decoration: BoxDecoration(
+                      border: .all(),
+                      color: Colors.grey.shade300,
+                      borderRadius: .all(.circular(10)),
+                      image: DecorationImage(
+                        image: ResizeImage(
+                          image,
+                          width: widget.width.toInt(),
+                          height: widget.height.toInt(),
+                        ),
+                        fit: .contain,
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
           ),
         ),
         Visibility(
@@ -196,6 +207,9 @@ class _ImageCarouselState extends State<ImageCarousel> {
 
 class ImageCarouselController extends ChangeNotifier {
   final List<ImageModel> images;
+  final CarouselController carouselController = CarouselController(
+    initialItem: 0,
+  );
   int activeIndex = 0;
   int leftIndex = 0;
   int rightIndex = 0;
@@ -211,6 +225,7 @@ class ImageCarouselController extends ChangeNotifier {
     }
     activeIndex--;
     recalculateSlideLocation();
+    carouselController.animateToItem(activeIndex);
     notifyListeners();
   }
 
@@ -224,6 +239,7 @@ class ImageCarouselController extends ChangeNotifier {
     }
     activeIndex++;
     recalculateSlideLocation();
+    carouselController.animateToItem(activeIndex);
     notifyListeners();
   }
 
@@ -240,10 +256,8 @@ class ImageCarouselController extends ChangeNotifier {
   }
 
   void setImages(List<ImageModel> imageModels) {
-    debugPrint('before ctrl images: ${images.length} on ${imageModels.length}');
     images.clear();
     images.addAll(imageModels);
-    debugPrint('ctrl images: ${images.length} on ${imageModels.length}');
     recalculateSlideLocation();
     notifyListeners();
   }

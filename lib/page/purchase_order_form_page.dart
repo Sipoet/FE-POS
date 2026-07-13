@@ -4,6 +4,7 @@ import 'package:fe_pos/model/product.dart';
 import 'package:fe_pos/model/purchase_order.dart';
 import 'package:fe_pos/model/unit_of_measurement.dart';
 import 'package:fe_pos/tool/default_response.dart';
+import 'package:fe_pos/tool/file_attachment.dart';
 import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/history_popup.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
@@ -16,6 +17,7 @@ import 'package:fe_pos/widget/cost_detail_form_dialog.dart';
 import 'package:fe_pos/widget/date_form_field.dart';
 import 'package:fe_pos/widget/discount_detail_form_dialog.dart';
 import 'package:fe_pos/widget/enum_dropdown.dart';
+import 'package:fe_pos/widget/file_form_field.dart';
 import 'package:fe_pos/widget/money_form_field.dart';
 import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/percentage_form_field.dart';
@@ -89,6 +91,7 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
               'cost_details',
               'taggings',
               'tags',
+              'documents',
             ],
           )
           .then(
@@ -509,6 +512,23 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
                                   ),
                                 ),
                               ),
+                            ),
+                            FileFormField(
+                              validator: (files) {
+                                for (final file
+                                    in files ?? <FileAttachment>[]) {
+                                  if (file.fileSize != null &&
+                                      file.fileSize! > 500_000) {
+                                    return 'max size per files 500KB';
+                                  }
+                                }
+                                return null;
+                              },
+                              fileTypes: [.document, .image],
+                              initialFiles: purchaseOrder.documents,
+                              onChanged: (files) => setState(() {
+                                purchaseOrder.documents = files;
+                              }),
                             ),
                           ],
                         ),
@@ -1133,31 +1153,35 @@ class _PurchaseOrderFormPageState extends State<PurchaseOrderFormPage>
     // _formState.currentState?.save();
 
     purchaseOrder
-        .save(_server)
-        .then((result) {
-          if (result) {
-            setState(() {
-              _showForm = false;
-              recalculateProductTotal();
-            });
-            flash.show(Text('Sukses Simpan Pesanan Pembelian'), .success);
-            tabManager.changeTabHeader(
-              widget,
-              'Edit Produk ${purchaseOrder.code}',
-            );
-            Future.delayed(Durations.short1, () {
+        .save(_server, contentType: .multipartForm)
+        .then(
+          (result) {
+            if (result) {
               setState(() {
-                _showForm = true;
+                _showForm = false;
+                recalculateProductTotal();
               });
-            });
-          } else {
-            flash.showBanner(
-              messageType: .error,
-              title: 'Gagal Simpan Pesanan Pembelian',
-              description: purchaseOrder.errors.join(','),
-            );
-          }
-        })
+              flash.show(Text('Sukses Simpan Pesanan Pembelian'), .success);
+              tabManager.changeTabHeader(
+                widget,
+                'Edit Produk ${purchaseOrder.code}',
+              );
+              Future.delayed(Durations.short1, () {
+                setState(() {
+                  _showForm = true;
+                });
+              });
+            } else {
+              flash.showBanner(
+                messageType: .error,
+                title: 'Gagal Simpan Pesanan Pembelian',
+                description: purchaseOrder.errors.join(','),
+              );
+            }
+          },
+          onError: (error, backtrace) =>
+              defaultErrorResponse(error: error, backtrace: backtrace),
+        )
         .whenComplete(() {
           setState(() {
             _showForm = true;

@@ -5,8 +5,11 @@ import 'package:fe_pos/model/session_state.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:toastification/toastification.dart';
+import 'package:pdfrx/pdfrx.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  pdfrxFlutterInitialize();
   runApp(const AllegraPos());
 }
 
