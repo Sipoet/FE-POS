@@ -12,6 +12,7 @@ import 'package:fe_pos/model/menu.dart';
 import 'package:provider/provider.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:tabbed_view/tabbed_view.dart';
+import 'package:no_screenshot/no_screenshot.dart';
 
 class FrameworkLayout extends StatefulWidget {
   const FrameworkLayout({super.key});
@@ -34,6 +35,10 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
   @override
   void initState() {
     final setting = context.read<Authorizer>();
+    final noScreenshot = NoScreenshot.instance;
+    noScreenshot.screenshotOff().then((isSuccess) {
+      debugPrint('screenshot off: $isSuccess');
+    });
     menuTree = <Menu>[
       Menu(
         icon: Icons.home,

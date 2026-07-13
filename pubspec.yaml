@@ -72,6 +72,8 @@ dependencies:
   big_decimal: ^0.7.0
   image_picker: ^1.2.3
   pdfrx: ^2.4.7
+  no_screenshot: ^1.0.0
+  docx_file_viewer: ^1.0.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

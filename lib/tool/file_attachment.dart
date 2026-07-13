@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:fe_pos/model/server.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:provider/provider.dart';
+import 'package:docx_file_viewer/docx_file_viewer.dart';
 
 abstract class FileAttachment {
   XFile? file;
@@ -84,6 +85,8 @@ class FileAttachmentClass<T extends FileAttachment> {
         return ImageModel() as T;
       case 'pdf':
         return PdfModel() as T;
+      case 'docx':
+        return DocxModel() as T;
       default:
         throw 'not support type $type';
     }
@@ -105,6 +108,14 @@ class FileAttachmentClass<T extends FileAttachment> {
             filename: file.name,
           )
           as T;
+    } else if (fileExt == 'docx') {
+      return DocxModel(
+            file: file,
+            mimeType:
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            filename: file.name,
+          )
+          as T;
     }
     throw 'not supported';
   }
@@ -123,10 +134,19 @@ class FileAttachmentClass<T extends FileAttachment> {
           as T;
     } else if (fileExt == 'pdf') {
       return PdfModel(
-            file: file,
+            file: xfile,
             mimeType: 'application/pdf',
             fileSize: file.fileSize,
-            filename: file.name,
+            filename: file.fileName,
+          )
+          as T;
+    } else if (fileExt == 'docx') {
+      return DocxModel(
+            file: xfile,
+            mimeType:
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            fileSize: file.fileSize,
+            filename: file.fileName,
           )
           as T;
     }
@@ -179,6 +199,170 @@ class FileAttachmentClass<T extends FileAttachment> {
   }
 }
 
+class DocxModel extends FileAttachment {
+  DocxModel({
+    super.createdAt,
+    super.updatedAt,
+    super.file,
+    super.fileSize,
+    super.filename,
+    super.id,
+    super.mimeType =
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    super.secureUrl,
+    super.signedId,
+  });
+
+  @override
+  Widget thumbnail({double? width, double? height}) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        borderRadius: .all(.circular(5)),
+        border: .all(),
+      ),
+      child: Center(child: Text('DOCX')),
+    );
+  }
+
+  Future<Uint8List?> obtainBytes(Server server) {
+    if (secureUrl != null) {
+      return server.download(url: secureUrl, acceptHeader: .pdf);
+    } else if (file != null) {
+      return file!.readAsBytes();
+    } else {
+      throw 'file not found';
+    }
+  }
+
+  @override
+  void showPreview(BuildContext context) {
+    final Server server = context.read<Server>();
+    obtainBytes(server).then((bytes) {
+      if (context.mounted && bytes != null) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            final navigator = Navigator.of(context);
+            final size = MediaQuery.sizeOf(context);
+            final searchController = DocxSearchController();
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              child: Center(
+                child: Column(
+                  children: [
+                    SizedBox(
+                      width: 1000,
+                      child: Row(
+                        mainAxisAlignment: .spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Row(
+                              spacing: 15,
+                              children: [
+                                Flexible(
+                                  child: Container(
+                                    constraints: BoxConstraints(
+                                      minWidth: 100,
+                                      maxWidth: 350,
+                                    ),
+                                    child: TextField(
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: OutlineInputBorder(),
+                                        hintText: 'Search Text',
+                                      ),
+                                      onChanged: (value) =>
+                                          searchController.search(value),
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () =>
+                                      searchController.previousMatch(),
+                                  iconSize: 35,
+                                  icon: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      shape: .circle,
+                                      color: Colors.white,
+                                      border: Border.all(color: Colors.black),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: Icon(Icons.arrow_back),
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () => searchController.nextMatch(),
+                                  iconSize: 35,
+                                  icon: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      shape: .circle,
+                                      color: Colors.white,
+                                      border: Border.all(color: Colors.black),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: Icon(Icons.arrow_forward),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          IconButton(
+                            onPressed: () => navigator.pop(),
+                            iconSize: 35,
+                            icon: DecoratedBox(
+                              decoration: BoxDecoration(
+                                shape: .circle,
+                                color: Colors.white,
+                                border: Border.all(color: Colors.black),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(5.0),
+                                child: Icon(Icons.close),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      width: 1000,
+                      height: size.height - 110,
+                      child: DocxView(
+                        bytes: bytes,
+                        searchController: searchController,
+                        config: DocxViewConfig(
+                          enableSearch: true,
+                          enableZoom: true,
+                          pageMode: DocxPageMode.paged,
+                          theme: DocxViewTheme.light(),
+                          searchHighlightColor: Colors.yellow,
+                          currentSearchHighlightColor: Colors.orange,
+                          // backgroundColor: Colors.white,
+                        ),
+                        onError: (error) {
+                          debugPrint(error.toString());
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      }
+    });
+  }
+}
+
 class PdfModel extends FileAttachment {
   PdfModel({
     super.createdAt,
@@ -187,7 +371,7 @@ class PdfModel extends FileAttachment {
     super.fileSize,
     super.filename,
     super.id,
-    super.mimeType,
+    super.mimeType = 'application/pdf',
     super.secureUrl,
     super.signedId,
   });
