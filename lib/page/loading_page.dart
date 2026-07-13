@@ -90,8 +90,6 @@ class _LoadingPageState extends State<LoadingPage>
         ]);
         if (androidInfo.version.sdkInt <= 32) {
           permissions.add(Permission.storage);
-        } else {
-          // permissions.add(Permission.photos);
         }
       } else if (defaultTargetPlatform == TargetPlatform.iOS) {
         permissions.addAll([Permission.mediaLibrary, Permission.photos]);

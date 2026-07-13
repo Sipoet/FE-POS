@@ -15,7 +15,10 @@ mixin DefaultResponse<T extends StatefulWidget> on State<T> {
     final valueWhenError,
     List<String> backtrace = const [],
   }) {
-    Flash flash = Flash();
+    if (error.type == DioExceptionType.cancel) {
+      return;
+    }
+    final Flash flash = Flash();
     debugPrint(error.toString());
     debugPrint(backtrace.toString());
     if (error.runtimeType.toString() == '_TypeError' ||
