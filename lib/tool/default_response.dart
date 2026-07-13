@@ -10,8 +10,14 @@ import 'package:fe_pos/tool/flash.dart';
 mixin DefaultResponse<T extends StatefulWidget> on State<T> {
   static const labelStyle = TextFormatter.labelStyle;
 
-  dynamic defaultErrorResponse({required var error, final valueWhenError}) {
+  dynamic defaultErrorResponse({
+    required var error,
+    final valueWhenError,
+    List<String> backtrace = const [],
+  }) {
     Flash flash = Flash();
+    debugPrint(error.toString());
+    debugPrint(backtrace.toString());
     if (error.runtimeType.toString() == '_TypeError' ||
         error is ArgumentError) {
       throw error;

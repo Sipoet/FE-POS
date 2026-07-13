@@ -16,6 +16,7 @@ import 'package:fe_pos/widget/cost_detail_form_dialog.dart';
 import 'package:fe_pos/widget/date_form_field.dart';
 import 'package:fe_pos/widget/discount_detail_form_dialog.dart';
 import 'package:fe_pos/widget/enum_dropdown.dart';
+import 'package:fe_pos/widget/file_form_field.dart';
 import 'package:fe_pos/widget/money_form_field.dart';
 import 'package:fe_pos/widget/number_form_field.dart';
 import 'package:fe_pos/widget/percentage_form_field.dart';
@@ -94,7 +95,13 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
       purchaseInvoice
           .refresh(
             _server,
-            include: ['supplier', 'location', 'cost_details', 'purchase_order'],
+            include: [
+              'supplier',
+              'location',
+              'cost_details',
+              'purchase_order',
+              'documents',
+            ],
           )
           .then(
             (isSuccess) {
@@ -769,6 +776,13 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 ),
                               ),
                             ),
+                            FileFormField(
+                              fileTypes: [.document, .image],
+                              initialFiles: purchaseInvoice.documents,
+                              onChanged: (files) => setState(() {
+                                purchaseInvoice.documents = files;
+                              }),
+                            ),
                           ],
                         ),
                         Visibility(
@@ -778,6 +792,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                             style: TextStyle(fontSize: 16),
                           ),
                         ),
+
                         const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1553,7 +1568,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
     // _formState.currentState?.save();
 
     purchaseInvoice
-        .save(_server)
+        .save(_server, contentType: .multipartForm)
         .then((result) {
           if (result) {
             setState(() {

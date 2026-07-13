@@ -7,6 +7,7 @@ import 'package:fe_pos/model/purchase_order.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:fe_pos/tool/purchase_calculator.dart';
 export 'package:fe_pos/tool/purchase_calculator.dart';
+import 'package:fe_pos/tool/file_attachment.dart';
 
 enum PurchaseInvoiceStatus implements EnumTranslation {
   draft,
@@ -66,6 +67,7 @@ class PurchaseInvoice extends Model with SaveNDestroyModel, Tagable {
   Percentage? taxValue;
   PurchaseOrder? purchaseOrder;
   List<PurchaseInvoiceDetail> purchaseInvoiceDetails = [];
+  List<FileAttachment>? documents;
   PurchaseInvoice({
     this.code = '',
     this.supplier,
@@ -89,7 +91,9 @@ class PurchaseInvoice extends Model with SaveNDestroyModel, Tagable {
     this.discountTotal = const Money(0),
     this.costTotal = const Money(0),
     this.productTotal,
+    this.documents,
     List<Tagging>? taggings,
+
     List<PurchaseInvoiceDetail>? purchaseInvoiceDetails,
     List<CostDetail>? costDetails,
   }) {
@@ -127,6 +131,7 @@ class PurchaseInvoice extends Model with SaveNDestroyModel, Tagable {
     'tax_amount': taxAmount,
     'tax_type': taxType,
     'tax_value': taxValue,
+    'documents': documents,
     'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
     'cost_details_attributes': costDetails.map((e) => e.asJson()).toList(),
     'purchase_invoice_details_attributes': purchaseInvoiceDetails
@@ -165,6 +170,10 @@ class PurchaseInvoice extends Model with SaveNDestroyModel, Tagable {
       costDetails = CostDetailClass().findRelationsData(
         included: included,
         relation: json['relationships']['cost_details'],
+      );
+      documents = FileAttachmentClass().findRelationsData(
+        included: included,
+        relation: json['relationships']['documents'],
       );
     }
     id = json['id'];

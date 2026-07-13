@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:fe_pos/model/server.dart';
+import 'package:fe_pos/tool/file_attachment.dart';
 import 'package:fe_pos/tool/custom_type.dart';
-import 'package:fe_pos/tool/image_model.dart';
 import 'package:fe_pos/tool/query_data.dart';
 import 'package:flutter/material.dart';
 export 'package:fe_pos/tool/custom_type.dart';
@@ -109,16 +109,16 @@ abstract class Model with ChangeNotifier {
 
   String toJson() => jsonEncoder.convert(asJson());
 
-  Map<String, dynamic> asJson() {
+  Future<Map<String, dynamic>> asJson() async {
     Map<String, dynamic> json = asMap();
     for (String key in json.keys.toList()) {
       var object = json[key];
-      json[key] = convert(object);
+      json[key] = await _convert(object);
     }
     return json;
   }
 
-  dynamic convert(Object? object, {List<String> parentKey = const []}) {
+  Future<dynamic> _convert(Object? object) async {
     if (object is Money) {
       return object.value;
     } else if (object is Percentage) {
@@ -131,16 +131,18 @@ abstract class Model with ChangeNotifier {
       return object.toString();
     } else if (object is String) {
       return object.trim();
+    } else if (object is FileAttachment) {
+      return object.dataAsync();
     } else if (object is Model) {
       return object.id;
     } else if (object is File) {
       return MultipartFile.fromFileSync(object.path);
-    } else if (object is ImageModel) {
-      return object.asMapData();
     } else if (object is TimeOfDay) {
       return object.asJson();
     } else if (object is Iterable) {
-      return object.map((e) => convert(e)).toList();
+      return Future.wait<dynamic>(
+        object.map<Future<dynamic>>((e) => _convert(e)).toList(),
+      );
     } else {
       return object;
     }
@@ -290,11 +292,11 @@ abstract class ModelClass<T extends Model> {
 }
 
 mixin SaveNDestroyModel on Model {
-  void asFormData({
+  Future<void> asFormData({
     required FormData formData,
     required Map<String, dynamic> data,
     List<String> parentKey = const [],
-  }) {
+  }) async {
     for (String key in data.keys.toList()) {
       var object = data[key];
       String formKey = formDataKey(parentKey + [key]);
@@ -324,15 +326,6 @@ mixin SaveNDestroyModel on Model {
         );
       } else if (object is MultipartFile) {
         formData.files.add(MapEntry(formKey, object));
-      } else if (object is ImageModel) {
-        final value = object.asMapData();
-        if (value is MultipartFile) {
-          formData.files.add(MapEntry(formKey, value));
-        } else if (object is Map) {
-          formData.fields.add(MapEntry(formKey, value.toString()));
-        } else {
-          formData.fields.add(MapEntry(formKey, ''));
-        }
       } else if (object is TimeOfDay) {
         formData.fields.add(MapEntry(formKey, object.asJson()));
       } else if (object is List || object is Set) {
@@ -340,13 +333,13 @@ mixin SaveNDestroyModel on Model {
           if (row is MultipartFile) {
             formData.files.add(MapEntry("$formKey[]", row));
           } else if (row is Map<String, dynamic>) {
-            asFormData(
+            await asFormData(
               data: row,
               formData: formData,
               parentKey: parentKey + [key, ''],
             );
           } else {
-            asFormData(
+            await asFormData(
               data: {'': row},
               formData: formData,
               parentKey: parentKey + [key],
@@ -377,41 +370,27 @@ mixin SaveNDestroyModel on Model {
   }) async {
     Future request;
     dynamic body;
-    Map<String, dynamic> attributes = asJson();
+    Map<String, dynamic> attributes = await asJson();
     if (only != null) {
       attributes.removeWhere((key, value) => !only.contains(key));
     }
-
+    if (contentType == .json) {
+      body = {
+        'data': {'id': id ?? '', 'type': modelName, 'attributes': attributes},
+      };
+    } else {
+      body = FormData();
+      await asFormData(
+        formData: body,
+        data: attributes,
+        parentKey: ['data', 'attributes'],
+      );
+      body.fields.add(MapEntry('data[type]', modelName));
+      body.fields.add(MapEntry('data[id]', id?.toString() ?? ''));
+    }
     if (isNewRecord) {
-      if (contentType == .json) {
-        body = {
-          'data': {'type': modelName, 'attributes': attributes},
-        };
-      } else {
-        body = FormData();
-        asFormData(
-          formData: body,
-          data: attributes,
-          parentKey: ['data', 'attributes'],
-        );
-        body.fields.add(MapEntry('data[type]', modelName));
-      }
       request = server.post(createPath, body: body, contentType: contentType);
     } else {
-      if (contentType == .json) {
-        body = {
-          'data': {'id': id, 'type': modelName, 'attributes': attributes},
-        };
-      } else {
-        body = FormData();
-        asFormData(
-          formData: body,
-          data: attributes,
-          parentKey: ['data', 'attributes'],
-        );
-        body.fields.add(MapEntry('data[type]', modelName));
-        body.fields.add(MapEntry('data[id]', id.toString()));
-      }
       request = server.put(updatePath, body: body, contentType: contentType);
     }
     return request.then(

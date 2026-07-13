@@ -1,3 +1,4 @@
+import 'package:fe_pos/tool/file_attachment.dart';
 import 'package:fe_pos/model/server.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -5,13 +6,25 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 
-class ImageModel extends ImageProvider<Uri> {
-  String? secureUrl;
-  String? signedId;
+class ImageModel extends ImageProvider<Uri> implements FileAttachment {
+  @override
   XFile? file;
+  @override
   String? mimeType;
+  @override
   String? filename;
+  @override
+  String? secureUrl;
+  @override
+  String? signedId;
+  @override
+  int? fileSize;
+  @override
   int? id;
+  @override
+  DateTime? createdAt;
+  @override
+  DateTime? updatedAt;
   bool _flagDestroyed = false;
   ui.Size? size;
   Dio dio =
@@ -45,8 +58,6 @@ class ImageModel extends ImageProvider<Uri> {
     }
   }
 
-  int? fileSize;
-
   ImageModel({
     this.id,
     this.signedId,
@@ -59,6 +70,7 @@ class ImageModel extends ImageProvider<Uri> {
          !(id != null && secureUrl == null),
          'secureUrl must filled if id not null',
        );
+
   @override
   Future<Uri> obtainKey(ImageConfiguration configuration) {
     if (secureUrl != null) {
@@ -87,39 +99,46 @@ class ImageModel extends ImageProvider<Uri> {
     }
   }
 
+  @override
+  bool get isAttached => id != null;
+  @override
+  bool get isDestroyed => _flagDestroyed;
+
+  @override
+  void flagDestroy() {
+    _flagDestroyed = true;
+  }
+
+  @override
+  void unflagDestroy() {
+    _flagDestroyed = false;
+  }
+
+  @override
+  Future<dynamic> dataAsync() async {
+    if (id == null) {
+      if (file == null) {
+        return null;
+      }
+      return MultipartFile.fromBytes(
+        await file!.readAsBytes(),
+        filename: filename,
+        contentType: mimeType == null ? null : .parse(mimeType!),
+      );
+    } else {
+      return {'id': id, '_destroy': _flagDestroyed, 'type': 'file'};
+    }
+  }
+
+  @override
   void setFromJson(Map<String, dynamic> json, {List included = const []}) {
     var attributes = json['attributes'] ?? {};
     secureUrl = attributes['secure_url'];
     signedId = attributes['signed_id'];
     mimeType = attributes['content_type'];
     id = int.tryParse(json['id'] ?? '');
-  }
-
-  bool get isAttached => id != null;
-
-  void flagDestroy() {
-    _flagDestroyed = true;
-  }
-
-  void unflagDestroy() {
-    _flagDestroyed = false;
-  }
-
-  bool get isDestroyed => _flagDestroyed;
-
-  dynamic asMapData() {
-    if (id == null) {
-      if (file == null) {
-        return null;
-      }
-      return MultipartFile.fromFileSync(
-        file!.path,
-        filename: filename,
-        contentType: mimeType == null ? null : .parse(mimeType!),
-      );
-    } else {
-      return {'id': id, '_destroy': _flagDestroyed, 'type': 'image'};
-    }
+    createdAt = DateTime.tryParse(attributes['created_at'] ?? '');
+    updatedAt = DateTime.tryParse(attributes['updated_at'] ?? '');
   }
 
   @override
@@ -183,6 +202,53 @@ class ImageModel extends ImageProvider<Uri> {
         decodedImage.height.toDouble(),
       );
     });
+  }
+
+  @override
+  Widget thumbnail({double? width, double? height}) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade300,
+        border: .all(width: 2),
+        borderRadius: .all(.circular(10)),
+        image: DecorationImage(
+          image: ResizeImage(
+            this,
+            width: width?.toInt(),
+            height: height?.toInt(),
+          ),
+          fit: .contain,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void showPreview(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final navigator = Navigator.of(context);
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Stack(
+            children: [
+              Image(image: this),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton.filled(
+                  onPressed: () => navigator.pop(),
+                  icon: Icon(Icons.close),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 

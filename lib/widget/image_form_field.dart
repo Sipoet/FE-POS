@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:super_drag_and_drop/super_drag_and_drop.dart';
 import 'package:fe_pos/tool/custom_type.dart';
+import 'package:file_picker/file_picker.dart';
 
 class MultipleImageFormField extends StatefulWidget {
   final String? Function(List<ImageModel>? models)? validator;
@@ -51,7 +52,6 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
     setState(() {
       // images = widget.valueCallback?.call() ?? images;
     });
-    debugPrint('form images: ${images.length}');
   }
 
   Future<ImageModel> readImage(file, String mimeType) async {
@@ -208,6 +208,7 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
   int loadedImageLength = 0;
   Future onDropEnded(PerformDropEvent event, FormFieldState state) {
     if (loadedImageLength != event.session.items.length && tryCheck <= 10) {
+      tryCheck++;
       return Future.delayed(Duration(microseconds: 200), () {
         return onDropEnded(event, state);
       });
@@ -224,8 +225,19 @@ class _MultipleImageFormFieldState extends State<MultipleImageFormField>
   }
 
   void _pickFile(FormFieldState state) async {
-    final picker = ImagePicker();
-    List<XFile> files = await picker.pickMultiImage();
+    List<XFile> files;
+    if (isWeb()) {
+      FilePickerResult? result = await FilePicker.pickFiles(
+        dialogTitle: 'pilih gambar',
+        type: .image,
+        allowMultiple: true,
+        withData: true,
+      );
+      files = result?.xFiles ?? [];
+    } else {
+      final picker = ImagePicker();
+      files = await picker.pickMultiImage();
+    }
     if (files.isEmpty) {
       return;
     }
@@ -499,8 +511,20 @@ class _ImageFormFieldState extends State<ImageFormField> with PlatformChecker {
     FormFieldState<ImageModel> state,
     ImageSource imageSource,
   ) async {
-    final picker = ImagePicker();
-    final XFile? file = await picker.pickImage(source: imageSource);
+    XFile? file;
+    if (isWeb()) {
+      FilePickerResult? result = await FilePicker.pickFiles(
+        dialogTitle: 'pilih gambar',
+        type: .image,
+        allowMultiple: false,
+        withData: true,
+      );
+      file = result?.xFiles.firstOrNull;
+    } else {
+      final picker = ImagePicker();
+      file = await picker.pickImage(source: imageSource);
+    }
+
     if (file == null) {
       return;
     }
