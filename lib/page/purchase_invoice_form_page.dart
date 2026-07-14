@@ -448,6 +448,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                           alignment: .start,
                           runAlignment: .start,
                           crossAxisAlignment: .start,
+                          spacing: 15,
                           children: [
                             Visibility(
                               visible: !purchaseInvoice.isNewRecord,
@@ -494,6 +495,13 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 ),
                               ),
                             ),
+                            Visibility(
+                              visible: purchaseInvoice.status != null,
+                              child: Text(
+                                'Status: ${purchaseInvoice.status?.humanize()}',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
                             const Divider(),
                             Visibility(
                               visible: setting.canShow(
@@ -514,6 +522,8 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                         'purchaseInvoice',
                                         'code',
                                       ),
+                                      floatingLabelBehavior:
+                                          FloatingLabelBehavior.always,
                                       labelStyle: TextFormatter.labelStyle,
                                       border: const OutlineInputBorder(),
                                       hintText: 'Auto',
@@ -776,6 +786,74 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 ),
                               ),
                             ),
+                            Visibility(
+                              visible: setting.canShow(
+                                'purchaseInvoice',
+                                'invoice_group',
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 5,
+                                ),
+                                child: SizedBox(
+                                  width: width,
+                                  child: NumberFormField<int>(
+                                    // readOnly: isReadOnly,
+                                    label: Text(
+                                      setting.columnName(
+                                        'purchaseInvoice',
+                                        'invoice_group',
+                                      ),
+                                      style: TextFormatter.labelStyle,
+                                    ),
+
+                                    onChanged: (value) =>
+                                        purchaseInvoice.invoiceGroup = value,
+                                    initialValue: purchaseInvoice.invoiceGroup,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Visibility(
+                              visible: setting.canShow(
+                                'purchaseInvoice',
+                                'supplier_transaction_number',
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 5,
+                                ),
+                                child: SizedBox(
+                                  width: width,
+                                  child: TextFormField(
+                                    readOnly: isReadOnly,
+                                    key: ValueKey(
+                                      purchaseInvoice.supplierTransactionNumber,
+                                    ),
+                                    decoration: InputDecoration(
+                                      label: Text(
+                                        setting.columnName(
+                                          'purchaseInvoice',
+                                          'supplier_transaction_number',
+                                        ),
+                                        style: TextFormatter.labelStyle,
+                                      ),
+                                      floatingLabelBehavior:
+                                          FloatingLabelBehavior.always,
+                                      border: OutlineInputBorder(),
+                                    ),
+                                    onChanged: (value) =>
+                                        purchaseInvoice
+                                                .supplierTransactionNumber =
+                                            value,
+                                    initialValue: purchaseInvoice
+                                        .supplierTransactionNumber,
+                                  ),
+                                ),
+                              ),
+                            ),
                             FileFormField(
                               fileTypes: [.document, .image],
                               initialFiles: purchaseInvoice.documents,
@@ -785,14 +863,6 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                             ),
                           ],
                         ),
-                        Visibility(
-                          visible: purchaseInvoice.status != null,
-                          child: Text(
-                            'Status: ${purchaseInvoice.status?.humanize()}',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ),
-
                         const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1156,6 +1226,8 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 desktopWidth: FixedColumnWidth(100),
                                 isNumeric: true,
                                 headerBuilder: (context) => Row(
+                                  crossAxisAlignment: .start,
+                                  mainAxisAlignment: .end,
                                   children: [
                                     Flexible(
                                       child: Text(
@@ -1398,6 +1470,57 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                           purchaseInvoiceDetail.total.format(),
                                           textAlign: .right,
                                         ),
+                              ),
+                            if (setting.canShow(
+                              'purchaseInvoiceDetail',
+                              'expired_date',
+                            ))
+                              TableFormColumn<PurchaseInvoiceDetail>(
+                                title: 'Tanggal Kadaluarsa',
+                                isColumnResizeable: true,
+                                headerBuilder: (context) => Text(
+                                  'Tanggal Kadaluarsa',
+                                  textAlign: .right,
+                                  style: TextFormatter.tableLabelStyle,
+                                ),
+                                rowBuilder:
+                                    (context, purchaseInvoiceDetail, index) =>
+                                        DateFormField<Date>(
+                                          dateType: DateType(),
+                                          initialValue:
+                                              purchaseInvoiceDetail.expiredDate,
+                                          onChanged: (date) => setState(() {
+                                            purchaseInvoiceDetail.expiredDate =
+                                                date;
+                                          }),
+                                        ),
+                              ),
+                            if (setting.canShow(
+                              'purchaseInvoiceDetail',
+                              'production_date',
+                            ))
+                              TableFormColumn<PurchaseInvoiceDetail>(
+                                title: 'Tanggal Produksi',
+                                isColumnResizeable: true,
+                                headerBuilder: (context) => Text(
+                                  'Tanggal Produksi',
+                                  textAlign: .right,
+                                  style: TextFormatter.tableLabelStyle,
+                                ),
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseInvoiceDetail,
+                                      index,
+                                    ) => DateFormField<Date>(
+                                      dateType: DateType(),
+                                      initialValue:
+                                          purchaseInvoiceDetail.productionDate,
+                                      onChanged: (date) => setState(() {
+                                        purchaseInvoiceDetail.productionDate =
+                                            date;
+                                      }),
+                                    ),
                               ),
                           ],
                           actionColumn: TableFormColumn<PurchaseInvoiceDetail>(

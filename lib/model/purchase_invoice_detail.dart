@@ -25,6 +25,8 @@ class PurchaseInvoiceDetail extends Model {
   String? barcode;
   double? orderQuantityBasedDetailUom;
   PurchaseInvoice? purchaseInvoice;
+  Date? expiredDate;
+  Date? productionDate;
   double? orderQuantity;
   UnitOfMeasurement? orderUom;
   bool isNewVariant;
@@ -40,6 +42,8 @@ class PurchaseInvoiceDetail extends Model {
     this.orderQuantityBasedDetailUom,
     this.purchaseOrderDetail,
     this.sku,
+    this.expiredDate,
+    this.productionDate,
     this.rowNumber,
     this.isNewVariant = false,
     this.purchaseInvoice,
@@ -58,6 +62,8 @@ class PurchaseInvoiceDetail extends Model {
     'quantity': quantity,
     'purchase_invoice': purchaseInvoice,
     'transaction_date': purchaseInvoice?.transactionDate,
+    'expired_date': expiredDate,
+    'production_date': productionDate,
     'sell_price': sellPrice,
     'supplier': supplier,
     'row_number': rowNumber,
@@ -147,7 +153,7 @@ class PurchaseInvoiceDetail extends Model {
     quantity = double.tryParse(attributes['quantity'].toString()) ?? 0;
     noteQuantity = double.tryParse(attributes['note_quantity'].toString()) ?? 0;
     final klass = DiscountDetailClass();
-    discountDetails = (attributes['discount_detail'] as List)
+    discountDetails = ((attributes['discount_detail'] ?? []) as List)
         .map<DiscountDetail>(
           (e) => klass.fromJson({'attributes': e}, included: included),
         )
@@ -158,6 +164,8 @@ class PurchaseInvoiceDetail extends Model {
     total = Money.tryParse(attributes['total']) ?? const Money(0);
     price = Money.tryParse(attributes['price']) ?? const Money(0);
     barcode = attributes['barcode'];
+    expiredDate = Date.tryParse(attributes['expired_date'] ?? '');
+    productionDate = Date.tryParse(attributes['production_date'] ?? '');
   }
 }
 
