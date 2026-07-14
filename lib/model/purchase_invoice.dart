@@ -68,6 +68,8 @@ class PurchaseInvoice extends Model with SaveNDestroyModel, Tagable {
   PurchaseOrder? purchaseOrder;
   List<PurchaseInvoiceDetail> purchaseInvoiceDetails = [];
   List<FileAttachment>? documents;
+  int? invoiceGroup;
+  String? supplierTransactionNumber;
   PurchaseInvoice({
     this.code = '',
     this.supplier,
@@ -92,6 +94,8 @@ class PurchaseInvoice extends Model with SaveNDestroyModel, Tagable {
     this.costTotal = const Money(0),
     this.productTotal,
     this.documents,
+    this.invoiceGroup,
+    this.supplierTransactionNumber,
     List<Tagging>? taggings,
 
     List<PurchaseInvoiceDetail>? purchaseInvoiceDetails,
@@ -132,6 +136,8 @@ class PurchaseInvoice extends Model with SaveNDestroyModel, Tagable {
     'tax_type': taxType,
     'tax_value': taxValue,
     'documents': documents,
+    'invoice_group': invoiceGroup,
+    'supplier_transaction_number': supplierTransactionNumber,
     'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
     'cost_details_attributes': costDetails.map((e) => e.asJson()).toList(),
     'purchase_invoice_details_attributes': purchaseInvoiceDetails
@@ -204,6 +210,8 @@ class PurchaseInvoice extends Model with SaveNDestroyModel, Tagable {
     } catch (e) {
       debugPrint(e.toString());
     }
+    invoiceGroup = int.tryParse(attributes['invoice_group'].toString());
+    supplierTransactionNumber = attributes['supplier_transaction_number'];
   }
 
   @override

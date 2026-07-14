@@ -514,6 +514,8 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                         'purchaseInvoice',
                                         'code',
                                       ),
+                                      floatingLabelBehavior:
+                                          FloatingLabelBehavior.always,
                                       labelStyle: TextFormatter.labelStyle,
                                       border: const OutlineInputBorder(),
                                       hintText: 'Auto',
@@ -772,6 +774,74 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                     onChanged: (value) =>
                                         purchaseInvoice.openedAt = value,
                                     initialValue: purchaseInvoice.openedAt,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Visibility(
+                              visible: setting.canShow(
+                                'purchaseInvoice',
+                                'invoice_group',
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 5,
+                                ),
+                                child: SizedBox(
+                                  width: width,
+                                  child: NumberFormField<int>(
+                                    // readOnly: isReadOnly,
+                                    label: Text(
+                                      setting.columnName(
+                                        'purchaseInvoice',
+                                        'invoice_group',
+                                      ),
+                                      style: TextFormatter.labelStyle,
+                                    ),
+
+                                    onChanged: (value) =>
+                                        purchaseInvoice.invoiceGroup = value,
+                                    initialValue: purchaseInvoice.invoiceGroup,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Visibility(
+                              visible: setting.canShow(
+                                'purchaseInvoice',
+                                'supplier_transaction_number',
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 5,
+                                ),
+                                child: SizedBox(
+                                  width: width,
+                                  child: TextFormField(
+                                    readOnly: isReadOnly,
+                                    key: ValueKey(
+                                      purchaseInvoice.supplierTransactionNumber,
+                                    ),
+                                    decoration: InputDecoration(
+                                      label: Text(
+                                        setting.columnName(
+                                          'purchaseInvoice',
+                                          'supplier_transaction_number',
+                                        ),
+                                        style: TextFormatter.labelStyle,
+                                      ),
+                                      floatingLabelBehavior:
+                                          FloatingLabelBehavior.always,
+                                      border: OutlineInputBorder(),
+                                    ),
+                                    onChanged: (value) =>
+                                        purchaseInvoice
+                                                .supplierTransactionNumber =
+                                            value,
+                                    initialValue: purchaseInvoice
+                                        .supplierTransactionNumber,
                                   ),
                                 ),
                               ),
@@ -1156,6 +1226,8 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 desktopWidth: FixedColumnWidth(100),
                                 isNumeric: true,
                                 headerBuilder: (context) => Row(
+                                  crossAxisAlignment: .start,
+                                  mainAxisAlignment: .end,
                                   children: [
                                     Flexible(
                                       child: Text(
@@ -1411,7 +1483,6 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                isNumeric: true,
                                 rowBuilder:
                                     (context, purchaseInvoiceDetail, index) =>
                                         DateFormField<Date>(
@@ -1436,7 +1507,6 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                   textAlign: .right,
                                   style: TextFormatter.tableLabelStyle,
                                 ),
-                                isNumeric: true,
                                 rowBuilder:
                                     (
                                       context,

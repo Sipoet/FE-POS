@@ -153,7 +153,7 @@ class PurchaseInvoiceDetail extends Model {
     quantity = double.tryParse(attributes['quantity'].toString()) ?? 0;
     noteQuantity = double.tryParse(attributes['note_quantity'].toString()) ?? 0;
     final klass = DiscountDetailClass();
-    discountDetails = (attributes['discount_detail'] as List)
+    discountDetails = ((attributes['discount_detail'] ?? []) as List)
         .map<DiscountDetail>(
           (e) => klass.fromJson({'attributes': e}, included: included),
         )
