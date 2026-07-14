@@ -448,6 +448,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                           alignment: .start,
                           runAlignment: .start,
                           crossAxisAlignment: .start,
+                          spacing: 15,
                           children: [
                             Visibility(
                               visible: !purchaseInvoice.isNewRecord,
@@ -492,6 +493,13 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                   },
                                   child: const Text('Draft'),
                                 ),
+                              ),
+                            ),
+                            Visibility(
+                              visible: purchaseInvoice.status != null,
+                              child: Text(
+                                'Status: ${purchaseInvoice.status?.humanize()}',
+                                style: TextStyle(fontSize: 16),
                               ),
                             ),
                             const Divider(),
@@ -855,14 +863,6 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                             ),
                           ],
                         ),
-                        Visibility(
-                          visible: purchaseInvoice.status != null,
-                          child: Text(
-                            'Status: ${purchaseInvoice.status?.humanize()}',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ),
-
                         const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
