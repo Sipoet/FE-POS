@@ -1399,6 +1399,59 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                           textAlign: .right,
                                         ),
                               ),
+                            if (setting.canShow(
+                              'purchaseInvoiceDetail',
+                              'expired_date',
+                            ))
+                              TableFormColumn<PurchaseInvoiceDetail>(
+                                title: 'Tanggal Kadaluarsa',
+                                isColumnResizeable: true,
+                                headerBuilder: (context) => Text(
+                                  'Tanggal Kadaluarsa',
+                                  textAlign: .right,
+                                  style: TextFormatter.tableLabelStyle,
+                                ),
+                                isNumeric: true,
+                                rowBuilder:
+                                    (context, purchaseInvoiceDetail, index) =>
+                                        DateFormField<Date>(
+                                          dateType: DateType(),
+                                          initialValue:
+                                              purchaseInvoiceDetail.expiredDate,
+                                          onChanged: (date) => setState(() {
+                                            purchaseInvoiceDetail.expiredDate =
+                                                date;
+                                          }),
+                                        ),
+                              ),
+                            if (setting.canShow(
+                              'purchaseInvoiceDetail',
+                              'production_date',
+                            ))
+                              TableFormColumn<PurchaseInvoiceDetail>(
+                                title: 'Tanggal Produksi',
+                                isColumnResizeable: true,
+                                headerBuilder: (context) => Text(
+                                  'Tanggal Produksi',
+                                  textAlign: .right,
+                                  style: TextFormatter.tableLabelStyle,
+                                ),
+                                isNumeric: true,
+                                rowBuilder:
+                                    (
+                                      context,
+                                      purchaseInvoiceDetail,
+                                      index,
+                                    ) => DateFormField<Date>(
+                                      dateType: DateType(),
+                                      initialValue:
+                                          purchaseInvoiceDetail.productionDate,
+                                      onChanged: (date) => setState(() {
+                                        purchaseInvoiceDetail.productionDate =
+                                            date;
+                                      }),
+                                    ),
+                              ),
                           ],
                           actionColumn: TableFormColumn<PurchaseInvoiceDetail>(
                             desktopWidth: FixedColumnWidth(60),
