@@ -1,5 +1,6 @@
 import 'package:fe_pos/tool/file_attachment.dart';
 import 'package:fe_pos/model/server.dart';
+import 'package:fe_pos/widget/protected_image.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
@@ -206,20 +207,22 @@ class ImageModel extends ImageProvider<Uri> implements FileAttachment {
 
   @override
   Widget thumbnail({double? width, double? height}) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade300,
-        border: .all(width: 2),
-        borderRadius: .all(.circular(10)),
-        image: DecorationImage(
-          image: ResizeImage(
-            this,
-            width: width?.toInt(),
-            height: height?.toInt(),
+    return ProtectedImage(
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade300,
+          border: .all(width: 2),
+          borderRadius: .all(.circular(10)),
+          image: DecorationImage(
+            image: ResizeImage(
+              this,
+              width: width?.toInt(),
+              height: height?.toInt(),
+            ),
+            fit: .contain,
           ),
-          fit: .contain,
         ),
       ),
     );
@@ -235,7 +238,7 @@ class ImageModel extends ImageProvider<Uri> implements FileAttachment {
           backgroundColor: Colors.transparent,
           child: Stack(
             children: [
-              Image(image: this),
+              ProtectedImage(child: Image(image: this)),
               Positioned(
                 top: 0,
                 right: 0,

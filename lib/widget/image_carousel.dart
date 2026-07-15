@@ -48,39 +48,19 @@ class _ImageCarouselState extends State<ImageCarousel> {
   @override
   Widget build(BuildContext context) {
     if (controller.images.isEmpty) {
-      return SizedBox();
+      return const SizedBox.shrink();
     }
     return Stack(
       children: [
         SizedBox(
           width: widget.width,
           height: widget.height,
-          child: CarouselView(
-            scrollDirection: Axis.horizontal,
-            itemExtent: double.infinity,
-            onTap: (activeIndex) => _viewImage(controller.images[activeIndex]),
-            controller: controller.carouselController,
-            children: controller.images
-                .map(
-                  (image) => Container(
-                    width: widget.width,
-                    height: widget.height,
-                    decoration: BoxDecoration(
-                      border: .all(),
-                      color: Colors.grey.shade300,
-                      borderRadius: .all(.circular(10)),
-                      image: DecorationImage(
-                        image: ResizeImage(
-                          image,
-                          width: widget.width.toInt(),
-                          height: widget.height.toInt(),
-                        ),
-                        fit: .contain,
-                      ),
-                    ),
-                  ),
-                )
-                .toList(),
+          child: GestureDetector(
+            onTap: () => _viewImage(controller.activeImage),
+            child: controller.activeImage.thumbnail(
+              width: widget.width,
+              height: widget.height,
+            ),
           ),
         ),
         Visibility(
@@ -180,28 +160,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
   }
 
   void _viewImage(ImageModel selectedImage) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final navigator = Navigator.of(context);
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Stack(
-            children: [
-              Image(image: selectedImage),
-              Positioned(
-                top: 0,
-                right: 0,
-                child: IconButton.filled(
-                  onPressed: () => navigator.pop(),
-                  icon: Icon(Icons.close),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    selectedImage.showPreview(context);
   }
 }
 

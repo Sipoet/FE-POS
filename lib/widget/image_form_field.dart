@@ -298,22 +298,9 @@ class _ImageFormFieldState extends State<ImageFormField> with PlatformChecker {
           children: [
             GestureDetector(
               onTap: () => _viewImage(image!),
-              child: Container(
+              child: image?.thumbnail(
                 width: widget.width,
                 height: widget.height,
-                decoration: BoxDecoration(
-                  border: .all(),
-                  color: Colors.grey.shade300,
-                  borderRadius: .all(.circular(10)),
-                  image: DecorationImage(
-                    image: ResizeImage(
-                      image ?? ImageModel(),
-                      width: widget.width.toInt(),
-                      height: widget.height.toInt(),
-                    ),
-                    fit: .contain,
-                  ),
-                ),
               ),
             ),
             Positioned(
@@ -483,28 +470,7 @@ class _ImageFormFieldState extends State<ImageFormField> with PlatformChecker {
   }
 
   void _viewImage(ImageModel selectedImage) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final navigator = Navigator.of(context);
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Stack(
-            children: [
-              Image(image: selectedImage),
-              Positioned(
-                top: 0,
-                right: 0,
-                child: IconButton.filled(
-                  onPressed: () => navigator.pop(),
-                  icon: Icon(Icons.close),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    selectedImage.showPreview(context);
   }
 
   void _pickFile(
