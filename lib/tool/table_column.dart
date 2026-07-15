@@ -1,3 +1,4 @@
+import 'package:fe_pos/widget/protected_image.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:trina_grid/trina_grid.dart';
@@ -252,15 +253,17 @@ class ImageTableColumnType extends TableColumnType<ImageModel> {
             onTap: () => _openImageViewer(context, value),
             child: SizedBox(
               width: 60,
-              child: Image(
-                image: ResizeImage(
-                  value,
-                  width: 60,
-                  height:
-                      ((value.size?.height ?? 1) *
-                              60 /
-                              (value.size?.width ?? 1))
-                          .toInt(),
+              child: ProtectedImage(
+                child: Image(
+                  image: ResizeImage(
+                    value,
+                    width: 60,
+                    height:
+                        ((value.size?.height ?? 1) *
+                                60 /
+                                (value.size?.width ?? 1))
+                            .toInt(),
+                  ),
                 ),
               ),
             ),
@@ -268,28 +271,7 @@ class ImageTableColumnType extends TableColumnType<ImageModel> {
   }
 
   void _openImageViewer(BuildContext context, ImageModel value) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final navigator = Navigator.of(context);
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Stack(
-            children: [
-              Image(image: value),
-              Positioned(
-                top: 0,
-                right: 0,
-                child: IconButton.filled(
-                  onPressed: () => navigator.pop(),
-                  icon: Icon(Icons.close),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    value.showPreview(context);
   }
 
   @override
