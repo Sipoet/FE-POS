@@ -61,54 +61,35 @@ class _BookEmployeeAttendanceFormPageState
   Future<BookEmployeeAttendance?> createOrUpdateRecord(
     BookEmployeeAttendance record,
   ) {
-    Map<String, dynamic> body = {
-      'data': {
-        'type': 'book_employee_attendance',
-        'attributes': record.asJson(),
-      },
-    };
-    Future<dynamic> request;
-    if (record.id == null) {
-      request = _server.post('book_employee_attendances', body: body);
-    } else {
-      request = _server.put(
-        'book_employee_attendances/${record.id}',
-        body: body,
-      );
-    }
-    return request.then(
-      (response) {
-        if ([200, 201].contains(response.statusCode)) {
-          var data = response.data['data'];
-          setState(() {
-            record.setFromJson(data, included: response.data['included'] ?? []);
-            final tabManager = context.read<TabManager>();
-            tabManager.changeTabHeader(
-              widget,
-              'Edit BookEmployeeAttendance ${record.id}',
-            );
-          });
-
-          flash.show(
-            const Text('Berhasil disimpan'),
-            ToastificationType.success,
-          );
-          return record;
-        } else if (response.statusCode == 409) {
-          var data = response.data;
-          flash.showBanner(
-            title: data['message'],
-            description: (data['errors'] ?? []).join('\n'),
-            messageType: ToastificationType.error,
-          );
-        }
-        return null;
-      },
-      onError: (error, stackTrace) {
-        defaultErrorResponse(error: error);
-        return null;
-      },
-    );
+    return record
+        .save(_server)
+        .then(
+          (isSuccess) {
+            if (isSuccess) {
+              setState(() {
+                final tabManager = context.read<TabManager>();
+                tabManager.changeTabHeader(
+                  widget,
+                  'Edit Pesan Absensi Karyawan ${record.id}',
+                );
+              });
+              flash.show(
+                const Text('Berhasil disimpan'),
+                ToastificationType.success,
+              );
+            } else {
+              flash.showBanner(
+                title: 'Gagal Simpan Pesan Absensi Karyawan',
+                description: record.errors.join('\n'),
+                messageType: ToastificationType.error,
+              );
+            }
+          },
+          onError: (error, stackTrace) {
+            defaultErrorResponse(error: error, backtrace: stackTrace);
+            return null;
+          },
+        );
   }
 
   void multipleCreate() {
@@ -136,7 +117,7 @@ class _BookEmployeeAttendanceFormPageState
     final tabManager = context.read<TabManager>();
     setState(() {
       tabManager.addTab(
-        'Edit BookEmployeeAttendance ${line.id}',
+        'Edit Pesan Absensi Karyawan ${line.id}',
         BookEmployeeAttendanceFormPage(
           key: ObjectKey(line),
           bookEmployeeAttendance: line,

@@ -50,10 +50,8 @@ class Supplier extends Model with SaveNDestroyModel {
     'address': address,
     'city': city,
     'description': description,
-    'contact_numbers_attributes': contactNumbers
-        .map((e) => e.asJson())
-        .toList(),
-    'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
+    'contact_numbers_attributes': contactNumbers,
+    'taggings_attributes': taggings,
   };
 
   void setTags(List<Tag> newTags) {

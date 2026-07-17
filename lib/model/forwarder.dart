@@ -50,9 +50,7 @@ class Forwarder extends Model with SaveNDestroyModel {
     'address': address,
     'city': city,
     'description': description,
-    'contact_numbers_attributes': contactNumbers
-        .map((e) => e.asJson())
-        .toList(),
+    'contact_numbers_attributes': contactNumbers,
   };
 
   @override

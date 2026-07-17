@@ -21,7 +21,7 @@ class ProductCategory extends Model with SaveNDestroyModel {
     'name': name,
     'description': description,
     'parent': parent,
-    'tag_key_groups_attributes': tagKeyGroups.map((e) => e.asJson()).toList(),
+    'tag_key_groups_attributes': tagKeyGroups,
   };
   @override
   String get path => 'product_categories';

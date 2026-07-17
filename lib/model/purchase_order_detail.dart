@@ -35,11 +35,11 @@ class PurchaseOrderDetail extends Model {
   Map<String, dynamic> toMap() => {
     'product_code': productCode,
     'quantity': quantity,
-    'discount_detail': discountDetails?.map((e) => e.asJson()).toList(),
+    'discount_detail': discountDetails,
     'product': product,
     'product_id': product?.id,
     'discount_amount': discountAmount,
-    'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
+    'taggings_attributes': taggings,
     'subtotal': subtotal,
     'price': price,
     'row_number': rowNumber,

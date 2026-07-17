@@ -83,19 +83,11 @@ class Product extends Model with SaveNDestroyModel, Tagable {
     'sell_price': sellPrice,
     'stock_account': stockAccount,
     'stock_account_id': stockAccount?.id,
-    'product_measurements_attributes': productMeasurements
-        .map((e) => e.asJson())
-        .toList(),
-    'stock_keeping_units_attributes': stockKeepingUnits
-        .map((e) => e.asJson())
-        .toList(),
-    'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
-    'product_sell_prices_attributes': productSellPrices
-        .map((e) => e.asJson())
-        .toList(),
-    // 'product_variants_attributes': itemVariants
-    //     .map((e) => e.asJson())
-    //     .toList(),
+    'product_measurements_attributes': productMeasurements,
+    'stock_keeping_units_attributes': stockKeepingUnits,
+    'taggings_attributes': taggings,
+    'product_sell_prices_attributes': productSellPrices,
+    'item_variants_attributes': itemVariants,
   };
 
   List<ImageModel> get markedDestroyedImages =>

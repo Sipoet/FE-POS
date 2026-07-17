@@ -89,9 +89,7 @@ class PurchaseShipment extends Model with SaveNDestroyModel {
     'location_id': location?.id,
     'grandtotal': grandtotal,
     'description': description,
-    'purchase_shipment_details_attributes': purchaseShipmentDetails
-        .map((e) => e.asJson())
-        .toList(),
+    'purchase_shipment_details_attributes': purchaseShipmentDetails,
   };
   @override
   String get path => 'purchase_shipments';

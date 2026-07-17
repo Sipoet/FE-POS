@@ -314,9 +314,7 @@ class Employee extends Model {
     'created_at': createdAt,
     'updated_at': updatedAt,
     'bank_register_name': bankRegisterName,
-    'employee_day_offs_attributes': employeeDayOffs
-        .map((e) => e.asJson())
-        .toList(),
+    'employee_day_offs_attributes': employeeDayOffs,
   };
 
   @override

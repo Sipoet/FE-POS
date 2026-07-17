@@ -15,7 +15,7 @@ class TagKey extends Model with SaveNDestroyModel {
   Map<String, dynamic> toMap() => {
     'name': name,
     'group': group,
-    'tags_attributes': tags.map((e) => e.asJson()).toList(),
+    'tags_attributes': tags,
   };
 
   @override

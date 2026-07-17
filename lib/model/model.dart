@@ -109,16 +109,16 @@ abstract class Model with ChangeNotifier {
 
   String toJson() => jsonEncoder.convert(asJson());
 
-  Future<Map<String, dynamic>> asJson() async {
+  Map<String, dynamic> asJson() {
     Map<String, dynamic> json = asMap();
     for (String key in json.keys.toList()) {
       var object = json[key];
-      json[key] = await _convert(object);
+      json[key] = _convert(object);
     }
     return json;
   }
 
-  Future<dynamic> _convert(Object? object) async {
+  dynamic _convert(Object? object) {
     if (object is Money) {
       return object.value;
     } else if (object is Percentage) {
@@ -139,10 +139,10 @@ abstract class Model with ChangeNotifier {
       return MultipartFile.fromFileSync(object.path);
     } else if (object is TimeOfDay) {
       return object.asJson();
+    } else if (object is List<Model>) {
+      return object.map((model) => model.asJson()).toList();
     } else if (object is Iterable) {
-      return Future.wait<dynamic>(
-        object.map<Future<dynamic>>((e) => _convert(e)).toList(),
-      );
+      return object.map((e) => _convert(e)).toList();
     } else {
       return object;
     }
@@ -299,6 +299,9 @@ mixin SaveNDestroyModel on Model {
   }) async {
     for (String key in data.keys.toList()) {
       var object = data[key];
+      if (object is Future) {
+        object = await object;
+      }
       String formKey = formDataKey(parentKey + [key]);
       if (object == null) {
         formData.fields.add(MapEntry(formKey, ''));
@@ -370,7 +373,7 @@ mixin SaveNDestroyModel on Model {
   }) async {
     Future request;
     dynamic body;
-    Map<String, dynamic> attributes = await asJson();
+    Map<String, dynamic> attributes = asJson();
     if (only != null) {
       attributes.removeWhere((key, value) => !only.contains(key));
     }

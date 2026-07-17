@@ -5,7 +5,7 @@ export 'package:fe_pos/tool/custom_type.dart';
 export 'package:fe_pos/model/payroll.dart';
 export 'package:fe_pos/model/payroll_type.dart';
 
-class BookEmployeeAttendance extends Model {
+class BookEmployeeAttendance extends Model with SaveNDestroyModel {
   String? description;
   Employee? employee;
   Date startDate;

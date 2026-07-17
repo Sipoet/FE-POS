@@ -71,7 +71,7 @@ class PurchaseOrder extends Model with SaveNDestroyModel, Tagable {
     'location_id': location?.id,
     'location_name': location?.name,
     'grandtotal': grandtotal,
-    'discount_detail': discountDetails?.map((e) => e.asJson()).toList(),
+    'discount_detail': discountDetails,
     'cost_total': costTotal,
     'sub_total': subtotal,
     'discount_total': discountTotal,
@@ -81,11 +81,9 @@ class PurchaseOrder extends Model with SaveNDestroyModel, Tagable {
     'tax_type': taxType,
     'tax_value': taxValue,
     'documents': documents,
-    'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
-    'cost_details_attributes': costDetails.map((e) => e.asJson()).toList(),
-    'purchase_order_details_attributes': purchaseOrderDetails
-        .map((e) => e.asJson())
-        .toList(),
+    'taggings_attributes': taggings,
+    'cost_details_attributes': costDetails,
+    'purchase_order_details_attributes': purchaseOrderDetails,
   };
 
   String? get supplierName => supplier?.name;

@@ -32,10 +32,8 @@ class ItemVariant extends Product with SaveNDestroyModel {
     'parent_id': parentId,
     'supplier_product_code': supplierProductCode,
     'image': image,
-    'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
-    'product_sell_price_attributes': productSellPrices
-        .map((e) => e.asJson())
-        .toList(),
+    'taggings_attributes': taggings,
+    'product_sell_price_attributes': productSellPrices,
   };
 
   @override

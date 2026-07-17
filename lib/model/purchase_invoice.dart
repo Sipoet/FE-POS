@@ -126,7 +126,7 @@ class PurchaseInvoice extends Model with SaveNDestroyModel, Tagable {
     'status': status,
     'purchase_order': purchaseOrder,
     'purchase_order_id': purchaseOrder?.id,
-    'discount_detail': discountDetails?.map((e) => e.asJson()).toList(),
+    'discount_detail': discountDetails,
     'cost_total': costTotal,
     'sub_total': subtotal,
     'discount_total': discountTotal,
@@ -138,11 +138,9 @@ class PurchaseInvoice extends Model with SaveNDestroyModel, Tagable {
     'documents': documents,
     'invoice_group': invoiceGroup,
     'supplier_transaction_number': supplierTransactionNumber,
-    'taggings_attributes': taggings.map((e) => e.asJson()).toList(),
-    'cost_details_attributes': costDetails.map((e) => e.asJson()).toList(),
-    'purchase_invoice_details_attributes': purchaseInvoiceDetails
-        .map((e) => e.asJson())
-        .toList(),
+    'taggings_attributes': taggings,
+    'cost_details_attributes': costDetails,
+    'purchase_invoice_details_attributes': purchaseInvoiceDetails,
   };
 
   String? get supplierName => supplier?.name;
