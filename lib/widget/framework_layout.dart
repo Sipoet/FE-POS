@@ -481,17 +481,10 @@ class _FrameworkLayoutState extends State<FrameworkLayout>
         children: [
           Menu(
             icon: Icons.shopping_bag,
-            label: 'Transfer Item',
-            key: 'transfer',
-            isDisabled: !setting.isAuthorize('ipos/transfers', 'read'),
-            pageFunct: () => const TransferPage(),
-          ),
-          Menu(
-            icon: Icons.shopping_bag,
-            label: 'Detail Transfer Item',
-            key: 'transferItem',
-            isDisabled: !setting.isAuthorize('ipos/transfers', 'read'),
-            pageFunct: () => const TransferItemPage(),
+            label: 'Stok Transfer',
+            key: 'stock_transfer',
+            isDisabled: !setting.isAuthorize('transfers', 'read'),
+            pageFunct: () => const StockTransferPage(),
           ),
           Menu(
             icon: Icons.shelves,
