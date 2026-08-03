@@ -26,13 +26,14 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
   late Flash flash;
   late final List<TableColumn> columns;
   List<FilterData> _filter = [];
+  late final Authorizer authorizer;
 
   @override
   void initState() {
     server = context.read<Server>();
     defaultSetting = context.read<DefaultSetting>();
     flash = Flash();
-    final authorizer = context.read<Authorizer>();
+    authorizer = context.read<Authorizer>();
 
     columns = authorizer.tableColumn('product');
     super.initState();
@@ -59,20 +60,14 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
 
   void deleteRecord(Product product) {
     showConfirmDialog(
-      message: 'Apakah Yakin Hapus Produk ${product.supplierProductCode}',
+      message: 'Apakah Yakin Hapus Produk ${product.barcode}',
       onSubmit: () {
         product.destroy(server).then((result) {
           if (result) {
-            flash.show(
-              Text('Sukses hapus ${product.supplierProductCode}'),
-              .success,
-            );
+            flash.show(Text('Sukses hapus ${product.barcode}'), .success);
             refreshTable();
           } else {
-            flash.show(
-              Text('Gagal hapus ${product.supplierProductCode}'),
-              .error,
-            );
+            flash.show(Text('Gagal hapus ${product.barcode}'), .error);
           }
         });
       },
@@ -123,27 +118,30 @@ class _ProductPageState extends State<ProductPage> with DefaultResponse {
             height: bodyScreenHeight,
             child: CustomAsyncDataTable<Product>(
               additionalHeaderActions: (menuController) => [
-                MenuItemButton(
-                  onPressed: () {
-                    menuController.close();
-                    final product = ProductClass().initModel();
-                    product.baseUom = defaultSetting.uom;
-                    product.stockAccount = defaultSetting.stockAccount;
-                    openForm(product);
-                  },
-                  child: Text('Tambah Produk'),
-                ),
+                if (authorizer.isAuthorize('product', 'create'))
+                  MenuItemButton(
+                    onPressed: () {
+                      menuController.close();
+                      final product = ProductClass().initModel();
+                      product.baseUom = defaultSetting.uom;
+                      product.stockAccount = defaultSetting.stockAccount;
+                      openForm(product);
+                    },
+                    child: Text('Tambah Produk'),
+                  ),
               ],
               rowAction: (model) => Row(
                 children: [
-                  IconButton(
-                    onPressed: () => openForm(model),
-                    icon: Icon(Icons.edit),
-                  ),
-                  IconButton(
-                    onPressed: () => deleteRecord(model),
-                    icon: Icon(Icons.delete),
-                  ),
+                  if (authorizer.isAuthorize('product', 'update'))
+                    IconButton(
+                      onPressed: () => openForm(model),
+                      icon: Icon(Icons.edit),
+                    ),
+                  if (authorizer.isAuthorize('product', 'destroy'))
+                    IconButton(
+                      onPressed: () => deleteRecord(model),
+                      icon: Icon(Icons.delete),
+                    ),
                 ],
               ),
               onLoaded: (stateManager) => _source = stateManager,

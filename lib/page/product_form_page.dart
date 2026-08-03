@@ -429,16 +429,20 @@ class _ProductFormPageState extends State<ProductFormPage>
                                 ),
                               ),
                             ),
-                            SizedBox(
-                              width: 250,
-                              child: CheckboxListTile(
-                                title: Text('Pakai Batch di Barcode?'),
-                                value: product.barcodeUsingBatch,
-                                onChanged: (value) => setState(() {
-                                  product.barcodeUsingBatch = value!;
-                                }),
+                            if (_setting.canShow(
+                              'product',
+                              'barcode_using_batch',
+                            ))
+                              SizedBox(
+                                width: 250,
+                                child: CheckboxListTile(
+                                  title: Text('Pakai Batch di Barcode?'),
+                                  value: product.barcodeUsingBatch,
+                                  onChanged: (value) => setState(() {
+                                    product.barcodeUsingBatch = value!;
+                                  }),
+                                ),
                               ),
-                            ),
                             if (_setting.canShow('product', 'sell_price'))
                               SizedBox(
                                 width: 300,
@@ -464,53 +468,63 @@ class _ProductFormPageState extends State<ProductFormPage>
                                   ],
                                 ),
                               ),
-                            SizedBox(
-                              width: 250,
-                              child: AsyncDropdown<Supplier>(
-                                textOnSearch: (model) => " ${model.name}",
-                                label: Text(
-                                  _setting.columnName('product', 'supplier'),
-                                  style: DefaultResponse.labelStyle,
+                            Visibility(
+                              visible: _setting.canShow('product', 'supplier'),
+                              child: SizedBox(
+                                width: 250,
+                                child: AsyncDropdown<Supplier>(
+                                  textOnSearch: (model) => " ${model.name}",
+                                  label: Text(
+                                    _setting.columnName('product', 'supplier'),
+                                    style: DefaultResponse.labelStyle,
+                                  ),
+                                  allowClear: false,
+                                  isDense: true,
+                                  selected: product.supplier,
+                                  onChanged: (model) =>
+                                      product.supplier = model,
+                                  modelClass: SupplierClass(),
                                 ),
-                                allowClear: false,
-                                isDense: true,
-                                selected: product.supplier,
-                                onChanged: (model) => product.supplier = model,
-                                modelClass: SupplierClass(),
                               ),
                             ),
-                            SizedBox(
-                              width: 250,
-                              child: AsyncDropdown<Account>(
-                                textOnSearch: (model) => " ${model.name}",
-                                label: Text(
-                                  "${_setting.columnName('product', 'stock_account')}*",
-                                  style: DefaultResponse.labelStyle,
+                            Visibility(
+                              visible: _setting.canShow(
+                                'product',
+                                'stock_account',
+                              ),
+                              child: SizedBox(
+                                width: 250,
+                                child: AsyncDropdown<Account>(
+                                  textOnSearch: (model) => " ${model.name}",
+                                  label: Text(
+                                    "${_setting.columnName('product', 'stock_account')}*",
+                                    style: DefaultResponse.labelStyle,
+                                  ),
+                                  request: (queryRequest) {
+                                    queryRequest.filters.add(
+                                      ComparisonFilterData(
+                                        key: 'is_header',
+                                        value: false,
+                                      ),
+                                    );
+                                    return AccountClass().finds(
+                                      _server,
+                                      queryRequest,
+                                    );
+                                  },
+                                  validator: (model) {
+                                    if (model == null) {
+                                      return 'harus diisi';
+                                    }
+                                    return null;
+                                  },
+                                  allowClear: false,
+                                  isDense: true,
+                                  selected: product.stockAccount,
+                                  onChanged: (model) =>
+                                      product.stockAccount = model,
+                                  modelClass: AccountClass(),
                                 ),
-                                request: (queryRequest) {
-                                  queryRequest.filters.add(
-                                    ComparisonFilterData(
-                                      key: 'is_header',
-                                      value: false,
-                                    ),
-                                  );
-                                  return AccountClass().finds(
-                                    _server,
-                                    queryRequest,
-                                  );
-                                },
-                                validator: (model) {
-                                  if (model == null) {
-                                    return 'harus diisi';
-                                  }
-                                  return null;
-                                },
-                                allowClear: false,
-                                isDense: true,
-                                selected: product.stockAccount,
-                                onChanged: (model) =>
-                                    product.stockAccount = model,
-                                modelClass: AccountClass(),
                               ),
                             ),
                             SizedBox(
@@ -775,116 +789,121 @@ class _ProductFormPageState extends State<ProductFormPage>
                                 ),
                               ),
                             ),
-                            ExpansionPanel(
-                              isExpanded: panelPool[1] == true,
-                              canTapOnHeader: true,
-                              headerBuilder: (context, isExpanded) => Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 10.0,
-                                  top: 15,
+                            if (_setting.canShow('product', 'base_uom'))
+                              ExpansionPanel(
+                                isExpanded: panelPool[1] == true,
+                                canTapOnHeader: true,
+                                headerBuilder: (context, isExpanded) => Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 10.0,
+                                    top: 15,
+                                  ),
+                                  child: Text(
+                                    'Produk Satuan',
+                                    style: DefaultResponse.labelStyle,
+                                  ),
                                 ),
-                                child: Text(
-                                  'Produk Satuan',
-                                  style: DefaultResponse.labelStyle,
-                                ),
-                              ),
-                              body: TableForm<ProductMeasurement>(
-                                columns: [
-                                  TableFormColumn(
-                                    title: 'Satuan',
-                                    headerBuilder: (context) => Text(
-                                      'Satuan',
-                                      style: DefaultResponse.labelStyle,
-                                    ),
-                                    rowBuilder:
-                                        (
-                                          context,
-                                          productMeasurement,
-                                          index,
-                                        ) => AsyncDropdown<UnitOfMeasurement>(
-                                          selected: productMeasurement.uom,
-                                          textOnSearch: (uom) => uom.name ?? '',
-                                          modelClass: UnitOfMeasurementClass(),
-                                          onChanged: (model) =>
-                                              productMeasurement.uom = model,
-                                        ),
-                                  ),
-                                  TableFormColumn(
-                                    title: 'Konversi',
-                                    isNumeric: true,
-                                    headerBuilder: (context) => Text(
-                                      'Konversi',
-                                      style: DefaultResponse.labelStyle,
-                                    ),
-                                    rowBuilder:
-                                        (
-                                          context,
-                                          productMeasurement,
-                                          index,
-                                        ) => NumberFormField<double>(
-                                          initialValue:
-                                              productMeasurement.conversion,
-                                          validator: (value) {
-                                            if (value == null) {
-                                              return 'harus diisi';
-                                            }
-                                            if (value < 0) {
-                                              return 'tidak boleh negatif';
-                                            }
-                                            return null;
-                                          },
-                                          onChanged: (value) =>
-                                              productMeasurement.conversion =
-                                                  value ?? 0,
-                                        ),
-                                  ),
-                                ],
-                                actionColumn: TableFormColumn(
-                                  desktopWidth: FixedColumnWidth(130),
-                                  headerBuilder: (context) => Row(
-                                    mainAxisAlignment: .spaceBetween,
-                                    children: [
-                                      IconButton(
-                                        onPressed: () => setState(() {
-                                          product.productMeasurements.add(
-                                            ProductMeasurementClass()
-                                                .initModel(),
-                                          );
-                                        }),
-                                        icon: Icon(Icons.add),
+                                body: TableForm<ProductMeasurement>(
+                                  columns: [
+                                    TableFormColumn(
+                                      title: 'Satuan',
+                                      headerBuilder: (context) => Text(
+                                        'Satuan',
+                                        style: DefaultResponse.labelStyle,
                                       ),
-                                      IconButton(
-                                        onPressed: () async {
-                                          if (await showConfirmDialog2(
-                                            message:
-                                                'Yakin Mau Hapus Semua Satuan Produk',
-                                          )) {
-                                            setState(() {
-                                              product.productMeasurements
-                                                  .removeAll();
-                                            });
-                                          }
-                                        },
-                                        icon: Icon(Icons.delete),
-                                      ),
-                                    ],
-                                  ),
-                                  rowBuilder:
-                                      (context, productMeasurement, index) =>
-                                          Align(
-                                            alignment: .topRight,
-                                            child: IconButton(
-                                              onPressed: () => setState(() {
-                                                product.productMeasurements
-                                                    .remove(productMeasurement);
-                                              }),
-                                              icon: Icon(Icons.delete),
-                                            ),
+                                      rowBuilder:
+                                          (
+                                            context,
+                                            productMeasurement,
+                                            index,
+                                          ) => AsyncDropdown<UnitOfMeasurement>(
+                                            selected: productMeasurement.uom,
+                                            textOnSearch: (uom) =>
+                                                uom.name ?? '',
+                                            modelClass:
+                                                UnitOfMeasurementClass(),
+                                            onChanged: (model) =>
+                                                productMeasurement.uom = model,
                                           ),
+                                    ),
+                                    TableFormColumn(
+                                      title: 'Konversi',
+                                      isNumeric: true,
+                                      headerBuilder: (context) => Text(
+                                        'Konversi',
+                                        style: DefaultResponse.labelStyle,
+                                      ),
+                                      rowBuilder:
+                                          (
+                                            context,
+                                            productMeasurement,
+                                            index,
+                                          ) => NumberFormField<double>(
+                                            initialValue:
+                                                productMeasurement.conversion,
+                                            validator: (value) {
+                                              if (value == null) {
+                                                return 'harus diisi';
+                                              }
+                                              if (value < 0) {
+                                                return 'tidak boleh negatif';
+                                              }
+                                              return null;
+                                            },
+                                            onChanged: (value) =>
+                                                productMeasurement.conversion =
+                                                    value ?? 0,
+                                          ),
+                                    ),
+                                  ],
+                                  actionColumn: TableFormColumn(
+                                    desktopWidth: FixedColumnWidth(130),
+                                    headerBuilder: (context) => Row(
+                                      mainAxisAlignment: .spaceBetween,
+                                      children: [
+                                        IconButton(
+                                          onPressed: () => setState(() {
+                                            product.productMeasurements.add(
+                                              ProductMeasurementClass()
+                                                  .initModel(),
+                                            );
+                                          }),
+                                          icon: Icon(Icons.add),
+                                        ),
+                                        IconButton(
+                                          onPressed: () async {
+                                            if (await showConfirmDialog2(
+                                              message:
+                                                  'Yakin Mau Hapus Semua Satuan Produk',
+                                            )) {
+                                              setState(() {
+                                                product.productMeasurements
+                                                    .removeAll();
+                                              });
+                                            }
+                                          },
+                                          icon: Icon(Icons.delete),
+                                        ),
+                                      ],
+                                    ),
+                                    rowBuilder:
+                                        (context, productMeasurement, index) =>
+                                            Align(
+                                              alignment: .topRight,
+                                              child: IconButton(
+                                                onPressed: () => setState(() {
+                                                  product.productMeasurements
+                                                      .remove(
+                                                        productMeasurement,
+                                                      );
+                                                }),
+                                                icon: Icon(Icons.delete),
+                                              ),
+                                            ),
+                                  ),
+                                  rows: product.productMeasurements,
                                 ),
-                                rows: product.productMeasurements,
                               ),
-                            ),
                             ExpansionPanel(
                               isExpanded: panelPool[2] == true,
                               canTapOnHeader: true,

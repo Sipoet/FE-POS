@@ -65,7 +65,7 @@ export 'consignment_in_order_page.dart';
 export 'consignment_in_page.dart';
 
 // inventory
-export 'transfer_page.dart';
+export 'stock_transfer_page.dart';
 export 'transfer_item_page.dart';
 export 'stock_location_page.dart';
 
