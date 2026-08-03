@@ -109,42 +109,51 @@ abstract class Model with ChangeNotifier {
 
   String toJson() => jsonEncoder.convert(asJson());
 
-  Map<String, dynamic> asJson() {
+  Map<String, dynamic> asJson({bool ignoreErrorConvert = true}) {
     Map<String, dynamic> json = asMap();
     for (String key in json.keys.toList()) {
       var object = json[key];
-      json[key] = _convert(object);
+      json[key] = _convert(object, ignoreErrorConvert: ignoreErrorConvert);
     }
     return json;
   }
 
-  dynamic _convert(Object? object) {
-    if (object is Money) {
-      return object.value;
-    } else if (object is Percentage) {
-      return object.value;
-    } else if (object is Date) {
-      return object.toIso8601String();
-    } else if (object is DateTime) {
-      return object.toUtc().toIso8601String();
-    } else if (object is Enum) {
-      return object.toString();
-    } else if (object is String) {
-      return object.trim();
-    } else if (object is FileAttachment) {
-      return object.dataAsync();
-    } else if (object is Model) {
-      return object.id;
-    } else if (object is File) {
-      return MultipartFile.fromFileSync(object.path);
-    } else if (object is TimeOfDay) {
-      return object.asJson();
-    } else if (object is List<Model>) {
-      return object.map((model) => model.asJson()).toList();
-    } else if (object is Iterable) {
-      return object.map((e) => _convert(e)).toList();
-    } else {
-      return object;
+  dynamic _convert(Object? object, {bool ignoreErrorConvert = true}) {
+    try {
+      if (object is Money) {
+        return object.value;
+      } else if (object is Percentage) {
+        return object.value;
+      } else if (object is Date) {
+        return object.toIso8601String();
+      } else if (object is DateTime) {
+        return object.toUtc().toIso8601String();
+      } else if (object is Enum) {
+        return object.toString();
+      } else if (object is String) {
+        return object.trim();
+      } else if (object is FileAttachment) {
+        throw 'FileAttachment not supported convert as json';
+      } else if (object is Model) {
+        return object.id;
+      } else if (object is File) {
+        throw 'File not supported convert as json';
+      } else if (object is TimeOfDay) {
+        return object.asJson();
+      } else if (object is List<Model>) {
+        return object.map((model) => model.asJson()).toList();
+      } else if (object is Iterable) {
+        return object.map((e) => _convert(e)).toList();
+      } else {
+        return object;
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      if (ignoreErrorConvert) {
+        return null;
+      } else {
+        rethrow;
+      }
     }
   }
 
@@ -299,8 +308,8 @@ mixin SaveNDestroyModel on Model {
   }) async {
     for (String key in data.keys.toList()) {
       var object = data[key];
-      if (object is Future) {
-        object = await object;
+      if (object is FileAttachment) {
+        object = await object.dataAsync();
       }
       String formKey = formDataKey(parentKey + [key]);
       if (object == null) {
@@ -331,6 +340,12 @@ mixin SaveNDestroyModel on Model {
         formData.files.add(MapEntry(formKey, object));
       } else if (object is TimeOfDay) {
         formData.fields.add(MapEntry(formKey, object.asJson()));
+      } else if (object is Map<String, dynamic>) {
+        await asFormData(
+          data: object,
+          formData: formData,
+          parentKey: parentKey + [key],
+        );
       } else if (object is List || object is Set) {
         for (var row in object) {
           if (row is MultipartFile) {
@@ -373,15 +388,20 @@ mixin SaveNDestroyModel on Model {
   }) async {
     Future request;
     dynamic body;
-    Map<String, dynamic> attributes = asJson();
-    if (only != null) {
-      attributes.removeWhere((key, value) => !only.contains(key));
-    }
+
     if (contentType == .json) {
+      Map<String, dynamic> attributes = asJson();
+      if (only != null) {
+        attributes.removeWhere((key, value) => !only.contains(key));
+      }
       body = {
         'data': {'id': id ?? '', 'type': modelName, 'attributes': attributes},
       };
     } else {
+      Map<String, dynamic> attributes = asMap();
+      if (only != null) {
+        attributes.removeWhere((key, value) => !only.contains(key));
+      }
       body = FormData();
       await asFormData(
         formData: body,

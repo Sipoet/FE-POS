@@ -39,51 +39,35 @@ class _PayrollTypeFormPageState extends State<PayrollTypeFormPage>
 
   void _submit() async {
     final server = context.read<Server>();
-    Map<String, dynamic> body = {
-      'data': {
-        'type': 'payrollType',
-        'id': payrollType.id,
-        'attributes': payrollType.asJson(),
-      },
-    };
-    Future request;
-    if (payrollType.id == null) {
-      request = server.post('payroll_types', body: body);
-    } else {
-      request = server.put('payroll_types/${payrollType.id}', body: body);
-    }
-    request.then(
-      (response) {
-        if ([200, 201].contains(response.statusCode)) {
-          var data = response.data['data'];
-          setState(() {
-            payrollType.setFromJson(
-              data,
-              included: response.data['included'] ?? [],
-            );
-            var tabManager = context.read<TabManager>();
-            tabManager.changeTabHeader(
-              widget,
-              'Edit Payroll Type ${payrollType.name}',
-            );
-          });
-          flash.show(
-            const Text('Berhasil disimpan'),
-            ToastificationType.success,
-          );
-        } else if (response.statusCode == 409) {
-          var data = response.data;
-          flash.showBanner(
-            title: data['message'],
-            description: data['errors'].join('\n'),
-            messageType: ToastificationType.error,
-          );
-        }
-      },
-      onError: (error, stackTrace) {
-        defaultErrorResponse(error: error);
-      },
-    );
+
+    payrollType
+        .save(server)
+        .then(
+          (isSuccess) {
+            if (isSuccess) {
+              setState(() {
+                var tabManager = context.read<TabManager>();
+                tabManager.changeTabHeader(
+                  widget,
+                  'Edit Tipe Payroll ${payrollType.name}',
+                );
+              });
+              flash.show(
+                const Text('Berhasil disimpan'),
+                ToastificationType.success,
+              );
+            } else {
+              flash.showBanner(
+                title: 'Gagal Simpan',
+                description: payrollType.errors.join('\n'),
+                messageType: ToastificationType.error,
+              );
+            }
+          },
+          onError: (error, stackTrace) {
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
   static const labelStyle = TextStyle(

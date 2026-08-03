@@ -87,59 +87,35 @@ class _PayrollFormPageState extends State<PayrollFormPage>
     for (final (int index, PayrollLine payrollLine) in payroll.lines.indexed) {
       payrollLine.row = index + 1;
     }
-    Map<String, dynamic> body = {
-      'data': {
-        'type': 'payroll',
-        'attributes': payroll.asJson(),
-        'relationships': {
-          'payroll_lines': {
-            'data': payroll.lines
-                .map<Map>(
-                  (payrollLine) => {
-                    'id': payrollLine.id,
-                    'type': 'payroll_line',
-                    'attributes': payrollLine.asJson(),
-                  },
-                )
-                .toList(),
+    payroll
+        .save(server)
+        .then(
+          (isSuccess) {
+            if (isSuccess) {
+              setState(() {
+                var tabManager = context.read<TabManager>();
+                tabManager.changeTabHeader(
+                  widget,
+                  'Edit payroll ${payroll.name}',
+                );
+              });
+              fetchPayroll();
+              flash.show(
+                const Text('Berhasil disimpan'),
+                ToastificationType.success,
+              );
+            } else {
+              flash.showBanner(
+                title: 'Gagal Simpan',
+                description: payroll.errors.join('\n'),
+                messageType: ToastificationType.error,
+              );
+            }
           },
-        },
-      },
-    };
-    Future request;
-    if (payroll.id == null) {
-      request = server.post('payrolls', body: body);
-    } else {
-      request = server.put('payrolls/${payroll.id}', body: body);
-    }
-    request.then(
-      (response) {
-        if ([200, 201].contains(response.statusCode)) {
-          var data = response.data['data'];
-          setState(() {
-            payroll.id = int.tryParse(data['id']);
-            payroll.name = data['attributes']['name'];
-            var tabManager = context.read<TabManager>();
-            tabManager.changeTabHeader(widget, 'Edit payroll ${payroll.name}');
-          });
-          fetchPayroll();
-          flash.show(
-            const Text('Berhasil disimpan'),
-            ToastificationType.success,
-          );
-        } else if (response.statusCode == 409) {
-          var data = response.data;
-          flash.showBanner(
-            title: data['message'],
-            description: data['errors'].join('\n'),
-            messageType: ToastificationType.error,
-          );
-        }
-      },
-      onError: (error, stackTrace) {
-        defaultErrorResponse(error: error);
-      },
-    );
+          onError: (error, stackTrace) {
+            defaultErrorResponse(error: error, backtrace: stackTrace);
+          },
+        );
   }
 
   TextEditingValue numberPattern(
@@ -310,6 +286,7 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                           ),
                         ],
                         rows: payroll.lines
+                            .where((line) => !line.isDestroyed)
                             .map<DataRow>(
                               (payrollLine) => DataRow(
                                 key: ObjectKey(payrollLine),
@@ -465,7 +442,13 @@ class _PayrollFormPageState extends State<PayrollFormPage>
                                         IconButton(
                                           onPressed: () {
                                             setState(() {
-                                              payroll.lines.remove(payrollLine);
+                                              if (payrollLine.isNewRecord) {
+                                                payroll.lines.remove(
+                                                  payrollLine,
+                                                );
+                                              } else {
+                                                payrollLine.flagDestroy();
+                                              }
                                             });
                                           },
                                           icon: const Icon(Icons.close_rounded),

@@ -1,7 +1,7 @@
 import 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-class PayrollType extends Model {
+class PayrollType extends Model with SaveNDestroyModel {
   String name;
   String initial;
   int order;

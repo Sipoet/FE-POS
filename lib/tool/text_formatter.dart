@@ -121,7 +121,7 @@ class CustomNumberInputFormatter extends TextInputFormatter {
   /// Specific length requirements for different format types
   static const Map<FormatType, int> _defaultMaxLengths = {
     FormatType.creditCard: 16,
-    FormatType.socialSecurity: 9,
+    FormatType.socialSecurity: 12,
     FormatType.postalCode: 5,
     FormatType.date: 8, // DDMMYYYY
     FormatType.time: 6, // HHMMSS
@@ -130,7 +130,7 @@ class CustomNumberInputFormatter extends TextInputFormatter {
   /// Specific grouping requirements for different format types
   static const Map<FormatType, List<int>> _groupingSizes = {
     FormatType.creditCard: [4, 4, 4, 4],
-    FormatType.socialSecurity: [3, 2, 4],
+    FormatType.socialSecurity: [4, 4, 4, 4],
     FormatType.bankAccount: [4, 4, 4, 4, 4, 3],
     FormatType.date: [2, 2, 4],
     FormatType.time: [2, 2, 2],

@@ -75,67 +75,34 @@ class _PaymentProviderFormPageState extends State<PaymentProviderFormPage>
 
   void _submit() async {
     final server = context.read<Server>();
-    Map<String, dynamic> body = {
-      'data': {
-        'type': 'payment_provider',
-        'attributes': paymentProvider.asJson(),
-        'relationships': {
-          'payment_provider_edcs': {
-            'data': paymentProvider.paymentProviderEdcs
-                .map<Map>(
-                  (paymentProviderEdc) => {
-                    'id': paymentProviderEdc.id,
-                    'type': 'payment_provider_edc',
-                    'attributes': paymentProviderEdc.asJson(),
-                  },
-                )
-                .toList(),
+    paymentProvider
+        .save(server)
+        .then(
+          (isSuccess) {
+            if (isSuccess) {
+              setState(() {
+                var tabManager = context.read<TabManager>();
+                tabManager.changeTabHeader(
+                  widget,
+                  'Edit Payment Provider ${paymentProvider.id}',
+                );
+              });
+              flash.show(
+                const Text('Berhasil disimpan'),
+                ToastificationType.success,
+              );
+            } else {
+              flash.showBanner(
+                title: 'Gagal Simpan',
+                description: paymentProvider.errors.join('\n'),
+                messageType: ToastificationType.error,
+              );
+            }
           },
-        },
-      },
-    };
-    Future request;
-    if (paymentProvider.id == null) {
-      request = server.post('payment_providers', body: body);
-    } else {
-      request = server.put(
-        'payment_providers/${paymentProvider.id}',
-        body: body,
-      );
-    }
-    request.then(
-      (response) {
-        if ([200, 201].contains(response.statusCode)) {
-          final data = response.data;
-          setState(() {
-            paymentProvider.setFromJson(
-              data['data'],
-              included: data['included'] ?? [],
-            );
-
-            var tabManager = context.read<TabManager>();
-            tabManager.changeTabHeader(
-              widget,
-              'Edit Payment Provider ${paymentProvider.id}',
-            );
-          });
-          flash.show(
-            const Text('Berhasil disimpan'),
-            ToastificationType.success,
-          );
-        } else if (response.statusCode == 409) {
-          final data = response.data;
-          flash.showBanner(
-            title: data['message'],
-            description: data['errors'].join('\n'),
-            messageType: ToastificationType.error,
-          );
-        }
-      },
-      onError: (error, stackTrace) {
-        defaultErrorResponse(error: error);
-      },
-    );
+          onError: (error, stackTrace) {
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
   @override
@@ -350,6 +317,7 @@ class _PaymentProviderFormPageState extends State<PaymentProviderFormPage>
                       ),
                     ],
                     rows: paymentProvider.paymentProviderEdcs
+                        .where((edc) => !edc.isDestroyed)
                         .map<DataRow>(
                           (paymentProviderEdc) => DataRow(
                             cells: [
@@ -418,8 +386,12 @@ class _PaymentProviderFormPageState extends State<PaymentProviderFormPage>
                                     ElevatedButton(
                                       onPressed: () {
                                         setState(() {
-                                          paymentProvider.paymentProviderEdcs
-                                              .remove(paymentProviderEdc);
+                                          if (paymentProviderEdc.isNewRecord) {
+                                            paymentProvider.paymentProviderEdcs
+                                                .remove(paymentProviderEdc);
+                                          } else {
+                                            paymentProviderEdc.flagDestroy();
+                                          }
                                         });
                                       },
                                       child: const Text('Hapus'),

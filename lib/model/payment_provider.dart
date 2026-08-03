@@ -34,7 +34,7 @@ enum PaymentProviderStatus implements EnumTranslation {
   }
 }
 
-class PaymentProvider extends Model {
+class PaymentProvider extends Model with SaveNDestroyModel {
   String bankOrProvider;
   String name;
   String currency;
@@ -68,6 +68,7 @@ class PaymentProvider extends Model {
     'swift_code': swiftCode,
     'created_at': createdAt,
     'updated_at': updatedAt,
+    'payment_provider_edcs_attributes': paymentProviderEdcs,
   };
   @override
   String get path => 'payment_providers';

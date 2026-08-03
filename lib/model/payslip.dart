@@ -45,7 +45,7 @@ enum PayslipStatus implements EnumTranslation {
   }
 }
 
-class Payslip extends Model {
+class Payslip extends Model with SaveNDestroyModel {
   Employee employee;
   Payroll payroll;
   PayslipStatus status;
@@ -119,6 +119,7 @@ class Payslip extends Model {
     'updated_at': updatedAt,
     'late': late,
     'total_day': totalWorkDays,
+    'payslip_lines_attributes': lines,
   };
   @override
   String get path => 'payslips';

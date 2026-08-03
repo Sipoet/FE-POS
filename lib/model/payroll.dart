@@ -3,7 +3,7 @@ import 'package:fe_pos/model/payroll_line.dart';
 export 'package:fe_pos/model/payroll_line.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-class Payroll extends Model {
+class Payroll extends Model with SaveNDestroyModel {
   String name;
   int paidTimeOff;
   String? description;
@@ -21,6 +21,7 @@ class Payroll extends Model {
     'name': name,
     'paid_time_off': paidTimeOff,
     'description': description,
+    'payroll_lines_attributes': lines,
   };
   @override
   String get path => 'payrolls';

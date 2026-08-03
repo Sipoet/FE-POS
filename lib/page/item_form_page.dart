@@ -1,7 +1,6 @@
 import 'package:fe_pos/model/item.dart';
 
 import 'package:fe_pos/tool/default_response.dart';
-import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
@@ -22,13 +21,11 @@ class _ItemFormPageState extends State<ItemFormPage>
     with LoadingPopup, DefaultResponse {
   Item get item => widget.item;
   late final Authorizer _setting;
-  late final Flash _flash;
   late final Server _server;
   final Map<String, TextEditingController> _controller = {};
 
   @override
   void initState() {
-    _flash = Flash();
     _setting = context.read<Authorizer>();
     _server = context.read<Server>();
     item.toMap().forEach((key, value) {

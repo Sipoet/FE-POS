@@ -11,12 +11,14 @@ class FileFormField extends StatefulWidget {
   final List<FileAttachment>? initialFiles;
   final void Function(List<FileAttachment>? files)? onChanged;
   final List<FormFileType> fileTypes;
+  final Widget? label;
   final String? Function(List<FileAttachment>? files)? validator;
   const FileFormField({
     super.key,
     required this.fileTypes,
     this.initialFiles,
     this.onChanged,
+    this.label,
     this.validator,
   });
 
@@ -99,6 +101,7 @@ class _FileFormFieldState extends State<FileFormField> with PlatformChecker {
         return Column(
           spacing: 10,
           children: [
+            if (widget.label != null) widget.label!,
             DropRegion(
               formats: allowedFormats,
               onDropOver: (event) {

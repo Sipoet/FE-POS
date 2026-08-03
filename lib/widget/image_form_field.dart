@@ -263,6 +263,7 @@ class ImageFormField extends StatefulWidget {
   final ImageModel? initialValue;
   final double width;
   final double height;
+  final Widget? label;
   final void Function(ImageModel?)? onChanged;
   const ImageFormField({
     super.key,
@@ -270,6 +271,7 @@ class ImageFormField extends StatefulWidget {
     required this.width,
     required this.height,
     this.onChanged,
+    this.label,
     this.initialValue,
   });
 
@@ -294,35 +296,43 @@ class _ImageFormFieldState extends State<ImageFormField> with PlatformChecker {
       initialValue: image,
       builder: (state) => Visibility(
         visible: image == null,
-        replacement: Stack(
+        replacement: Column(
+          crossAxisAlignment: .start,
+          mainAxisSize: .min,
+          spacing: 5,
           children: [
-            GestureDetector(
-              onTap: () => _viewImage(image!),
-              child: image?.thumbnail(
-                width: widget.width,
-                height: widget.height,
-              ),
-            ),
-            Positioned(
-              right: 0,
-              top: 0,
-              child: IconButton(
-                onPressed: () => setState(() {
-                  image = null;
-                  imageChanged(state, image);
-                }),
-                icon: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: .circular(15),
-                    border: Border.all(color: Colors.black),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(3.0),
-                    child: Icon(Icons.delete),
+            if (widget.label != null) widget.label!,
+            Stack(
+              children: [
+                GestureDetector(
+                  onTap: () => _viewImage(image!),
+                  child: image?.thumbnail(
+                    width: widget.width,
+                    height: widget.height,
                   ),
                 ),
-              ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: IconButton(
+                    onPressed: () => setState(() {
+                      image = null;
+                      imageChanged(state, image);
+                    }),
+                    icon: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: .circular(15),
+                        border: Border.all(color: Colors.black),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(3.0),
+                        child: Icon(Icons.delete),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -331,6 +341,7 @@ class _ImageFormFieldState extends State<ImageFormField> with PlatformChecker {
           mainAxisSize: .min,
           spacing: 5,
           children: [
+            if (widget.label != null) widget.label!,
             DropRegion(
               formats: [Formats.jpeg, Formats.png, Formats.bmp],
               onDropOver: (event) {

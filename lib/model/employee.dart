@@ -4,6 +4,8 @@ export 'package:fe_pos/model/employee_day_off.dart';
 import 'package:fe_pos/model/role.dart';
 export 'package:fe_pos/model/role.dart';
 import 'package:fe_pos/model/payroll.dart';
+import 'package:fe_pos/tool/file_attachment.dart';
+import 'package:fe_pos/tool/image_model.dart';
 export 'package:fe_pos/model/payroll.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 import 'package:fe_pos/tool/table_decorator.dart';
@@ -169,7 +171,7 @@ enum EmployeeMaritalStatus implements EnumTranslation {
   }
 }
 
-class Employee extends Model {
+class Employee extends Model with SaveNDestroyModel {
   String name;
   Role role;
   Payroll? payroll;
@@ -188,9 +190,11 @@ class Employee extends Model {
   String? email;
   Religion religion;
   String? imageCode;
+  ImageModel? profileImage;
   String code;
   int? shift;
   List<EmployeeDayOff> employeeDayOffs;
+  List<FileAttachment>? nationalDocuments;
   EmployeeMaritalStatus maritalStatus;
   String? userCode;
   Employee({
@@ -201,6 +205,7 @@ class Employee extends Model {
     Role? role,
     this.payroll,
     this.email,
+    this.profileImage,
     this.religion = Religion.other,
     this.debt = const Money(0),
     Date? startWorkingDate,
@@ -211,6 +216,7 @@ class Employee extends Model {
     this.address,
     this.bank,
     this.shift,
+    this.nationalDocuments,
     this.imageCode,
     this.taxNumber,
     this.bankAccount,
@@ -247,6 +253,15 @@ class Employee extends Model {
     super.setFromJson(json, included: included);
     employeeDayOffs = EmployeeDayOffClass().findRelationsData(
       relation: json['relationships']['employee_day_offs'],
+      included: included,
+    );
+
+    profileImage = ImageModelClass().findRelationData(
+      relation: json['relationships']['profile_image'],
+      included: included,
+    );
+    nationalDocuments = FileAttachmentClass().findRelationsData(
+      relation: json['relationships']['national_documents'],
       included: included,
     );
 
@@ -303,6 +318,8 @@ class Employee extends Model {
     'address': address,
     'bank': bank,
     'image_code': imageCode,
+    'profile_image': profileImage,
+    'national_documents': nationalDocuments ?? [],
     'bank_account': bankAccount,
     'payroll_id': payroll?.id,
     'shift': shift,
