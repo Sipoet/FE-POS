@@ -609,6 +609,11 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                           key: 'supplier',
                                           value: purchaseInvoice.supplier?.id,
                                         ),
+                                        ComparisonFilterData(
+                                          key: 'arrived_stock_status',
+                                          operator: .not,
+                                          value: 'full_arrived',
+                                        ),
                                       ];
                                       return PurchaseOrderClass().finds(
                                         _server,
@@ -732,34 +737,6 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                             Visibility(
                               visible: setting.canShow(
                                 'purchaseInvoice',
-                                'barcoded_at',
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 7,
-                                  vertical: 5,
-                                ),
-                                child: SizedBox(
-                                  width: width,
-                                  child: DateFormField<DateTime>(
-                                    readOnly: isReadOnly,
-                                    label: Text(
-                                      setting.columnName(
-                                        'purchaseInvoice',
-                                        'barcoded_at',
-                                      ),
-                                      style: TextFormatter.labelStyle,
-                                    ),
-                                    onChanged: (value) =>
-                                        purchaseInvoice.barcodedAt = value,
-                                    initialValue: purchaseInvoice.barcodedAt,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Visibility(
-                              visible: setting.canShow(
-                                'purchaseInvoice',
                                 'opened_at',
                               ),
                               child: Padding(
@@ -786,6 +763,35 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                                 ),
                               ),
                             ),
+                            Visibility(
+                              visible: setting.canShow(
+                                'purchaseInvoice',
+                                'barcoded_at',
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 5,
+                                ),
+                                child: SizedBox(
+                                  width: width,
+                                  child: DateFormField<DateTime>(
+                                    readOnly: isReadOnly,
+                                    label: Text(
+                                      setting.columnName(
+                                        'purchaseInvoice',
+                                        'barcoded_at',
+                                      ),
+                                      style: TextFormatter.labelStyle,
+                                    ),
+                                    onChanged: (value) =>
+                                        purchaseInvoice.barcodedAt = value,
+                                    initialValue: purchaseInvoice.barcodedAt,
+                                  ),
+                                ),
+                              ),
+                            ),
+
                             Visibility(
                               visible: setting.canShow(
                                 'purchaseInvoice',
@@ -1031,7 +1037,7 @@ class _PurchaseInvoiceFormPageState extends State<PurchaseInvoiceFormPage>
                               ),
                             if (setting.canShow(
                               'purchaseInvoiceDetail',
-                              'tags',
+                              'product',
                             ))
                               TableFormColumn<PurchaseInvoiceDetail>(
                                 isColumnResizeable: true,

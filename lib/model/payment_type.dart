@@ -1,6 +1,6 @@
 import 'package:fe_pos/model/model.dart';
 
-class PaymentType extends Model {
+class PaymentType extends Model with SaveNDestroyModel {
   String name;
   PaymentType({super.id, this.name = ''});
 

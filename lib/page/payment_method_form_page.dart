@@ -39,50 +39,35 @@ class _PaymentMethodFormPageState extends State<PaymentMethodFormPage>
   }
 
   void _submit() async {
-    Map<String, dynamic> body = {
-      'data': {
-        'type': 'payment_method',
-        'id': paymentMethod.id,
-        'attributes': paymentMethod.asJson(),
-      },
-    };
-    var request = paymentMethod.id == null
-        ? _server.post('payment_methods', body: body)
-        : _server.put('payment_methods/${paymentMethod.id}', body: body);
+    paymentMethod
+        .save(_server)
+        .then(
+          (isSuccess) {
+            if (isSuccess) {
+              setState(() {
+                var tabManager = context.read<TabManager>();
+                tabManager.changeTabHeader(
+                  widget,
+                  'Edit Karyawan ${paymentMethod.name}',
+                );
+              });
 
-    request.then(
-      (response) {
-        if ([200, 201].contains(response.statusCode)) {
-          var data = response.data['data'];
-          setState(() {
-            paymentMethod.setFromJson(
-              data,
-              included: response.data['included'],
-            );
-            var tabManager = context.read<TabManager>();
-            tabManager.changeTabHeader(
-              widget,
-              'Edit Karyawan ${paymentMethod.name}',
-            );
-          });
-
-          flash.show(
-            const Text('Berhasil disimpan'),
-            ToastificationType.success,
-          );
-        } else if (response.statusCode == 409) {
-          var data = response.data;
-          flash.showBanner(
-            title: data['message'],
-            description: (data['errors'] ?? []).join('\n'),
-            messageType: ToastificationType.error,
-          );
-        }
-      },
-      onError: (error, stackTrace) {
-        defaultErrorResponse(error: error);
-      },
-    );
+              flash.show(
+                const Text('Berhasil disimpan'),
+                ToastificationType.success,
+              );
+            } else {
+              flash.showBanner(
+                title: 'Gagal Simpan',
+                description: paymentMethod.errors.join('\n'),
+                messageType: ToastificationType.error,
+              );
+            }
+          },
+          onError: (error, stackTrace) {
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
   @override

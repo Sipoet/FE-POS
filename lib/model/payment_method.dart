@@ -70,7 +70,7 @@ enum PaymentType implements EnumTranslation {
   }
 }
 
-class PaymentMethod extends Model {
+class PaymentMethod extends Model with SaveNDestroyModel {
   String name;
   String providerCode;
   Bank bank;

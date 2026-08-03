@@ -6,7 +6,9 @@ import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
+import 'package:fe_pos/widget/authorizer_form_field.dart';
 import 'package:fe_pos/widget/money_form_field.dart';
+import 'package:fe_pos/widget/table_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -35,6 +37,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
     fontWeight: FontWeight.bold,
     fontSize: 16,
   );
+  final ValueNotifier<bool> notifier = ValueNotifier(false);
   @override
   bool get wantKeepAlive => true;
 
@@ -81,235 +84,6 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
         .whenComplete(() => hideLoadingPopup());
   }
 
-  List<TableCell> _headerTable() {
-    List<TableCell> header = [
-      TableCell(
-        child: Padding(
-          padding: const EdgeInsets.all(5.0),
-          child: Text(
-            setting.columnName('edcSettlement', 'payment_provider_id'),
-            style: _headerStyle,
-          ),
-        ),
-      ),
-      TableCell(
-        child: Padding(
-          padding: const EdgeInsets.all(5),
-          child: Text(
-            setting.columnName('edcSettlement', 'payment_type_id'),
-            style: _headerStyle,
-          ),
-        ),
-      ),
-      TableCell(
-        child: Padding(
-          padding: const EdgeInsets.all(5),
-          child: Text(
-            setting.columnName('edcSettlement', 'amount'),
-            style: _headerStyle,
-          ),
-        ),
-      ),
-      TableCell(
-        child: Padding(
-          padding: const EdgeInsets.all(5),
-          child: Text(
-            setting.columnName('edcSettlement', 'terminal_id'),
-            style: _headerStyle,
-          ),
-        ),
-      ),
-      TableCell(
-        child: Padding(
-          padding: const EdgeInsets.all(5),
-          child: Text(
-            setting.columnName('edcSettlement', 'merchant_id'),
-            style: _headerStyle,
-          ),
-        ),
-      ),
-      TableCell(
-        child: Padding(
-          padding: const EdgeInsets.all(5),
-          child: Text('Action', style: _headerStyle),
-        ),
-      ),
-    ];
-    if (setting.canShow('edcSettlement', 'status')) {
-      header.insert(
-        header.length - 1,
-        TableCell(
-          child: Padding(
-            padding: const EdgeInsets.all(5),
-            child: Text(
-              setting.columnName('edcSettlement', 'status'),
-              style: _headerStyle,
-            ),
-          ),
-        ),
-      );
-    }
-    return header;
-  }
-
-  TableRow _rowForm(EdcSettlement edcSettlement) {
-    final textController = TextEditingController(
-      text: edcSettlement.merchantId.toString(),
-    );
-    List<TableCell> rows = [
-      TableCell(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: AsyncDropdown<PaymentProvider>(
-            allowClear: false,
-            textOnSearch: (paymentProvider) => paymentProvider.name,
-            selected: edcSettlement.paymentProvider,
-            modelClass: PaymentProviderClass(),
-            request: (QueryRequest queryRequest) {
-              queryRequest.filters.add(
-                ComparisonFilterData(
-                  key: 'status',
-                  operator: .equals,
-                  value: PaymentProviderStatus.active.toString(),
-                ),
-              );
-              return PaymentProviderClass().finds(server, queryRequest);
-            },
-            validator: (value) {
-              if (value == null) {
-                return 'harus diisi';
-              }
-              return null;
-            },
-            onChanged: (paymentProvider) {
-              setState(() {
-                edcSettlement.paymentProvider =
-                    paymentProvider ?? PaymentProvider();
-              });
-            },
-          ),
-        ),
-      ),
-      TableCell(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: AsyncDropdown<PaymentType>(
-            allowClear: false,
-            textOnSearch: (paymentType) => paymentType.name,
-            selected: edcSettlement.paymentType,
-            modelClass: PaymentTypeClass(),
-            onChanged: (paymentType) {
-              edcSettlement.paymentType = paymentType ?? PaymentType();
-            },
-            validator: (value) {
-              if (value == null) {
-                return 'harus diisi';
-              }
-              return null;
-            },
-          ),
-        ),
-      ),
-      TableCell(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: MoneyFormField(
-            initialValue: edcSettlement.amount,
-            onChanged: (value) {
-              edcSettlement.amount = value ?? const Money(0);
-            },
-          ),
-        ),
-      ),
-      TableCell(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: AsyncDropdown<PaymentProviderEdc>(
-            textOnSearch: (data) => data.terminalId,
-            allowClear: false,
-            selected: PaymentProviderEdc(
-              terminalId: edcSettlement.terminalId,
-              merchantId: edcSettlement.merchantId,
-            ),
-            modelClass: PaymentProviderEdcClass(),
-            onChanged: (data) {
-              setState(() {
-                edcSettlement.terminalId = data?.terminalId ?? '';
-                edcSettlement.merchantId = data?.merchantId ?? '';
-                textController.text = edcSettlement.merchantId;
-              });
-            },
-            validator: (value) {
-              if (value == null) {
-                return 'harus diisi';
-              }
-              return null;
-            },
-            request: (QueryRequest queryRequest) {
-              queryRequest.filters.add(
-                ComparisonFilterData(
-                  key: 'payment_provider_id',
-                  value: edcSettlement.paymentProviderId,
-                ),
-              );
-              return PaymentProviderEdcClass().finds(server, queryRequest);
-            },
-          ),
-        ),
-      ),
-      TableCell(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextFormField(
-            decoration: const InputDecoration(border: OutlineInputBorder()),
-            controller: textController,
-            readOnly: true,
-          ),
-        ),
-      ),
-      TableCell(
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                iconSize: 35,
-                onPressed: () => _removeEdcSettlement(edcSettlement),
-                icon: const Icon(Icons.close),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ];
-    if (setting.canShow('edcSettlement', 'status')) {
-      rows.insert(
-        rows.length - 1,
-        TableCell(
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: DropdownMenu<EdcSettlementStatus>(
-              width: 220,
-              initialSelection: edcSettlement.status,
-              onSelected: (value) =>
-                  edcSettlement.status = value ?? edcSettlement.status,
-              dropdownMenuEntries: EdcSettlementStatus.values
-                  .map<DropdownMenuEntry<EdcSettlementStatus>>(
-                    (status) => DropdownMenuEntry<EdcSettlementStatus>(
-                      value: status,
-                      label: status.humanize(),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-        ),
-      );
-    }
-    return TableRow(key: ObjectKey(edcSettlement), children: rows);
-  }
-
   void _removeEdcSettlement(EdcSettlement edcSettlement) {
     setState(() {
       if (edcSettlement.isNewRecord) {
@@ -334,7 +108,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
       'data': {
         'type': 'cashier_sessions',
         'id': cashierSession.id.toString(),
-        'attributes': cashierSession.asJson(),
+        'attributes': cashierSession,
         'relationships': {
           'edc_settlements': {
             'data': cashierSession.edcSettlements
@@ -342,7 +116,7 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
                   (edcSettlement) => {
                     'id': edcSettlement.id,
                     'type': 'edc_settlement',
-                    'attributes': edcSettlement.asJson(),
+                    'attributes': edcSettlement,
                   },
                 )
                 .toList(),
@@ -455,7 +229,6 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
         );
   }
 
-  final _scrollController = ScrollController();
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -473,50 +246,212 @@ class _EdcSettlementFormPageState extends State<EdcSettlementFormPage>
               const SizedBox(height: 10),
               Form(
                 key: _formKey,
-                child: Scrollbar(
-                  controller: _scrollController,
-                  thumbVisibility: true,
-                  trackVisibility: true,
-                  thickness: 8,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    controller: _scrollController,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: SizedBox(
-                        child: Table(
-                          border: TableBorder.all(width: 2),
-                          columnWidths: const {
-                            0: FixedColumnWidth(250),
-                            1: FixedColumnWidth(250),
-                            2: FixedColumnWidth(250),
-                            3: FixedColumnWidth(250),
-                            4: FixedColumnWidth(250),
-                            5: FixedColumnWidth(250),
-                            6: FixedColumnWidth(100),
-                          },
-                          children:
-                              [
-                                TableRow(
-                                  children: _headerTable(),
-                                  decoration: const BoxDecoration(),
+                child: TableForm<EdcSettlement>(
+                  columns: [
+                    TableFormColumn(
+                      title: setting.columnName(
+                        'edcSettlement',
+                        'payment_provider_id',
+                      ),
+                      headerBuilder: (context) => Text(
+                        setting.columnName(
+                          'edcSettlement',
+                          'payment_provider_id',
+                        ),
+                        style: _headerStyle,
+                      ),
+                      rowBuilder: (context, edcSettlement, index) =>
+                          AsyncDropdown<PaymentProvider>(
+                            allowClear: false,
+                            textOnSearch: (paymentProvider) =>
+                                paymentProvider.name,
+                            selected: edcSettlement.paymentProvider,
+                            modelClass: PaymentProviderClass(),
+                            request: (QueryRequest queryRequest) {
+                              queryRequest.filters.add(
+                                ComparisonFilterData(
+                                  key: 'status',
+                                  operator: .equals,
+                                  value: PaymentProviderStatus.active
+                                      .toString(),
                                 ),
-                              ] +
-                              edcSettlements
-                                  .where(
-                                    (edcSettlement) =>
-                                        !edcSettlement.isDestroyed,
-                                  )
-                                  .map<TableRow>(
-                                    (edcSettlement) => _rowForm(edcSettlement),
+                              );
+                              return PaymentProviderClass().finds(
+                                server,
+                                queryRequest,
+                              );
+                            },
+                            validator: (value) {
+                              if (value == null) {
+                                return 'harus diisi';
+                              }
+                              return null;
+                            },
+                            onChanged: (paymentProvider) {
+                              setState(() {
+                                edcSettlement.paymentProvider =
+                                    paymentProvider ?? PaymentProvider();
+                              });
+                            },
+                          ),
+                    ),
+                    TableFormColumn(
+                      title: setting.columnName(
+                        'edcSettlement',
+                        'payment_type_id',
+                      ),
+                      headerBuilder: (context) => Text(
+                        setting.columnName('edcSettlement', 'payment_type_id'),
+                        style: _headerStyle,
+                      ),
+                      rowBuilder: (context, edcSettlement, index) =>
+                          AsyncDropdown<PaymentType>(
+                            allowClear: false,
+                            textOnSearch: (paymentType) => paymentType.name,
+                            selected: edcSettlement.paymentType,
+                            modelClass: PaymentTypeClass(),
+                            onChanged: (paymentType) {
+                              edcSettlement.paymentType =
+                                  paymentType ?? PaymentType();
+                            },
+                            validator: (value) {
+                              if (value == null) {
+                                return 'harus diisi';
+                              }
+                              return null;
+                            },
+                          ),
+                    ),
+                    TableFormColumn(
+                      title: setting.columnName('edcSettlement', 'amount'),
+                      headerBuilder: (context) => Text(
+                        setting.columnName('edcSettlement', 'amount'),
+                        style: _headerStyle,
+                      ),
+                      rowBuilder: (context, edcSettlement, index) =>
+                          MoneyFormField(
+                            initialValue: edcSettlement.amount,
+                            onChanged: (value) {
+                              edcSettlement.amount = value ?? const Money(0);
+                            },
+                          ),
+                    ),
+                    TableFormColumn(
+                      title: setting.columnName('edcSettlement', 'terminal_id'),
+                      headerBuilder: (context) => Text(
+                        setting.columnName('edcSettlement', 'terminal_id'),
+                        style: _headerStyle,
+                      ),
+                      rowBuilder: (context, edcSettlement, index) =>
+                          AsyncDropdown<PaymentProviderEdc>(
+                            textOnSearch: (data) => data.terminalId,
+                            allowClear: false,
+                            selected: PaymentProviderEdc(
+                              terminalId: edcSettlement.terminalId,
+                              merchantId: edcSettlement.merchantId,
+                            ),
+                            modelClass: PaymentProviderEdcClass(),
+                            onChanged: (data) {
+                              setState(() {
+                                edcSettlement.terminalId =
+                                    data?.terminalId ?? '';
+                                edcSettlement.merchantId =
+                                    data?.merchantId ?? '';
+                                notifier.toggle();
+                              });
+                            },
+                            validator: (value) {
+                              if (value == null) {
+                                return 'harus diisi';
+                              }
+                              return null;
+                            },
+                            request: (QueryRequest queryRequest) {
+                              queryRequest.filters.add(
+                                ComparisonFilterData(
+                                  key: 'payment_provider_id',
+                                  value: edcSettlement.paymentProviderId,
+                                ),
+                              );
+                              return PaymentProviderEdcClass().finds(
+                                server,
+                                queryRequest,
+                              );
+                            },
+                          ),
+                    ),
+                    TableFormColumn(
+                      title: setting.columnName('edcSettlement', 'merchant_id'),
+                      headerBuilder: (context) => Text(
+                        setting.columnName('edcSettlement', 'merchant_id'),
+                        style: _headerStyle,
+                      ),
+                      rowBuilder: (context, edcSettlement, index) =>
+                          AuthorizerFormField(
+                            tableName: 'edcSettlement',
+                            columnName: 'merchant_id',
+                            notifier: notifier,
+                            valueCallback: () => edcSettlement.merchantId,
+                            childBuilder: (textController) {
+                              return TextFormField(
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                ),
+                                controller: textController,
+                                readOnly: true,
+                              );
+                            },
+                          ),
+                    ),
+                    if (setting.canShow('edcSettlement', 'status'))
+                      TableFormColumn(
+                        title: setting.columnName('edcSettlement', 'status'),
+                        headerBuilder: (context) => Text(
+                          setting.columnName('edcSettlement', 'status'),
+                          style: _headerStyle,
+                        ),
+                        rowBuilder: (context, edcSettlement, index) =>
+                            DropdownMenu<EdcSettlementStatus>(
+                              width: 220,
+                              initialSelection: edcSettlement.status,
+                              onSelected: (value) => edcSettlement.status =
+                                  value ?? edcSettlement.status,
+                              dropdownMenuEntries: EdcSettlementStatus.values
+                                  .map<DropdownMenuEntry<EdcSettlementStatus>>(
+                                    (status) =>
+                                        DropdownMenuEntry<EdcSettlementStatus>(
+                                          value: status,
+                                          label: status.humanize(),
+                                        ),
                                   )
                                   .toList(),
-                        ),
+                            ),
                       ),
+                  ],
+                  actionColumn: TableFormColumn(
+                    headerBuilder: (context) => IconButton.filled(
+                      focusNode: _focusNode,
+                      onPressed: () {
+                        setState(() {
+                          edcSettlements.add(
+                            EdcSettlement(
+                              cashierSession: widget.cashierSession,
+                            ),
+                          );
+                        });
+                      },
+                      icon: const Icon(Icons.add),
+                    ),
+                    rowBuilder: (context, edcSettlement, index) => IconButton(
+                      iconSize: 35,
+                      onPressed: () => _removeEdcSettlement(edcSettlement),
+                      icon: const Icon(Icons.close),
                     ),
                   ),
+                  rows: edcSettlements,
                 ),
               ),
+
               Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: IconButton.filled(

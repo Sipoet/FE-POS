@@ -68,10 +68,7 @@ class _CashierSessionPageState extends State<CashierSessionPage>
   void _createCashierSessionToday() {
     showLoadingPopup();
     final bodyParams = {
-      'data': {
-        'type': 'cashier_session',
-        'attributes': cashierSession.asJson(),
-      },
+      'data': {'type': 'cashier_session', 'attributes': cashierSession},
     };
     server
         .post('cashier_sessions', body: bodyParams)

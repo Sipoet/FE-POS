@@ -121,48 +121,31 @@ class _EmployeeLeaveFormPageState extends State<EmployeeLeaveFormPage>
     }
   }
 
-  Future<EmployeeLeave?> _save(empLeave) {
-    Map<String, dynamic> body = {
-      'data': {
-        'type': 'employee_leave',
-        'id': empLeave.id,
-        'attributes': empLeave.asJson(),
-      },
-    };
-    Future request;
-    if (empLeave.id == null) {
-      request = server.post('employee_leaves', body: body);
-    } else {
-      request = server.put('employee_leaves/${empLeave.id}', body: body);
-    }
-    return request.then(
-      (response) {
-        if ([200, 201].contains(response.statusCode)) {
-          var data = response.data['data'];
-          setState(() {
-            empLeave.id = int.tryParse(data['id']);
-          });
-          flash.show(
-            const Text('Berhasil disimpan'),
-            ToastificationType.success,
-          );
-          return empLeave;
-        } else if (response.statusCode == 409) {
-          var data = response.data;
-          flash.showBanner(
-            title: data['message'],
-            description: data['errors'].join('\n'),
-            messageType: ToastificationType.error,
-          );
-          return null;
-        }
-        return null;
-      },
-      onError: (error, stackTrace) {
-        defaultErrorResponse(error: error);
-        return null;
-      },
-    );
+  Future<EmployeeLeave?> _save(EmployeeLeave empLeave) {
+    return empLeave
+        .save(server)
+        .then(
+          (isSuccess) {
+            if (isSuccess) {
+              flash.show(
+                const Text('Berhasil disimpan'),
+                ToastificationType.success,
+              );
+              return empLeave;
+            } else {
+              flash.showBanner(
+                title: 'Gagal Simpan',
+                description: empLeave.errors.join('\n'),
+                messageType: ToastificationType.error,
+              );
+              return null;
+            }
+          },
+          onError: (error, stackTrace) {
+            defaultErrorResponse(error: error);
+            return null;
+          },
+        );
   }
 
   void _removeEmployeeLeave(EmployeeLeave empLeave) {

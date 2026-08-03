@@ -453,7 +453,7 @@ class _CheckPricePageState extends State<CheckPricePage>
                 'data': {
                   'id': stockLocation.itemCode,
                   'type': 'item_stock',
-                  'attributes': stockLocation.asJson(),
+                  'attributes': stockLocation,
                 },
               },
             )

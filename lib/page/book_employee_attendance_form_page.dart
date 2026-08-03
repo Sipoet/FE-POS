@@ -77,12 +77,14 @@ class _BookEmployeeAttendanceFormPageState
                 const Text('Berhasil disimpan'),
                 ToastificationType.success,
               );
+              return record;
             } else {
               flash.showBanner(
                 title: 'Gagal Simpan Pesan Absensi Karyawan',
                 description: record.errors.join('\n'),
                 messageType: ToastificationType.error,
               );
+              return null;
             }
           },
           onError: (error, stackTrace) {

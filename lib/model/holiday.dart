@@ -2,7 +2,7 @@ import 'package:fe_pos/model/employee.dart';
 import 'package:fe_pos/model/model.dart';
 export 'package:fe_pos/tool/custom_type.dart';
 
-class Holiday extends Model {
+class Holiday extends Model with SaveNDestroyModel {
   Date date;
   Religion? religion;
   String? description;

@@ -36,7 +36,7 @@ enum UserStatus implements EnumTranslation {
   }
 }
 
-class User extends Model {
+class User extends Model with SaveNDestroyModel {
   String username;
   String? email;
   String? password;

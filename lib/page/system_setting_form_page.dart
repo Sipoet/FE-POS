@@ -179,23 +179,10 @@ class _SystemSettingFormPageState extends State<SystemSettingFormPage>
     showLoadingPopup();
     final server = context.read<Server>();
     if (systemSetting.isNewRecord) return;
-    final params = {
-      'data': {
-        'id': systemSetting.id,
-        'type': 'system_setting',
-        'attributes': systemSetting.asJson(),
-      },
-    };
-    server
-        .put('system_settings/${systemSetting.id}', body: params)
-        .then((response) {
-          if (mounted && response.statusCode == 200) {
-            setState(() {
-              systemSetting.setFromJson(
-                response.data['data'],
-                included: response.data['included'] ?? [],
-              );
-            });
+    systemSetting
+        .save(server)
+        .then((isSuccess) {
+          if (mounted && isSuccess) {
             _flash.show(Text('Sukses simpan'), ToastificationType.success);
           } else {
             _flash.show(Text('Gagal simpan'), ToastificationType.error);

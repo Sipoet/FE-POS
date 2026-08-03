@@ -71,51 +71,35 @@ class _PaymentTypeFormPageState extends State<PaymentTypeFormPage>
 
   void _submit() async {
     final server = context.read<Server>();
-    Map<String, dynamic> body = {
-      'data': {
-        'type': 'paymentType',
-        'id': paymentType.id,
-        'attributes': paymentType.asJson(),
-      },
-    };
-    Future request;
-    if (paymentType.id == null) {
-      request = server.post('payment_types', body: body);
-    } else {
-      request = server.put('payment_types/${paymentType.id}', body: body);
-    }
-    request.then(
-      (response) {
-        if ([200, 201].contains(response.statusCode)) {
-          var data = response.data['data'];
-          setState(() {
-            paymentType.setFromJson(
-              data,
-              included: response.data['included'] ?? [],
-            );
-            var tabManager = context.read<TabManager>();
-            tabManager.changeTabHeader(
-              widget,
-              'Edit paymentType ${paymentType.name}',
-            );
-          });
-          flash.show(
-            const Text('Berhasil disimpan'),
-            ToastificationType.success,
-          );
-        } else if (response.statusCode == 409) {
-          var data = response.data;
-          flash.showBanner(
-            title: data['message'],
-            description: data['errors'].join('\n'),
-            messageType: ToastificationType.error,
-          );
-        }
-      },
-      onError: (error, stackTrace) {
-        defaultErrorResponse(error: error);
-      },
-    );
+
+    paymentType
+        .save(server)
+        .then(
+          (isSuccess) {
+            if (isSuccess) {
+              setState(() {
+                var tabManager = context.read<TabManager>();
+                tabManager.changeTabHeader(
+                  widget,
+                  'Edit paymentType ${paymentType.name}',
+                );
+              });
+              flash.show(
+                const Text('Berhasil disimpan'),
+                ToastificationType.success,
+              );
+            } else {
+              flash.showBanner(
+                title: 'Gagal Simpan',
+                description: paymentType.errors.join('\n'),
+                messageType: ToastificationType.error,
+              );
+            }
+          },
+          onError: (error, stackTrace) {
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
   static const labelStyle = TextStyle(

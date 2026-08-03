@@ -4,6 +4,7 @@ import 'package:fe_pos/tool/flash.dart';
 import 'package:fe_pos/tool/loading_popup.dart';
 import 'package:fe_pos/tool/setting.dart';
 import 'package:fe_pos/tool/tab_manager.dart';
+import 'package:fe_pos/tool/text_formatter.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/vertical_body_scroll.dart';
 import 'package:flutter/material.dart';
@@ -52,70 +53,6 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
         .whenComplete(() => hideLoadingPopup());
   }
 
-  void save() {
-    if (_formState.currentState?.validate() == false) {
-      return;
-    }
-    showLoadingPopup();
-    final params = {
-      'data': {
-        'id': itemType.id,
-        'type': 'item',
-        'attributes': itemType.asJson(),
-      },
-    };
-    Future response;
-    if (itemType.isNewRecord) {
-      response = _server.post('item_types', body: params);
-    } else {
-      response = _server.put('item_types/${itemType.id}', body: params);
-    }
-    response
-        .then((response) {
-          if (mounted && [200, 201].contains(response.statusCode)) {
-            setState(() {
-              itemType.setFromJson(
-                response.data['data'],
-                included: response.data['included'] ?? [],
-              );
-            });
-            _tabManager.changeTabHeader(widget, 'Edit Jenis ${itemType.name}');
-            toastification.show(
-              title: Text(
-                'Sukses simpan Jenis',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              type: ToastificationType.success,
-              autoCloseDuration: Duration(seconds: 3),
-            );
-          } else {
-            final String errorMessage = response.statusCode == 409
-                ? response.data['errors'].toString()
-                : response.data.toString();
-            toastification.show(
-              title: Text(
-                'Gagal simpan Jenis',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              description: Text(errorMessage),
-              type: ToastificationType.error,
-            );
-          }
-        }, onError: (error) => defaultErrorResponse(error: error))
-        .whenComplete(() => hideLoadingPopup());
-  }
-
-  static const _filterLabelStyle = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.bold,
-  );
-
   @override
   Widget build(BuildContext context) {
     return VerticalBodyScroll(
@@ -141,7 +78,7 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
               decoration: InputDecoration(
                 label: Text(
                   _setting.columnName('itemType', 'name'),
-                  style: _filterLabelStyle,
+                  style: TextFormatter.labelStyle,
                 ),
                 border: OutlineInputBorder(),
               ),
@@ -159,14 +96,14 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
               decoration: InputDecoration(
                 label: Text(
                   _setting.columnName('itemType', 'description'),
-                  style: _filterLabelStyle,
+                  style: TextFormatter.labelStyle,
                 ),
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 10),
             AsyncDropdown<ItemType>(
-              label: const Text('Parent :', style: _filterLabelStyle),
+              label: const Text('Parent :', style: TextFormatter.labelStyle),
               key: const ValueKey('itemTypeSelect'),
               textOnSearch: (ItemType itemType) => itemType.name,
               selected: itemType.parent,
@@ -176,7 +113,6 @@ class _ItemTypeFormPageState extends State<ItemTypeFormPage>
               onChanged: (value) => itemType.parent = value,
             ),
             const SizedBox(height: 15),
-            ElevatedButton(onPressed: save, child: Text('Simpan')),
           ],
         ),
       ),

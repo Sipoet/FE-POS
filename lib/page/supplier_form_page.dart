@@ -164,19 +164,35 @@ class _SupplierFormPageState extends State<SupplierFormPage>
                       spacing: 10,
                       crossAxisAlignment: .start,
                       children: [
-                        SizedBox(
-                          width: _width,
-                          child: TextFormField(
-                            initialValue: supplier.name,
-                            onChanged: (value) => supplier.name = value,
-                            decoration: InputDecoration(
-                              label: Text(
-                                "${_setting.columnName('supplier', 'name')}*",
+                        if (_setting.canShow('supplier', 'code'))
+                          SizedBox(
+                            width: _width,
+                            child: TextFormField(
+                              initialValue: supplier.code,
+                              onChanged: (value) => supplier.code = value,
+                              decoration: InputDecoration(
+                                label: Text(
+                                  _setting.columnName('supplier', 'code'),
+                                ),
+                                border: OutlineInputBorder(),
                               ),
-                              border: OutlineInputBorder(),
                             ),
                           ),
-                        ),
+                        if (_setting.canShow('supplier', 'name'))
+                          SizedBox(
+                            width: _width,
+                            child: TextFormField(
+                              initialValue: supplier.name,
+                              onChanged: (value) => supplier.name = value,
+                              decoration: InputDecoration(
+                                label: Text(
+                                  "${_setting.columnName('supplier', 'name')}*",
+                                ),
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                        // if (_setting.canShow('supplier', 'tags'))
                         SizedBox(
                           width: _width,
                           child: AsyncDropdownMultiple<Tag>(
@@ -191,160 +207,158 @@ class _SupplierFormPageState extends State<SupplierFormPage>
                             onChanged: (tags) => supplier.setTags(tags),
                           ),
                         ),
-                        SizedBox(
-                          width: _width,
-                          child: TextFormField(
-                            initialValue: supplier.code,
-                            onChanged: (value) => supplier.code = value,
-                            decoration: InputDecoration(
-                              label: Text(
-                                _setting.columnName('supplier', 'code'),
-                              ),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: _width,
-                          child: TextFormField(
-                            initialValue: supplier.city,
-                            onChanged: (value) => supplier.city = value,
-                            decoration: InputDecoration(
-                              label: Text(
-                                _setting.columnName('supplier', 'city'),
-                              ),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: _width,
-                          child: TextFormField(
-                            initialValue: supplier.address,
-                            onChanged: (value) => supplier.address = value,
-                            keyboardType: .streetAddress,
-                            minLines: 3,
-                            maxLines: 5,
-                            decoration: InputDecoration(
-                              label: Text(
-                                _setting.columnName('supplier', 'address'),
-                              ),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: _width,
-                          child: TextFormField(
-                            initialValue: supplier.email,
-                            onChanged: (value) => supplier.email = value,
-                            keyboardType: .emailAddress,
-                            decoration: InputDecoration(
-                              label: Text(
-                                _setting.columnName('supplier', 'email'),
-                              ),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: _width,
-                          child: TextFormField(
-                            initialValue: supplier.bank,
-                            onChanged: (value) => supplier.bank = value,
-                            decoration: InputDecoration(
-                              label: Text(
-                                _setting.columnName('supplier', 'bank'),
-                              ),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: _width,
-                          child: TextFormField(
-                            initialValue: supplier.bankAccountNumber,
-                            onChanged: (value) =>
-                                supplier.bankAccountNumber = value,
-                            decoration: InputDecoration(
-                              label: Text(
-                                _setting.columnName(
-                                  'supplier',
-                                  'bank_account_number',
+
+                        if (_setting.canShow('supplier', 'city'))
+                          SizedBox(
+                            width: _width,
+                            child: TextFormField(
+                              initialValue: supplier.city,
+                              onChanged: (value) => supplier.city = value,
+                              decoration: InputDecoration(
+                                label: Text(
+                                  _setting.columnName('supplier', 'city'),
                                 ),
+                                border: OutlineInputBorder(),
                               ),
-                              border: OutlineInputBorder(),
                             ),
-                            inputFormatters: [
-                              CustomNumberInputFormatter(
-                                formatType: .bankAccount,
-                              ),
-                            ],
-                            keyboardType: .number,
                           ),
-                        ),
-                        SizedBox(
-                          width: _width,
-                          child: TextFormField(
-                            initialValue: supplier.bankRegisterName,
-                            onChanged: (value) =>
-                                supplier.bankRegisterName = value,
-                            decoration: InputDecoration(
-                              label: Text(
-                                _setting.columnName(
-                                  'supplier',
-                                  'bank_register_name',
+                        if (_setting.canShow('supplier', 'address'))
+                          SizedBox(
+                            width: _width,
+                            child: TextFormField(
+                              initialValue: supplier.address,
+                              onChanged: (value) => supplier.address = value,
+                              keyboardType: .streetAddress,
+                              minLines: 3,
+                              maxLines: 5,
+                              decoration: InputDecoration(
+                                label: Text(
+                                  _setting.columnName('supplier', 'address'),
                                 ),
+                                border: OutlineInputBorder(),
                               ),
-                              border: OutlineInputBorder(),
                             ),
                           ),
-                        ),
-                        SizedBox(
-                          width: _width,
-                          child: TextFormField(
-                            initialValue: supplier.description,
-                            onChanged: (value) => supplier.description = value,
-                            minLines: 3,
-                            maxLines: 5,
-                            keyboardType: .multiline,
-                            decoration: InputDecoration(
-                              label: Text(
-                                _setting.columnName('supplier', 'description'),
-                              ),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: _width,
-                          child: AsyncDropdown<Account>(
-                            textOnSearch: (account) =>
-                                '${account.name} (${account.accountType})',
-                            modelClass: AccountClass(),
-                            request: (queryRequest) {
-                              queryRequest.filters.add(
-                                ComparisonFilterData(
-                                  key: 'is_header',
-                                  value: false,
+                        if (_setting.canShow('supplier', 'email'))
+                          SizedBox(
+                            width: _width,
+                            child: TextFormField(
+                              initialValue: supplier.email,
+                              onChanged: (value) => supplier.email = value,
+                              keyboardType: .emailAddress,
+                              decoration: InputDecoration(
+                                label: Text(
+                                  _setting.columnName('supplier', 'email'),
                                 ),
-                              );
-                              return AccountClass().finds(
-                                _server,
-                                queryRequest,
-                              );
-                            },
-                            label: Text(
-                              _setting.columnName('supplier', 'account'),
+                                border: OutlineInputBorder(),
+                              ),
                             ),
-                            selected: supplier.account,
-                            onChanged: (model) => supplier.account = model,
                           ),
-                        ),
-                        ElevatedButton(
-                          onPressed: addContact,
-                          child: Text('Tambah Kontak'),
-                        ),
+                        if (_setting.canShow('supplier', 'bank'))
+                          SizedBox(
+                            width: _width,
+                            child: TextFormField(
+                              initialValue: supplier.bank,
+                              onChanged: (value) => supplier.bank = value,
+                              decoration: InputDecoration(
+                                label: Text(
+                                  _setting.columnName('supplier', 'bank'),
+                                ),
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                        if (_setting.canShow('supplier', 'bank_account_number'))
+                          SizedBox(
+                            width: _width,
+                            child: TextFormField(
+                              initialValue: supplier.bankAccountNumber,
+                              onChanged: (value) =>
+                                  supplier.bankAccountNumber = value,
+                              decoration: InputDecoration(
+                                label: Text(
+                                  _setting.columnName(
+                                    'supplier',
+                                    'bank_account_number',
+                                  ),
+                                ),
+                                border: OutlineInputBorder(),
+                              ),
+                              inputFormatters: [
+                                CustomNumberInputFormatter(
+                                  formatType: .bankAccount,
+                                ),
+                              ],
+                              keyboardType: .number,
+                            ),
+                          ),
+                        if (_setting.canShow('supplier', 'bank_register_name'))
+                          SizedBox(
+                            width: _width,
+                            child: TextFormField(
+                              initialValue: supplier.bankRegisterName,
+                              onChanged: (value) =>
+                                  supplier.bankRegisterName = value,
+                              decoration: InputDecoration(
+                                label: Text(
+                                  _setting.columnName(
+                                    'supplier',
+                                    'bank_register_name',
+                                  ),
+                                ),
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                        if (_setting.canShow('supplier', 'description'))
+                          SizedBox(
+                            width: _width,
+                            child: TextFormField(
+                              initialValue: supplier.description,
+                              onChanged: (value) =>
+                                  supplier.description = value,
+                              minLines: 3,
+                              maxLines: 5,
+                              keyboardType: .multiline,
+                              decoration: InputDecoration(
+                                label: Text(
+                                  _setting.columnName(
+                                    'supplier',
+                                    'description',
+                                  ),
+                                ),
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                        if (_setting.canShow('supplier', 'account'))
+                          SizedBox(
+                            width: _width,
+                            child: AsyncDropdown<Account>(
+                              textOnSearch: (account) =>
+                                  '${account.name} (${account.accountType})',
+                              modelClass: AccountClass(),
+                              request: (queryRequest) {
+                                queryRequest.filters.add(
+                                  ComparisonFilterData(
+                                    key: 'is_header',
+                                    value: false,
+                                  ),
+                                );
+                                return AccountClass().finds(
+                                  _server,
+                                  queryRequest,
+                                );
+                              },
+                              label: Text(
+                                _setting.columnName('supplier', 'account'),
+                              ),
+                              selected: supplier.account,
+                              onChanged: (model) => supplier.account = model,
+                            ),
+                          ),
+
+                        Text('Detail Kontak', style: TextFormatter.titleStyle),
                         TableForm<ContactNumber>(
                           rows: supplier.contactNumbers,
                           columnSpacing: .all(tablePadding),
@@ -425,18 +439,28 @@ class _SupplierFormPageState extends State<SupplierFormPage>
                             ),
                           ],
                           actionColumn: TableFormColumn(
-                            desktopWidth: FixedColumnWidth(60),
-                            headerBuilder: (context) => IconButton(
-                              onPressed: () async {
-                                if (await showConfirmDialog2(
-                                  message: 'Apakah yakin Hapus Semua Kontak?',
-                                )) {
-                                  setState(() {
-                                    supplier.contactNumbers.removeAll();
-                                  });
-                                }
-                              },
-                              icon: Icon(Icons.delete),
+                            width: 80,
+                            headerBuilder: (context) => Row(
+                              spacing: 20,
+                              children: [
+                                IconButton(
+                                  onPressed: addContact,
+                                  icon: Icon(Icons.add),
+                                ),
+                                IconButton(
+                                  onPressed: () async {
+                                    if (await showConfirmDialog2(
+                                      message:
+                                          'Apakah yakin Hapus Semua Kontak?',
+                                    )) {
+                                      setState(() {
+                                        supplier.contactNumbers.removeAll();
+                                      });
+                                    }
+                                  },
+                                  icon: Icon(Icons.delete),
+                                ),
+                              ],
                             ),
                             rowBuilder: (context, object, index) => IconButton(
                               onPressed: () {

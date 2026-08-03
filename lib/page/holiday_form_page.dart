@@ -47,53 +47,37 @@ class _HolidayFormPageState extends State<HolidayFormPage>
 
   Future? request;
   void _submit() async {
-    if (request != null) {
-      return;
-    }
-    Map<String, dynamic> body = {
-      'data': {'type': 'holiday', 'attributes': holiday.asJson()},
-    };
+    holiday
+        .save(_server)
+        .then(
+          (isSuccess) {
+            request = null;
+            if (isSuccess) {
+              setState(() {
+                var tabManager = context.read<TabManager>();
+                tabManager.changeTabHeader(
+                  widget,
+                  'Edit Libur Karyawan ${holiday.id}',
+                );
+              });
 
-    if (holiday.id == null) {
-      request = _server.post('holidays', body: body);
-    } else {
-      request = _server.put('holidays/${holiday.id}', body: body);
-    }
-    request?.then(
-      (response) {
-        request = null;
-        if ([200, 201].contains(response.statusCode)) {
-          var data = response.data['data'];
-          setState(() {
-            holiday.setFromJson(
-              data,
-              included: response.data['included'] ?? [],
-            );
-            var tabManager = context.read<TabManager>();
-            tabManager.changeTabHeader(
-              widget,
-              'Edit Libur Karyawan ${holiday.id}',
-            );
-          });
-
-          flash.show(
-            const Text('Berhasil disimpan'),
-            ToastificationType.success,
-          );
-        } else if (response.statusCode == 409) {
-          var data = response.data;
-          flash.showBanner(
-            title: data['message'],
-            description: (data['errors'] ?? []).join('\n'),
-            messageType: ToastificationType.error,
-          );
-        }
-      },
-      onError: (error, stackTrace) {
-        request = null;
-        defaultErrorResponse(error: error);
-      },
-    );
+              flash.show(
+                const Text('Berhasil disimpan'),
+                ToastificationType.success,
+              );
+            } else {
+              flash.showBanner(
+                title: 'Gagal Simpan',
+                description: holiday.errors.join('\n'),
+                messageType: ToastificationType.error,
+              );
+            }
+          },
+          onError: (error, stackTrace) {
+            request = null;
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
   @override

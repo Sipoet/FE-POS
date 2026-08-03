@@ -73,7 +73,7 @@ enum SettingValueType implements EnumTranslation {
   }
 }
 
-class SystemSetting extends Model {
+class SystemSetting extends Model with SaveNDestroyModel {
   String key;
   SettingValueType valueType;
   dynamic value;

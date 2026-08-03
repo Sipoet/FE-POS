@@ -1,6 +1,5 @@
 import 'package:fe_pos/tool/default_response.dart';
 import 'package:fe_pos/tool/flash.dart';
-import 'package:fe_pos/tool/tab_manager.dart';
 import 'package:fe_pos/widget/async_dropdown.dart';
 import 'package:fe_pos/widget/date_form_field.dart';
 import 'package:fe_pos/widget/time_form_field.dart';
@@ -190,51 +189,26 @@ class _EmployeeAttendanceFormPageState extends State<EmployeeAttendanceFormPage>
   }
 
   void _submit() {
-    Map<String, dynamic> body = {
-      'data': {
-        'type': 'employee_attendance',
-        'id': employeeAttendance.id,
-        'attributes': employeeAttendance.asJson(),
-      },
-    };
-    Future request;
-    if (employeeAttendance.id == null) {
-      request = _server.post('employee_attendances', body: body);
-    } else {
-      request = _server.put(
-        'employee_attendances/${employeeAttendance.id}',
-        body: body,
-      );
-    }
-    request.then(
-      (response) {
-        if ([200, 201].contains(response.statusCode)) {
-          var data = response.data['data'];
-          setState(() {
-            employeeAttendance.id = int.tryParse(data['id']);
-            var tabManager = context.read<TabManager>();
-            tabManager.changeTabHeader(
-              widget,
-              'Edit Absensi Karyawan ${employeeAttendance.id}',
-            );
-          });
-
-          flash.show(
-            const Text('Berhasil disimpan'),
-            ToastificationType.success,
-          );
-        } else if (response.statusCode == 409) {
-          var data = response.data;
-          flash.showBanner(
-            title: data['message'],
-            description: data['errors'].join('\n'),
-            messageType: ToastificationType.error,
-          );
-        }
-      },
-      onError: (error, stackTrace) {
-        defaultErrorResponse(error: error);
-      },
-    );
+    employeeAttendance
+        .save(_server)
+        .then(
+          (isSuccess) {
+            if (isSuccess) {
+              flash.show(
+                const Text('Berhasil disimpan'),
+                ToastificationType.success,
+              );
+            } else {
+              flash.showBanner(
+                title: 'Gagal Simpan',
+                description: employeeAttendance.errors.join('\n'),
+                messageType: ToastificationType.error,
+              );
+            }
+          },
+          onError: (error, stackTrace) {
+            defaultErrorResponse(error: error, backtrace: stackTrace);
+          },
+        );
   }
 }

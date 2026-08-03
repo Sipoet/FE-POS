@@ -4,7 +4,7 @@ export 'package:fe_pos/model/employee.dart';
 import 'package:flutter/material.dart' show TimeOfDay;
 export 'package:fe_pos/tool/custom_type.dart';
 
-class EmployeeAttendance extends Model {
+class EmployeeAttendance extends Model with SaveNDestroyModel {
   DateTime startTime;
   DateTime endTime;
   Date date;

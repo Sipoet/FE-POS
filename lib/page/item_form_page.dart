@@ -210,38 +210,8 @@ class _ItemFormPageState extends State<ItemFormPage>
             ),
           ),
           const Divider(),
-          Padding(
-            padding: const EdgeInsets.only(top: 15.0, left: 10),
-            child: ElevatedButton(onPressed: _submit, child: Text('Submit')),
-          ),
         ],
       ),
     );
-  }
-
-  void _submit() {
-    showLoadingPopup();
-    final server = context.read<Server>();
-    if (item.isNewRecord) return;
-    final params = {
-      'data': {'id': item.id, 'type': 'item', 'attributes': item.asJson()},
-    };
-    server
-        .put('ipos/items/${item.code}', body: params)
-        .then((response) {
-          if (mounted && response.statusCode == 200) {
-            setState(() {
-              item.setFromJson(
-                response.data['data'],
-                included: response.data['included'] ?? [],
-              );
-            });
-
-            _flash.show(Text('Sukses simpan item'), ToastificationType.success);
-          } else {
-            _flash.show(Text('Gagal simpan item'), ToastificationType.error);
-          }
-        }, onError: (error) => defaultErrorResponse(error: error))
-        .whenComplete(() => hideLoadingPopup());
   }
 }

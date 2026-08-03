@@ -81,43 +81,35 @@ class _UserFormPageState extends State<UserFormPage>
   }
 
   void _submit() async {
-    Map<String, dynamic> body = {
-      'data': {'type': 'user', 'id': user.id, 'attributes': user.asJson()},
-    };
-    Future request;
-    if (user.id == null) {
-      request = _server.post('users', body: body);
-    } else {
-      request = _server.put('users/${user.username}', body: body);
-    }
-    request.then(
-      (response) {
-        if ([200, 201].contains(response.statusCode)) {
-          var data = response.data;
-          setState(() {
-            user.setFromJson(data['data'], included: data['included'] ?? []);
-            _refreshForm();
-            var tabManager = context.read<TabManager>();
-            tabManager.changeTabHeader(widget, 'Edit user ${user.username}');
-          });
-
-          flash.show(
-            const Text('Berhasil disimpan'),
-            ToastificationType.success,
-          );
-        } else if (response.statusCode == 409) {
-          var data = response.data;
-          flash.showBanner(
-            title: data['message'],
-            description: data['errors'].join('\n'),
-            messageType: ToastificationType.error,
-          );
-        }
-      },
-      onError: (error, stackTrace) {
-        defaultErrorResponse(error: error);
-      },
-    );
+    user
+        .save(_server)
+        .then(
+          (isSuccess) {
+            if (isSuccess) {
+              setState(() {
+                _refreshForm();
+                var tabManager = context.read<TabManager>();
+                tabManager.changeTabHeader(
+                  widget,
+                  'Edit user ${user.username}',
+                );
+              });
+              flash.show(
+                const Text('Berhasil disimpan'),
+                ToastificationType.success,
+              );
+            } else {
+              flash.showBanner(
+                title: 'Gagal Simpan',
+                description: user.errors.join('\n'),
+                messageType: ToastificationType.error,
+              );
+            }
+          },
+          onError: (error, stackTrace) {
+            defaultErrorResponse(error: error);
+          },
+        );
   }
 
   @override
